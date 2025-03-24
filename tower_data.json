@@ -865,6 +865,56 @@
         "difficulty": 8.48
       }
     },
+    "Paradise Atoll": {
+      "Steeple of Mystical Marine": {
+        "badge_id": 2125418964,
+        "difficulty": 1.76
+      },
+      "Steeple of Abyssal Upturn": {
+        "badge_id": 2125419000,
+        "difficulty": 3.74
+      },
+      "Steeple of Sunny Island Shenanigans": {
+        "badge_id": 2125418995,
+        "difficulty": 4.01
+      },
+      "Steeple of Aquatic Rallies": {
+        "badge_id": 2125418997,
+        "difficulty": 4.14
+      },
+      "Steeple of Desolate Isles": {
+        "badge_id": 2125418969,
+        "difficulty": 5.21
+      },
+      "Steeple of Hallucinatory Spectacles": {
+        "badge_id": 2125418989,
+        "difficulty": 5.25
+      },
+      "Tower of Cyclonic Isles": {
+        "badge_id": 2125418973,
+        "difficulty": 5.76
+      },
+      "Steeple of Upright Cliffs": {
+        "badge_id": 2125418991,
+        "difficulty": 5.78
+      },
+      "Steeple of Cliffside Falls": {
+        "badge_id": 2125418955,
+        "difficulty": 5.83
+      },
+      "Tower of Traversing The Tropics": {
+        "badge_id": 2125418976,
+        "difficulty": 5.98
+      },
+      "Steeple of Underlying Breezes": {
+        "badge_id": 2125418958,
+        "difficulty": 6.31
+      },
+      "Steeple of Dusty Dunes": {
+        "badge_id": 2125419001,
+        "difficulty": 6.32
+      }
+    },
     "2": {
       "Tower of Buttons": {
         "badge_id": 2125418290,
@@ -925,6 +975,48 @@
       "Tower of Double Trouble": {
         "badge_id": 2125418381,
         "difficulty": 8
+      }
+    },
+    "Arcane Area": {
+      "Steeple of Biome Traversing": {
+        "badge_id": 2125419026,
+        "difficulty": 2.28
+      },
+      "Steeple of Astounding Sorcery": {
+        "badge_id": 2125419030,
+        "difficulty": 2.44
+      },
+      "Steeple of Realm Odyssey": {
+        "badge_id": 2125419042,
+        "difficulty": 3.17
+      },
+      "Steeple of Atmospheric Powers": {
+        "badge_id": 2125419052,
+        "difficulty": 3.36
+      },
+      "Steeple of Twisted Crystals": {
+        "badge_id": 2125419045,
+        "difficulty": 4.15
+      },
+      "Steeple of Magical Elements": {
+        "badge_id": 2125419038,
+        "difficulty": 4.81
+      },
+      "Steeple of Crystal Ascension": {
+        "badge_id": 2125419033,
+        "difficulty": 5.19
+      },
+      "Steeple of Witch Calamity": {
+        "badge_id": 2125419048,
+        "difficulty": 5.81
+      },
+      "Steeple of Magical Collaborations": {
+        "badge_id": 2125419035,
+        "difficulty": 6.22
+      },
+      "Tower of Icy Adventures": {
+        "badge_id": 2125419019,
+        "difficulty": 6.97
       }
     },
     "3": {
@@ -991,6 +1083,12 @@
       "Tower of Hopeless Hell": {
         "badge_id": 2125418485,
         "difficulty": 9.5
+      }
+    },
+    "Pit of Misery": {
+      "Tower of Modernistic Design Choices": {
+        "badge_id": 2125612958,
+        "difficulty": 1.88
       }
     },
     "4": {
@@ -1223,6 +1321,150 @@
       "Tower of Uncontrollable Ire": {
         "badge_id": 2127628708,
         "difficulty": 7.71
+      },
+      "Citadel of A Cruel Tale": {
+        "badge_id": 2127628655,
+        "difficulty": 7.77
+      },
+      "Tower of Fractured Memories": {
+        "badge_id": 2127628633,
+        "difficulty": 9.96
+      },
+      "Tower of Uncanny Agony": {
+        "badge_id": 2127628604,
+        "difficulty": 10.76
+      }
+    },
+    "8": {
+      "Tower of Melons In Time": {
+        "badge_id": 2143540746,
+        "difficulty": 3.76
+      },
+      "Tower of Cosmic Tides": {
+        "badge_id": 2143540875,
+        "difficulty": 3.98
+      },
+      "Tower of A Tetromino Disaster": {
+        "badge_id": 2143540994,
+        "difficulty": 4.78
+      },
+      "Tower of X Madness": {
+        "badge_id": 2143541564,
+        "difficulty": 4.96
+      },
+      "Tower of Galactic Voyage": {
+        "badge_id": 2143541572,
+        "difficulty": 5.18
+      },
+      "Tower of Flame Restoration": {
+        "badge_id": 2143541590,
+        "difficulty": 5.87
+      },
+      "Tower of One Nine": {
+        "badge_id": 2143541631,
+        "difficulty": 6.33
+      },
+      "Tower of Never Ending Fun": {
+        "badge_id": 2143541637,
+        "difficulty": 6.65
+      },
+      "Tower of Manic Lows": {
+        "badge_id": 2143541678,
+        "difficulty": 6.78
+      },
+      "Citadel of Pyramid Escapades": {
+        "badge_id": 2143542080,
+        "difficulty": 7.07
+      },
+      "Tower of Overbearing Vertigo": {
+        "badge_id": 2143541757,
+        "difficulty": 7.12
+      },
+      "Tower of Time and Space Manipulation": {
+        "badge_id": 2143541820,
+        "difficulty": 7.47
+      },
+      "Tower of No Return": {
+        "badge_id": 2143541971,
+        "difficulty": 7.73
+      },
+      "Tower of Rough Endoplasmic Reticulum": {
+        "badge_id": 2144100620,
+        "difficulty": 8.82
+      },
+      "Tower of Astral Eclipse": {
+        "badge_id": 2144100719,
+        "difficulty": 9
+      },
+      "Tower of Descent Into Exile": {
+        "badge_id": 2144100780,
+        "difficulty": 11.36
+      }
+    },
+    "9": {
+      "Tower of Arrantly Bodeful Cavern Depths": {
+        "badge_id": 4383427940994188,
+        "difficulty": 5.03
+      },
+      "Tower of Dusk To Dawn": {
+        "badge_id": 2235944988275806,
+        "difficulty": 5.14
+      },
+      "Tower of Latest Sensation": {
+        "badge_id": 638953684386833,
+        "difficulty": 5.27
+      },
+      "Tower of Bonus Level": {
+        "badge_id": 867780291093825,
+        "difficulty": 5.68
+      },
+      "Tower of Sugar Rush Deluxe": {
+        "badge_id": 1585190986741794,
+        "difficulty": 6.01
+      },
+      "Tower of Nothing New": {
+        "badge_id": 1374272096142771,
+        "difficulty": 6.73
+      },
+      "Tower of Furious Chicken Brawl": {
+        "badge_id": 99466740900675,
+        "difficulty": 6.86
+      },
+      "Tower of Falling Up": {
+        "badge_id": 102463356765927,
+        "difficulty": 6.93
+      },
+      "Tower of Eye Candy": {
+        "badge_id": 2767230538134444,
+        "difficulty": 7.01
+      },
+      "Tower of Big Blocky Beefy Buttons": {
+        "badge_id": 4389120601205327,
+        "difficulty": 7.7
+      },
+      "Tower of Minus Facility": {
+        "badge_id": 255869244267909,
+        "difficulty": 7.75
+      },
+      "Citadel of Increasing Claustrophobia": {
+        "badge_id": 1742639288936563,
+        "difficulty": 7.83
+      },
+      "Tower of Voyaging Into The Earth": {
+        "badge_id": 3380646432774718,
+        "difficulty": 7.92
+      },
+      "Tower of Hollow Reformations": {
+        "badge_id": 2973042954665200,
+        "difficulty": 8.88
+      },
+      "Tower of Panelling Barricades": {
+        "badge_id": 2313981453629893,
+        "difficulty": 9.16
+      },
+      "Tower of Wildly Wacky Wonders": {
+        "badge_id": 3562618091140628,
+        "difficulty": 10.66
       }
     }
   }

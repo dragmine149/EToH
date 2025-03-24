@@ -1,0 +1,39 @@
+<html>
+  <head>
+    <title>EToH Tower Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="etoh.js"></script>
+  </head>
+  <body>
+    <div id="top_bar">
+      <nav class="links">
+        <a href="..">Main site</a>
+        <a href=".">Home</a>
+        <a href="info.html">Information and FAQ</a>
+      </nav>
+      <div id="title"><bold>EToH Tower Tracker</bold> <italics>by dragmine149</italics></div>
+      <div id="viewing">Currently viewing user: No-one!</div>
+    </div>
+
+    <noscript class="noscript">
+      For full functionality of this site it is necessary to enable <bold>JavaScript</bold>.<br>
+      Here are the <a href="https://www.enablejavascript.io/">
+        instructions how to enable JavaScript in your web browser
+      </a>.
+    </noscript>
+
+    <div id="main">
+      <div id="errors" hidden>
+        <span id="error_message"></span>
+        <br>
+        <span id="error_details">Please reload and try again. If the issue persists, please open an <a href="https://github.com/dragmine149/ETOH/issues">issue</a></span>
+      </div>
+      <div id="search">
+        <div class="title">Load EToH Status</div>
+        <div class="subtitle">Enter a Roblox username, user ID, or profile link to load their EToH status.</div>
+        <input type="text" id="search_input" placeholder="Load towers via roblox username, user id or profile link">
+        <button id="search_button">Search</button>
+      </div>
+    </div>
+  </body>
+</html>

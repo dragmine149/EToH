@@ -1,0 +1,193 @@
+/*
+ * Difficulty colours for quick access
+ *
+ * Difficulty colour source: https://jtoh.fandom.com/wiki/Difficulty
+*/
+.difficulty.easy {
+  background: #75F347;
+  color: black;
+}
+
+.difficulty.medium {
+  background: #FFFE00;
+  color: black;
+}
+
+.difficulty.hard {
+  background: #FD7C00;
+  color: black;
+}
+
+.difficulty.difficult {
+  background: #FF3232;
+  color: white;
+}
+
+.difficulty.challenging {
+  background: #A00000;
+  color: white;
+}
+
+.difficulty.intense {
+  background: #19232D;
+  color: white;
+}
+
+.difficulty.remorseless {
+  background: #C800C8;
+  color: white;
+}
+
+.difficulty.insane {
+  background: 0000FF;
+  color: white;
+}
+
+.difficulty.extreme {
+  background: 0389FF;
+  color: white;
+}
+
+.difficulty.terrifying {
+  background: 00FFFF;
+  color: black;
+}
+
+.difficulty.catastrophic {
+  background: FFFFFF;
+  color: black;
+}
+
+/**
+ * The main styling to do with the site
+ */
+
+body {
+  background: #6c757d;
+}
+
+italics {
+  font-style: italic;
+}
+
+bold {
+  font-weight: bold;
+}
+
+.noscript {
+  width: 100%;
+  font-size: 2rem;
+  color: white;
+  text-align: center;
+  display: block;
+}
+
+#top_bar {
+  background: #212529;
+  display: flex;
+  align-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+}
+
+#top_bar>#title {
+  color: white;
+  flex: 0 0 auto;
+  padding: 0 16px;
+  white-space: nowrap;
+}
+
+#top_bar>#viewing {
+  color: white;
+  flex: 1;
+  text-align: right;
+  padding-right: 16px;
+  font-size: 1.25rem;
+}
+
+#top_bar>.links {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
+#top_bar>.links>a {
+  display: inline-block;
+  padding: 8px 16px;
+  margin: 4px;
+  background-color: #495057;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+
+.qa {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  background: #495057;
+  color: white;
+}
+
+
+#errors {
+  color: white;
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+#main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 60px);
+  /* Adjust based on your top bar height */
+}
+
+#search {
+  background: #495057;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  color: white;
+  width: 80%;
+  max-width: 600px;
+}
+
+#search .title {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+#search .subtitle {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+#search_input {
+  width: 80%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: none;
+  border-radius: 4px;
+}
+
+#search_button {
+  padding: 8px 16px;
+  background-color: #212529;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#search_button:hover {
+  background-color: #343a40;
+}
