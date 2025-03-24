@@ -1,0 +1,1229 @@
+{
+  "$schema": "tower_data_schema.json",
+  "rings": {
+    "1": {
+      "Not Even A Tower": {
+        "badge_id": 2125364331,
+        "difficulty": 1.11
+      },
+      "Tower of Annoyingly Simple Trials": {
+        "difficulty": 1.21,
+        "badge_id": 2125364300
+      },
+      "Tower of Anger": {
+        "difficulty": 1.5,
+        "badge_id": 2125364239
+      },
+      "Tower of Madness": {
+        "difficulty": 2.18,
+        "badge_id": 2125364247
+      },
+      "Tower of Noticeable Infuriation": {
+        "difficulty": 2.8,
+        "badge_id": 2125394398
+      },
+      "Tower of Hecc": {
+        "difficulty": 3.45,
+        "badge_id": 2125363409
+      },
+      "Tower of Killjoys": {
+        "difficulty": 3.47,
+        "badge_id": 2125364325
+      },
+      "Tower of Keyboard Yeeting": {
+        "difficulty": 4.14,
+        "badge_id": 2125364279
+      },
+      "Tower of Stress": {
+        "difficulty": 5,
+        "badge_id": 2125364284
+      },
+      "Tower of Screen Punching": {
+        "difficulty": 5.29,
+        "badge_id": 2125364203
+      },
+      "Tower of Rage": {
+        "difficulty": 5.71,
+        "badge_id": 2125364213
+      },
+      "Tower of Impossible Expectations": {
+        "difficulty": 6.01,
+        "badge_id": 2125364211
+      },
+      "Citadel of Laptop Splitting": {
+        "difficulty": 6.5,
+        "badge_id": 2125364319
+      },
+      "Tower of True Skill": {
+        "difficulty": 7,
+        "badge_id": 2125364257
+      },
+      "Thanos Tower": {
+        "difficulty": 8.15,
+        "badge_id": 2125364309
+      }
+    },
+    "Forgotten Ridge": {
+      "Steeple of Meaningless Decisions": {
+        "badge_id": 2125416661,
+        "difficulty": 1.22
+      },
+      "Tower of Jolly Good Fun": {
+        "badge_id": 2125416710,
+        "difficulty": 1.65
+      },
+      "Steeple of Pursuit": {
+        "badge_id": 2125416664,
+        "difficulty": 2.82
+      },
+      "Steeple of Low Woe": {
+        "badge_id": 2125416666,
+        "difficulty": 3
+      },
+      "This Is Probably A Tower": {
+        "badge_id": 1359907317047556,
+        "difficulty": 3.61
+      },
+      "Steeple of Uninstalling Roblox": {
+        "badge_id": 2125416670,
+        "difficulty": 3.85
+      },
+      "Tower of Immense Ire": {
+        "badge_id": 2125416720,
+        "difficulty": 4.24
+      },
+      "Steeple of Wall Punching": {
+        "badge_id": 2125416683,
+        "difficulty": 4.57
+      },
+      "Tower of Versatility": {
+        "badge_id": 2125416714,
+        "difficulty": 4.64
+      },
+      "Tower of Triangular Covering": {
+        "badge_id": 2125416718,
+        "difficulty": 5.16
+      },
+      "Steeple of climbing": {
+        "badge_id": 2125416687,
+        "difficulty": 5.49
+      },
+      "Steeple of Huge Pain": {
+        "badge_id": 2125416698,
+        "difficulty": 6.35
+      },
+      "Tower of Increasing Stress": {
+        "badge_id": 2125416725,
+        "difficulty": 6.37
+      },
+      "Tower of Dangerous Expeditions": {
+        "badge_id": 2125416731,
+        "difficulty": 6.75
+      },
+      "Citadel of Weird Nostalgia": {
+        "badge_id": 2125416732,
+        "difficulty": 6.77
+      },
+      "Steeple of Towering Pillars": {
+        "badge_id": 2125416704,
+        "difficulty": 7.55
+      },
+      "Tower of Mind Breaking": {
+        "badge_id": 2130253292,
+        "difficulty": 8.36
+      }
+    },
+    "2": {
+      "Maybe A Tower": {
+        "badge_id": 2125365096,
+        "difficulty": 1.10
+      },
+      "Tower of Phone Snapping": {
+        "difficulty": 2.76,
+        "badge_id": 2125365118
+      },
+      "Tower of Big Hole": {
+        "difficulty": 3.4,
+        "badge_id": 2125365136
+      },
+      "Tower of Overcoming Hatred": {
+        "difficulty": 3.88,
+        "badge_id": 2125365125
+      },
+      "Tower of Cold Hands": {
+        "difficulty": 4,
+        "badge_id": 2125365092
+      },
+      "Tower of Falling and Failing": {
+        "difficulty": 5.61,
+        "badge_id": 2125365147
+      },
+      "Tower of Traps": {
+        "difficulty": 5.7,
+        "badge_id": 2125365144
+      },
+      "Tower of Deep Darkness": {
+        "difficulty": 5.8,
+        "badge_id": 2125365155
+      },
+      "Tower of Shattered Dreams": {
+        "difficulty": 5.84,
+        "badge_id": 2125365112
+      },
+      "Tower of Table Flipping": {
+        "difficulty": 6.44,
+        "badge_id": 2125365132
+      },
+      "Tower of Eternal Suffering": {
+        "difficulty": 7.4,
+        "badge_id": 2125365108
+      },
+      "Citadel of Wacky Strategy": {
+        "difficulty": 7.96,
+        "badge_id": 2125365166
+      },
+      "Tower of Difficulty Chart": {
+        "difficulty": 8.06,
+        "badge_id": 2125365158
+      }
+    },
+    "Garden of Eesh\u00f6l": {
+      "Steeple of Beginner's Journey": {
+        "badge_id": 2125416740,
+        "difficulty": 1.24
+      },
+      "Steeple of Devil's Snare": {
+        "badge_id": 2125416748,
+        "difficulty": 1.54
+      },
+      "Steeple of Infectious Foliage": {
+        "badge_id": 2125416753,
+        "difficulty": 2.32
+      },
+      "Steeple of Overgrowth": {
+        "badge_id": 2125416751,
+        "difficulty": 2.73
+      },
+      "Steeple of Nightfall": {
+        "badge_id": 2125416757,
+        "difficulty": 2.85
+      },
+      "Steeple of Overgrown Ascension": {
+        "badge_id": 2125416759,
+        "difficulty": 3.1
+      },
+      "Steeple of Greenhouse Placidity": {
+        "badge_id": 2125416762,
+        "difficulty": 3.7
+      },
+      "Steeple of Feudal Foliage": {
+        "badge_id": 2125416771,
+        "difficulty": 3.8
+      },
+      "Steeple of Lost In Quiescence": {
+        "badge_id": 2125416758,
+        "difficulty": 3.84
+      },
+      "Steeple of Various Vivariums": {
+        "badge_id": 2125416767,
+        "difficulty": 4.49
+      },
+      "Not Even A Flower": {
+        "badge_id": 3872937943626202,
+        "difficulty": 5.02
+      },
+      "Steeple of Flourishing Wastelands": {
+        "badge_id": 2125416775,
+        "difficulty": 5.61
+      },
+      "Tower of Perilous Antipode": {
+        "badge_id": 2125416787,
+        "difficulty": 6
+      },
+      "Steeple of Buoyant Automations": {
+        "badge_id": 2125416780,
+        "difficulty": 6.03
+      }
+    },
+    "3": {
+      "Tower of Funny Thoughts": {
+        "difficulty": 1.68,
+        "badge_id": 2125365471
+      },
+      "Tower of Inverted Colors": {
+        "difficulty": 2.16,
+        "badge_id": 2125365525
+      },
+      "Tower of Ancient Trickery": {
+        "difficulty": 2.62,
+        "badge_id": 2125365520
+      },
+      "Tower of Deep Sighing": {
+        "difficulty": 2.76,
+        "badge_id": 2125365453
+      },
+      "Tower of Fatness": {
+        "difficulty": 3.54,
+        "badge_id": 2125365461
+      },
+      "Tower of Winning Every Run": {
+        "difficulty": 3.55,
+        "badge_id": 2125365451
+      },
+      "Tower of Slight Inconvenience": {
+        "difficulty": 4.11,
+        "badge_id": 2125365464
+      },
+      "Tower of Wall Hugging": {
+        "difficulty": 4.37,
+        "badge_id": 2125365515
+      },
+      "Tower of Lotsa Damage": {
+        "difficulty": 4.61,
+        "badge_id": 2125365494
+      },
+      "Tower of Despair": {
+        "difficulty": 5.24,
+        "badge_id": 2125365496
+      },
+      "Citadel of Heights and Depths": {
+        "difficulty": 6.13,
+        "badge_id": 2125365543
+      },
+      "Totally A Tower": {
+        "badge_id": 2125365536,
+        "difficulty": 6.99
+      },
+      "Tower of Confusion": {
+        "difficulty": 8.81,
+        "badge_id": 2125365521
+      }
+    },
+    "4": {
+      "Tower of Spiraling Heights": {
+        "badge_id": 2125383817,
+        "difficulty": 1.76
+      },
+      "Tower of Getting Gnomed": {
+        "badge_id": 2125383766,
+        "difficulty": 2.62
+      },
+      "Tower of Terrible Mondays": {
+        "badge_id": 2125383841,
+        "difficulty": 3.72
+      },
+      "Tower of Elysium": {
+        "difficulty": 3.87,
+        "badge_id": 2125383779
+      },
+      "Tower of Linonophobia": {
+        "badge_id": 2125383837,
+        "difficulty": 4.24
+      },
+      "Tower of Leaning Ledges": {
+        "badge_id": 2125383785,
+        "difficulty": 4.57
+      },
+      "Tower of Dust and Decay": {
+        "badge_id": 2125383771,
+        "difficulty": 5.01
+      },
+      "Will Be A Tower": {
+        "badge_id": 2125383846,
+        "difficulty": 5.01
+      },
+      "Tower of Holy Flip": {
+        "badge_id": 2125383842,
+        "difficulty": 6.34
+      },
+      "Citadel of Uneasiness": {
+        "difficulty": 6.8,
+        "badge_id": 2125383807
+      },
+      "Tower of Oblivion": {
+        "difficulty": 6.97,
+        "badge_id": 2144113169
+      },
+      "Tower of Nonsensical Platforms": {
+        "badge_id": 2125383773,
+        "difficulty": 7.01
+      },
+      "Tower of Corrupted Nightmares": {
+        "badge_id": 2125383775,
+        "difficulty": 7.95
+      },
+      "Tower of Inception": {
+        "badge_id": 2125383801,
+        "difficulty": 10.87
+      }
+    },
+    "Silent Abyss": {
+      "Steeple of Resort In Stasis": {
+        "badge_id": 2143764006,
+        "difficulty": 4.71
+      },
+      "Steeple of Ruinous Abate": {
+        "badge_id": 2143764028,
+        "difficulty": 4.92
+      },
+      "Tower of Ancestral Interference": {
+        "badge_id": 2143764022,
+        "difficulty": 4.98
+      },
+      "Steeple of Descendance": {
+        "badge_id": 2143764044,
+        "difficulty": 5.15
+      },
+      "Tower of There Is No Tower": {
+        "badge_id": 2143764050,
+        "difficulty": 5.42
+      },
+      "Steeple of Guiding Lights": {
+        "badge_id": 2143764056,
+        "difficulty": 5.66
+      },
+      "Steeple of Xenial Abyss": {
+        "badge_id": 2143764064,
+        "difficulty": 5.9
+      },
+      "Steeple of Wicked Grotto": {
+        "badge_id": 2143764075,
+        "difficulty": 6.02
+      },
+      "Tower of Shallow Waters": {
+        "badge_id": 2143764094,
+        "difficulty": 6.64
+      },
+      "Steeple of Involuntary Isolation": {
+        "badge_id": 2143764118,
+        "difficulty": 6.71
+      },
+      "Tower of Tenebrous Depths": {
+        "badge_id": 2143764125,
+        "difficulty": 6.95
+      },
+      "Steeple of Midnight Acropolis": {
+        "badge_id": 2143764150,
+        "difficulty": 7.34
+      },
+      "Steeple of Malignant Blight": {
+        "badge_id": 2143764143,
+        "difficulty": 7.53
+      }
+    },
+    "5": {
+      "Towere of Nice Views": {
+        "badge_id": 2125383930,
+        "difficulty": 2.61
+      },
+      "Tower of Getting Kinda Disappointed": {
+        "badge_id": 2125383926,
+        "difficulty": 3.52
+      },
+      "Likely A Tower": {
+        "badge_id": 2125383958,
+        "difficulty": 4.04
+      },
+      "Tower of Rigid Success": {
+        "badge_id": 2125383920,
+        "difficulty": 4.36
+      },
+      "Tower of Downward Mobility": {
+        "badge_id": 2125383947,
+        "difficulty": 5.17
+      },
+      "Tower of Obvious Chaos": {
+        "badge_id": 2125383952,
+        "difficulty": 5.85
+      },
+      "Tower of Floral Fury": {
+        "badge_id": 2125383919,
+        "difficulty": 6.05
+      },
+      "Tower of Extraordinary Adventures": {
+        "badge_id": 2125383938,
+        "difficulty": 6.12
+      },
+      "Tower of Tokyo Heights": {
+        "badge_id": 2125383923,
+        "difficulty": 6.46
+      },
+      "Tower of Glitching and Healing": {
+        "badge_id": 2125383949,
+        "difficulty": 7.02
+      },
+      "Tower of Fractured Obstacles": {
+        "badge_id": 2125383955,
+        "difficulty": 7.31
+      },
+      "Citadel of Contrasting Regions": {
+        "badge_id": 2125383986,
+        "difficulty": 7.57
+      },
+      "Tower of Icy Blizzards": {
+        "difficulty": 6.86,
+        "badge_id": 2125383934
+      },
+      "Tower of Frightening Nightmares": {
+        "badge_id": 2125383912,
+        "difficulty": 10.21
+      }
+    },
+    "Lost River": {
+      "Tower of Excessive Weirdness": {
+        "badge_id": 2130091633,
+        "difficulty": 2.61
+      },
+      "Tower of Two Sided Troubles": {
+        "badge_id": 2130091634,
+        "difficulty": 3.79
+      },
+      "Citadel of Inside Situations": {
+        "badge_id": 2130091636,
+        "difficulty": 4.48
+      },
+      "Tower of Losing Our Zeal": {
+        "badge_id": 2130091635,
+        "difficulty": 4.92
+      },
+      "Tower of Diverging Layers": {
+        "badge_id": 2130091637,
+        "difficulty": 5.3
+      },
+      "Tower of Odd Odyssey": {
+        "badge_id": 2130091638,
+        "difficulty": 5.59
+      },
+      "Tower of Witchcraft and Wizardry": {
+        "badge_id": 2130091642,
+        "difficulty": 6.74
+      },
+      "Tower of Compact Spaces": {
+        "badge_id": 2130091644,
+        "difficulty": 6.98
+      },
+      "Tower of Triple Jeopardy": {
+        "badge_id": 2130091646,
+        "difficulty": 7.01
+      },
+      "Tower of Tallying Every Mistake": {
+        "badge_id": 2130091645,
+        "difficulty": 7.05
+      },
+      "Tower of Unsettling Heights": {
+        "badge_id": 2130091648,
+        "difficulty": 8.19
+      }
+    },
+    "6": {
+      "Tower of Friendly Jumps": {
+        "badge_id": 2125384025,
+        "difficulty": 3.11
+      },
+      "Tower of Environmental Pain": {
+        "badge_id": 2125384021,
+        "difficulty": 4.3
+      },
+      "Tower of Radiant Realms": {
+        "badge_id": 2125384251,
+        "difficulty": 4.52
+      },
+      "Tower of Twisted Inquisition": {
+        "badge_id": 2125384250,
+        "difficulty": 5.43
+      },
+      "Tower of A Depressing Future": {
+        "badge_id": 2125384235,
+        "difficulty": 6.12
+      },
+      "Tower of Intense Solar Chaos": {
+        "badge_id": 2125384272,
+        "difficulty": 6.3
+      },
+      "Tower of Dispersed Rooms": {
+        "badge_id": 2125384245,
+        "difficulty": 6.68
+      },
+      "Tower of Flustering Sections": {
+        "badge_id": 2125384255,
+        "difficulty": 6.71
+      },
+      "Fortunately Not A Tower": {
+        "badge_id": 2125384279,
+        "difficulty": 6.76
+      },
+      "Tower of Niflheim": {
+        "badge_id": 2125384258,
+        "difficulty": 7.22
+      },
+      "Citadel of Scythe Recognition": {
+        "badge_id": 2125384265,
+        "difficulty": 7.34
+      },
+      "Tower of Strategic Mechanics": {
+        "badge_id": 2125384017,
+        "difficulty": 9.46
+      },
+      "Tower of Impossible Movement": {
+        "badge_id": 2125384270,
+        "difficulty": 10.11
+      }
+    },
+    "Ashen Towerworks": {
+      "Tower of Fruity Zeal": {
+        "badge_id": 2150139836,
+        "difficulty": 2.6
+      },
+      "Tower of Viaduct Traversing": {
+        "badge_id": 2150139890,
+        "difficulty": 3.88
+      },
+      "Tower of Corner Wedge Climbing": {
+        "badge_id": 2150139931,
+        "difficulty": 4.23
+      },
+      "Tower of Wanting More Time": {
+        "badge_id": 2150139949,
+        "difficulty": 5.15
+      },
+      "Tower of Whisking It All": {
+        "badge_id": 2150139994,
+        "difficulty": 6.1
+      },
+      "Tower of Shadowy Radiance": {
+        "badge_id": 2150140037,
+        "difficulty": 6.26
+      },
+      "Tower of Whirl of Winds": {
+        "badge_id": 2150140003,
+        "difficulty": 6.42
+      },
+      "Tower of Largely Limited Luminance": {
+        "badge_id": 2150140099,
+        "difficulty": 6.55
+      },
+      "Tower of Forever Sleeping Flower": {
+        "badge_id": 2150140154,
+        "difficulty": 7.02
+      },
+      "Tower of Climactic Beats": {
+        "badge_id": 2150140240,
+        "difficulty": 7.08
+      },
+      "Tower of Mechanical Disarray": {
+        "badge_id": 2150140190,
+        "difficulty": 7.66
+      },
+      "Tower of Rhythm Heaven": {
+        "badge_id": 2150554134,
+        "difficulty": 7.74
+      },
+      "Tower of Wicked Fortress": {
+        "badge_id": 2150140265,
+        "difficulty": 9.43
+      }
+    },
+    "7": {
+      "Tower of Rushed Building": {
+        "badge_id": 2125394373,
+        "difficulty": 4.58
+      },
+      "Far From A Surprising Tower": {
+        "badge_id": 4089026193358070,
+        "difficulty": 4.79
+      },
+      "Tower of Feeling Lazy": {
+        "badge_id": 2125394352,
+        "difficulty": 5.31
+      },
+      "Tower of Collective Collaboration": {
+        "badge_id": 2125394315,
+        "difficulty": 5.34
+      },
+      "Tower of Distorted Aerodynamics": {
+        "badge_id": 2125394317,
+        "difficulty": 5.85
+      },
+      "Tower of Orientating Oscillating Opinions": {
+        "badge_id": 2125394368,
+        "difficulty": 6.11
+      },
+      "Tower of Never Giving Up, Ever": {
+        "badge_id": 2125394365,
+        "difficulty": 6.54
+      },
+      "Tower of Never Ending Dizziness": {
+        "badge_id": 2125394357,
+        "difficulty": 7.18
+      },
+      "Tower of Ultraviolet": {
+        "badge_id": 2125394379,
+        "difficulty": 7.55
+      },
+      "Citadel of True Exasperation": {
+        "badge_id": 2125394342,
+        "difficulty": 7.66
+      },
+      "Tower of Yearning Victory": {
+        "badge_id": 2125394384,
+        "difficulty": 7.67
+      },
+      "Tower of Extreme Hell": {
+        "badge_id": 2125394321,
+        "difficulty": 8.17
+      },
+      "Tower of Terrifying Beauty": {
+        "badge_id": 2125394390,
+        "difficulty": 9.41
+      },
+      "Tower of Elongated Runs": {
+        "badge_id": 2125394329,
+        "difficulty": 11.84
+      }
+    },
+    "8": {
+      "Tower of Somewhat Simple Scaling": {
+        "badge_id": 2125416493,
+        "difficulty": 2.38
+      },
+      "Tower of Needing Basic Aptitude": {
+        "badge_id": 2125416489,
+        "difficulty": 3.87
+      },
+      "Tower of Voluminous Framework": {
+        "badge_id": 2125416511,
+        "difficulty": 5.25
+      },
+      "Tower of Vibrant Adventures": {
+        "badge_id": 2125416514,
+        "difficulty": 5.6
+      },
+      "Tower of Aamos' Anger": {
+        "badge_id": 2125416501,
+        "difficulty": 5.75
+      },
+      "Citadel of Constant Heart Stopping": {
+        "badge_id": 2125416477,
+        "difficulty": 6.35
+      },
+      "Tower of Uneasy Scaling": {
+        "badge_id": 2125416517,
+        "difficulty": 6.66
+      },
+      "Tower of Insanely Innovative Ideas": {
+        "badge_id": 2125416498,
+        "difficulty": 6.99
+      },
+      "Tower of Mean Tasks": {
+        "badge_id": 2125416487,
+        "difficulty": 7.54
+      },
+      "Tower of Verdant Entropy": {
+        "badge_id": 2125416520,
+        "difficulty": 7.56
+      },
+      "Tower of Suffering Outside": {
+        "badge_id": 2125416523,
+        "difficulty": 9.34
+      },
+      "Tower of Externalizing Insanity": {
+        "badge_id": 2125416481,
+        "difficulty": 9.95
+      },
+      "Tower of Generation Failure": {
+        "badge_id": 2125416507,
+        "difficulty": 11.17
+      }
+    },
+    "9": {
+      "Tower of Great Overcomings": {
+        "badge_id": 2125416546,
+        "difficulty": 6.49
+      },
+      "Tower of Beat Block Berserk": {
+        "badge_id": 2125416595,
+        "difficulty": 7.01
+      },
+      "Tower of Questionable Trials": {
+        "badge_id": 2125416555,
+        "difficulty": 7.13
+      },
+      "Citadel of Lethargy": {
+        "badge_id": 2125416621,
+        "difficulty": 7.68
+      },
+      "Tower of Pastel Pillars": {
+        "badge_id": 2125416587,
+        "difficulty": 7.87
+      },
+      "Tower of High Adrenaline": {
+        "badge_id": 2125416583,
+        "difficulty": 8.14
+      },
+      "Tower of Bent Trauma": {
+        "badge_id": 2125416549,
+        "difficulty": 8.21
+      },
+      "Tower of Curved Ascent": {
+        "badge_id": 2125416566,
+        "difficulty": 8.46
+      },
+      "Tower of Frightening and Confusing Trials": {
+        "badge_id": 2125416543,
+        "difficulty": 8.98
+      },
+      "Tower of Bloodthirsty Kenos": {
+        "badge_id": 2125416575,
+        "difficulty": 9.08
+      },
+      "Tower of Journey's End": {
+        "badge_id": 2125416646,
+        "difficulty": 10.37
+      },
+      "Tower of Nervous Sweating": {
+        "badge_id": 2125416613,
+        "difficulty": 10.6
+      },
+      "Tower of Augmented Misery": {
+        "badge_id": 2125416602,
+        "difficulty": 11
+      },
+      "Tower of Champion's Road": {
+        "badge_id": 2125416609,
+        "difficulty": 11.71
+      },
+      "Tower of Cruel Punishment": {
+        "badge_id": 2125416545,
+        "difficulty": 11.99
+      }
+    }
+  },
+  "zones": {
+    "1": {
+      "Tower of Zero Disturbances": {
+        "badge_id": 2125416899,
+        "difficulty": 1.19
+      },
+      "Tower of Peaceful Happiness and Tranquility": {
+        "badge_id": 2125416824,
+        "difficulty": 1.5
+      },
+      "Tower of Atlantic Depths": {
+        "badge_id": 2125416834,
+        "difficulty": 2.36
+      },
+      "Tower of Hands Sweating": {
+        "badge_id": 2125416818,
+        "difficulty": 3.18
+      },
+      "Tower of Peace": {
+        "badge_id": 2125416895,
+        "difficulty": 3.27
+      },
+      "Tower of Mirrored Hecc": {
+        "badge_id": 2125416877,
+        "difficulty": 3.91
+      },
+      "Tower of Contractual Obligations": {
+        "badge_id": 2125416881,
+        "difficulty": 4.74
+      },
+      "Tower of Yearning Success": {
+        "badge_id": 2125416861,
+        "difficulty": 4.8
+      },
+      "Tower of Absolute Vexation": {
+        "badge_id": 2125416816,
+        "difficulty": 5.64
+      },
+      "Tower of Wanting Extra Levels": {
+        "badge_id": 2125416812,
+        "difficulty": 5.75
+      },
+      "Tower of Ultimately Terrifying": {
+        "badge_id": 2125416814,
+        "difficulty": 6.58
+      },
+      "Tower of Extreme Dystopia": {
+        "badge_id": 2125416830,
+        "difficulty": 7.11
+      },
+      "Tower of Really Nasty Ideas": {
+        "badge_id": 2125416850,
+        "difficulty": 7.19
+      },
+      "Citadel of Peril": {
+        "badge_id": 2125416858,
+        "difficulty": 7.95
+      },
+      "Tower of Zespluz": {
+        "badge_id": 2125416883,
+        "difficulty": 7.97
+      },
+      "Tower of Thinning Layers": {
+        "badge_id": 2125416865,
+        "difficulty": 8.48
+      }
+    },
+    "2": {
+      "Tower of Buttons": {
+        "badge_id": 2125418290,
+        "difficulty": 2.58
+      },
+      "Tower of Slanted Anticipation": {
+        "badge_id": 2125418346,
+        "difficulty": 2.94
+      },
+      "Tower of Ground Level Ascension": {
+        "badge_id": 2125418311,
+        "difficulty": 3.48
+      },
+      "Tower of Troublesome Adventures": {
+        "badge_id": 2125418352,
+        "difficulty": 3.93
+      },
+      "Tower of Unearthed Discoveries": {
+        "badge_id": 2125418354,
+        "difficulty": 4.21
+      },
+      "Tower of Dreams and Caverns": {
+        "badge_id": 2125418292,
+        "difficulty": 5.02
+      },
+      "Tower of Pleasant Fantasies": {
+        "badge_id": 2125418326,
+        "difficulty": 5.62
+      },
+      "Tower of Slipping and Sliding": {
+        "badge_id": 2125418349,
+        "difficulty": 5.74
+      },
+      "Citadel of Green Stuff": {
+        "badge_id": 2125418384,
+        "difficulty": 6.39
+      },
+      "Tower of Extraterrestrial Enchantment": {
+        "badge_id": 2125418299,
+        "difficulty": 6.49
+      },
+      "Tower of Arcanium Zenturing": {
+        "badge_id": 2125418287,
+        "difficulty": 6.76
+      },
+      "Tower of Triangular Terror": {
+        "badge_id": 2125418297,
+        "difficulty": 6.98
+      },
+      "Tower of Great Displeasure": {
+        "badge_id": 2125418305,
+        "difficulty": 7.13
+      },
+      "Tower of Chaotic Moments": {
+        "badge_id": 2125418342,
+        "difficulty": 7.35
+      },
+      "Tower of Double Trouble": {
+        "badge_id": 2125418381,
+        "difficulty": 8
+      }
+    },
+    "3": {
+      "Tower of Six Feet Under": {
+        "badge_id": 2125418434,
+        "difficulty": 1.12
+      },
+      "Tower of Overestimating Difficulty": {
+        "badge_id": 2125418437,
+        "difficulty": 1.99
+      },
+      "Tower of Broken Bricks": {
+        "badge_id": 2125418444,
+        "difficulty": 2.05
+      },
+      "Tower of Client Object Frenzy": {
+        "badge_id": 2125418463,
+        "difficulty": 2.81
+      },
+      "Tower of Cracked, Crushed Cubes": {
+        "badge_id": 2125418441,
+        "difficulty": 3.38
+      },
+      "Tower of Xanthophobia": {
+        "badge_id": 2125418479,
+        "difficulty": 3.81
+      },
+      "Tower of Dimensional Hopping": {
+        "badge_id": 2125418455,
+        "difficulty": 4.23
+      },
+      "Tower of Mild Agitation": {
+        "badge_id": 2125418450,
+        "difficulty": 4.52
+      },
+      "Tower of Cogs and Steam": {
+        "badge_id": 2125418452,
+        "difficulty": 4.66
+      },
+      "Tower of Requiring Critical Help": {
+        "badge_id": 2125418458,
+        "difficulty": 4.94
+      },
+      "Citadel of Tricky Situations": {
+        "badge_id": 2125418491,
+        "difficulty": 4.94
+      },
+      "Tower of Menacing Creations": {
+        "badge_id": 2125418490,
+        "difficulty": 5.56
+      },
+      "Tower of Infuriating Obstacles": {
+        "badge_id": 2125418432,
+        "difficulty": 6.08
+      },
+      "Tower of Quirky Contraptions": {
+        "badge_id": 2125418461,
+        "difficulty": 6.18
+      },
+      "Tower of Cruel and Unusual Punishment": {
+        "badge_id": 2125418481,
+        "difficulty": 6.46
+      },
+      "Tower of Hopeless Hell": {
+        "badge_id": 2125418485,
+        "difficulty": 9.5
+      }
+    },
+    "4": {
+      "Tower of Fairly Simple Challenges": {
+        "badge_id": 2125418571,
+        "difficulty": 1.58
+      },
+      "Tower of Aquatic Contemplation": {
+        "badge_id": 2125418569,
+        "difficulty": 2.89
+      },
+      "Tower of Fun and Simple Trials": {
+        "badge_id": 2125418562,
+        "difficulty": 3.26
+      },
+      "Tower of Up Is Down": {
+        "badge_id": 2125418547,
+        "difficulty": 3.56
+      },
+      "Tower of Wicked Wedges": {
+        "badge_id": 2125418529,
+        "difficulty": 4.48
+      },
+      "Tower of Elevator Travelling": {
+        "badge_id": 2125418556,
+        "difficulty": 4.51
+      },
+      "Tower of Pure Chroma": {
+        "badge_id": 2125418532,
+        "difficulty": 5.64
+      },
+      "Tower of Mechanically Induced Mayhem": {
+        "badge_id": 2125418546,
+        "difficulty": 6.02
+      },
+      "Tower of Shifting Slopes": {
+        "badge_id": 2125418554,
+        "difficulty": 6.8
+      },
+      "Tower of Dance Dance Destruction": {
+        "badge_id": 2125418559,
+        "difficulty": 7.12
+      },
+      "Tower of Funky Grooves": {
+        "badge_id": 2125418552,
+        "difficulty": 7.28
+      },
+      "Citadel of Quadrilaterals": {
+        "badge_id": 2125418563,
+        "difficulty": 7.85
+      },
+      "Tower of Tornado Vehemence": {
+        "badge_id": 2125418551,
+        "difficulty": 7.98
+      },
+      "Tower of Inevitable Failure": {
+        "badge_id": 2125418537,
+        "difficulty": 8.45
+      },
+      "Astronomically Aimless Annoyances": {
+        "badge_id": 2125418565,
+        "difficulty": 9.25
+      }
+    },
+    "5": {
+      "Tower of Sovereign Travelling": {
+        "badge_id": 2125418587,
+        "difficulty": 3.4
+      },
+      "Tower of Super Stupid Security Systems": {
+        "badge_id": 2125418588,
+        "difficulty": 3.91
+      },
+      "Tower of Fractal Volution": {
+        "badge_id": 2125418599,
+        "difficulty": 4.52
+      },
+      "Tower of Bright Serenity": {
+        "badge_id": 2125418602,
+        "difficulty": 4.75
+      },
+      "Tower of Stairs To Spare": {
+        "badge_id": 2125418593,
+        "difficulty": 5.19
+      },
+      "Tower of Unhealthy Escalation": {
+        "badge_id": 2125418605,
+        "difficulty": 5.99
+      },
+      "Tower of Heiwana Kaze": {
+        "badge_id": 2125418597,
+        "difficulty": 6.33
+      },
+      "Tower of Horrifying Experiences": {
+        "badge_id": 2125418624,
+        "difficulty": 6.33
+      },
+      "Tower of Guided Trials": {
+        "badge_id": 2125418608,
+        "difficulty": 6.52
+      },
+      "Citadel of Corporate Enterprise": {
+        "badge_id": 2125418631,
+        "difficulty": 6.79
+      },
+      "Tower of Anticlimactic Outcomes": {
+        "badge_id": 2125418620,
+        "difficulty": 6.96
+      },
+      "Tower of Brutal and Bizarre Torment": {
+        "badge_id": 2125418625,
+        "difficulty": 7.61
+      },
+      "Tower of Zany Architecture": {
+        "badge_id": 2125418628,
+        "difficulty": 7.94
+      },
+      "Tower of Polychromatic Zero": {
+        "badge_id": 2125418633,
+        "difficulty": 8.72
+      },
+      "Tower of Alien Radiance": {
+        "badge_id": 2125418638,
+        "difficulty": 10.41
+      }
+    },
+    "6": {
+      "Tower of Foreign Domains": {
+        "badge_id": 2125418711,
+        "difficulty": 3.64
+      },
+      "Tower of Rock Climbing": {
+        "badge_id": 2125418742,
+        "difficulty": 4.67
+      },
+      "Tower of Conflicting Frontiers": {
+        "badge_id": 2125418658,
+        "difficulty": 5.04
+      },
+      "Tower of Break It, Buy It": {
+        "badge_id": 2125418817,
+        "difficulty": 5.38
+      },
+      "Tower of Angled Scenery": {
+        "badge_id": 2125418718,
+        "difficulty": 5.54
+      },
+      "Tower of Hefty Magnitude": {
+        "badge_id": 2125418764,
+        "difficulty": 5.88
+      },
+      "Citadel of Twists and Weirdness": {
+        "badge_id": 2125418913,
+        "difficulty": 6.06
+      },
+      "Tower of Hazardous Laddering": {
+        "badge_id": 2125418727,
+        "difficulty": 6.25
+      },
+      "Tower of Watts": {
+        "badge_id": 2125418748,
+        "difficulty": 6.4
+      },
+      "Tower of Astral Fusion": {
+        "badge_id": 2125418733,
+        "difficulty": 7.02
+      },
+      "Tower of Massive Overheating": {
+        "badge_id": 2125418841,
+        "difficulty": 7.42
+      },
+      "Tower of Brief Challenges": {
+        "badge_id": 2125418858,
+        "difficulty": 7.56
+      },
+      "Tower of The Dripping Amalgam": {
+        "badge_id": 2125418850,
+        "difficulty": 9.55
+      },
+      "Tower of Micro Management": {
+        "badge_id": 2125418865,
+        "difficulty": 10.29
+      }
+    },
+    "7": {
+      "The Tower of Jazz": {
+        "badge_id": 2127628644,
+        "difficulty": 2.75
+      },
+      "Tower of Rough Waters": {
+        "badge_id": 2127628452,
+        "difficulty": 3.09
+      },
+      "Tower of Sweet Victory": {
+        "badge_id": 2127628469,
+        "difficulty": 3.72
+      },
+      "Tower of Bygone Relic": {
+        "badge_id": 2127628626,
+        "difficulty": 4.49
+      },
+      "Tower of Destructive Fever": {
+        "badge_id": 2127628615,
+        "difficulty": 4.72
+      },
+      "Tower of Growing Madness": {
+        "badge_id": 2127628496,
+        "difficulty": 5.07
+      },
+      "Tower of Cylindrical Extensions": {
+        "badge_id": 2127628515,
+        "difficulty": 5.61
+      },
+      "Tower of White Space": {
+        "badge_id": 2127628476,
+        "difficulty": 5.88
+      },
+      "Tower of Yore": {
+        "badge_id": 2127628573,
+        "difficulty": 6.15
+      },
+      "Tower of Cone Mesh Climbing": {
+        "badge_id": 2127628592,
+        "difficulty": 6.48
+      },
+      "Tower of Swift and Precise Sections": {
+        "badge_id": 2127628598,
+        "difficulty": 6.71
+      },
+      "Tower of Uncontrollable Ire": {
+        "badge_id": 2127628708,
+        "difficulty": 7.71
+      }
+    }
+  }
+}

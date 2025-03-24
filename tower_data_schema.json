@@ -1,0 +1,47 @@
+{
+  "$schema": "tower_data_schema",
+  "definitions": {
+    "tower": {
+      "type": "object",
+      "properties": {
+        "difficulty": {
+          "type": "number"
+        },
+        "badge_id": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "difficulty",
+        "badge_id"
+      ]
+    },
+    "ring": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/tower"
+      }
+    },
+    "zone": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/tower"
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "rings": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/ring"
+      }
+    },
+    "zones": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/zone"
+      }
+    }
+  }
+}
