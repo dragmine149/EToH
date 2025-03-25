@@ -1,14 +1,20 @@
 {
-  "$schema": "tower_data_schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "tower": {
       "type": "object",
       "properties": {
         "difficulty": {
-          "type": "number"
+          "type": "number",
+          "description": "The difficult of the tower, gotten from wiki/in-game"
         },
         "badge_id": {
-          "type": "integer"
+          "type": "integer",
+          "description": "The badge id of the tower (for the new place)"
+        },
+        "old_id": {
+          "type": "integer",
+          "description": "The badge if of the tower (for the old place). Blank if doesn't exist"
         }
       },
       "required": [

@@ -7,6 +7,35 @@
 
  * Somehow maybe? Get difficult from wiki or smth
 */
+
+
+/**
+ * Represents a single tower
+ * @typedef {{
+ *   difficulty: number,
+ *   badge_id: number,
+ *   old_id?: number
+ * }} TowerData
+ */
+
+/**
+ * Represents a ring containing towers
+ * @typedef {Object.<string, TowerData>} Ring
+ */
+
+/**
+ * Represents a zone containing towers
+ * @typedef {Object.<string, TowerData>} Zone
+ */
+
+/**
+ * @typedef {{
+ *   rings: Object.<string, Ring>,
+ *   zones: Object.<string, Zone>
+ * }} Towers
+ */
+
+/** @type {Towers} */
 let towers;
 
 function showError(message) {
@@ -15,7 +44,7 @@ function showError(message) {
 }
 
 async function loadTowers() {
-  let server_towers = await fetch('tower_data.json');
+  let server_towers = await fetch('data/tower_data.json');
   if (!server_towers.ok) {
     console.warn(server_towers);
     showError(`Failed to fetch tower_data.json: ${server_towers.status} ${server_towers.statusText}.`);
@@ -86,14 +115,4 @@ function getDifficulty(difficulty) {
 
 
   return `${stageWord} ${subWord}`;
-}
-
-
-class UserManager {
-  /** @type {number} Roblox UserID */
-  user;
-
-  async loadUserData() {
-
-  }
 }

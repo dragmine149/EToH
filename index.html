@@ -2,7 +2,21 @@
   <head>
     <title>EToH Tower Tracker</title>
     <link rel="stylesheet" href="style.css">
-    <script src="etoh.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/compress-json@3/bundle.min.js"></script>
+    <script src="https://dragmine149.github.io/Scripts/storage.js"></script>
+    <script src="js/etoh.js"></script>
+    <script src="js/users.js"></script>
+
+    <!-- DayJS -->
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/plugin/relativeTime.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/plugin/localizedFormat.js"></script>
+    <script>
+      dayjs.extend(dayjs_plugin_relativeTime);
+      dayjs.extend(dayjs_plugin_localizedFormat);
+      dayjs.locale('en');
+    </script>
   </head>
   <body>
     <div id="top_bar">
@@ -22,17 +36,26 @@
       </a>.
     </noscript>
 
+    <div id="errors" hidden>
+      <span id="error_message"></span>
+      <br>
+      <span id="error_details">Please reload and try again. If the issue persists, please open an <a href="https://github.com/dragmine149/ETOH/issues">issue</a></span>
+    </div>
     <div id="main">
-      <div id="errors" hidden>
-        <span id="error_message"></span>
-        <br>
-        <span id="error_details">Please reload and try again. If the issue persists, please open an <a href="https://github.com/dragmine149/ETOH/issues">issue</a></span>
-      </div>
       <div id="search">
         <div class="title">Load EToH Status</div>
         <div class="subtitle">Enter a Roblox username, user ID, or profile link to load their EToH status.</div>
-        <input type="text" id="search_input" placeholder="Load towers via roblox username, user id or profile link">
-        <button id="search_button">Search</button>
+        <input type="text" id="search_input" placeholder="Load towers via roblox username, user id or profile link" onsubmit="userData.searchUser()">
+        <button id="search_button" onclick="userData.searchUser()">Search</button>
+        <div id="progress">
+          <label tag="area_label">Area:</label>
+          <progress tag="area_progress" value="0"></progress>
+          <span tag="area_text"></span>
+          <br>
+          <label tag="tower_label">Towers:</label>
+          <progress tag="towers_progress" value="0"></progress>
+          <span tag="tower_text"></span>
+        </div>
       </div>
     </div>
   </body>

@@ -1,0 +1,2734 @@
+{
+  "previousPageCursor": null,
+  "nextPageCursor": null,
+  "data": [
+    {
+      "id": 2124457500,
+      "name": "Meet Jukereise",
+      "description": "Hi there, hopefully you didn't swarm me. To get this badge, you must be at a close distance to Jukereise.",
+      "displayName": "Meet Jukereise",
+      "displayDescription": "Hi there, hopefully you didn't swarm me. To get this badge, you must be at a close distance to Jukereise.",
+      "enabled": true,
+      "iconImageId": 3339511123,
+      "displayIconImageId": 3339511123,
+      "created": "2019-03-03T21:26:07.567+00:00",
+      "updated": "2024-11-19T19:24:29.388+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 3189,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124457503,
+      "name": "You played the game!",
+      "description": "Ur epic generic YoU pLaYeD tHe GaMe badge. Nice way of greeting fresh meat to a hardcore game really lul.",
+      "displayName": "You played the game!",
+      "displayDescription": "Ur epic generic YoU pLaYeD tHe GaMe badge. Nice way of greeting fresh meat to a hardcore game really lul.",
+      "enabled": true,
+      "iconImageId": 2920125497,
+      "displayIconImageId": 2920125497,
+      "created": "2019-03-03T21:28:03.157+00:00",
+      "updated": "2024-11-19T19:24:29.388+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 10467429,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124457507,
+      "name": "Play For 3 Hours In One Sitting",
+      "description": "What are you doing? ",
+      "displayName": "Play For 3 Hours In One Sitting",
+      "displayDescription": "What are you doing? ",
+      "enabled": true,
+      "iconImageId": 2920137319,
+      "displayIconImageId": 2920137319,
+      "created": "2019-03-03T21:31:28.823+00:00",
+      "updated": "2024-11-19T19:24:29.397+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 14071,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124457637,
+      "name": "Secret Badge",
+      "description": "How did you get here?",
+      "displayName": "Secret Badge",
+      "displayDescription": "How did you get here?",
+      "enabled": true,
+      "iconImageId": 2924001380,
+      "displayIconImageId": 2924001380,
+      "created": "2019-03-04T21:40:56.733+00:00",
+      "updated": "2024-11-19T19:24:29.51+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 56675,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124457638,
+      "name": "lolwut",
+      "description": "Smart you are, badge you have found",
+      "displayName": "lolwut",
+      "displayDescription": "Smart you are, badge you have found",
+      "enabled": true,
+      "iconImageId": 2924002744,
+      "displayIconImageId": 2924002744,
+      "created": "2019-03-04T21:41:25.3+00:00",
+      "updated": "2024-11-19T19:24:29.51+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 21617,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124457649,
+      "name": "Play On Mobile",
+      "description": "This game isn't suited for mobile, yet nothing stops you. Good luck.",
+      "displayName": "Play On Mobile",
+      "displayDescription": "This game isn't suited for mobile, yet nothing stops you. Good luck.",
+      "enabled": true,
+      "iconImageId": 2924020678,
+      "displayIconImageId": 2924020678,
+      "created": "2019-03-04T21:48:06.57+00:00",
+      "updated": "2024-11-19T19:24:29.518+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 216,
+        "awardedCount": 9598155,
+        "winRatePercentage": 1.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124457650,
+      "name": "Get Yeeted",
+      "description": "Roblox physics is funny sometimes. Get this badge by somehow getting thrown far away.",
+      "displayName": "Get Yeeted",
+      "displayDescription": "Roblox physics is funny sometimes. Get this badge by somehow getting thrown far away.",
+      "enabled": true,
+      "iconImageId": 2924022283,
+      "displayIconImageId": 2924022283,
+      "created": "2019-03-04T21:48:43.92+00:00",
+      "updated": "2024-11-19T19:24:29.518+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 1267,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124457651,
+      "name": "Massive Dissapointment",
+      "description": "Die on the last stretch of a Remorseless+ difficulty tower. We've gone so far, yet it didn't even matter.",
+      "displayName": "Massive Dissapointment",
+      "displayDescription": "Die on the last stretch of a Remorseless+ difficulty tower. We've gone so far, yet it didn't even matter.",
+      "enabled": true,
+      "iconImageId": 2924025563,
+      "displayIconImageId": 2924025563,
+      "created": "2019-03-04T21:49:54.053+00:00",
+      "updated": "2024-11-19T19:24:29.518+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 3454,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124457652,
+      "name": "Get Beaned by ToIE",
+      "description": "That kill brick over the truss has a purpose, a very malicious purpose.",
+      "displayName": "Get Beaned by ToIE",
+      "displayDescription": "That kill brick over the truss has a purpose, a very malicious purpose.",
+      "enabled": true,
+      "iconImageId": 2924027145,
+      "displayIconImageId": 2924027145,
+      "created": "2019-03-04T21:50:30.997+00:00",
+      "updated": "2024-11-19T19:24:29.518+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 8683,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124457653,
+      "name": "Gifted",
+      "description": "Beat enough towers to be able to descend to ring 2.",
+      "displayName": "Gifted",
+      "displayDescription": "Beat enough towers to be able to descend to ring 2.",
+      "enabled": true,
+      "iconImageId": 2924028895,
+      "displayIconImageId": 2924028895,
+      "created": "2019-03-04T21:51:14.39+00:00",
+      "updated": "2024-11-19T19:24:29.519+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 96118,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124457655,
+      "name": "Find the Room of Absolute Garbage",
+      "description": "R.I.P the old description, lost to time...\n..probably",
+      "displayName": "Find the Room of Absolute Garbage",
+      "displayDescription": "R.I.P the old description, lost to time...\n..probably",
+      "enabled": true,
+      "iconImageId": 7086185544,
+      "displayIconImageId": 7086185544,
+      "created": "2019-03-04T21:51:55.38+00:00",
+      "updated": "2024-11-19T19:24:29.528+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 26325,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124457800,
+      "name": "Talented",
+      "description": "Beat enough towers to be able to descend to ring 3.",
+      "displayName": "Talented",
+      "displayDescription": "Beat enough towers to be able to descend to ring 3.",
+      "enabled": true,
+      "iconImageId": 2928135550,
+      "displayIconImageId": 2928135550,
+      "created": "2019-03-06T03:41:29.153+00:00",
+      "updated": "2024-11-19T19:24:29.647+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 50629,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124457924,
+      "name": "Refined",
+      "description": "Beat enough towers to be able to descend to ring 4.",
+      "displayName": "Refined",
+      "displayDescription": "Beat enough towers to be able to descend to ring 4.",
+      "enabled": true,
+      "iconImageId": 2931364778,
+      "displayIconImageId": 2931364778,
+      "created": "2019-03-07T03:05:29.72+00:00",
+      "updated": "2024-11-19T19:24:29.749+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 41992,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124457936,
+      "name": "Skilled",
+      "description": "Beat enough towers to be able to descend to ring 5.",
+      "displayName": "Skilled",
+      "displayDescription": "Beat enough towers to be able to descend to ring 5.",
+      "enabled": true,
+      "iconImageId": 2931382585,
+      "displayIconImageId": 2931382585,
+      "created": "2019-03-07T03:12:53.95+00:00",
+      "updated": "2024-11-19T19:24:29.757+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 33804,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124459810,
+      "name": "Beat The Tower of Inner and Outer Scaling",
+      "description": "We can all agree that the large outside section is fun.",
+      "displayName": "Beat The Tower of Inner and Outer Scaling",
+      "displayDescription": "We can all agree that the large outside section is fun.",
+      "enabled": true,
+      "iconImageId": 2971489226,
+      "displayIconImageId": 2971489226,
+      "created": "2019-03-17T17:43:59.913+00:00",
+      "updated": "2024-11-19T19:24:31.353+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 4060,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124459815,
+      "name": "Woke",
+      "description": "Beat enough towers to descend to Ring 6.",
+      "displayName": "Woke",
+      "displayDescription": "Beat enough towers to descend to Ring 6.",
+      "enabled": true,
+      "iconImageId": 5518642394,
+      "displayIconImageId": 5518642394,
+      "created": "2019-03-17T17:49:20.08+00:00",
+      "updated": "2024-11-19T19:24:31.356+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 28624,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124462340,
+      "name": "Fooled (Unobtainable)",
+      "description": "Play the game during the #### ##### Fools event. This badge is no longer obtainable.",
+      "displayName": "Fooled (Unobtainable)",
+      "displayDescription": "Play the game during the #### ##### Fools event. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 7123880406,
+      "displayIconImageId": 7123880406,
+      "created": "2019-04-01T21:17:12.01+00:00",
+      "updated": "2024-11-19T19:24:33.542+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 1137,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124467552,
+      "name": "Too Late for Easter (Unobtainable)",
+      "description": "Complete the Spring Event 2019. This badge is no longer obtainable.",
+      "displayName": "Too Late for Easter (Unobtainable)",
+      "displayDescription": "Complete the Spring Event 2019. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 3223038625,
+      "displayIconImageId": 3223038625,
+      "created": "2019-05-09T20:20:14.827+00:00",
+      "updated": "2024-11-19T19:24:38.069+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 1363,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124470117,
+      "name": "Beat The Janitor From Hell (Halloween 2018)",
+      "description": "You've done it all. Beat 3 towers in a time crunch, and fought a boss way beyond your power. The reward was the Bootleg Ghost Coil. This badge is no longer obtainable.",
+      "displayName": "Beat The Janitor From Hell (Halloween 2018)",
+      "displayDescription": "You've done it all. Beat 3 towers in a time crunch, and fought a boss way beyond your power. The reward was the Bootleg Ghost Coil. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 3240222154,
+      "displayIconImageId": 3240222154,
+      "created": "2019-05-31T15:28:52.613+00:00",
+      "updated": "2024-11-19T19:24:40.314+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 85,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124470118,
+      "name": "Present of Throwing Cans (Unobtainable)",
+      "description": "The box might be a rectangle, but I swear there's a fork in here. Part of the 2018 Christmas Event. This badge is no longer obtainable.",
+      "displayName": "Present of Throwing Cans (Unobtainable)",
+      "displayDescription": "The box might be a rectangle, but I swear there's a fork in here. Part of the 2018 Christmas Event. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 3240225932,
+      "displayIconImageId": 3240225932,
+      "created": "2019-05-31T15:30:45.983+00:00",
+      "updated": "2024-11-19T19:24:40.314+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 876,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124470119,
+      "name": "Present of Developers (Unobtainable)",
+      "description": "I think something's alive in here. Part of the 2018 Christmas Event. This badge is no longer obtainable.",
+      "displayName": "Present of Developers (Unobtainable)",
+      "displayDescription": "I think something's alive in here. Part of the 2018 Christmas Event. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 3240229521,
+      "displayIconImageId": 3240229521,
+      "created": "2019-05-31T15:31:30.833+00:00",
+      "updated": "2024-11-19T19:24:40.314+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 603,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124470120,
+      "name": "Present of Winter Ascension (Unobtainable)",
+      "description": "The tag says that the giver went through alot of pain, even though it just smells like Peppermint. Part of the 2018 Christmas Event. This badge is no longer obtainable.",
+      "displayName": "Present of Winter Ascension (Unobtainable)",
+      "displayDescription": "The tag says that the giver went through alot of pain, even though it just smells like Peppermint. Part of the 2018 Christmas Event. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 3240230625,
+      "displayIconImageId": 3240230625,
+      "created": "2019-05-31T15:31:53.87+00:00",
+      "updated": "2024-11-19T19:24:40.315+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 298,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124470121,
+      "name": "Present of Thirst (Unobtainable)",
+      "description": "You have a sudden urge to not deny this, and it's probably for the best. Part of the 2018 Christmas Event. This badge is no longer obtainable.",
+      "displayName": "Present of Thirst (Unobtainable)",
+      "displayDescription": "You have a sudden urge to not deny this, and it's probably for the best. Part of the 2018 Christmas Event. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 3240232006,
+      "displayIconImageId": 3240232006,
+      "created": "2019-05-31T15:32:24.387+00:00",
+      "updated": "2024-11-19T19:24:40.318+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 557,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124470122,
+      "name": "Beat The SPR1T3CRANB3RRY Mech (Unobtainable)",
+      "description": "We did it, now no one will go thirsty! Part of the Christmas 2018 event. This badge is no longer obtainable.",
+      "displayName": "Beat The SPR1T3CRANB3RRY Mech (Unobtainable)",
+      "displayDescription": "We did it, now no one will go thirsty! Part of the Christmas 2018 event. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 3240233493,
+      "displayIconImageId": 3240233493,
+      "created": "2019-05-31T15:32:54.247+00:00",
+      "updated": "2024-11-19T19:24:40.318+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 565,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124470124,
+      "name": "Present of Asserting Dominance (Unobtainable)",
+      "description": "wait hold on why does this have the ToIE badge icon again i don't understand. Part of the Christmas 2018 event. This badge is no longer obtainable.",
+      "displayName": "Present of Asserting Dominance (Unobtainable)",
+      "displayDescription": "wait hold on why does this have the ToIE badge icon again i don't understand. Part of the Christmas 2018 event. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 3240266251,
+      "displayIconImageId": 3240266251,
+      "created": "2019-05-31T15:44:25.277+00:00",
+      "updated": "2024-11-19T19:24:40.318+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 1182,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124471080,
+      "name": "Beat The Tower of Another Beginning",
+      "description": "Another tutorial tower just like ToAST, this is just the beginning of a long journey.",
+      "displayName": "Beat The Tower of Another Beginning",
+      "displayDescription": "Another tutorial tower just like ToAST, this is just the beginning of a long journey.",
+      "enabled": true,
+      "iconImageId": 3268907269,
+      "displayIconImageId": 3268907269,
+      "created": "2019-06-07T02:58:12.18+00:00",
+      "updated": "2024-11-19T19:24:41.126+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 52863,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124486331,
+      "name": "Zoned",
+      "description": "Beat enough towers to ascend to Zone 2.",
+      "displayName": "Zoned",
+      "displayDescription": "Beat enough towers to ascend to Zone 2.",
+      "enabled": true,
+      "iconImageId": 4241142775,
+      "displayIconImageId": 4241142775,
+      "created": "2019-09-19T01:13:50.93+00:00",
+      "updated": "2024-11-19T19:24:54.364+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 39793,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124491458,
+      "name": "Beat The Totem from Hell (Unobtainable)",
+      "description": "You finally defeated the massive totem that guarded the ending to the event! However, the ghost piloting it looks angry. Part of the Halloween 2019 event. This badge is no longer obtainable.",
+      "displayName": "Beat The Totem from Hell (Unobtainable)",
+      "displayDescription": "You finally defeated the massive totem that guarded the ending to the event! However, the ghost piloting it looks angry. Part of the Halloween 2019 event. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 4409374185,
+      "displayIconImageId": 4409374185,
+      "created": "2019-10-27T21:08:07.763+00:00",
+      "updated": "2024-11-19T19:24:58.767+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 350,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124491712,
+      "name": "Beat the 3 Steeples (Unobtainable)",
+      "description": "Now all you have left to do is finish the boss in 5 attempts. Even if you didn't make it, you still get a cool reward for this badge. Part of the Halloween 2019 event. This badge is no longer obtainable.",
+      "displayName": "Beat the 3 Steeples (Unobtainable)",
+      "displayDescription": "Now all you have left to do is finish the boss in 5 attempts. Even if you didn't make it, you still get a cool reward for this badge. Part of the Halloween 2019 event. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 4409373654,
+      "displayIconImageId": 4409373654,
+      "created": "2019-10-29T20:36:00.977+00:00",
+      "updated": "2024-11-19T19:24:58.974+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 401,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124494856,
+      "name": "The Tower of Autumn Harvest (Unobtainable)",
+      "description": "You beat the mini-event! There isn't much to the event other than this tower, but I hope you enjoyed it! Part of the 2019 Thanksgiving Event. This badge is no longer obtainable.",
+      "displayName": "The Tower of Autumn Harvest (Unobtainable)",
+      "displayDescription": "You beat the mini-event! There isn't much to the event other than this tower, but I hope you enjoyed it! Part of the 2019 Thanksgiving Event. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 4459510963,
+      "displayIconImageId": 4459510963,
+      "created": "2019-11-25T23:13:14.687+00:00",
+      "updated": "2024-11-19T19:25:01.936+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 617,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124498279,
+      "name": "Present of Localized Winter (Unobtainable)",
+      "description": "It feels cold... This present can be found randomly or bought. Part of the Christmas 2019 Event. This badge is no longer obtainable.",
+      "displayName": "Present of Localized Winter (Unobtainable)",
+      "displayDescription": "It feels cold... This present can be found randomly or bought. Part of the Christmas 2019 Event. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 4587054938,
+      "displayIconImageId": 4587054938,
+      "created": "2019-12-23T03:35:05.337+00:00",
+      "updated": "2024-11-19T19:25:04.873+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 967,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124498280,
+      "name": "Present of Ugliness (Unobtainable)",
+      "description": "This present looks horrible. This present can be found randomly or bought. Part of the Christmas 2019 Event. This badge is no longer obtainable.",
+      "displayName": "Present of Ugliness (Unobtainable)",
+      "displayDescription": "This present looks horrible. This present can be found randomly or bought. Part of the Christmas 2019 Event. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 4587054866,
+      "displayIconImageId": 4587054866,
+      "created": "2019-12-23T03:35:47.763+00:00",
+      "updated": "2024-11-19T19:25:04.873+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 1154,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124498281,
+      "name": "Present of Eternal Cheer (Unobtainable)",
+      "description": "No matter the time, you can bring cheer. Can be found at a particularly cheerful spot. (...or bought?) Part of the Christmas 2019 Event. This badge is no longer obtainable.",
+      "displayName": "Present of Eternal Cheer (Unobtainable)",
+      "displayDescription": "No matter the time, you can bring cheer. Can be found at a particularly cheerful spot. (...or bought?) Part of the Christmas 2019 Event. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 4587054781,
+      "displayIconImageId": 4587054781,
+      "created": "2019-12-23T03:36:45.673+00:00",
+      "updated": "2024-11-19T19:25:04.873+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 648,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124498282,
+      "name": "Present of Presents (Unobtainable)",
+      "description": "The final reward. Found by completing the event. Part of the Christmas 2019 Event. This badge is no longer obtainable.",
+      "displayName": "Present of Presents (Unobtainable)",
+      "displayDescription": "The final reward. Found by completing the event. Part of the Christmas 2019 Event. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 4587054686,
+      "displayIconImageId": 4587054686,
+      "created": "2019-12-23T03:37:58.687+00:00",
+      "updated": "2024-11-19T19:25:04.873+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 639,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124498283,
+      "name": "Present of Legends (Unobtainable)",
+      "description": "A present that (possibly) holds legendary power... not saying anything else. Part of the Christmas 2019 Event. This badge is no longer obtainable.",
+      "displayName": "Present of Legends (Unobtainable)",
+      "displayDescription": "A present that (possibly) holds legendary power... not saying anything else. Part of the Christmas 2019 Event. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 4587054605,
+      "displayIconImageId": 4587054605,
+      "created": "2019-12-23T03:40:08.787+00:00",
+      "updated": "2024-11-19T19:25:04.873+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 696,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124516385,
+      "name": "Mental",
+      "description": "Beat enough towers to descend to Ring 7.",
+      "displayName": "Mental",
+      "displayDescription": "Beat enough towers to descend to Ring 7.",
+      "enabled": true,
+      "iconImageId": 5244831230,
+      "displayIconImageId": 5244831230,
+      "created": "2020-03-15T09:29:02.397+00:00",
+      "updated": "2024-11-19T19:25:20.631+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 23504,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124516386,
+      "name": "Sky-High",
+      "description": "Beat enough towers to ascend to Zone 3.",
+      "displayName": "Sky-High",
+      "displayDescription": "Beat enough towers to ascend to Zone 3.",
+      "enabled": true,
+      "iconImageId": 5518562192,
+      "displayIconImageId": 5518562192,
+      "created": "2020-03-15T09:34:26.697+00:00",
+      "updated": "2024-11-19T19:25:20.631+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 27515,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124520931,
+      "name": "Why? (Unobtainable)",
+      "description": "Beat one of the 3 extra towers in Ring 1. Part of the April Fools 2020 event. This badge is no longer obtainable.",
+      "displayName": "Why? (Unobtainable)",
+      "displayDescription": "Beat one of the 3 extra towers in Ring 1. Part of the April Fools 2020 event. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 5518578827,
+      "displayIconImageId": 5518578827,
+      "created": "2020-04-01T05:58:10.627+00:00",
+      "updated": "2024-11-19T19:25:24.537+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 5024,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124525549,
+      "name": "Arcane Area Completed",
+      "description": "Clear all of the steeples in Arcane Area, and get the reward behind the door. Just like magic, right?",
+      "displayName": "Arcane Area Completed",
+      "displayDescription": "Clear all of the steeples in Arcane Area, and get the reward behind the door. Just like magic, right?",
+      "enabled": true,
+      "iconImageId": 5003633849,
+      "displayIconImageId": 5003633849,
+      "created": "2020-04-13T16:26:11.887+00:00",
+      "updated": "2024-11-19T19:25:28.528+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 9411,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124535624,
+      "name": "Beat The Tower of Insult To Injury",
+      "description": "I guess this tower is shaped like a heart because it probably gave you multiple heart attacks.",
+      "displayName": "Beat The Tower of Insult To Injury",
+      "displayDescription": "I guess this tower is shaped like a heart because it probably gave you multiple heart attacks.",
+      "enabled": true,
+      "iconImageId": 5160131942,
+      "displayIconImageId": 5160131942,
+      "created": "2020-05-10T23:42:05.137+00:00",
+      "updated": "2024-11-19T19:25:37.482+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 7594,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124540857,
+      "name": "The Unreachable Badge",
+      "description": "Boldly go where no other Robloxian has gone, you must think in the most dumbest of ways to acquire this badge.",
+      "displayName": "The Unreachable Badge",
+      "displayDescription": "Boldly go where no other Robloxian has gone, you must think in the most dumbest of ways to acquire this badge.",
+      "enabled": true,
+      "iconImageId": 7123990848,
+      "displayIconImageId": 7123990848,
+      "created": "2020-05-24T18:18:04.013+00:00",
+      "updated": "2024-11-19T19:25:42.179+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 1391,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124541186,
+      "name": "X Clicker",
+      "description": "You are probably pretty observant if you have acquired this badge.",
+      "displayName": "X Clicker",
+      "displayDescription": "You are probably pretty observant if you have acquired this badge.",
+      "enabled": true,
+      "iconImageId": 5518572960,
+      "displayIconImageId": 5518572960,
+      "created": "2020-05-25T10:45:10.597+00:00",
+      "updated": "2024-11-19T19:25:42.451+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 11567,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124545828,
+      "name": "Unlock the Elevator Button",
+      "description": "It is said to appear \"when there are no imperfections in sight\". ",
+      "displayName": "Unlock the Elevator Button",
+      "displayDescription": "It is said to appear \"when there are no imperfections in sight\". ",
+      "enabled": true,
+      "iconImageId": 5518526079,
+      "displayIconImageId": 5518526079,
+      "created": "2020-06-04T03:19:49.603+00:00",
+      "updated": "2024-11-19T19:25:46.439+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 21155,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124548579,
+      "name": "Insanity",
+      "description": "Beat enough towers to descend to Ring 8.",
+      "displayName": "Insanity",
+      "displayDescription": "Beat enough towers to descend to Ring 8.",
+      "enabled": true,
+      "iconImageId": 5244838775,
+      "displayIconImageId": 5244838775,
+      "created": "2020-06-10T03:27:40.607+00:00",
+      "updated": "2024-11-19T19:25:48.805+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 18837,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124559565,
+      "name": "Strange Rock",
+      "description": "What?",
+      "displayName": "Strange Rock",
+      "displayDescription": "What?",
+      "enabled": true,
+      "iconImageId": 5169917274,
+      "displayIconImageId": 5169917274,
+      "created": "2020-06-12T09:44:01.063+00:00",
+      "updated": "2024-11-19T19:25:58.347+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 4390,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124562183,
+      "name": "Hamburgers",
+      "description": "I don't know who hid them in such ridiculous places, but they look pretty tasty, don't you think?",
+      "displayName": "Hamburgers",
+      "displayDescription": "I don't know who hid them in such ridiculous places, but they look pretty tasty, don't you think?",
+      "enabled": true,
+      "iconImageId": 5195491945,
+      "displayIconImageId": 5195491945,
+      "created": "2020-06-17T10:45:09.193+00:00",
+      "updated": "2024-11-19T19:26:00.574+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 2041,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124577538,
+      "name": "Cowtastrophe",
+      "description": "You have met with a terrible fate, haven't you?",
+      "displayName": "Cowtastrophe",
+      "displayDescription": "You have met with a terrible fate, haven't you?",
+      "enabled": true,
+      "iconImageId": 5524217961,
+      "displayIconImageId": 5524217961,
+      "created": "2020-07-19T06:12:01.083+00:00",
+      "updated": "2024-11-19T19:26:14.072+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 1685,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124577907,
+      "name": "Beyond the Citadel",
+      "description": "Your hunger for more content has brought you to this point.",
+      "displayName": "Beyond the Citadel",
+      "displayDescription": "Your hunger for more content has brought you to this point.",
+      "enabled": true,
+      "iconImageId": 5524211441,
+      "displayIconImageId": 5524211441,
+      "created": "2020-07-20T08:18:36.787+00:00",
+      "updated": "2024-11-19T19:26:14.384+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 1948,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124580045,
+      "name": "Rare Expectations",
+      "description": "What?",
+      "displayName": "Rare Expectations",
+      "displayDescription": "What?",
+      "enabled": true,
+      "iconImageId": 5522987934,
+      "displayIconImageId": 5522987934,
+      "created": "2020-07-25T19:51:53.797+00:00",
+      "updated": "2024-11-19T19:26:16.198+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 15219,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124582541,
+      "name": "Find the Room of Bad Inside Jokes",
+      "description": "But why?",
+      "displayName": "Find the Room of Bad Inside Jokes",
+      "displayDescription": "But why?",
+      "enabled": true,
+      "iconImageId": 7085739259,
+      "displayIconImageId": 7085739259,
+      "created": "2020-07-31T23:56:11.1+00:00",
+      "updated": "2024-11-19T19:26:18.401+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 172344,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124587591,
+      "name": "You want fun?",
+      "description": "Get this badge by completing a small secret challenge I made out of boredom.",
+      "displayName": "You want fun?",
+      "displayDescription": "Get this badge by completing a small secret challenge I made out of boredom.",
+      "enabled": true,
+      "iconImageId": 7086500984,
+      "displayIconImageId": 7086500984,
+      "created": "2020-08-10T06:34:50.76+00:00",
+      "updated": "2024-11-19T19:26:22.734+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 2227,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124626093,
+      "name": "A Grave Mistake (Unobtainable)",
+      "description": "Defeat the Halloween 2020 Boss: \"Do you realize what you've just done?\" This badge is no longer obtainable.",
+      "displayName": "A Grave Mistake (Unobtainable)",
+      "displayDescription": "Defeat the Halloween 2020 Boss: \"Do you realize what you've just done?\" This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 5912665307,
+      "displayIconImageId": 5912665307,
+      "created": "2020-10-23T13:23:21.087+00:00",
+      "updated": "2024-11-19T19:26:55.973+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 2763,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124626094,
+      "name": "Secret of The Manor? (Unobtainable)",
+      "description": "Seems like you accidentally found something from another world! Part of the Halloween 2020 event. This badge is no longer obtainable.",
+      "displayName": "Secret of The Manor? (Unobtainable)",
+      "displayDescription": "Seems like you accidentally found something from another world! Part of the Halloween 2020 event. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 5912724176,
+      "displayIconImageId": 5912724176,
+      "created": "2020-10-23T13:23:37.54+00:00",
+      "updated": "2024-11-19T19:26:55.973+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 1549,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124626095,
+      "name": "Revenge Denied! (Unobtainable)",
+      "description": "The final fight, once and for all! Part of the Halloween 2020 event. This badge is no longer obtainable.",
+      "displayName": "Revenge Denied! (Unobtainable)",
+      "displayDescription": "The final fight, once and for all! Part of the Halloween 2020 event. This badge is no longer obtainable.",
+      "enabled": true,
+      "iconImageId": 5912722818,
+      "displayIconImageId": 5912722818,
+      "created": "2020-10-23T13:23:49.15+00:00",
+      "updated": "2024-11-19T19:26:55.973+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 748,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124641800,
+      "name": "Beat Your First Tower",
+      "description": "This is the start of a long journey. Good luck!",
+      "displayName": "Beat Your First Tower",
+      "displayDescription": "This is the start of a long journey. Good luck!",
+      "enabled": true,
+      "iconImageId": 7086799042,
+      "displayIconImageId": 7086799042,
+      "created": "2020-11-26T19:14:42.633+00:00",
+      "updated": "2024-11-19T19:27:09.621+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 337317,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124641801,
+      "name": "Beat 10 Towers",
+      "description": "Nice one. Keep going.",
+      "displayName": "Beat 10 Towers",
+      "displayDescription": "Nice one. Keep going.",
+      "enabled": true,
+      "iconImageId": 7086802027,
+      "displayIconImageId": 7086802027,
+      "created": "2020-11-26T19:14:56.477+00:00",
+      "updated": "2024-11-19T19:27:09.621+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 54011,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124641802,
+      "name": "Beat 25 Towers",
+      "description": "You seem to be getting used to this now.",
+      "displayName": "Beat 25 Towers",
+      "displayDescription": "You seem to be getting used to this now.",
+      "enabled": true,
+      "iconImageId": 7086809922,
+      "displayIconImageId": 7086809922,
+      "created": "2020-11-26T19:15:07.463+00:00",
+      "updated": "2024-11-19T19:27:09.621+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 37244,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124641804,
+      "name": "Beat 50 Towers",
+      "description": "An impressive amount. You must be very skilled to be able to complete this much.",
+      "displayName": "Beat 50 Towers",
+      "displayDescription": "An impressive amount. You must be very skilled to be able to complete this much.",
+      "enabled": true,
+      "iconImageId": 7086879340,
+      "displayIconImageId": 7086879340,
+      "created": "2020-11-26T19:15:47.313+00:00",
+      "updated": "2024-11-19T19:27:09.623+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 26339,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124641805,
+      "name": "Beat 75 Towers",
+      "description": "That's a lot of towers. Believe it or not though, there are still a lot more ahead of you. Nice job though.",
+      "displayName": "Beat 75 Towers",
+      "displayDescription": "That's a lot of towers. Believe it or not though, there are still a lot more ahead of you. Nice job though.",
+      "enabled": true,
+      "iconImageId": 7086996021,
+      "displayIconImageId": 7086996021,
+      "created": "2020-11-26T19:16:00.057+00:00",
+      "updated": "2024-11-19T19:27:09.623+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 19255,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124641806,
+      "name": "Beat 100 Towers",
+      "description": "This is a truly impressive achievement. At this point, you are well able to consider yourself a tower connoisseur.",
+      "displayName": "Beat 100 Towers",
+      "displayDescription": "This is a truly impressive achievement. At this point, you are well able to consider yourself a tower connoisseur.",
+      "enabled": true,
+      "iconImageId": 7086997754,
+      "displayIconImageId": 7086997754,
+      "created": "2020-11-26T19:16:11.337+00:00",
+      "updated": "2024-11-19T19:27:09.623+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 13130,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124641807,
+      "name": "Beat Your First Easy Tower",
+      "description": "These towers are fun to play. They can be quite challenging for new players as well.",
+      "displayName": "Beat Your First Easy Tower",
+      "displayDescription": "These towers are fun to play. They can be quite challenging for new players as well.",
+      "enabled": true,
+      "iconImageId": 6248530353,
+      "displayIconImageId": 6248530353,
+      "created": "2020-11-26T19:16:56.45+00:00",
+      "updated": "2024-11-19T19:27:09.624+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 473029,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124641808,
+      "name": "Beat Your First Medium Tower",
+      "description": "Not too easy. Not too hard. Keep going!",
+      "displayName": "Beat Your First Medium Tower",
+      "displayDescription": "Not too easy. Not too hard. Keep going!",
+      "enabled": true,
+      "iconImageId": 6248770243,
+      "displayIconImageId": 6248770243,
+      "created": "2020-11-26T19:17:11.627+00:00",
+      "updated": "2024-11-19T19:27:09.624+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 341698,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124641811,
+      "name": "Beat Your First Hard Tower",
+      "description": "Nice one! Hopefully at this point, you can definitely see that this game is by no means easy.",
+      "displayName": "Beat Your First Hard Tower",
+      "displayDescription": "Nice one! Hopefully at this point, you can definitely see that this game is by no means easy.",
+      "enabled": true,
+      "iconImageId": 7123084826,
+      "displayIconImageId": 7123084826,
+      "created": "2020-11-26T19:17:23.333+00:00",
+      "updated": "2024-11-19T19:27:09.625+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 356671,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124641812,
+      "name": "Beat Your First Difficult Tower",
+      "description": "This difficulty is where things start to get more heated! There are a lot more difficulties ahead of you to conquer, but this badge shows that you have quite a bit of persistence.",
+      "displayName": "Beat Your First Difficult Tower",
+      "displayDescription": "This difficulty is where things start to get more heated! There are a lot more difficulties ahead of you to conquer, but this badge shows that you have quite a bit of persistence.",
+      "enabled": true,
+      "iconImageId": 6248645590,
+      "displayIconImageId": 6248645590,
+      "created": "2020-11-26T19:18:03.437+00:00",
+      "updated": "2024-11-19T19:27:09.625+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 310679,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124641813,
+      "name": "Beat Your First Challenging Tower",
+      "description": "Good job! You must have had a pretty hard time beating a tower of this difficulty. Just note that you are already more skilled than most of the players out there.",
+      "displayName": "Beat Your First Challenging Tower",
+      "displayDescription": "Good job! You must have had a pretty hard time beating a tower of this difficulty. Just note that you are already more skilled than most of the players out there.",
+      "enabled": true,
+      "iconImageId": 6249295685,
+      "displayIconImageId": 6249295685,
+      "created": "2020-11-26T19:18:20.66+00:00",
+      "updated": "2024-11-19T19:27:09.626+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 227273,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124641814,
+      "name": "Beat Your First Intense Tower",
+      "description": "Well done! Many players aren't even able to come close to conquering these towers. You must have taken a lot of time and patience to beat your first tower of this difficulty.",
+      "displayName": "Beat Your First Intense Tower",
+      "displayDescription": "Well done! Many players aren't even able to come close to conquering these towers. You must have taken a lot of time and patience to beat your first tower of this difficulty.",
+      "enabled": true,
+      "iconImageId": 6249367789,
+      "displayIconImageId": 6249367789,
+      "created": "2020-11-26T19:18:32.847+00:00",
+      "updated": "2024-11-19T19:27:09.626+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 171156,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124641815,
+      "name": "Beat Your First Remorseless Tower",
+      "description": "A very impressive achievement, as only the players with a ludicrous amount of skill are able to conquer towers of this difficulty.",
+      "displayName": "Beat Your First Remorseless Tower",
+      "displayDescription": "A very impressive achievement, as only the players with a ludicrous amount of skill are able to conquer towers of this difficulty.",
+      "enabled": true,
+      "iconImageId": 7123087324,
+      "displayIconImageId": 7123087324,
+      "created": "2020-11-26T19:18:44.37+00:00",
+      "updated": "2024-11-19T19:27:09.626+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 83233,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124641816,
+      "name": "Beat Your First Soul-Crushing Tower",
+      "description": "I'm lost for words...  H O W ? ? ?  You are easily one of the most skilled players in the game! No matter what we throw at you, there is a very high chance you will be able to beat it.",
+      "displayName": "Beat Your First Soul-Crushing Tower",
+      "displayDescription": "I'm lost for words...  H O W ? ? ?  You are easily one of the most skilled players in the game! No matter what we throw at you, there is a very high chance you will be able to beat it.",
+      "enabled": true,
+      "iconImageId": 7123114208,
+      "displayIconImageId": 7123114208,
+      "created": "2020-11-26T19:18:56.017+00:00",
+      "updated": "2024-11-19T19:27:09.633+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 39704,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124644537,
+      "name": "Present of Winter Frost (Christmas 2020)",
+      "description": "Found at the edge of a kingdom, struck with cold dismay. Part of the Christmas 2020 Event.",
+      "displayName": "Present of Winter Frost (Christmas 2020)",
+      "displayDescription": "Found at the edge of a kingdom, struck with cold dismay. Part of the Christmas 2020 Event.",
+      "enabled": true,
+      "iconImageId": 6248523264,
+      "displayIconImageId": 6248523264,
+      "created": "2020-12-03T04:54:07.837+00:00",
+      "updated": "2024-11-19T19:27:12.005+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 2799,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124644538,
+      "name": "Present of Festive Memories (Christmas 2020)",
+      "description": "Those colors just scream festivity. This present can be found randomly. Part of the Christmas 2020 Event.",
+      "displayName": "Present of Festive Memories (Christmas 2020)",
+      "displayDescription": "Those colors just scream festivity. This present can be found randomly. Part of the Christmas 2020 Event.",
+      "enabled": true,
+      "iconImageId": 6248523056,
+      "displayIconImageId": 6248523056,
+      "created": "2020-12-03T04:54:27.673+00:00",
+      "updated": "2024-11-19T19:27:12.006+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 22371,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124644539,
+      "name": "Present of Atmospheric Chill (Christmas 2020)",
+      "description": "It seems to resemble the weather that is cold enough to freeze entire oceans. This present can be found randomly. Part of the Christmas 2020 Event.",
+      "displayName": "Present of Atmospheric Chill (Christmas 2020)",
+      "displayDescription": "It seems to resemble the weather that is cold enough to freeze entire oceans. This present can be found randomly. Part of the Christmas 2020 Event.",
+      "enabled": true,
+      "iconImageId": 6248524239,
+      "displayIconImageId": 6248524239,
+      "created": "2020-12-03T04:54:47.64+00:00",
+      "updated": "2024-11-19T19:27:12.006+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 10899,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124644541,
+      "name": "Present of Christmas Delights (Christmas 2020)",
+      "description": "If you have acquired this present, you either have extraordinary luck, extraordinary skill or maybe, both? But no matter what you did, here's your reward. Part of the Christmas 2020 event.",
+      "displayName": "Present of Christmas Delights (Christmas 2020)",
+      "displayDescription": "If you have acquired this present, you either have extraordinary luck, extraordinary skill or maybe, both? But no matter what you did, here's your reward. Part of the Christmas 2020 event.",
+      "enabled": true,
+      "iconImageId": 6248525232,
+      "displayIconImageId": 6248525232,
+      "created": "2020-12-03T04:55:24.11+00:00",
+      "updated": "2024-11-19T19:27:12.006+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 9157,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124644542,
+      "name": "Present of Greatness (Christmas 2020)",
+      "description": "There's gotta be something great in here. I mean, just look how big it is! Part of the Christmas 2020 event.",
+      "displayName": "Present of Greatness (Christmas 2020)",
+      "displayDescription": "There's gotta be something great in here. I mean, just look how big it is! Part of the Christmas 2020 event.",
+      "enabled": true,
+      "iconImageId": 6248526361,
+      "displayIconImageId": 6248526361,
+      "created": "2020-12-03T04:55:36.913+00:00",
+      "updated": "2024-11-19T19:27:12.007+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 5235,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124644543,
+      "name": "Present of Infectious Spirit (Christmas 2020)",
+      "description": "No matter where you go with this present, the christmas spirit shall spread. Part of the Christmas 2020 Event.",
+      "displayName": "Present of Infectious Spirit (Christmas 2020)",
+      "displayDescription": "No matter where you go with this present, the christmas spirit shall spread. Part of the Christmas 2020 Event.",
+      "enabled": true,
+      "iconImageId": 6248526907,
+      "displayIconImageId": 6248526907,
+      "created": "2020-12-03T04:56:49.143+00:00",
+      "updated": "2024-11-19T19:27:12.007+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 75382,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124670689,
+      "name": "Out of This World!",
+      "description": "Beat enough towers to ascend to Zone 4.",
+      "displayName": "Out of This World!",
+      "displayDescription": "Beat enough towers to ascend to Zone 4.",
+      "enabled": true,
+      "iconImageId": 6314689809,
+      "displayIconImageId": 6314689809,
+      "created": "2021-01-16T19:49:53.66+00:00",
+      "updated": "2024-11-19T19:27:34.714+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 20919,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124675940,
+      "name": "Champion of Frost",
+      "description": "Defeat the kind cleric and the knight plagued with hatred at the same time in their strongest state. Only the most determined may accomplish this true feat.",
+      "displayName": "Champion of Frost",
+      "displayDescription": "Defeat the kind cleric and the knight plagued with hatred at the same time in their strongest state. Only the most determined may accomplish this true feat.",
+      "enabled": true,
+      "iconImageId": 6303561807,
+      "displayIconImageId": 6303561807,
+      "created": "2021-01-26T18:41:45.853+00:00",
+      "updated": "2024-11-19T19:27:39.27+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 545,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124691435,
+      "name": "Git Gud",
+      "description": "This is a fight you cannot win...",
+      "displayName": "Git Gud",
+      "displayDescription": "This is a fight you cannot win...",
+      "enabled": true,
+      "iconImageId": 6432781909,
+      "displayIconImageId": 6432781909,
+      "created": "2021-02-23T00:09:24.3+00:00",
+      "updated": "2024-11-19T19:27:52.687+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 2657,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124700551,
+      "name": "Yet Another Lie",
+      "description": "Now I wonder if there's more of them...",
+      "displayName": "Yet Another Lie",
+      "displayDescription": "Now I wonder if there's more of them...",
+      "enabled": true,
+      "iconImageId": 6499720237,
+      "displayIconImageId": 6499720237,
+      "created": "2021-03-10T12:03:05.287+00:00",
+      "updated": "2024-11-19T19:28:00.482+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 11315,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124705710,
+      "name": "Beat 125 Towers",
+      "description": "Dear lord... You really don't stop, do you?",
+      "displayName": "Beat 125 Towers",
+      "displayDescription": "Dear lord... You really don't stop, do you?",
+      "enabled": true,
+      "iconImageId": 6537337941,
+      "displayIconImageId": 6537337941,
+      "created": "2021-03-19T01:36:27.207+00:00",
+      "updated": "2024-11-19T19:28:05.001+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 7423,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124705712,
+      "name": "Beat 150 Towers",
+      "description": "When you encounter a tower, you will complete it no matter what. Only the best players are able to complete this many. A very big milestone for everyone, to show their skill.",
+      "displayName": "Beat 150 Towers",
+      "displayDescription": "When you encounter a tower, you will complete it no matter what. Only the best players are able to complete this many. A very big milestone for everyone, to show their skill.",
+      "enabled": true,
+      "iconImageId": 6537357149,
+      "displayIconImageId": 6537357149,
+      "created": "2021-03-19T01:43:24.623+00:00",
+      "updated": "2024-11-19T19:28:05.005+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 4188,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124705722,
+      "name": "Beat 175 Towers",
+      "description": "I'm running out of ideas for these badge descriptions.",
+      "displayName": "Beat 175 Towers",
+      "displayDescription": "I'm running out of ideas for these badge descriptions.",
+      "enabled": true,
+      "iconImageId": 6537446762,
+      "displayIconImageId": 6537446762,
+      "created": "2021-03-19T02:17:02.693+00:00",
+      "updated": "2024-11-19T19:28:05.007+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 2265,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124713827,
+      "name": "ro u nd (Not Obtainable)",
+      "description": "w ow (Part of the April Fools 2021 event. This badge is no longer obtainable.)",
+      "displayName": "ro u nd (Not Obtainable)",
+      "displayDescription": "w ow (Part of the April Fools 2021 event. This badge is no longer obtainable.)",
+      "enabled": true,
+      "iconImageId": 8615978326,
+      "displayIconImageId": 8615978326,
+      "created": "2021-04-01T05:11:19.397+00:00",
+      "updated": "2024-11-19T19:28:11.928+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 1448,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124713970,
+      "name": "Encounter Ring 9! (Not Obtainable)",
+      "description": "Wow, such an achievement!! (Part of the April Fools 2021 event. This badge is no longer obtainable.)",
+      "displayName": "Encounter Ring 9! (Not Obtainable)",
+      "displayDescription": "Wow, such an achievement!! (Part of the April Fools 2021 event. This badge is no longer obtainable.)",
+      "enabled": true,
+      "iconImageId": 6596963064,
+      "displayIconImageId": 6596963064,
+      "created": "2021-04-01T15:35:55.393+00:00",
+      "updated": "2024-11-19T19:28:12.046+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 14021,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124733939,
+      "name": "Complete 8 Challenges In A Month",
+      "description": "The first batch of Monthly Challenges, good job! (This badge is no longer obtainable.)",
+      "displayName": "Complete 8 Challenges In A Month",
+      "displayDescription": "The first batch of Monthly Challenges, good job! (This badge is no longer obtainable.)",
+      "enabled": true,
+      "iconImageId": 6759363536,
+      "displayIconImageId": 6759363536,
+      "created": "2021-05-01T07:18:51.93+00:00",
+      "updated": "2024-11-19T19:28:29.329+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 5422,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124733940,
+      "name": "Complete All Challenges In A Month",
+      "description": "You must be pretty skilled to do ALL the challenges. Here's a badge for you! (This badge is no longer obtainable.)",
+      "displayName": "Complete All Challenges In A Month",
+      "displayDescription": "You must be pretty skilled to do ALL the challenges. Here's a badge for you! (This badge is no longer obtainable.)",
+      "enabled": true,
+      "iconImageId": 6759364680,
+      "displayIconImageId": 6759364680,
+      "created": "2021-05-01T07:19:23.483+00:00",
+      "updated": "2024-11-19T19:28:29.33+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 873,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124755327,
+      "name": "Legendary!",
+      "description": "Beat enough towers to descend to Ring 9.",
+      "displayName": "Legendary!",
+      "displayDescription": "Beat enough towers to descend to Ring 9.",
+      "enabled": true,
+      "iconImageId": 6888650424,
+      "displayIconImageId": 6888650424,
+      "created": "2021-05-31T00:41:00.043+00:00",
+      "updated": "2024-11-19T19:28:48.077+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 13973,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124755858,
+      "name": "Complete the Secret Ending",
+      "description": "??",
+      "displayName": "Complete the Secret Ending",
+      "displayDescription": "??",
+      "enabled": true,
+      "iconImageId": 6892462176,
+      "displayIconImageId": 6892462176,
+      "created": "2021-05-31T21:15:11.103+00:00",
+      "updated": "2024-11-19T19:28:48.524+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 1000,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124757472,
+      "name": "Another Secret Ending",
+      "description": "What could it possibly be???",
+      "displayName": "Another Secret Ending",
+      "displayDescription": "What could it possibly be???",
+      "enabled": true,
+      "iconImageId": 6904773393,
+      "displayIconImageId": 6904773393,
+      "created": "2021-06-03T17:42:03.027+00:00",
+      "updated": "2024-11-19T19:28:49.927+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 3151,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124777246,
+      "name": "The Clock of False Promise",
+      "description": "Something awaits you in the Ring 6 underground...",
+      "displayName": "The Clock of False Promise",
+      "displayDescription": "Something awaits you in the Ring 6 underground...",
+      "enabled": true,
+      "iconImageId": 7047472423,
+      "displayIconImageId": 7047472423,
+      "created": "2021-07-04T20:53:30.877+00:00",
+      "updated": "2024-11-19T19:29:07.087+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 881,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124784502,
+      "name": "Beat 200 Towers",
+      "description": "Go outside.",
+      "displayName": "Beat 200 Towers",
+      "displayDescription": "Go outside.",
+      "enabled": true,
+      "iconImageId": 7106730178,
+      "displayIconImageId": 7106730178,
+      "created": "2021-07-16T21:07:06.62+00:00",
+      "updated": "2024-11-19T19:29:13.444+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 1006,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124785921,
+      "name": "The Shadow Did Die Twice",
+      "description": "Defeat a figment of the past.",
+      "displayName": "The Shadow Did Die Twice",
+      "displayDescription": "Defeat a figment of the past.",
+      "enabled": true,
+      "iconImageId": 7118236584,
+      "displayIconImageId": 7118236584,
+      "created": "2021-07-19T02:25:12.637+00:00",
+      "updated": "2024-11-19T19:29:14.662+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 926,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124814935,
+      "name": "Find the Not-so-secret Badge",
+      "description": "???",
+      "displayName": "Find the Not-so-secret Badge",
+      "displayDescription": "???",
+      "enabled": true,
+      "iconImageId": 7354047094,
+      "displayIconImageId": 7354047094,
+      "created": "2021-08-28T22:30:47.083+00:00",
+      "updated": "2024-11-19T19:29:39.751+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 3006,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124826960,
+      "name": "Find the Thanos Tower",
+      "description": "Reality can be whatever I want.",
+      "displayName": "Find the Thanos Tower",
+      "displayDescription": "Reality can be whatever I want.",
+      "enabled": true,
+      "iconImageId": 7489675103,
+      "displayIconImageId": 7489675103,
+      "created": "2021-09-16T14:48:20.643+00:00",
+      "updated": "2024-11-19T19:29:50.171+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124826961,
+      "name": "Find the Tower of Difficulty Chart",
+      "description": "Hope you didn't get your hopes up when you saw how easy the first few floors of this tower was.",
+      "displayName": "Find the Tower of Difficulty Chart",
+      "displayDescription": "Hope you didn't get your hopes up when you saw how easy the first few floors of this tower was.",
+      "enabled": true,
+      "iconImageId": 7489688752,
+      "displayIconImageId": 7489688752,
+      "created": "2021-09-16T14:50:31.937+00:00",
+      "updated": "2024-11-19T19:29:50.171+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124826962,
+      "name": "Find Not Even Ring 4",
+      "description": "/\u026an\u02c8s\u025bp\u0283(\u0259)n/",
+      "displayName": "Find Not Even Ring 4",
+      "displayDescription": "/\u026an\u02c8s\u025bp\u0283(\u0259)n/",
+      "enabled": true,
+      "iconImageId": 7489701378,
+      "displayIconImageId": 7489701378,
+      "created": "2021-09-16T14:52:43.12+00:00",
+      "updated": "2024-11-19T19:29:50.171+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124826963,
+      "name": "'M",
+      "description": "Wild MISSINGNO. appeared!",
+      "displayName": "'M",
+      "displayDescription": "Wild MISSINGNO. appeared!",
+      "enabled": true,
+      "iconImageId": 7489714841,
+      "displayIconImageId": 7489714841,
+      "created": "2021-09-16T14:55:05.347+00:00",
+      "updated": "2024-11-19T19:29:50.171+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124826964,
+      "name": "Find the Tower of Frightening Nightmares",
+      "description": "Sleep tight...",
+      "displayName": "Find the Tower of Frightening Nightmares",
+      "displayDescription": "Sleep tight...",
+      "enabled": true,
+      "iconImageId": 7489725077,
+      "displayIconImageId": 7489725077,
+      "created": "2021-09-16T14:56:27.22+00:00",
+      "updated": "2024-11-19T19:29:50.171+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124826965,
+      "name": "Find the Tower of Strategic Mechanics",
+      "description": "One heck of a journey awaits you in this tower, good luck.",
+      "displayName": "Find the Tower of Strategic Mechanics",
+      "displayDescription": "One heck of a journey awaits you in this tower, good luck.",
+      "enabled": true,
+      "iconImageId": 7489730228,
+      "displayIconImageId": 7489730228,
+      "created": "2021-09-16T14:57:16.897+00:00",
+      "updated": "2024-11-19T19:29:50.171+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124826967,
+      "name": "Find the Tower of Impossible Movement",
+      "description": "The ToTS sequel that we didn't deserve.",
+      "displayName": "Find the Tower of Impossible Movement",
+      "displayDescription": "The ToTS sequel that we didn't deserve.",
+      "enabled": true,
+      "iconImageId": 7489748369,
+      "displayIconImageId": 7489748369,
+      "created": "2021-09-16T15:00:15.63+00:00",
+      "updated": "2024-11-19T19:29:50.172+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124826969,
+      "name": "Find the Tower of Terrifying Beauty",
+      "description": "Even the most horrifying things of them all can be elegant.",
+      "displayName": "Find the Tower of Terrifying Beauty",
+      "displayDescription": "Even the most horrifying things of them all can be elegant.",
+      "enabled": true,
+      "iconImageId": 7489755290,
+      "displayIconImageId": 7489755290,
+      "created": "2021-09-16T15:01:46.19+00:00",
+      "updated": "2024-11-19T19:29:50.172+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124826970,
+      "name": "Find the Tower of Elongated Runs",
+      "description": "I'd advise you to admire it from a distance, as getting too close will trigger an endless grind. ",
+      "displayDescription": "I'd advise you to admire it from a distance, as getting too close will trigger an endless grind. ",
+      "displayName": "Find the Tower of Elongated Runs",
+      "enabled": true,
+      "iconImageId": 7489773204,
+      "displayIconImageId": 7489773204,
+      "created": "2021-09-16T15:04:11.86+00:00",
+      "updated": "2024-11-19T19:29:50.172+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 1,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124826971,
+      "name": "Find the Tower of Generation Failure ",
+      "description": "attempt to index nil with 'ToGF'Stack BeginScript '[]' Line 24Stack End",
+      "displayName": "Find the Tower of Generation Failure ",
+      "displayDescription": "attempt to index nil with 'ToGF'Stack BeginScript '[]' Line 24Stack End",
+      "enabled": true,
+      "iconImageId": 7489795830,
+      "displayIconImageId": 7489795830,
+      "created": "2021-09-16T15:07:55.59+00:00",
+      "updated": "2024-11-19T19:29:50.172+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124826974,
+      "name": "Find the Life Ending Towers of The Great Inferno",
+      "description": "Well, you've found them. The hardest towers of them all. The question is, will you actually be able to beat them?",
+      "displayName": "Find the Life Ending Towers of The Great Inferno",
+      "displayDescription": "Well, you've found them. The hardest towers of them all. The question is, will you actually be able to beat them?",
+      "enabled": true,
+      "iconImageId": 7489816210,
+      "displayIconImageId": 7489816210,
+      "created": "2021-09-16T15:11:15.337+00:00",
+      "updated": "2024-11-19T19:29:50.185+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124827049,
+      "name": "Find the Tower of Externalizing Insanity",
+      "description": "A wise man once said: \"worry about the wraps not the trusses\"",
+      "displayName": "Find the Tower of Externalizing Insanity",
+      "displayDescription": "A wise man once said: \"worry about the wraps not the trusses\"",
+      "enabled": true,
+      "iconImageId": 7490907261,
+      "displayIconImageId": 7490907261,
+      "created": "2021-09-16T18:04:49.65+00:00",
+      "updated": "2024-11-19T19:29:50.248+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124827056,
+      "name": "Find the Tower of Polychromatic Zero",
+      "description": "Botanic work...",
+      "displayName": "Find the Tower of Polychromatic Zero",
+      "displayDescription": "Botanic work...",
+      "enabled": true,
+      "iconImageId": 7511672535,
+      "displayIconImageId": 7511672535,
+      "created": "2021-09-16T18:18:36.083+00:00",
+      "updated": "2024-11-19T19:29:50.25+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124827057,
+      "name": "Find the Tower of Alien Radiance",
+      "description": "Unexpected arrival. Evacuate from the station immediately. ",
+      "displayName": "Find the Tower of Alien Radiance",
+      "displayDescription": "Unexpected arrival. Evacuate from the station immediately. ",
+      "enabled": true,
+      "iconImageId": 7511671320,
+      "displayIconImageId": 7511671320,
+      "created": "2021-09-16T18:19:28.747+00:00",
+      "updated": "2024-11-19T19:29:50.25+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124827060,
+      "name": "Find the Tower of Thinning Layers",
+      "description": "This tower might seem very menacing at first, but it's not that bad once you get the hang of it.",
+      "displayName": "Find the Tower of Thinning Layers",
+      "displayDescription": "This tower might seem very menacing at first, but it's not that bad once you get the hang of it.",
+      "enabled": true,
+      "iconImageId": 7491025938,
+      "displayIconImageId": 7491025938,
+      "created": "2021-09-16T18:23:55.45+00:00",
+      "updated": "2024-11-19T19:29:50.252+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124827061,
+      "name": "Find the Tower of Double Trouble",
+      "description": "Prepare for trouble and make it double!",
+      "displayName": "Find the Tower of Double Trouble",
+      "displayDescription": "Prepare for trouble and make it double!",
+      "enabled": true,
+      "iconImageId": 7491034527,
+      "displayIconImageId": 7491034527,
+      "created": "2021-09-16T18:25:13.44+00:00",
+      "updated": "2024-11-19T19:29:50.252+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124827062,
+      "name": "Find the Tower of Hopeless Hell",
+      "description": "Something sinister lies in the sewers...",
+      "displayName": "Find the Tower of Hopeless Hell",
+      "displayDescription": "Something sinister lies in the sewers...",
+      "enabled": true,
+      "iconImageId": 7491040643,
+      "displayIconImageId": 7491040643,
+      "created": "2021-09-16T18:26:18.683+00:00",
+      "updated": "2024-11-19T19:29:50.252+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124827064,
+      "name": "Find the Tower of Inevitable Failure",
+      "description": "players avoiding to go up where the arrow points in the final pendulum as much as possible it is a carefully constructed trap to get them to fall ",
+      "displayName": "Find the Tower of Inevitable Failure",
+      "displayDescription": "players avoiding to go up where the arrow points in the final pendulum as much as possible it is a carefully constructed trap to get them to fall ",
+      "enabled": true,
+      "iconImageId": 7491047665,
+      "displayIconImageId": 7491047665,
+      "created": "2021-09-16T18:27:10.567+00:00",
+      "updated": "2024-11-19T19:29:50.253+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124827067,
+      "name": "Find the Tower of Astronomically Aimless Annoyanc-",
+      "description": "What joy! Seven four leaf clovers!",
+      "displayName": "Find the Tower of Astronomically Aimless Annoyanc-",
+      "displayDescription": "What joy! Seven four leaf clovers!",
+      "enabled": true,
+      "iconImageId": 7491058336,
+      "displayIconImageId": 7491058336,
+      "created": "2021-09-16T18:28:37.92+00:00",
+      "updated": "2024-11-19T19:29:50.255+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124828896,
+      "name": "Lunarian",
+      "description": "Beat enough towers to unlock Zone 5.",
+      "displayName": "Lunarian",
+      "displayDescription": "Beat enough towers to unlock Zone 5.",
+      "enabled": true,
+      "iconImageId": 7518177642,
+      "displayIconImageId": 7518177642,
+      "created": "2021-09-19T19:32:05.94+00:00",
+      "updated": "2024-11-19T19:29:51.824+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 19110,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124866543,
+      "name": "Present of Festive Blizzards (Christmas 2021)",
+      "description": "You beat the main course of the event, the citadel. Congratulations! Part of the Christmas 2021 Event.",
+      "displayName": "Present of Festive Blizzards (Christmas 2021)",
+      "displayDescription": "You beat the main course of the event, the citadel. Congratulations! Part of the Christmas 2021 Event.",
+      "enabled": true,
+      "iconImageId": 8091499108,
+      "displayIconImageId": 8091499108,
+      "created": "2021-11-25T02:35:07.36+00:00",
+      "updated": "2024-11-19T19:30:24.543+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 6770,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124866545,
+      "name": "Present of Flocked Greenery (Christmas 2021)",
+      "description": "I doubt you know what the name of this present means. Part of the Christmas 2021 Event.",
+      "displayName": "Present of Flocked Greenery (Christmas 2021)",
+      "displayDescription": "I doubt you know what the name of this present means. Part of the Christmas 2021 Event.",
+      "enabled": true,
+      "iconImageId": 8091502781,
+      "displayIconImageId": 8091502781,
+      "created": "2021-11-25T02:35:44.2+00:00",
+      "updated": "2024-11-19T19:30:24.544+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 17511,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124866546,
+      "name": "Present of Frigid Findings (Christmas 2021)",
+      "description": "It feels like it came straight out of a fridge... Part of the Christmas 2021 Event.",
+      "displayName": "Present of Frigid Findings (Christmas 2021)",
+      "displayDescription": "It feels like it came straight out of a fridge... Part of the Christmas 2021 Event.",
+      "enabled": true,
+      "iconImageId": 8091505592,
+      "displayIconImageId": 8091505592,
+      "created": "2021-11-25T02:36:17.75+00:00",
+      "updated": "2024-11-19T19:30:24.544+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 9288,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124866547,
+      "name": "Present of Sheer Coziness (Christmas 2021)",
+      "description": "You went through quite the journey to find this, and for that, you get a rather cozy gift! Part of the Christmas 2021 Event.",
+      "displayName": "Present of Sheer Coziness (Christmas 2021)",
+      "displayDescription": "You went through quite the journey to find this, and for that, you get a rather cozy gift! Part of the Christmas 2021 Event.",
+      "enabled": true,
+      "iconImageId": 8091508674,
+      "displayIconImageId": 8091508674,
+      "created": "2021-11-25T02:36:45.633+00:00",
+      "updated": "2024-11-19T19:30:24.544+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 6395,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124866548,
+      "name": "Present of Shareable Bliss (Christmas 2021)",
+      "description": "If only there was more to share... Part of the Christmas 2021 Event.",
+      "displayName": "Present of Shareable Bliss (Christmas 2021)",
+      "displayDescription": "If only there was more to share... Part of the Christmas 2021 Event.",
+      "enabled": true,
+      "iconImageId": 8091511252,
+      "displayIconImageId": 8091511252,
+      "created": "2021-11-25T02:37:17.367+00:00",
+      "updated": "2024-11-19T19:30:24.544+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 13973,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124866556,
+      "name": "Present of Subtle Fizz (Christmas 2021)",
+      "description": "Every contribution counts! Part of the Christmas 2021 Event.",
+      "displayName": "Present of Subtle Fizz (Christmas 2021)",
+      "displayDescription": "Every contribution counts! Part of the Christmas 2021 Event.",
+      "enabled": true,
+      "iconImageId": 8091541686,
+      "displayIconImageId": 8091541686,
+      "created": "2021-11-25T02:42:25.84+00:00",
+      "updated": "2024-11-19T19:30:24.559+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 15141,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124866558,
+      "name": "Present of Cheerful Fizz (Christmas 2021)",
+      "description": "Now you have truly recognized that it is, indeed, the thirstiest time of the year! Part of the Christmas 2021 Event.",
+      "displayName": "Present of Cheerful Fizz (Christmas 2021)",
+      "displayDescription": "Now you have truly recognized that it is, indeed, the thirstiest time of the year! Part of the Christmas 2021 Event.",
+      "enabled": true,
+      "iconImageId": 8091543730,
+      "displayIconImageId": 8091543730,
+      "created": "2021-11-25T02:42:50.223+00:00",
+      "updated": "2024-11-19T19:30:24.559+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 11341,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124866559,
+      "name": "Present of Absolute Fizz (Christmas 2021)",
+      "description": "You've put in a great contribution, but let's hope that isn't gone to waste! Part of the Christmas 2021 Event.",
+      "displayName": "Present of Absolute Fizz (Christmas 2021)",
+      "displayDescription": "You've put in a great contribution, but let's hope that isn't gone to waste! Part of the Christmas 2021 Event.",
+      "enabled": true,
+      "iconImageId": 8091546930,
+      "displayIconImageId": 8091546930,
+      "created": "2021-11-25T02:43:24.287+00:00",
+      "updated": "2024-11-19T19:30:24.559+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 5627,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124866561,
+      "name": "Present of Fizz Incarnate (Christmas 2021)",
+      "description": "Good lord. You really want your team to win, don't you? Part of the Christmas 2021 Event.",
+      "displayName": "Present of Fizz Incarnate (Christmas 2021)",
+      "displayDescription": "Good lord. You really want your team to win, don't you? Part of the Christmas 2021 Event.",
+      "enabled": true,
+      "iconImageId": 8091548167,
+      "displayIconImageId": 8091548167,
+      "created": "2021-11-25T02:43:37.837+00:00",
+      "updated": "2024-11-19T19:30:24.56+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 3866,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2124988455,
+      "name": "A Bizarre Secret Ending",
+      "description": "core.",
+      "displayName": "A Bizarre Secret Ending",
+      "displayDescription": "core.",
+      "enabled": true,
+      "iconImageId": 8945913930,
+      "displayIconImageId": 8945913930,
+      "created": "2022-02-26T14:52:00.077+00:00",
+      "updated": "2024-11-19T19:32:10.664+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 220,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2125029939,
+      "name": "Beat The Tower Of ...",
+      "description": "???",
+      "displayName": "Beat The Tower Of ...",
+      "displayDescription": "???",
+      "enabled": true,
+      "iconImageId": 8966135656,
+      "displayIconImageId": 8966135656,
+      "created": "2022-02-28T04:43:03.567+00:00",
+      "updated": "2024-11-19T19:32:46.824+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    },
+    {
+      "id": 2125205818,
+      "name": "Placeholder",
+      "description": "...",
+      "displayName": "Placeholder",
+      "displayDescription": "...",
+      "enabled": true,
+      "iconImageId": 9031774828,
+      "displayIconImageId": 9031774828,
+      "created": "2022-03-06T10:16:29.593+00:00",
+      "updated": "2024-11-19T19:35:19.779+00:00",
+      "statistics": {
+        "pastDayAwardedCount": 0,
+        "awardedCount": 0,
+        "winRatePercentage": 0.0
+      },
+      "awardingUniverse": {
+        "id": 1055653882,
+        "name": "[MIGRATED] Juke's Towers of Hell ",
+        "rootPlaceId": 2919924313
+      }
+    }
+  ]
+}

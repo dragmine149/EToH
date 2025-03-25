@@ -705,28 +705,6 @@
       }
     },
     {
-      "id": 2125419004,
-      "name": "One Interesting Flower...",
-      "description": "Huh? When was this here?",
-      "displayName": "One Interesting Flower...",
-      "displayDescription": "Huh? When was this here?",
-      "enabled": true,
-      "iconImageId": 9088096369,
-      "displayIconImageId": 9088096369,
-      "created": "2022-03-13T07:45:32.74+00:00",
-      "updated": "2024-11-19T19:38:25.107+00:00",
-      "statistics": {
-        "pastDayAwardedCount": 21,
-        "awardedCount": 17005,
-        "winRatePercentage": 0.001
-      },
-      "awardingUniverse": {
-        "id": 3264581003,
-        "name": "Eternal Towers of Hell",
-        "rootPlaceId": 8562822414
-      }
-    },
-    {
       "id": 2125419011,
       "name": "Arcane Area Completed",
       "description": "Clear all of the steeples in Arcane Area, and get the reward behind the door. Just like magic, right?",
