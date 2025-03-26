@@ -1,13 +1,16 @@
 <html>
   <head>
     <title>EToH Tower Tracker</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/difficulties.css">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 
     <script src="https://cdn.jsdelivr.net/npm/compress-json@3/bundle.min.js"></script>
     <script src="https://dragmine149.github.io/Scripts/storage.js"></script>
     <script src="js/etoh.js"></script>
     <script src="js/users.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/database.js"></script>
 
     <!-- DayJS -->
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/dayjs.min.js"></script>
@@ -46,9 +49,10 @@
       <div id="search">
         <div class="title">Load EToH Status</div>
         <div class="subtitle">Enter a Roblox username, user ID, or profile link to load their EToH status.</div>
-        <input type="text" id="search_input" placeholder="Load towers via roblox username, user id or profile link" onsubmit="userData.searchUser()">
+        <input type="text" id="search_input" placeholder="Load towers via roblox username, user id or profile link" onsubmit="userData.searchUser()" onkeydown="if(event.key === 'Enter') userData.searchUser()">
         <button id="search_button" onclick="userData.searchUser()">Search</button>
-        <div id="progress">
+        <div id="progress" hidden>
+          <span>Please note, first time load will take a bit longer than normal</span><br>
           <label tag="area_label">Area:</label>
           <progress tag="area_progress" value="0"></progress>
           <span tag="area_text"></span>
@@ -57,6 +61,8 @@
           <progress tag="towers_progress" value="0"></progress>
           <span tag="tower_text"></span>
         </div>
+      </div>
+      <div id="towers" hidden>
       </div>
     </div>
   </body>

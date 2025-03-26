@@ -10,6 +10,9 @@ class UserManager {
   * }} */
   tower_data;
 
+  /** @type {Database} */
+  database;
+
   /**
    * Process tower data and fill badge IDs array
    * @param {Object.<string, Object.<string, TowerData>>} towerData Tower data to process
@@ -114,10 +117,19 @@ class UserManager {
   */
   constructor(user) {
     console.log(`Attempting to load: ${user}`);
+
+    this.database = new Database('ETOH', 1, this.__upgradeDatabase.bind(this));
+
     (async () => {
       this.user = await this.__getUserID(user);
       await this.loadUserData();
     })();
+  }
+
+  __upgradeDatabase(db, oldVersion, newVersion) {
+    console.log(`Upgrading database from version ${oldVersion} to ${newVersion}`);
+    // Add your upgrade logic here
+    console.error("Erm, help...");
   }
 
   storeUser() {
