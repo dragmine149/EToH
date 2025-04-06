@@ -1,139 +1,15 @@
-/**
- * Manages database updates by recording and executing store operations
- */
-class DatabaseUpdater {
-  /** @type {Array<Object>} List of store operations to perform */
-  actions = [];
-
-  /**
-   * Creates a new DatabaseUpdater
-   * @param {number} desiredVersion The desired database version
-   */
-  constructor(desiredVersion) {
-    this.desiredVersion = desiredVersion;
-  }
-
-  /**
-    * @typedef {Object} DatabaseIndex
-    * @property {string} name The name of the index
-    * @property {string} keyPath The keyPath for the index
-    * @property {IDBIndexParameters} options Options for the index
-    */
-
-  /**
-  * Records an action to create a new object store
-  */
-  createStore() {
-    const self = this;
-    return {
-      /**
-       * Creates a store with an auto-incrementing key
-       * @param {string} storeName Name of the store to create
-       * @param {string} keyname Property to use as key path (defaults to empty string)
-       * @param {DatabaseIndex[]} indexes Array of indexes to create on the store
-       * @param {Function} oncomplete Callback function when store creation completes
-       */
-      autokey(storeName, keyname = "", indexes = [], oncomplete = () => { }) {
-        self.actions.push({
-          type: 'createStore',
-          storeName,
-          options: {
-            keyPath: keyname,
-            autoIncrement: true,
-          },
-          indexes,
-          oncomplete
-        });
-      },
-
-      /**
-       * Creates a store with a specified key path
-       * @param {string} storeName Name of the store to create
-       * @param {string} keyPath Property to use as key path
-       * @param {DatabaseIndex[]} indexes Array of indexes to create on the store
-       * @param {Function} oncomplete Callback function when store creation completes
-       */
-      key(storeName, keyPath, indexes = [], oncomplete = () => { }) {
-        self.actions.push({
-          type: 'createStore',
-          storeName,
-          options: {
-            keyPath,
-          },
-          indexes,
-          oncomplete
-        });
-      }
-    };
-  }
-
-
-  /**
-   * Records an action to delete an object store
-   * @param {string} storeName Name of the store to delete
-   */
-  deleteStore(storeName) {
-    this.actions.push({
-      type: 'deleteStore',
-      storeName
-    });
-  }
-
-  /**
-   * Records an action to modify an existing object store
-   * @param {string} storeName Name of the store to change
-   * @param {string} keyPath New key path for the store
-   * @param {Object} options New store options
-   */
-  changeStore(storeName, keyPath, options) {
-    this.actions.push({
-      type: 'changeStore',
-      storeName,
-      options: {
-        keyPath,
-        ...options
-      }
-    });
-  }
-
-  /**
-   * Update a database according to the rules already provided.
-   * @param {IDBDatabase} db The database to update
-   */
-  updateDatabase(db) {
-    for (let action of this.actions) {
-      switch (action.type) {
-        case 'createStore':
-          let objectStore = db.createObjectStore(action.storeName, action.options);
-          for (let index of action.indexes) {
-            objectStore.createIndex(index.name, index.keyPath, index.options);
-          }
-          objectStore.transaction.oncomplete = (event) => {
-            console.log(`Object store ${action.storeName} created`);
-            action.oncomplete(db, event);
-          };
-          break;
-
-        case 'deleteStore':
-          db.deleteObjectStore(action.storeName);
-          break;
-
-        case 'changeStore':
-          console.warn('changeStore not implemented');
-          // db.deleteObjectStore(action.storeName);
-          // db.createObjectStore(action.storeName, action.options);
-          break;
-      }
-    }
-  }
-}
 class UpdateDatabase {
-  /**
-   * Class to manage database updates with delayed execution.
-   */
-  constructor() {
-    this.pendingStores = [];
-    this.currentStore = null;
+  /** @type {StoreConfiguration[]} */
+  newStores = [];
+  /** @type {string[]} */
+  deletedStores = [];
+  /** @type {Object.<string, { 'config': StoreConfiguration, 'map': (data: any) => any}>} */
+  updatedStores = {};
+
+  constructor(version) {
+    this.version = version;
+
+    console.log(`Initialising UpdateDatabase (v${this.version})`);
   }
 
   /**
@@ -142,6 +18,7 @@ class UpdateDatabase {
    * @property {(keyPath: string) => StoreConfiguration} setKeyPath Sets the key path for the store
    * @property {(enable?: boolean) => StoreConfiguration} setAutoIncrement Enables auto increment for the store
    * @property {() => IndexConfiguration} createIndex Starts configuring a new index for the store
+   * @property {(db: IDBDatabase) => void} __insert Internal property, not for use outside of this class. Inserts the store into the passed database.
    */
 
   /**
@@ -150,7 +27,8 @@ class UpdateDatabase {
    * @property {(property: string) => IndexConfiguration} setProperty Sets the property/keyPath for the index
    * @property {(isUnique?: boolean) => IndexConfiguration} setUnique Sets the index as unique
    * @property {(isMultiEntry?: boolean) => IndexConfiguration} setMultiEntry Sets the index as multi-entry
-   * @property {() => StoreConfiguration} flush Finishes configuring this index
+   * @property {() => IndexConfiguration} createIndex Calls StoreConfiguration.createIndex.
+   * @property {string} __parent Link to the parent StoreConfiguration, used to store data at the end of the array.
    */
 
   /**
@@ -158,6 +36,7 @@ class UpdateDatabase {
    * @returns {StoreConfiguration} A chainable store configuration object
    */
   createStore() {
+    console.log(`creating store configuration`);
     let currentStore = {
       __name: '',
       __keyPath: '',
@@ -204,6 +83,7 @@ class UpdateDatabase {
           __keyPath: null,
           __unique: false,
           __multiEntry: false,
+          __parent: currentStore,
 
           /**
            * Sets the name of the index. Allows one to get the data quicker as `.get` can be used instead of looping.
@@ -247,43 +127,205 @@ class UpdateDatabase {
             return currentIndex;
           },
 
-          /**
-           * Finishes configuring this index and returns to store configuration
-           * @returns {StoreConfiguration} The chainable store configuration object
-           */
-          flush: () => {
-            currentStore.__indexes.push(currentIndex);
-            currentIndex = null;
-            return currentStore;
+          createIndex: () => {
+            return currentStore.createIndex();
           }
         };
 
+        currentStore.__indexes.push(currentIndex);
         return currentIndex;
+      },
+
+      /**
+       * Inserts the store configuration into the database
+       * @param {IDBDatabase} db The database to insert the store into
+       * @throws {Error} If store name or keyPath is not set
+       * @throws {Error} If an index name or keyPath is not set
+       */
+      __insert: (db) => {
+        // store must have a name, no point if it doesn't.
+        if (!currentStore.__name) {
+          console.error('Store name must be set before inserting');
+          return;
+        }
+
+        // According to devmo (https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Using_IndexedDB#creating_and_structuring_the_store) table structure, the keyPath and autoIncrement are optional.
+        // add the store to the database.
+        let store = db.createObjectStore(currentStore.__name, {
+          keyPath: currentStore.__keyPath,
+          autoIncrement: currentStore.__autoIncrement
+        });
+
+        for (const index of currentStore.__indexes) {
+          // Indexes aren't usedful if they don't have at least a name and key path.
+          let error = '';
+          if (!index.__name) {
+            error += 'Index name must be set before inserting';
+          }
+          if (!index.__keyPath) {
+            error += error ? '. ' : '';
+            error += 'Index keyPath must be set before inserting';
+          }
+
+          if (error) {
+            console.error(error);
+            // however, we continue as one broken is not all broken.
+            continue;
+          }
+
+          store.createIndex(index.__name, {
+            keyPath: index.__keyPath,
+            unique: index.__unique
+          });
+        }
       }
     };
 
+    this.newStores.push(currentStore);
+
     return currentStore;
+  }
+
+  /**
+  * Deletes a store, can also be used to undo a createStore action.
+  * @param {string} storeName The name of the store
+  */
+  deleteStore(storeName) {
+    console.log(`creating delete store ${storeName} request`);
+    this.deletedStores.push(storeName);
+    this.newStores = this.newStores.filter(store => store.name !== storeName);
+  }
+
+  /**
+  * Update a store by deleting the old one and making a new one. WILL KEEP ALL DATA OF PREVIOUS STORE (if possible)
+  * @param {string} storeName The name of the old Store
+  * @param {(IndexConfiguration|StoreConfiguration)} newStoreConfig The new store details to replace the old Store
+  * @param {(event: Event) => void} map The function to call on all the data to get it ready for the new format.
+  */
+  updateStore(storeName, newStoreConfig, map) {
+    console.log(`creating update store ${storeName} request`);
+
+    if (newStoreConfig.__parent) {
+      newStoreConfig = newStoreConfig.__parent;
+    }
+
+    this.newStores = this.newStores.filter(store => store.name !== storeName);
+    this.updatedStores[storeName] = { 'config': newStoreConfig, 'map': map };
+  }
+
+  /**
+  * If we have stuff to upgrade, grab the data here.
+  * @param {Event} event The `onsuccess` event provided upon opening the database.
+  * @param {(event: Event) => void} successFunction The function to call upon a successful action happening.
+  */
+  preExecute(event, successFunction) {
+    console.log('Attempting preExecute update function')
+    if (this.updatedStores.length <= 0) {
+      // if we have nothing to update, don't do anything.
+      console.log('No updates requested, continuing...');
+      return successFunction(event);
+    }
+    // assume we have already done the version check.
+
+    // close the current database
+    /** @type {IDBDatabase} */
+    let db = event.target.result;
+    db.close();
+
+    // open the old database
+    let oldDb = indexedDB.open(db.name, this.version - 1);
+
+    // get all the data for the specified store out of the database.
+    this.upgradeData = {};
+    Object.keys(this.updatedStores).forEach(storeName => {
+      /** @type {IDBTransaction} */
+      let readTransaction = oldDb.transaction(storeName, 'readonly');
+      if (readTransaction == null) {
+        console.log(`Transaction for ${storeName} is null`);
+        return;
+      }
+
+      this.upgradeData[storeName] = readTransaction.objectStore(storeName).getAll();
+    });
+
+    oldDb.close();
+  }
+
+  /**
+  * Update the database from the old version to the new version.
+  * @param {Event} event The Event
+  * @param {(event: Event) => void} successFunction Function that gets called upon update a success
+  */
+  execute(event, successFunction) {
+    console.log('Executing update function');
+
+    /** @type {IDBDatabase} */
+    let db = event.target.result;
+    /** @type {IDBTransaction} */
+    let transaction = event.target.transaction;
+
+    Object.keys(this.updatedStores).forEach(storeName => {
+      if (!db.objectStoreNames.contains(storeName)) {
+        console.warn(`Store ${storeName} does not exist, treating an upgrade like an addition`);
+        this.newStores.push(this.updatedStores[storeName].config);
+        return;
+      }
+
+      db.deleteObjectStore(storeName);
+      this.updatedStores[storeName].__insert(db);
+
+      if (this.upgradeData?.storeName) {
+        let store = transaction.objectStore(storeName);
+        this.upgradeData[storeName].forEach(data => {
+          store.add(data);
+        });
+      }
+    });
+
+    this.newStores.forEach(storeData => {
+      if (db.objectStoreNames.contains(storeData.__name)) {
+        console.warn(`Store ${storeName} already exists`);
+        return;
+      }
+
+      storeData.__insert(db);
+    });
+    this.deletedStores.forEach(storeName => {
+      if (!db.objectStoreNames.contains(storeName)) {
+        console.warn(`Store ${storeName} does not exist`);
+        return;
+      }
+
+      db.deleteObjectStore(storeName);
+    });
   }
 }
 
-let ud = new UpdateDatabase();
-ud.createStore()
-  .setName('users')
-  .setKeyPath('id')
-  .setAutoIncrement(true)
+// let ud = new UpdateDatabase();
+// ud.updateStore('Users', ud
+//   .createStore()
+//   .setName('users')
+//   .setKeyPath('id')
+//   .setAutoIncrement(true)
 
-  .createIndex()
-  .setName('email')
-  .setProperty('email')
-  .setUnique(true)
-  .flush()
+//   .createIndex()
+//   .setName('email')
+//   .setProperty('email')
+//   .setUnique(true)
 
-  .createIndex()
-  .setName('name')
-  .setProperty('name')
-  .flush()
+//   .createIndex()
+//   .setName('name')
+//   .setProperty('name')
+// );
 
+// ud.createStore()
+//   .setName('achievements')
+//   .setKeyPath('id')
+//   .setAutoIncrement(true)
 
+//   .createIndex()
+//   .setName('userId')
+//   .setProperty('userId');
 
 /**
  * A wrapper class for working with IndexedDB databases
@@ -295,7 +337,7 @@ class Database {
   /** @type {number} */
   version;
 
-  /** @type {DatabaseUpdater[]} */
+  /** @type {UpdateDatabase[]} */
   __updaters;
 
   /** @type {IDBDatabase} */
@@ -305,7 +347,7 @@ class Database {
    * Creates a new Database instance
    * @param {string} name - The name of the database
    * @param {number} version - The version number of the database
-   * @param {DatabaseUpdater[]} updaters - list of classes of what to pass the database through when upgrading,
+   * @param {UpdateDatabase[]} updaters - list of classes of what to pass the database through when upgrading,
    */
   constructor(name, version, updaters) {
     this.name = name;
@@ -313,6 +355,21 @@ class Database {
     updaters.sort((a, b) => a.version - b.version);
     this.__updaters = updaters;
     this.open();
+  }
+
+  checkForUpdate(event) {
+    /** @type {IDBDatabase} */
+    let db = event.target.result;
+    let version = db.version;
+    db.close();
+
+    if (version < this.version) {
+      this.updateDatabase();
+    }
+  }
+
+  updateDatabase() {
+
   }
 
   get __databaseReady() {
@@ -349,120 +406,11 @@ class Database {
       this.database.onerror = this.errorFunction;
     };
   }
-
-
-  store_data(store, data, oncomplete = (event) => { }, onerror = (event) => { }, onabort = (event) => { }) {
-    let transaction = this.database.transaction(store, "readwrite");
-
-    transaction.oncomplete = (event) => {
-      console.log("Transaction completed");
-      console.log(event);
-    }
-    transaction.onabort = (event) => {
-      console.error(`Transaction aborted: ${event.target.error}`);
-      onabort(event);
-    }
-    transaction.onerror = (event) => {
-      console.error(`Transaction error: ${event.target.error}`);
-      onerror(event);
-    }
-
-    let objectStore = transaction.objectStore(store);
-
-    if (Array.isArray(data)) {
-      for (let item of data) {
-        objectStore.add(item);
-      }
-      return;
-    }
-
-    objectStore.add(data);
-  }
-
-  delete_data(store, query, oncomplete = (event) => { }, onerror = (event) => { }, onabort = (event) => { }) {
-    let request = this.database
-      .transaction(store, "readwrite")
-      .objectStore(store)
-      .delete(query);
-
-    request.onsuccess = (event) => {
-      console.log(`Deleted data from ${store}`);
-      oncomplete(event);
-    };
-    request.onerror = (event) => {
-      console.error(`Error deleting data from ${store}: ${event.target.error}`);
-      onerror(event);
-    };
-    request.onabort = (event) => {
-      console.error(`Transaction aborted: ${event.target.error}`);
-      onabort(event);
-    };
-  }
-
-  get_data(store, query, oncomplete = (event) => { }, onerror = (event) => { }, onabort = (event) => { }) {
-    let request = this.database
-      .transaction(store)
-      .objectStore(store)
-      .get(query);
-
-    request.onsuccess = (event) => {
-      console.log(`Retrieved data from ${store}`);
-      oncomplete(event);
-      console.log(event.target.result);
-      return event.target.result;
-    };
-    request.onerror = (event) => {
-      console.error(`Error retrieving data from ${store}: ${event.target.error}`);
-      onerror(event);
-    };
-    request.onabort = (event) => {
-      console.error(`Transaction aborted: ${event.target.error}`);
-      onabort(event);
-    };
-    return request;
-  }
 }
 
 
-let dbu1 = new DatabaseUpdater(1);
-dbu1.createStore().key("Users", "id", [
-  {
-    name: "name",
-    keyPath: "name",
-    options: {
-      multiEntry: false,
-      unique: false
-    }
-  }
-]);
-
-
-let updaters = [
-  dbu1
-];
-class TestDatabase {
-  constructor() {
-    this.database = new Database('test', 1, updaters);
-  }
-}
-
-let testDatabase = new TestDatabase();
-let data = [
-  {
-    "id": 6057,
-    "name": "Test",
-    "towers": {
-      "Tower of Annoyingly Simple Trials": dayjs()
-    }
-  },
-  {
-    "id": 12,
-    "name": "Test2",
-    "towers": {
-      "Tower of Annoyingly Simple Trials": null
-    }
-  }
-]
+exports.UpdateDatabase = UpdateDatabase;
+exports.Database = Database;
 
 // How IndexedDB works:
 //
