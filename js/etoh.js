@@ -48,7 +48,7 @@ class Tower {
   old_badge;
 
   get shortName() {
-    return this.name.split(' ').map(word => word[0]).join('');
+    return this.name.split(' ').map(word => (word.toLowerCase() == 'of' || word.toLowerCase() == 'and') ? word[0] : word[0].toUpperCase()).join('');
   }
   get difficultyWord() {
     return towerManager.getDifficulty(this.difficulty);
@@ -81,6 +81,9 @@ class TowerManager {
   ];
 
   elements = {};
+
+  /** @type {Towers} */
+  raw_data;
 
   get __areaElm() {
     return document.getElementById('towers');
@@ -163,12 +166,11 @@ class TowerManager {
       return;
     }
 
-    /** @type {Towers} */
-    let towers = await server_towers.json();
-    console.log(towers);
+    this.raw_data = await server_towers.json();
+    console.log(this.raw_data);
 
-    this.__loopTower(towers.rings, 'Ring');
-    this.__loopTower(towers.zones, 'Zone');
+    this.__loopTower(this.raw_data.rings, 'Ring');
+    this.__loopTower(this.raw_data.zones, 'Zone');
   }
 }
 

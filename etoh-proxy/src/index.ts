@@ -41,6 +41,10 @@ type BadgeResponse = {
 	awardedDate: string;
 }
 
+type RobloxBadgeResponse = {
+	data: BadgeResponse[];
+}
+
 
 
 
@@ -121,35 +125,52 @@ async function getTowerData(badge_id: number, user_id: number) {
 
 
 async function getAllTowerData(user_id: number, badges: number[]) {
-	let url = `https://badges.roblox.com/v1/users/${user_id}/badges/awarded-dates`;
+	const CHUNK_SIZE = 100;
+	const url = `https://badges.roblox.com/v1/users/${user_id}/badges/awarded-dates`;
 
-	let response = await tryCatch(fetch(fetchRequest(url, {
-		method: 'POST',
+	const { readable, writable } = new TransformStream();
+	const writer = writable.getWriter();
+	const encoder = new TextEncoder();
+
+	// Start processing in background but don't await it
+	const processPromise = (async () => {
+		for (let i = 0; i < badges.length; i += CHUNK_SIZE) {
+			const chunk = badges.slice(i, i + CHUNK_SIZE);
+			const badge_search = chunk.map(badge => badge.toString()).join(',');
+
+			const response = await tryCatch(fetch(fetchRequest(`${url}?badgeIds=${badge_search}`, {
+				headers: {
+					'Content-Type': 'application/json'
+				},
+			})));
+
+			if (response.error) {
+				await writer.abort(response.error);
+				return;
+			}
+
+			const data = await tryCatch<RobloxBadgeResponse>(response.data.json());
+			if (data.error) {
+				await writer.abort(data.error);
+				return;
+			}
+
+			for (const badge of data.data.data) {
+				await writer.write(encoder.encode(JSON.stringify(badge) + '\n'));
+			}
+		}
+
+		await writer.close();
+	})();
+
+	// Return response immediately while processing continues in background
+	return new Response(readable, {
 		headers: {
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify({
-			badgeIds: badges
-		})
-	})));
-	if (response.error) {
-		return new Response(`Failed to fetch badge data: ${response.error.message}`, { status: 500 });
-	}
-
-	let data = await tryCatch<BadgeResponse[]>(response.data.json());
-	if (data.error) {
-		return new Response(`Failed to parse badge data: ${data.error.message}`, { status: 500 });
-	}
-
-	let rbx_data = data.data;
-
-	if (rbx_data?.length > 0) {
-		return Response.json(rbx_data);
-	}
-
-	return new Response(`Badge not found`, { status: 404 });
+			'Content-Type': 'application/x-ndjson',
+			'Transfer-Encoding': 'chunked'
+		}
+	});
 }
-
 
 
 
@@ -238,8 +259,12 @@ export default {
 				console.log(`Getting badge data for ${details[3]}`);
 
 				if (details[3] === 'all') {
+					// console.log(request);
+					// console.log(await request.text());
+					// console.log(await request.json());
 					let badges: { badgeids: number[] } = await request.json();
 					return handleApiRequest(getAllTowerData(parseInt(details[2]), badges.badgeids));
+					// return getAllTowerData(parseInt(details[2]), badges.badgeids);
 				}
 
 				return handleApiRequest(getTowerData(parseInt(details[3]), parseInt(details[2])));

@@ -10,9 +10,6 @@ class UserManager {
   * }} */
   tower_data;
 
-  /** @type {Database} */
-  database;
-
   /**
    * Process tower data and fill badge IDs array
    * @param {Object.<string, Object.<string, TowerData>>} towerData Tower data to process
@@ -43,6 +40,15 @@ class UserManager {
           const result = badgeResults.find(b => b.badgeId === tower.badge_id);
           data[areaName] = data[areaName] || {};
           data[areaName][towerName] = result ? dayjs(result.awardedDate).toDate() : defaultDate;
+
+          let uid = this.user;
+          towersDB.transaction('rw', towersDB.towers, function () {
+            towersDB.towers.add({
+              badge_id: tower.badge_id,
+              user_id: uid,
+              completion: data[areaName][towerName]
+            })
+          })
         }
 
         if (tower.old_id) {
@@ -61,25 +67,91 @@ class UserManager {
     let data = {};
 
     let badgeIds = [];
-    badgeIds = this.processTowerData(towers.rings);
-    badgeIds.concat(this.processTowerData(towers.zones));
+    badgeIds = this.processTowerData(towerManager.raw_data.rings);
+    badgeIds.concat(this.processTowerData(towerManager.raw_data.zones));
+
+    console.log(badgeIds);
 
     const response = await fetch(`${cloud_url}/towers/${this.user}/all`, {
       method: 'POST',
-      body: JSON.stringify(badgeIds)
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        "badgeids": badgeIds
+      })
     });
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`Failed to fetch badge data (status: ${response.status} ${response.statusText})\n${errorText}`);
       showNotification(`Failed to fetch badge data. (status: ${response.status} ${response.statusText})`);
       return null;
     }
-    const badgeData = await response.json();
 
-    data.rings = this.updateTowerDates(towers.rings, badgeData.data);
-    data.zones = this.updateTowerDates(towers.zones, badgeData.data);
+    // Set up streaming
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
 
-    this.tower_data = data;
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) break;
+
+      // Add new chunk to buffer
+      buffer += decoder.decode(value, { stream: true });
+
+      // Process complete lines from buffer
+      const lines = buffer.split('\n');
+      // Keep the last (potentially incomplete) line in buffer
+      buffer = lines.pop() || '';
+
+      // Process complete lines
+      for (const line of lines) {
+        if (line.trim()) {
+          try {
+            /** @type {{badgeId: number, awardedDate: string}} */
+            const badge = JSON.parse(line);
+            // processBadgeCallback(badge);
+            console.log(badge);
+
+            let uid = this.user;
+            towersDB.transaction('rw', towersDB.towers, function () {
+              towersDB.towers.add({
+                badge_id: badge.badgeId,
+                user_id: uid,
+                completion: badge.awardedDate
+              })
+            })
+
+          } catch (e) {
+            console.error('Failed to parse badge data:', e);
+          }
+        }
+      }
+    }
+
+    // Process any remaining data
+    if (buffer.trim()) {
+      try {
+        const badge = JSON.parse(buffer);
+        // processBadgeCallback(badge);
+        console.log(badge);
+      } catch (e) {
+        console.error('Failed to parse final badge data:', e);
+      }
+    }
+
+    // Object.keys(towerManager.raw_data.rings).reduce()
+
+    // Parse the complete JSON response
+    // const badgeData = JSON.parse(buffer);
+
+    // data.rings = this.updateTowerDates(towerManager.raw_data.rings, badgeData.data);
+    // data.zones = this.updateTowerDates(towerManager.raw_data.zones, badgeData.data);
+
+    // this.tower_data = data;
   }
 
   // https://www.roblox.com/users/605215929/profile
@@ -118,18 +190,14 @@ class UserManager {
   constructor(user) {
     console.log(`Attempting to load: ${user}`);
 
-    this.database = new Database('ETOH', 1, this.__upgradeDatabase.bind(this));
-
     (async () => {
       this.user = await this.__getUserID(user);
+
+      if (this.user == null || this.user == undefined) {
+        return;
+      }
       await this.loadUserData();
     })();
-  }
-
-  __upgradeDatabase(db, oldVersion, newVersion) {
-    console.log(`Upgrading database from version ${oldVersion} to ${newVersion}`);
-    // Add your upgrade logic here
-    console.error("Erm, help...");
   }
 
   storeUser() {
@@ -165,7 +233,7 @@ class UserData {
       this.currentUser.tower_data = this.storage.getStorage(this.currentUser.user);
       return;
     }
-    this.currentUser.loadUserData();
+    // this.currentUser.loadUserData();
   }
 
   saveUser() {
@@ -174,3 +242,7 @@ class UserData {
 }
 
 let userData = new UserData();
+let towersDB = new Dexie("Towers");
+towersDB.version(1).stores({
+  towers: `[badge_id+user_id]`,
+})
