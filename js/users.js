@@ -14,7 +14,7 @@ class UserManager {
    * Process tower data and fill badge IDs array
    * @param {Object.<string, Object.<string, TowerData>>} towerData Tower data to process
    */
-  processTowerData(towerData) {
+  getBadgeIds(towerData) {
     let badgeIds = [];
     for (const area of Object.values(towerData)) {
       for (const tower of Object.values(area)) {
@@ -25,53 +25,13 @@ class UserManager {
     return badgeIds;
   }
 
-  /**
-   * Process badge data and update tower completion dates
-   * @param {Object.<string, Object.<string, TowerData>>} towerData Tower data to update
-   * @param {Array<{badgeId: number, awardedDate: string}>} badgeResults Badge completion data
-   */
-  updateTowerDates(towerData, badgeResults) {
-    let data = {};
-    for (const [areaName, area] of Object.entries(towerData)) {
-      for (const [towerName, tower] of Object.entries(area)) {
-        const defaultDate = dayjs('0000-00-00');
-
-        if (tower.badge_id) {
-          const result = badgeResults.find(b => b.badgeId === tower.badge_id);
-          data[areaName] = data[areaName] || {};
-          data[areaName][towerName] = result ? dayjs(result.awardedDate).toDate() : defaultDate;
-
-          let uid = this.user;
-          towersDB.transaction('rw', towersDB.towers, function () {
-            towersDB.towers.add({
-              badge_id: tower.badge_id,
-              user_id: uid,
-              completion: data[areaName][towerName]
-            })
-          })
-        }
-
-        if (tower.old_id) {
-          const oldResult = badgeResults.find(b => b.badgeId === tower.old_id);
-          if (oldResult) {
-            data[areaName] = data[areaName] || {};
-            data[areaName][towerName] = dayjs(oldResult.awardedDate);
-          }
-        }
-      }
-    }
-    return data;
-  }
-
   async loadUserData() {
-    let data = {};
-
+    // pre load badge ids
     let badgeIds = [];
-    badgeIds = this.processTowerData(towerManager.raw_data.rings);
-    badgeIds.concat(this.processTowerData(towerManager.raw_data.zones));
+    badgeIds = this.getBadgeIds(towerManager.raw_data.rings);
+    badgeIds.concat(this.getBadgeIds(towerManager.raw_data.zones));
 
-    console.log(badgeIds);
-
+    // get the data from the server.
     const response = await fetch(`${cloud_url}/towers/${this.user}/all`, {
       method: 'POST',
       headers: {
@@ -82,6 +42,7 @@ class UserManager {
       })
     });
 
+    // make sure we can actually process the response.
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`Failed to fetch badge data (status: ${response.status} ${response.statusText})\n${errorText}`);
@@ -93,11 +54,10 @@ class UserManager {
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
+    let done, value;
 
-    while (true) {
-      const { done, value } = await reader.read();
-
-      if (done) break;
+    while (!done) {
+      done, value = await reader.read();
 
       // Add new chunk to buffer
       buffer += decoder.decode(value, { stream: true });
@@ -105,59 +65,39 @@ class UserManager {
       // Process complete lines from buffer
       const lines = buffer.split('\n');
       // Keep the last (potentially incomplete) line in buffer
-      buffer = lines.pop() || '';
+      if (!done) {
+        buffer = lines.pop() || '';
+      }
 
       // Process complete lines
       for (const line of lines) {
-        if (line.trim()) {
-          try {
-            /** @type {{badgeId: number, awardedDate: string}} */
-            const badge = JSON.parse(line);
-            // processBadgeCallback(badge);
-            console.log(badge);
-
-            let uid = this.user;
-            towersDB.transaction('rw', towersDB.towers, function () {
-              towersDB.towers.add({
-                badge_id: badge.badgeId,
-                user_id: uid,
-                completion: badge.awardedDate
-              })
-            })
-
-          } catch (e) {
-            console.error('Failed to parse badge data:', e);
-          }
+        // cleans up the line making sure it can be used
+        if (!line.trim()) {
+          continue;
         }
+
+        // then insert the data (upon conversion) into the database.
+        let badge = await tryCatch((async () => JSON.parse(line))());
+        if (badge.error) {
+          showNotification(`Failed to parse badge data: ${badge.error}. Please try again later. (roblox api might be down)`);
+        }
+
+        /** @type {{badgeId: number, awardedDate: string}} */
+        let badgeData = badge.data;
+        // console.log(badge);
+
+        towersDB.towers.put({
+          badge_id: badgeData.badgeId,
+          user_id: this.user,
+          completion: dayjs(badgeData.awardedDate)
+        }).catch(e => console.error('Failed to parse badge data:', e));
       }
     }
-
-    // Process any remaining data
-    if (buffer.trim()) {
-      try {
-        const badge = JSON.parse(buffer);
-        // processBadgeCallback(badge);
-        console.log(badge);
-      } catch (e) {
-        console.error('Failed to parse final badge data:', e);
-      }
-    }
-
-    // Object.keys(towerManager.raw_data.rings).reduce()
-
-    // Parse the complete JSON response
-    // const badgeData = JSON.parse(buffer);
-
-    // data.rings = this.updateTowerDates(towerManager.raw_data.rings, badgeData.data);
-    // data.zones = this.updateTowerDates(towerManager.raw_data.zones, badgeData.data);
-
-    // this.tower_data = data;
   }
 
   // https://www.roblox.com/users/605215929/profile
   // dragmine149
   // 605215929
-
   async __getUserID(user) {
     // Test if number is given
     if (/^[0-9]*$/.test(user)) {

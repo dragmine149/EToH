@@ -123,41 +123,88 @@ async function getTowerData(badge_id: number, user_id: number) {
 	return new Response(`Badge not found`, { status: 404 });
 }
 
-
+/**
+* Gets the completion date of every badge assigned. If a badge has no date, nothing is returned.
+* @param user_id The roblox user ID
+* @param badges The list of badges to get
+* @returns A streamable response of the badges upon receiving them from roblox.
+*/
 async function getAllTowerData(user_id: number, badges: number[]) {
-	const CHUNK_SIZE = 100;
-	const url = `https://badges.roblox.com/v1/users/${user_id}/badges/awarded-dates`;
+	let chunkSize = 100; // roblox has a limit on the amount of badges you can request at once, although this exact limit is unknown, 100 seems big enough,
+	let url = `https://badges.roblox.com/v1/users/${user_id}/badges/awarded-dates`;
 
-	const { readable, writable } = new TransformStream();
-	const writer = writable.getWriter();
-	const encoder = new TextEncoder();
+	// create new streams and stuff for streaming the data.
+	let { readable, writable } = new TransformStream();
+	let writer = writable.getWriter();
+	let encoder = new TextEncoder();
+
+	/**
+	* If the request fails once, try again but with half the chunk size.
+	* If the request fails twice, wait 2 seconds and then try again.
+	* If the request fails thrice, half the chunk size (again), wait 5 seconds and then try again
+	* If the request fails fouce, abort
+	* Everytime make sure to update the chunksize for all future request, however only wait whilst retrying that one request (after the retry success, continue with 0 wait
+	*/
 
 	// Start processing in background but don't await it
-	const processPromise = (async () => {
-		for (let i = 0; i < badges.length; i += CHUNK_SIZE) {
-			const chunk = badges.slice(i, i + CHUNK_SIZE);
-			const badge_search = chunk.map(badge => badge.toString()).join(',');
+	(async () => {
+		let retryCount = 0;
+		async function on_error(i: number, error: Error) {
+			// add a retry and reset the chunk size back.
+			retryCount++;
+			i -= chunkSize;
 
-			const response = await tryCatch(fetch(fetchRequest(`${url}?badgeIds=${badge_search}`, {
+			// reduce the chunkSize upon failing x times.
+			if (retryCount % 2 == 1) {
+				chunkSize = Math.max(1, Math.floor(chunkSize / 2));
+			}
+
+			// avoid the one off situation where i becomes negative and breaks things.
+			i = Math.min(0, i);
+
+			await writer.write(encoder.encode(`Failed to fetch from server due to: ${error.message}`));
+			if (retryCount === 2) await new Promise(resolve => setTimeout(resolve, 2000));
+			if (retryCount === 3) await new Promise(resolve => setTimeout(resolve, 5000));
+
+			return i;
+		}
+
+		for (let i = 0; i < badges.length; i += chunkSize) {
+			if (retryCount > 3) {
+				// ok, give up.
+				await writer.abort(new Error('Failed after 4 retries'));
+				return;
+			}
+
+			// chunk and generate the other part of the url.
+			let chunk = badges.slice(i, i + chunkSize);
+			let badge_search = chunk.map(badge => badge.toString()).join(',');
+
+			// send the request to the server
+			let response = await tryCatch(fetch(fetchRequest(`${url}?badgeIds=${badge_search}`, {
 				headers: {
 					'Content-Type': 'application/json'
 				},
 			})));
 
+			// process errors and the data
 			if (response.error) {
-				await writer.abort(response.error);
-				return;
+				i = await on_error(i, response.error);
+				continue;
 			}
 
-			const data = await tryCatch<RobloxBadgeResponse>(response.data.json());
+			let data = await tryCatch<RobloxBadgeResponse>(response.data.json());
+
 			if (data.error) {
-				await writer.abort(data.error);
-				return;
+				i = await on_error(i, data.error);
+				continue;
 			}
 
-			for (const badge of data.data.data) {
+			// send all data back to the clients
+			for (let badge of data.data.data) {
 				await writer.write(encoder.encode(JSON.stringify(badge) + '\n'));
 			}
+			retryCount = 0; // no retry needed YAY
 		}
 
 		await writer.close();
