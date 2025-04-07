@@ -54,10 +54,9 @@ class UserManager {
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
-    let done, value;
 
-    while (!done) {
-      done, value = await reader.read();
+    while (true) {
+      let { done, value } = await reader.read();
 
       // Add new chunk to buffer
       buffer += decoder.decode(value, { stream: true });
@@ -77,22 +76,27 @@ class UserManager {
         }
 
         // then insert the data (upon conversion) into the database.
-        let badge = await tryCatch((async () => JSON.parse(line))());
+        let badge = await noSyncTryCatch(() => JSON.parse(line));
         if (badge.error) {
-          showNotification(`Failed to parse badge data: ${badge.error}. Please try again later. (roblox api might be down)`);
+          // showNotification(`Failed to parse badge data: ${badge.error}. Please try again later. (roblox api might be down)`);
         }
 
         /** @type {{badgeId: number, awardedDate: string}} */
         let badgeData = badge.data;
-        // console.log(badge);
+        // console.log(badgeData);
 
         towersDB.towers.put({
           badge_id: badgeData.badgeId,
           user_id: this.user,
-          completion: dayjs(badgeData.awardedDate)
-        }).catch(e => console.error('Failed to parse badge data:', e));
+          completion: dayjs(badgeData.awardedDate).unix()
+          // completion: badgeData.awardedDate
+        });
       }
+
+      if (done) break;
     }
+
+    console.log(`Loaded user data!`);
   }
 
   // https://www.roblox.com/users/605215929/profile
