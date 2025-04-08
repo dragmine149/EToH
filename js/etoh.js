@@ -174,4 +174,57 @@ class TowerManager {
   }
 }
 
+/**
+* @typedef {{
+*   old_id: number,
+*   new_id: number
+* }} OtherData
+*/
+
+class OtherManager {
+  /** @type {Object.<string, OtherData>} */
+  raw_data;
+
+  async hasBadge(user_id, name) {
+    /** @type {OtherData} */
+    let badges = this.raw_data.get(name);
+    let badge_ids = [badges.old_id, badges.new_id];
+
+    let response = await fetch(`${CLOUD_URL}/towers/${user_id}/all`, {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        "badgeids": badge_ids
+      })
+    });
+
+    // make sure we can actually process the response.
+    if (!response.ok) {
+      const errorText = await response.text();
+      showNotification(`Failed to fetch badge data. (status: ${response.status} ${response.statusText}\n${errorText})`, true);
+      return null;
+    }
+  }
+
+  constructor() {
+    (async () => {
+      await this.loadOther();
+    })();
+  }
+
+  async loadOther() {
+    let server_other = await fetch('data/other_data.json');
+    if (!server_other.ok) {
+      showNotification(`Failed to fetch tower_data.json: ${server_other.status} ${server_other.statusText}.`, true);
+      return;
+    }
+
+    this.raw_data = await server_other.json();
+    console.log(this.raw_data);
+  }
+}
+
 let towerManager = new TowerManager();
+let otherManager = new OtherManager();

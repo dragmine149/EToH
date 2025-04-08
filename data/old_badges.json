@@ -25,28 +25,6 @@
       }
     },
     {
-      "id": 2124457503,
-      "name": "You played the game!",
-      "description": "Ur epic generic YoU pLaYeD tHe GaMe badge. Nice way of greeting fresh meat to a hardcore game really lul.",
-      "displayName": "You played the game!",
-      "displayDescription": "Ur epic generic YoU pLaYeD tHe GaMe badge. Nice way of greeting fresh meat to a hardcore game really lul.",
-      "enabled": true,
-      "iconImageId": 2920125497,
-      "displayIconImageId": 2920125497,
-      "created": "2019-03-03T21:28:03.157+00:00",
-      "updated": "2024-11-19T19:24:29.388+00:00",
-      "statistics": {
-        "pastDayAwardedCount": 0,
-        "awardedCount": 10467429,
-        "winRatePercentage": 0.0
-      },
-      "awardingUniverse": {
-        "id": 1055653882,
-        "name": "[MIGRATED] Juke's Towers of Hell ",
-        "rootPlaceId": 2919924313
-      }
-    },
-    {
       "id": 2124457507,
       "name": "Play For 3 Hours In One Sitting",
       "description": "What are you doing? ",

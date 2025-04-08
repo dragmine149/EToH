@@ -23,28 +23,6 @@
       }
     },
     {
-      "id": 2125364252,
-      "name": "You played the game!",
-      "description": "Ur epic generic YoU pLaYeD tHe GaMe badge. Nice way of greeting fresh meat to a hardcore game really lul.",
-      "displayName": "You played the game!",
-      "displayDescription": "Ur epic generic YoU pLaYeD tHe GaMe badge. Nice way of greeting fresh meat to a hardcore game really lul.",
-      "enabled": true,
-      "iconImageId": 9072390707,
-      "displayIconImageId": 9072390707,
-      "created": "2022-03-11T21:42:06.403+00:00",
-      "updated": "2024-11-19T19:37:37.716+00:00",
-      "statistics": {
-        "pastDayAwardedCount": 11046,
-        "awardedCount": 3696424,
-        "winRatePercentage": 0.397
-      },
-      "awardingUniverse": {
-        "id": 3264581003,
-        "name": "Eternal Towers of Hell",
-        "rootPlaceId": 8562822414
-      }
-    },
-    {
       "id": 2125364293,
       "name": "Play For 3 Hours In One Sitting",
       "description": "What are you doing?",
