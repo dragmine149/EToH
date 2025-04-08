@@ -82,8 +82,10 @@ class TowerManager {
 
   elements = {};
 
-  /** @type {Towers} */
+  /** @type {Towers} The raw tower data from the server */
   raw_data;
+  /** @type {number[]} A list of all the badge ids that the towers have */
+  tower_ids = [];
 
   get __areaElm() {
     return document.getElementById('towers');
@@ -148,7 +150,9 @@ class TowerManager {
       let finalName = !isNaN(areaName) ? `${name}-${areaName}` : areaName;
 
       for (let [towerName, tower] of Object.entries(towers)) {
-        this.towers.push(new Tower(towerName, finalName, tower.difficulty, tower.badge, tower.old_badge));
+        this.towers.push(new Tower(towerName, finalName, tower.difficulty, tower.badge_id, tower.old_id));
+        this.tower_ids.push(tower.badge_id);
+        if (tower.old_id) this.tower_ids.push(tower.old_id);
       }
 
       if (this.areas.includes(finalName)) {
@@ -161,8 +165,7 @@ class TowerManager {
   async loadTowers() {
     let server_towers = await fetch('data/tower_data.json');
     if (!server_towers.ok) {
-      console.warn(server_towers);
-      showError(`Failed to fetch tower_data.json: ${server_towers.status} ${server_towers.statusText}.`);
+      showNotification(`Failed to fetch tower_data.json: ${server_towers.status} ${server_towers.statusText}.`, true);
       return;
     }
 

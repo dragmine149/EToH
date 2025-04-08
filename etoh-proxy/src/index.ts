@@ -25,6 +25,21 @@ export async function tryCatch<T, E = Error>(
 }
 
 type RobloxUser = {
+	description: string;
+	created: string;
+	isBanned: boolean;
+	externalAppDisplayName: (string | null);
+	hasVerifiedBadge: boolean;
+	id: number;
+	name: string;
+	displayName: string;
+	errors?: {
+		code: number;
+		message: string;
+	}[];
+}
+
+type RobloxUserID = {
 	requestedUsername: string;
 	hasVerifiedBadge: boolean;
 	id: number;
@@ -32,8 +47,8 @@ type RobloxUser = {
 	displayName: string;
 }
 
-type RobloxUserResponse = {
-	data: RobloxUser[];
+type RobloxUserIDResponse = {
+	data: RobloxUserID[];
 }
 
 type BadgeResponse = {
@@ -79,7 +94,7 @@ async function getIdFromName(name: string): Promise<Response> {
 
 
 	// decode the id from the data
-	let data = await tryCatch<RobloxUserResponse>(response.data.json());
+	let data = await tryCatch<RobloxUserIDResponse>(response.data.json());
 	if (data.error) {
 		return new Response(`Failed to parse user data: ${data.error.message}`, { status: 500 });
 	}
@@ -94,6 +109,27 @@ async function getIdFromName(name: string): Promise<Response> {
 	}
 
 	return new Response(`User not found`, { status: 404 });
+}
+
+async function getNameFromId(id: number): Promise<Response> {
+	if (!id) {
+		return new Response('Invalid ID, aka user not found.', { status: 404 });
+	}
+
+	let response = await tryCatch(fetch(fetchRequest(`https://users.roblox.com/v1/users/${id}`, {
+		method: 'GET'
+	})));
+
+	if (response.error) {
+		return new Response(`Failed to fetch user data: ${response.error.message}`, { status: 500 });
+	}
+
+	let data = await tryCatch<RobloxUser>(response.data.json());
+	if (data.error || data.data.errors) {
+		return new Response(`Failed to fetch user data: Invalid user id`, { status: 500 });
+	}
+
+	return new Response(data.data.name);
 }
 
 function processDate(date: string) {
@@ -312,6 +348,11 @@ export default {
 		console.log({ route, details });
 		switch (route) {
 			case 'users':
+				if (details[3] == 'name') {
+					console.log(`Getting user name from ${details[2]}`);
+					return handleApiRequest(getNameFromId(parseInt(details[2])));
+				}
+
 				console.log(`Getting user id from ${details[2]}`);
 				return handleApiRequest(getIdFromName(details[2]));
 			case 'towers':

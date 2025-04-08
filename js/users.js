@@ -1,7 +1,5 @@
-let cloud_url = 'https://etoh-proxy.dragmine149.workers.dev';
-
 class UserManager {
-  /** @type {number} Roblox UserID */
+  /** @type {{id: number, name: string}} Roblox user information */
   user;
 
   /** @type {{
@@ -25,56 +23,83 @@ class UserManager {
     return badgeIds;
   }
 
-  async loadUserData() {
-    // pre load badge ids
-    let badgeIds = [];
-    badgeIds = this.getBadgeIds(towerManager.raw_data.rings);
-    badgeIds.concat(this.getBadgeIds(towerManager.raw_data.zones));
+  /**
+  * Get the user id/name from any of the following formats:
+  * - https://www.roblox.com/users/605215929/profile
+  * - dragmine149
+  * - 605215929
+  * @param {(string | number)} user The user name/id to get the id/name of.
+  * @returns A dictionary of the user id + name
+  */
+  async __getUserData(user) {
+    async function get(info, name = false) {
+      // Test for id
+      let response = await fetch(`https://etoh-proxy.dragmine149.workers.dev/users/${info}${name ? "/name" : ""}`);
 
-    // get the data from the server.
-    const response = await fetch(`${cloud_url}/towers/${this.user}/all`, {
-      method: 'POST',
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        "badgeids": badgeIds
-      })
-    });
-
-    // make sure we can actually process the response.
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Failed to fetch badge data (status: ${response.status} ${response.statusText})\n${errorText}`);
-      showNotification(`Failed to fetch badge data. (status: ${response.status} ${response.statusText})`);
-      return null;
-    }
-
-    // Set up streaming
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-      let { done, value } = await reader.read();
-
-      // Add new chunk to buffer
-      buffer += decoder.decode(value, { stream: true });
-
-      // Process complete lines from buffer
-      const lines = buffer.split('\n');
-      // Keep the last (potentially incomplete) line in buffer
-      if (!done) {
-        buffer = lines.pop() || '';
+      if (!response.ok) {
+        showNotification(`Failed to fetch user ${name ? "name" : "id"} for ${info}. (status: ${response.status} ${response.statusText})`, true);
+        return null;
       }
 
-      // Process complete lines
-      for (const line of lines) {
-        // cleans up the line making sure it can be used
-        if (!line.trim()) {
-          continue;
-        }
+      let data = await response.json();
+      return name ? data.name : data.id;
+    }
 
+    let data = {};
+
+    // attempt to see if input is JUST id.
+    if (/^[0-9]*$/.test(user)) {
+      data.id = parseInt(user);
+    }
+
+    // attempt to see if input is URL
+    if (user.includes('roblox.com/users')) {
+      let id = user.split('/users/')[1].split('/')[0];
+      data.id = parseInt(id);
+    }
+
+    // Set the name to the user if we have no id
+    if (!data.id) {
+      data.name = user;
+    }
+
+    // query the database to see if we already have the user
+    this.verbose.log(data);
+    let dbuser = await towersDB.users.get(data);
+    if (dbuser != undefined) {
+      // return if we do
+      return dbuser;
+    }
+
+    // query the server if we do not
+    if (!data.id) {
+      data.id = await get(data.name, false);
+      towersDB.users.put(data);
+      return data;
+    }
+
+    data.name = await get(data.id, true);
+    towersDB.users.put(data);
+    return data;
+  }
+
+  async loadUserData() {
+    // Assumption: If we have data in towersDB.users, then we have previously loaded the user.
+    let user = await towersDB.users.get(this.user);
+    if (user == undefined || user.played == undefined) {
+      this.verbose.log("Loading data from server");
+
+      let request = new Request(`${CLOUD_URL}/towers/${this.user.id}/all`, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "badgeids": towerManager.tower_ids
+        })
+      });
+
+      await network.requestStream(request, async (line) => {
         // then insert the data (upon conversion) into the database.
         let badge = await noSyncTryCatch(() => JSON.parse(line));
         if (badge.error) {
@@ -87,43 +112,15 @@ class UserManager {
 
         towersDB.towers.put({
           badge_id: badgeData.badgeId,
-          user_id: this.user,
+          user_id: this.user.id,
           completion: badgeData.date
         });
-      }
 
-      if (done) break;
+        console.log(badgeData);
+      })
+
     }
-
-    console.log(`Loaded user data!`);
-  }
-
-  // https://www.roblox.com/users/605215929/profile
-  // dragmine149
-  // 605215929
-  async __getUserID(user) {
-    // Test if number is given
-    if (/^[0-9]*$/.test(user)) {
-      return parseInt(user);
-    }
-
-    // Test if URL is given
-    if (user.includes('roblox.com/users/')) {
-      let id = user.split('/users/')[1].split('/')[0];
-      return parseInt(id);
-    }
-
-    // Test for username
-    let response = await fetch(`https://etoh-proxy.dragmine149.workers.dev/users/${user}`);
-
-    if (!response.ok) {
-      console.error(`Failed to fetch user ID for ${user} (status: ${response.status} ${response.statusText})`);
-      showNotification(`Failed to fetch user ID for ${user}.`);
-      return null;
-    }
-
-    let data = await response.json();
-    return data.id;
+    console.log('User already been fetched, loading from storage');
   }
 
   /**
@@ -133,12 +130,10 @@ class UserManager {
   constructor(user) {
     console.log(`Attempting to load: ${user}`);
 
-    (async () => {
-      this.user = await this.__getUserID(user);
+    this.verbose = new Verbose(`UserManager`, '#6189af');
 
-      if (this.user == null || this.user == undefined) {
-        return;
-      }
+    (async () => {
+      this.user = await this.__getUserData(user);
       await this.loadUserData();
     })();
   }
@@ -160,7 +155,6 @@ class UserData {
 
   constructor() {
     this.users = [];
-    this.storage = new DragStorage(`users`);
     this.currentUser = null;
   }
 
@@ -171,16 +165,6 @@ class UserData {
     let searchElm = document.getElementById("search_input").value;
     this.currentUser = new UserManager(searchElm);
     this.users.push(this.currentUser);
-
-    if (this.storage.hasStorage(this.currentUser.user)) {
-      this.currentUser.tower_data = this.storage.getStorage(this.currentUser.user);
-      return;
-    }
-    // this.currentUser.loadUserData();
-  }
-
-  saveUser() {
-    this.storage.setStorage(this.currentUser.user, this.currentUser.storeUser());
   }
 }
 
@@ -188,4 +172,5 @@ let userData = new UserData();
 let towersDB = new Dexie("Towers");
 towersDB.version(1).stores({
   towers: `[badge_id+user_id]`,
+  users: `[id+name], played`
 })

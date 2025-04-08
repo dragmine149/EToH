@@ -1,3 +1,6 @@
+const CLOUD_URL = 'https://etoh-proxy.dragmine149.workers.dev';
+
+
 /**
 * Shows an error message to the user
 * @param {string} message The message to show
