@@ -38,7 +38,8 @@ type RobloxUserResponse = {
 
 type BadgeResponse = {
 	badgeId: number;
-	awardedDate: string;
+	awardedDate?: string;
+	date: number;
 }
 
 type RobloxBadgeResponse = {
@@ -95,6 +96,11 @@ async function getIdFromName(name: string): Promise<Response> {
 	return new Response(`User not found`, { status: 404 });
 }
 
+function processDate(date: string) {
+	let d = new Date(date);
+	return d.getTime();
+}
+
 /**
 * Gets the awarded date of a badge
 * @param badge_id The id of the badge
@@ -117,7 +123,7 @@ async function getTowerData(badge_id: number, user_id: number) {
 	let rbx_data = data.data;
 
 	if (rbx_data?.awardedDate) {
-		return new Response(rbx_data.awardedDate);
+		return new Response(processDate(rbx_data.awardedDate).toString());
 	}
 
 	return new Response(`Badge not found`, { status: 404 });
@@ -202,6 +208,12 @@ async function getAllTowerData(user_id: number, badges: number[]) {
 
 			// send all data back to the clients
 			for (let badge of data.data.data) {
+				if (badge.awardedDate == undefined) {
+					continue;
+				}
+
+				badge.date = processDate(badge.awardedDate);
+				delete badge.awardedDate;
 				await writer.write(encoder.encode(JSON.stringify(badge) + '\n'));
 			}
 			retryCount = 0; // no retry needed YAY

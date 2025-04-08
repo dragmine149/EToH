@@ -81,15 +81,14 @@ class UserManager {
           // showNotification(`Failed to parse badge data: ${badge.error}. Please try again later. (roblox api might be down)`);
         }
 
-        /** @type {{badgeId: number, awardedDate: string}} */
+        /** @type {{badgeId: number, date: number}} */
         let badgeData = badge.data;
         // console.log(badgeData);
 
         towersDB.towers.put({
           badge_id: badgeData.badgeId,
           user_id: this.user,
-          completion: dayjs(badgeData.awardedDate).unix()
-          // completion: badgeData.awardedDate
+          completion: badgeData.date
         });
       }
 
