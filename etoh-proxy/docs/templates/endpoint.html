@@ -1,0 +1,44 @@
+<div class="endpoint" id="{{id}}">
+  <div class="endpoint-header">
+    <input type="checkbox" id="toggle-{{id}}" class="endpoint-toggle">
+    <label for="toggle-{{id}}" class="endpoint-toggle-button">
+      <span class="method {{method_l}}">{{method}}</span>
+      <div class="endpoint-info">
+        <code class="path">{{path}}</code>
+        <p class="description">{{description}}</p>
+      </div>
+      <span class="expand-icon">&#x25BC;</span>
+      <span class="collapse-icon">&#x25B2;</span>
+    </label>
+	  <div class="endpoint-content">
+	    <div class="parameters">
+	      <h4>Parameters</h4>
+	      <table>
+	        <thead>
+	          <tr>
+	            <th>Name</th>
+	            <th>Description</th>
+	          </tr>
+	        </thead>
+	        <tbody>
+	          {{parameters}}
+	        </tbody>
+	      </table>
+	    </div>
+	    <div class="responses">
+	      <h4>Responses</h4>
+				<table>
+					<thead>
+						<tr>
+							<th>Code</th>
+							<th>Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						{{responses}}
+					</tbody>
+				</table>
+	    </div>
+	  </div>
+	</div>
+</div>

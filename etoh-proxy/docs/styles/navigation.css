@@ -1,0 +1,169 @@
+/* Add scroll margin to all sections to account for fixed header */
+section {
+	/* Adjust this value to match your header height */
+	scroll-margin-top: 5rem;
+}
+
+/* Also add to any other elements that might be scroll targets */
+[id] {
+	scroll-margin-top: 5rem;
+}
+
+/* Navigation */
+.nav-content {
+	margin-top: 60px;
+}
+
+.nav-content ul {
+	list-style: none;
+	padding: 0;
+}
+
+.nav-content a {
+	color: var(--text-primary);
+	text-decoration: none;
+	padding: 8px 0;
+	display: block;
+	transition: color 0.3s;
+}
+
+.nav-content a:hover {
+	color: var(--accent-color);
+}
+
+
+/* Endpoint navigation */
+.endpoint-nav {
+	padding-left: 15px !important;
+	margin-top: 5px !important;
+	font-size: 0.9em;
+}
+
+.endpoint-nav li {
+	margin: 4px 0 !important;
+}
+
+.endpoint-nav a {
+	color: var(--text-secondary) !important;
+	padding: 4px 0 !important;
+}
+
+.endpoint-nav a:hover {
+	color: var(--accent-color) !important;
+}
+
+
+/* Sidebar + sidebar menu */
+.sidebar {
+	position: fixed;
+	top: 0;
+	/* Start off-screen */
+	left: -250px;
+	width: 250px;
+	height: 100vh;
+	background: linear-gradient(to right, var(--bg-primary) 50%, transparent);
+	/* border-right: 1px solid var(--border-color); */
+	padding: 20px;
+	box-sizing: border-box;
+	transition: left 0.3s ease-in-out;
+	z-index: 100;
+}
+
+/* When menu is checked, show sidebar */
+.menu-toggle input:checked~.sidebar {
+	left: 0;
+}
+
+.menu-toggle .hamburger-container h3 {
+	transition: opacity 0.3s ease-in-out;
+}
+
+.menu-toggle input:checked~.hamburger-container h3 {
+	opacity: 1;
+}
+
+.menu-toggle input:not(:checked)~.hamburger-container h3 {
+	opacity: 0;
+}
+
+
+.menu-toggle {
+	position: relative;
+	display: inline-block;
+	width: 60px;
+	height: 60px;
+	cursor: pointer;
+}
+
+/* New container styles */
+.menu-toggle .hamburger-container {
+	display: flex;
+	align-items: center;
+	height: 60px;
+	/* Adjust spacing as needed */
+	padding-left: 20px;
+	position: fixed;
+	z-index: 1000;
+}
+
+.menu-toggle .hamburger-container h3 {
+	margin: 0;
+	/* Space between hamburger and text */
+	padding-left: 10px;
+	font-size: 1.2em;
+}
+
+.menu-toggle input {
+	opacity: 0;
+	width: 0;
+	height: 0;
+	position: fixed;
+}
+
+.hamburger {
+	position: relative;
+	width: 30px;
+	height: 20px;
+	z-index: 1000;
+}
+
+.hamburger span {
+	position: absolute;
+	width: 100%;
+	height: 3px;
+	background-color: #555;
+	border-radius: 3px;
+	transition: all 0.3s ease-in-out;
+}
+
+/* The three lines of the hamburger icon */
+.hamburger span:nth-child(1) {
+	top: 0;
+}
+
+.hamburger span:nth-child(2) {
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.hamburger span:nth-child(3) {
+	bottom: 0;
+}
+
+/* Animation when checked */
+input:checked+.hamburger span:nth-child(1) {
+	transform: translateY(9px) rotate(45deg);
+}
+
+input:checked+.hamburger span:nth-child(2) {
+	opacity: 0;
+}
+
+input:checked+.hamburger span:nth-child(3) {
+	transform: translateY(-9px) rotate(-45deg);
+}
+
+/* Optional: Hover effect */
+.menu-toggle:hover .hamburger span {
+	background-color: #888;
+}

@@ -124,7 +124,10 @@ export const ENDPOINTS = {
 					type: 'Array<number>',
 					required: true,
 					description: 'The Roblox badge ID to get the data for',
-					notes: 'If the user does not have a badge, it will not be included in the response'
+					notes: [
+						'If the user does not have a badge, it will not be included in the response',
+						'This list must be provided as a json in the body. Prvoided it in the url will not work (unless you know how to get it to treat like a body)'
+					]
 				},
 			],
 			responses: [

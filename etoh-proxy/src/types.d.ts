@@ -60,8 +60,17 @@ type Result<T, E = Error> = Success<T> | Failure<E>;
 type Endpoint = {
 	method: string;
 	path: string;
-	title: string;
 	description: string;
-	example: string;
-	response: string;
+	parameters: {
+		name: string;
+		type: string;
+		required: boolean;
+		description: string;
+		notes?: string[];
+	}[];
+	responses: {
+		code: number;
+		description: string;
+		model?: Object;
+	}[];
 }

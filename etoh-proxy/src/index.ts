@@ -1,12 +1,18 @@
 import { generateDocumentation } from '../docs/generator';
-import template from '../docs/generated/template';
-import styles from '../docs/generated/styles';
-
 import { fetchResponse, handleApiRequest } from './wrappers';
 
 import { getTowerData, getAllTowerData } from './apis/badges';
 import { getNameFromId, getIdFromName } from './apis/users';
 
+async function getRequestDetails(request: Request) {
+	let url = new URL(request.url);
+	let details = url.pathname.split('/');
+	let route = details[1];
+	details.shift();
+	details.shift();
+
+	return { route, details };
+}
 
 export default {
 	async fetch(request: Request, env: Object, ctx: ExecutionContext): Promise<Response> {
@@ -29,15 +35,10 @@ export default {
 
 		console.log('---------------------------------------------');
 
-		// decode url to what we want
-		let url = new URL(request.url);
-		console.log({ path: url.pathname })
-		let details = url.pathname.split('/');
-		console.log({ details })
-		let route = details[1];
 
-		// and handle it.
+		let { route, details } = await getRequestDetails(request);
 		console.log({ route, details });
+
 		switch (route) {
 			case 'users':
 				if (details[3] == 'name') {
@@ -62,7 +63,7 @@ export default {
 				return handleApiRequest(getTowerData(parseInt(details[3]), parseInt(details[2])));
 
 			case '':
-				return fetchResponse(generateDocumentation(template, styles), {
+				return fetchResponse(generateDocumentation(), {
 					headers: {
 						'Content-Type': 'text/html'
 					}

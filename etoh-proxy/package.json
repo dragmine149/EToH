@@ -1,6 +1,6 @@
 {
 	"name": "etoh-proxy",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"private": true,
 	"scripts": {
 		"deploy": "wrangler deploy",
@@ -8,7 +8,8 @@
 		"start": "wrangler dev",
 		"test": "vitest",
 		"cf-typegen": "wrangler types",
-		"build:docs": "node scripts/build-docs.js"
+		"build:docs": "node scripts/build-docs.js",
+		"watch": "npm-watch"
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.7.5",
@@ -16,5 +17,22 @@
 		"typescript": "^5.5.2",
 		"vitest": "~3.0.7",
 		"wrangler": "^4.8.0"
+	},
+	"dependencies": {
+		"npm-watch": "^0.13.0"
+	},
+	"watch": {
+		"build:docs": {
+			"patterns": [
+				"docs",
+				"src",
+				"scripts"
+			],
+			"extensions": "js,ts,css,html",
+			"ignore": [
+				"docs/generated"
+			],
+			"verbose": true
+		}
 	}
 }

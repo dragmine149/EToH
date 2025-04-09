@@ -2,3 +2,18 @@
 @import './base.css';
 @import './code.css';
 @import './endpoints.css';
+@import './main.css';
+@import './navigation.css';
+
+/* CSS Variables for theming */
+:root {
+	--bg-primary: #1a1a1a;
+	--bg-secondary: #2d2d2d;
+	--text-primary: #ffffff;
+	--text-secondary: #b3b3b3;
+	--accent-color: #61dafb;
+	--border-color: #404040;
+	--code-bg: #2d2d2d;
+	--endpoint-bg: #2d2d2d;
+	--shadow-color: rgba(0, 0, 0, 0.3);
+}
