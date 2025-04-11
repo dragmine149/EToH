@@ -74,3 +74,16 @@ type Endpoint = {
 		model?: Object;
 	}[];
 }
+
+type BindingDefinition = {
+	type: string;
+	position: number;
+	required: boolean;
+}
+
+type Bindings = Record<string, BindingDefinition>;
+
+type BindingsResponse = {
+	error: Record<string, string>;
+	[x: string]: any;
+}

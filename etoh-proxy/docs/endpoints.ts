@@ -70,7 +70,7 @@ export const ENDPOINTS = {
 	"badges": [
 		{
 			method: 'GET',
-			path: '/towers/{userid}/{badgeid}',
+			path: '/towers/{userid}/badge/{badgeid}',
 			description: 'Get badge award date from user ID and badge ID',
 			parameters: [
 				{
@@ -193,13 +193,13 @@ export const ENDPOINTS = {
 					code: 200,
 					description: 'User data fetched successfully',
 					model: {
-						badgeId: {
+						earliest: {
 							type: 'number',
-							description: 'The Roblox badge ID'
+							description: 'The badgeid of whichever badge was claimed first'
 						},
-						awardedDate: {
-							type: 'number',
-							description: 'The timestamp when the badge was awarded'
+						data: {
+							type: `[{ badgeId: number; date: number; }, { badgeId: number; date: number; }]`,
+							description: 'Partially debug, shows the information of the two badges requested'
 						}
 					}
 				}

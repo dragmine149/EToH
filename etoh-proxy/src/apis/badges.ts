@@ -12,7 +12,7 @@ export function processDate(date: string) {
 * @param user_id The id of the user
 * @returns The date/time the badge got awarded
 */
-export async function getTowerData(badge_id: number, user_id: number) {
+export async function getTowerData(user_id: number, badge_id: number) {
 	let url = `https://badges.roblox.com/v1/users/${user_id}/badges/${badge_id}/awarded-date`;
 
 	let response = await tryCatch(fetch(fetchRequest(url)));
