@@ -1,7 +1,7 @@
 import { generateDocumentation } from '../docs/generator';
 import { fetchResponse, handleApiRequest } from './wrappers';
 
-import { getTowerData, getAllTowerData } from './apis/badges';
+import { getTowerData, getAllTowerData, compareBadges } from './apis/badges';
 import { getNameFromId, getIdFromName } from './apis/users';
 
 async function getRequestDetails(request: Request) {
@@ -51,16 +51,15 @@ export default {
 			case 'towers':
 				console.log(`Getting badge data for ${details[3]}`);
 
-				if (details[3] === 'all') {
-					// console.log(request);
-					// console.log(await request.text());
-					// console.log(await request.json());
-					let badges: { badgeids: number[] } = await request.json();
-					return handleApiRequest(getAllTowerData(parseInt(details[2]), badges.badgeids));
-					// return getAllTowerData(parseInt(details[2]), badges.badgeids);
+				switch (details[3]) {
+					case 'compare':
+						return handleApiRequest(compareBadges(parseInt(details[2]), parseInt(details[4]), parseInt(details[5])));
+					case 'all':
+						let badges: { badgeids: number[] } = await request.json();
+						return handleApiRequest(getAllTowerData(parseInt(details[2]), badges.badgeids));
+					default:
+						return handleApiRequest(getTowerData(parseInt(details[3]), parseInt(details[2])));
 				}
-
-				return handleApiRequest(getTowerData(parseInt(details[3]), parseInt(details[2])));
 
 			case '':
 				return fetchResponse(generateDocumentation(), {

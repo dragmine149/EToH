@@ -155,5 +155,55 @@ export const ENDPOINTS = {
 				}
 			]
 		},
+		{
+			method: 'GET',
+			path: '/towers/{userid}/earliest/{badge1}/{badge2',
+			description: 'Compare two badges and return the badge which was awarded the first',
+			streamed: true,
+			parameters: [
+				{
+					name: 'userid',
+					type: 'number',
+					required: true,
+					description: 'The Roblox user ID to get the data for'
+				},
+				{
+					name: 'badge1',
+					type: 'number',
+					required: true,
+					description: 'The first badge id to compare with the second.',
+				},
+				{
+					name: 'badge2',
+					type: 'number',
+					required: true,
+					description: 'The second badge id to compare with the first.',
+				}
+			],
+			responses: [
+				{
+					code: 404,
+					description: 'User ID is invalid or user does not exist',
+				},
+				{
+					code: 500,
+					description: 'Failed to fetch/parse user data (Probably an issue on roblox end)'
+				},
+				{
+					code: 200,
+					description: 'User data fetched successfully',
+					model: {
+						badgeId: {
+							type: 'number',
+							description: 'The Roblox badge ID'
+						},
+						awardedDate: {
+							type: 'number',
+							description: 'The timestamp when the badge was awarded'
+						}
+					}
+				}
+			]
+		}
 	]
 };

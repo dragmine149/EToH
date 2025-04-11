@@ -135,3 +135,51 @@ export async function getAllTowerData(user_id: number, badges: number[]) {
 		}
 	});
 }
+
+export async function compareBadges(user_id: number, badge_1: number, badge_2: number) {
+	let url = `https://badges.roblox.com/v1/users/${user_id}/badges/awarded-dates?badgeIds=${badge_1},${badge_2}`;
+	let response = await tryCatch(fetch(fetchRequest(url, {
+		headers: {
+			'Content-Type': 'application/json'
+		},
+	})));
+
+	if (response.error) {
+		return new Response(`Failed to fetch badge data: ${response.error.message}`, { status: 500 });
+	}
+
+	let data = await tryCatch<RobloxBadgeResponse>(response.data.json());
+	if (data.error) {
+		return new Response(`Failed to parse badge data: ${data.error.message}`, { status: 500 });
+	}
+
+	let rbx_data = data.data.data;
+	let return_data = {
+		earliest: -1,
+		data: rbx_data
+	};
+
+	if (rbx_data.length <= 0) {
+		return Response.json(return_data);
+	}
+	rbx_data = rbx_data.map(badge => {
+		if (badge.awardedDate == undefined) {
+			return badge;
+		}
+
+		badge.date = processDate(badge.awardedDate);
+		delete badge.awardedDate;
+		return badge;
+	});
+
+	let date = Math.min(...rbx_data.map(badge => badge.date));
+	let earliest = rbx_data.find(v => v.date == date);
+
+	if (earliest == undefined) {
+		return new Response(`Failed to get earliest badge somehow. Please try again or report a bug`, { status: 501 });
+	}
+
+	return_data.earliest = earliest.badgeId;
+	return Response.json(return_data, { status: 200 });
+
+}
