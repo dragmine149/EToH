@@ -106,7 +106,7 @@ export default {
 						return handleApiRequest(getIdFromName(username));
 				}
 			case 'towers':
-				let { user_id: towerId, option: towerOption, badge_1, badge_2 } = processDetails(details, {
+				let { user_id: user, option: towerOption, badge_1, badge_2 } = processDetails(details, {
 					user_id: {
 						type: 'number',
 						position: 0,
@@ -130,17 +130,17 @@ export default {
 				});
 
 
-				console.log(`Getting badge data for ${towerId} (${{ option: towerOption, badge_1, badge_2 }})`);
+				console.log(`Getting badge data for ${user}`, { option: towerOption, badge_1, badge_2 });
 
 				switch (towerOption) {
 					case 'compare':
-						return handleApiRequest(compareBadges(towerId, badge_1, badge_2));
+						return handleApiRequest(compareBadges(user, badge_1, badge_2));
 					case 'all':
 						let badges: { badgeids: number[] } = await request.json();
-						return handleApiRequest(getAllTowerData(towerId, badges.badgeids));
+						return handleApiRequest(getAllTowerData(user, badges.badgeids));
 					case 'badge':
 					default:
-						return handleApiRequest(getTowerData(towerId, badge_1));
+						return handleApiRequest(getTowerData(user, badge_1));
 				}
 
 			default:

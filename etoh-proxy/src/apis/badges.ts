@@ -138,7 +138,7 @@ export async function getAllTowerData(user_id: number, badges: number[]) {
 
 export async function compareBadges(user_id: number, badge_1: number, badge_2: number) {
 	let url = `https://badges.roblox.com/v1/users/${user_id}/badges/awarded-dates?badgeIds=${badge_1},${badge_2}`;
-	console.log(`Fetching data`);
+	console.log(`Fetching data from: ${url}`);
 	let response = await tryCatch(fetch(fetchRequest(url, {
 		headers: {
 			'Content-Type': 'application/json'
