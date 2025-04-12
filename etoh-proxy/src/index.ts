@@ -37,7 +37,7 @@ function processDetails(details: string[], bindings: Bindings) {
 				break;
 			case 'number':
 				response[key] = Number(info);
-				if (isNaN(response[key])) {
+				if (isNaN(response[key]) && value.required) {
 					response.error[key] = `Failed to parse ${info} into a number. Please check the passed parameters.`;
 				}
 				break;
