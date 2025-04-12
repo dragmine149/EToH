@@ -195,7 +195,7 @@ export const ENDPOINTS = {
 					model: {
 						earliest: {
 							type: 'number',
-							description: 'The badgeid of whichever badge was claimed first'
+							description: 'The badgeid of whichever badge was claimed first. Returns `-1` if neither badge has been claimed by that user.'
 						},
 						data: {
 							type: `[{ badgeId: number; date: number; }, { badgeId: number; date: number; }]`,

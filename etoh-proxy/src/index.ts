@@ -77,12 +77,12 @@ export default {
 					user_id: {
 						position: 0,
 						type: 'number',
-						required: true,
+						required: false,
 					},
 					username: {
 						position: 0,
 						type: 'string',
-						required: true,
+						required: false,
 					},
 					option: {
 						position: 1,
