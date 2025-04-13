@@ -3,6 +3,7 @@ import { fetchResponse, handleApiRequest } from './wrappers';
 
 import { getTowerData, getAllTowerData, compareBadges } from './apis/badges';
 import { getNameFromId, getIdFromName } from './apis/users';
+import { DataResponse } from './utils';
 
 async function getRequestDetails(request: Request) {
 	let url = new URL(request.url);
@@ -20,6 +21,8 @@ function processDetails(details: string[], bindings: Bindings) {
 	};
 
 	Object.entries(bindings).forEach(([key, value]) => {
+		console.log(`Looking at: `, { key, value });
+
 		if (value.position > details.length && value.required) {
 			response.error.position = `${key} requested a pos of ${value.position} which does not exist in. Defaulting to empty.`;
 			switch (value.type) {
@@ -92,7 +95,7 @@ export default {
 				});
 
 				if (Object.keys(error).length > 0) {
-					return Response.json(error);
+					return DataResponse.URLParseFailed(error);
 				}
 
 				switch (userOption) {
@@ -101,9 +104,11 @@ export default {
 						return handleApiRequest(getNameFromId(userId));
 
 					case '':
-					default:
 						console.log(`Getting user id from ${username}`);
 						return handleApiRequest(getIdFromName(username));
+
+					default:
+						return DataResponse.APIDoesntExist();
 				}
 			case 'towers':
 				let { user_id: user, option: towerOption, badge_1, badge_2 } = processDetails(details, {
@@ -134,22 +139,25 @@ export default {
 
 				switch (towerOption) {
 					case 'compare':
+					case 'earliest':
 						return handleApiRequest(compareBadges(user, badge_1, badge_2));
 					case 'all':
 						let badges: { badgeids: number[] } = await request.json();
 						return handleApiRequest(getAllTowerData(user, badges.badgeids));
 					case 'badge':
-					default:
 						return handleApiRequest(getTowerData(user, badge_1));
+					default:
+						return DataResponse.APIDoesntExist();
 				}
 
-			default:
 			case '':
 				return fetchResponse(generateDocumentation(), {
 					headers: {
 						'Content-Type': 'text/html'
-					}
+					}, status: 200
 				});
+			default:
+				return DataResponse.APIDoesntExist();
 		}
 	},
 } satisfies ExportedHandler<Env>;

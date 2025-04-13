@@ -191,6 +191,9 @@ th {
 
 .status-code {
 	font-weight: bold;
+	vertical-align: top;
+	text-align: center;
+	font-size: 1.2rem;
 }
 
 .response-model {

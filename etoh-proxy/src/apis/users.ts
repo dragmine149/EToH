@@ -1,4 +1,4 @@
-import { tryCatch } from "../utils";
+import { DataResponse, tryCatch } from "../utils";
 import { fetchRequest } from "../wrappers";
 
 /**
@@ -9,7 +9,7 @@ import { fetchRequest } from "../wrappers";
 export async function getIdFromName(name: string): Promise<Response> {
 	// if we have no name, then return as there is no reason for us to do anything.
 	if (!name) {
-		return new Response('User not Found', { status: 404 });
+		return DataResponse.UserNotFound(name);
 	}
 
 	// Test for username as per the api.
@@ -26,31 +26,31 @@ export async function getIdFromName(name: string): Promise<Response> {
 
 	// if we have an error during the fetch
 	if (response.error) {
-		return new Response(`Failed to fetch user data: ${response.error.message}`, { status: 500 });
+		return DataResponse.FetchFailed(response.error.message);
 	}
 
 
 	// decode the id from the data
 	let data = await tryCatch<RobloxUserIDResponse>(response.data.json());
 	if (data.error) {
-		return new Response(`Failed to parse user data: ${data.error.message}`, { status: 500 });
+		return DataResponse.ParseJsonFailed(data.error.message);
 	}
 
 	let rbx_data = data.data.data;
 
 	// just make sure we have data
 	if (rbx_data?.length > 0) {
-		return Response.json({
+		return DataResponse.UserFound({
 			id: rbx_data[0].id
-		})
+		});
 	}
 
-	return new Response(`User not found`, { status: 404 });
+	return DataResponse.UserNotFound(name);
 }
 
 export async function getNameFromId(id: number): Promise<Response> {
 	if (!id) {
-		return new Response('Invalid ID, aka user not found.', { status: 404 });
+		return DataResponse.UserNotFound(id);
 	}
 
 	let response = await tryCatch(fetch(fetchRequest(`https://users.roblox.com/v1/users/${id}`, {
@@ -58,15 +58,20 @@ export async function getNameFromId(id: number): Promise<Response> {
 	})));
 
 	if (response.error) {
-		return new Response(`Failed to fetch user data: ${response.error.message}`, { status: 500 });
+		return DataResponse.FetchFailed(response.error.message);
 	}
 
 	let data = await tryCatch<RobloxUser>(response.data.json());
-	if (data.error || data.data.errors) {
-		return new Response(`Failed to fetch user data: Invalid user id`, { status: 500 });
+	if (data.error) {
+		return DataResponse.ParseJsonFailed(data.error.message);
 	}
 
-	return Response.json({
+	if (data.data.errors) {
+		console.warn(data.data.errors);
+		return DataResponse.UserNotFound(id);
+	}
+
+	return DataResponse.UserFound({
 		name: data.data.name
 	});
 }

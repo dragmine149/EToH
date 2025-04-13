@@ -1,4 +1,4 @@
-import { tryCatch } from '../utils';
+import { DataResponse, processResponse, tryCatch } from '../utils';
 import { fetchRequest } from '../wrappers';
 
 export function processDate(date: string) {
@@ -15,23 +15,16 @@ export function processDate(date: string) {
 export async function getTowerData(user_id: number, badge_id: number) {
 	let url = `https://badges.roblox.com/v1/users/${user_id}/badges/${badge_id}/awarded-date`;
 
-	let response = await tryCatch(fetch(fetchRequest(url)));
-	if (response.error) {
-		return new Response(`Failed to fetch badge data: ${response.error.message}`, { status: 500 });
+	let result = await processResponse<BadgeResponse>(url, badge_id);
+	if (result instanceof Response) {
+		return result;
 	}
 
-	let data = await tryCatch<BadgeResponse>(response.data.json());
-	if (data.error) {
-		return new Response(`Failed to parse badge data: ${data.error.message}`, { status: 500 });
+	if (result?.awardedDate) {
+		return DataResponse.UserHasBadge({ date: processDate(result.awardedDate) });
 	}
 
-	let rbx_data = data.data;
-
-	if (rbx_data?.awardedDate) {
-		return Response.json({ awardedDate: processDate(rbx_data.awardedDate) });
-	}
-
-	return new Response(`Badge not found`, { status: 404 });
+	return DataResponse.UserNoHasBadge(badge_id);
 }
 
 /**
@@ -41,7 +34,6 @@ export async function getTowerData(user_id: number, badge_id: number) {
 * @returns A streamable response of the badges upon receiving them from roblox.
 */
 export async function getAllTowerData(user_id: number, badges: number[]) {
-	let chunkSize = 100; // roblox has a limit on the amount of badges you can request at once, although this exact limit is unknown, 100 seems big enough,
 	let url = `https://badges.roblox.com/v1/users/${user_id}/badges/awarded-dates`;
 
 	// create new streams and stuff for streaming the data.
@@ -63,32 +55,30 @@ export async function getAllTowerData(user_id: number, badges: number[]) {
 		async function on_error(i: number, error: Error) {
 			// add a retry and reset the chunk size back.
 			retryCount++;
-			i -= chunkSize;
-
-			// reduce the chunkSize upon failing x times.
-			if (retryCount % 2 == 1) {
-				chunkSize = Math.max(1, Math.floor(chunkSize / 2));
-			}
+			i -= 100;
 
 			// avoid the one off situation where i becomes negative and breaks things.
 			i = Math.min(0, i);
 
-			await writer.write(encoder.encode(`Failed to fetch from server due to: ${error.message}`));
+			await writer.write(encoder.encode(JSON.stringify({
+				error: `Failed to fetch from server due to: ${error.message}`
+			})))
+
 			if (retryCount === 2) await new Promise(resolve => setTimeout(resolve, 2000));
 			if (retryCount === 3) await new Promise(resolve => setTimeout(resolve, 5000));
 
 			return i;
 		}
 
-		for (let i = 0; i < badges.length; i += chunkSize) {
+		for (let i = 0; i < badges.length; i += 100) {
 			if (retryCount > 3) {
 				// ok, give up.
-				await writer.abort(new Error('Failed after 4 retries'));
+				await writer.abort({ error: 'Failed after 4 retries' });
 				return;
 			}
 
 			// chunk and generate the other part of the url.
-			let chunk = badges.slice(i, i + chunkSize);
+			let chunk = badges.slice(i, i + 100);
 			let badge_search = chunk.map(badge => badge.toString()).join(',');
 
 			// send the request to the server
@@ -132,43 +122,27 @@ export async function getAllTowerData(user_id: number, badges: number[]) {
 		headers: {
 			'Content-Type': 'application/x-ndjson',
 			'Transfer-Encoding': 'chunked'
-		}
+		},
+		status: 202
 	});
 }
 
 export async function compareBadges(user_id: number, badge_1: number, badge_2: number) {
 	let url = `https://badges.roblox.com/v1/users/${user_id}/badges/awarded-dates?badgeIds=${badge_1},${badge_2}`;
-	console.log(`Fetching data from: ${url}`);
-	let response = await tryCatch(fetch(fetchRequest(url, {
-		headers: {
-			'Content-Type': 'application/json'
-		},
-	})));
-
-	console.log("Data fetched");
-
-	if (response.error) {
-		return new Response(`Failed to fetch badge data: ${response.error.message}`, { status: 500 });
+	let result = await processResponse<RobloxBadgeResponse>(url, user_id);
+	if (result instanceof Response) {
+		return result;
 	}
 
-	console.log("Parsing data");
+	let rbx_data = result.data;
 
-	let data = await tryCatch<RobloxBadgeResponse>(response.data.json());
-	if (data.error) {
-		return new Response(`Failed to parse badge data: ${data.error.message}`, { status: 500 });
-	}
-
-	console.log("Data parsed");
-	console.log(`Data: `, data.data.data);
-
-	let rbx_data = data.data.data;
 	let return_data = {
 		earliest: -1,
 		data: rbx_data
 	};
 
 	if (rbx_data.length <= 0) {
-		return Response.json(return_data);
+		return DataResponse.UserNoHasBadges(user_id);
 	}
 	rbx_data = rbx_data.map(badge => {
 		if (badge.awardedDate == undefined) {
@@ -184,10 +158,9 @@ export async function compareBadges(user_id: number, badge_1: number, badge_2: n
 	let earliest = rbx_data.find(v => v.date == date);
 
 	if (earliest == undefined) {
-		return new Response(`Failed to get earliest badge somehow. Please try again or report a bug`, { status: 501 });
+		return DataResponse.Unknown(`Failed to get earliest badge somehow. Please try again or report a bug`);
 	}
 
 	return_data.earliest = earliest.badgeId;
-	return Response.json(return_data, { status: 200 });
-
+	return DataResponse.UserHasBadge(return_data);
 }

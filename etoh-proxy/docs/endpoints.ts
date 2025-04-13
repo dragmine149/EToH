@@ -1,4 +1,42 @@
 export const ENDPOINTS = {
+	"": [
+		{
+			method: 'GET',
+			path: '/',
+			description: 'Get the root endpoint, aka this documentation.',
+			parameters: [],
+			responses: [
+				{
+					code: 200,
+					description: 'The root endpoint was retrieved successfully',
+					model: {
+						message: {
+							type: 'string',
+							description: 'The message'
+						}
+					}
+				}
+			]
+		},
+		{
+			method: 'GET',
+			path: '/{anything}',
+			description: 'Any endpoint not listed in this documentation',
+			parameters: [],
+			responses: [
+				{
+					code: 501,
+					description: 'Endpoint not found',
+					model: {
+						error: {
+							type: 'string',
+							description: 'The error message'
+						}
+					}
+				}
+			]
+		}
+	],
 	"users": [
 		{
 			method: 'GET',
@@ -15,15 +53,45 @@ export const ENDPOINTS = {
 			responses: [
 				{
 					code: 404,
-					description: 'Username is invalid or user does not exist',
+					description: 'User could not be found or no username was provided.',
+					model: {
+						error: {
+							type: 'string',
+							description: 'The error message'
+						}
+					}
+				},
+				{
+					code: 400,
+					description: 'Fetch failed. Roblox is either ratelimiting us or is currently down.',
+					model: {
+						error: {
+							type: 'string',
+							description: 'The error message'
+						},
+						error_details: {
+							type: 'any[]',
+							description: 'More information about the error in question.'
+						}
+					}
 				},
 				{
 					code: 500,
-					description: 'Failed to fetch/parse user data (Probably an issue on roblox end)'
+					description: 'Json retrieved from roblox failed to parse. This could be a server side issue not handing an edge case, or a roblox issue in how their data is returned.',
+					model: {
+						error: {
+							type: 'string',
+							description: 'The error message'
+						},
+						error_details: {
+							type: 'any[]',
+							description: 'More information about the error in question.'
+						}
+					}
 				},
 				{
 					code: 200,
-					description: 'User data fetched successfully',
+					description: 'The user was found successfully',
 					model: {
 						id: {
 							type: 'number',
@@ -48,19 +116,49 @@ export const ENDPOINTS = {
 			responses: [
 				{
 					code: 404,
-					description: 'User ID is invalid or user does not exist',
+					description: 'User could not be found or no id was provided.',
+					model: {
+						error: {
+							type: 'string',
+							description: 'The error message'
+						}
+					}
+				},
+				{
+					code: 400,
+					description: 'Fetch failed. Roblox is either ratelimiting us or is currently down.',
+					model: {
+						error: {
+							type: 'string',
+							description: 'The error message'
+						},
+						error_details: {
+							type: 'any[]',
+							description: 'More information about the error in question.'
+						}
+					}
 				},
 				{
 					code: 500,
-					description: 'Failed to fetch/parse user data (Probably an issue on roblox end)'
+					description: 'Json retrieved from roblox failed to parse. This could be a server side issue not handing an edge case, or a roblox issue in how their data is returned.',
+					model: {
+						error: {
+							type: 'string',
+							description: 'The error message'
+						},
+						error_details: {
+							type: 'any[]',
+							description: 'More information about the error in question.'
+						}
+					}
 				},
 				{
 					code: 200,
-					description: 'User data fetched successfully',
+					description: 'The user was found successfully',
 					model: {
-						name: {
+						id: {
 							type: 'string',
-							description: 'The Roblox username'
+							description: 'The Roblox user username'
 						}
 					}
 				}
@@ -88,20 +186,54 @@ export const ENDPOINTS = {
 			],
 			responses: [
 				{
-					code: 404,
-					description: 'User ID or badge ID is invalid or user does not have the badge',
+					code: 400,
+					description: 'Fetch failed. Roblox is either ratelimiting us or is currently down.',
+					model: {
+						error: {
+							type: 'string',
+							description: 'The error message'
+						},
+						error_details: {
+							type: 'any[]',
+							description: 'More information about the error in question.'
+						}
+					}
 				},
 				{
 					code: 500,
-					description: 'Failed to fetch/parse badge data (Probably an issue on roblox end)'
+					description: 'Json retrieved from roblox failed to parse. This could be a server side issue not handing an edge case, or a roblox issue in how their data is returned.',
+					model: {
+						error: {
+							type: 'string',
+							description: 'The error message'
+						},
+						error_details: {
+							type: 'any[]',
+							description: 'More information about the error in question.'
+						}
+					}
 				},
 				{
 					code: 200,
-					description: 'Badge data fetched successfully',
+					description: 'Badge data has been retrieved from roblox',
 					model: {
-						awardedDate: {
+						error: {
+							type: 'string',
+							description: 'The user does not have the badge. We do not know if the badge exists or not.'
+						},
+						date: {
 							type: 'number',
-							description: 'The timestamp when the badge was awarded'
+							description: 'The default unix time of 0 as the user doesn\' have the badge'
+						}
+					}
+				},
+				{
+					code: 200,
+					description: 'Badge data has been retrieved from roblox',
+					model: {
+						date: {
+							type: 'number',
+							description: 'The unix time of when the badge was awarded'
 						}
 					}
 				}
@@ -132,24 +264,22 @@ export const ENDPOINTS = {
 			],
 			responses: [
 				{
-					code: 404,
-					description: 'User ID is invalid or user does not exist',
-				},
-				{
-					code: 500,
-					description: 'Failed to fetch/parse user data (Probably an issue on roblox end)'
-				},
-				{
-					code: 200,
-					description: 'User data fetched successfully',
+					code: 202,
+					description: 'The server has opened a stream ready to send badge data',
 					model: {
-						badgeId: {
-							type: 'number',
-							description: 'The Roblox badge ID'
-						},
-						awardedDate: {
-							type: 'number',
-							description: 'The timestamp when the badge was awarded'
+						response: {
+							type: 'ReadableStream',
+							description: 'The stream that can be read to get the badge data'
+						}
+					}
+				},
+				{
+					code: -1,
+					description: 'An error returned during the stream, could be for any reason and any code. (hence the code of -1)',
+					model: {
+						error: {
+							type: 'string',
+							description: 'The error message returned during the stream, and the information. DO NOTE: This won\'t cause the stream to end and more successfully data can follow.'
 						}
 					}
 				}
@@ -157,7 +287,7 @@ export const ENDPOINTS = {
 		},
 		{
 			method: 'GET',
-			path: '/towers/{userid}/earliest/{badge1}/{badge2',
+			path: '/towers/{userid}/earliest/{badge1}/{badge2}',
 			description: 'Compare two badges and return the badge which was awarded the first',
 			streamed: true,
 			parameters: [
@@ -182,28 +312,72 @@ export const ENDPOINTS = {
 			],
 			responses: [
 				{
-					code: 404,
-					description: 'User ID is invalid or user does not exist',
+					code: 400,
+					description: 'Fetch failed. Roblox is either ratelimiting us or is currently down.',
+					model: {
+						error: {
+							type: 'string',
+							description: 'The error message'
+						},
+						error_details: {
+							type: 'any[]',
+							description: 'More information about the error in question.'
+						}
+					}
 				},
 				{
 					code: 500,
-					description: 'Failed to fetch/parse user data (Probably an issue on roblox end)'
+					description: 'Json retrieved from roblox failed to parse. This could be a server side issue not handing an edge case, or a roblox issue in how their data is returned.',
+					model: {
+						error: {
+							type: 'string',
+							description: 'The error message'
+						},
+						error_details: {
+							type: 'any[]',
+							description: 'More information about the error in question.'
+						}
+					}
+				},
+				{
+					code: 500,
+					description: 'Earliest badge failed to be got for some reason. Hence causing an issue. Please try again, if this issue persists then please raise an issue on github.',
+					model: {
+						error: {
+							type: 'string',
+							description: 'The error message'
+						},
+						error_details: {
+							type: 'any[]',
+							description: 'More information about the error in question.'
+						}
+					}
 				},
 				{
 					code: 200,
-					description: 'User data fetched successfully',
+					description: 'Badge data has been retrieved from roblox',
 					model: {
-						earliest: {
-							type: 'number',
-							description: 'The badgeid of whichever badge was claimed first. Returns `-1` if neither badge has been claimed by that user.'
+						error: {
+							type: 'string',
+							description: 'The user does not have the badge. We do not know if the badge exists or not.'
 						},
-						data: {
-							type: `[{ badgeId: number; date: number; }, { badgeId: number; date: number; }]`,
-							description: 'Partially debug, shows the information of the two badges requested'
+						date: {
+							type: 'number',
+							description: 'The default unix time of 0 as the user doesn\' have the badge'
+						}
+					}
+				},
+				{
+					code: 200,
+					description: 'Badge data has been retrieved from roblox',
+					model: {
+						date: {
+							type: 'number',
+							description: 'The unix time of when the badge was awarded'
 						}
 					}
 				}
 			]
 		}
-	]
+	],
 };

@@ -45,6 +45,7 @@ export default `<!DOCTYPE html>
 
       <section id="endpoints">
         <h2>Endpoints</h2>
+        Note: If an endpoint has multiple status codes, that means any of them could be returned. Although they will be mostly the same, there is still a small difference.
         {{endpoints}}
       </section>
     </div>
