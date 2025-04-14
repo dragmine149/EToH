@@ -1,0 +1,25 @@
+name: Badge Checker
+# A workflow to ensure that all badges have been accounted for.
+
+on:
+  push:
+  schedule:
+    - cron: "0 0 * * 0"
+
+jobs:
+  get-badges:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            data/*
+            !data/Guy_sql
+            BadgeChecker/Checker
+          sparse-checkout-cone-mode: false
+
+      - name: Run Checker
+        run: |
+          chmod +X ./BadgeChecker/Checker
+          ./BadgeChecker/Checker
