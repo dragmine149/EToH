@@ -55,7 +55,7 @@ enum DataResponses {
 
 export class DataResponse {
 	static __makeResponse(json: any, status: number) {
-		console.trace("Making response with information:", { json, status });
+		console.log("Making response with information:", { json, status });
 		return Response.json(json, { status });
 	}
 
@@ -76,9 +76,15 @@ export class DataResponse {
 		return this.__makeResponse(data, DataResponses.UserFound);
 	}
 
-	static UserNotFound(id: (number | string)): Response {
+	static UserNotFoundId(id: number): Response {
 		return this.__makeResponse({
 			error: `User with this id (${id}) could not be found.`,
+		}, DataResponses.UserNotFound)
+	}
+
+	static UserNotFoundName(name: string): Response {
+		return this.__makeResponse({
+			error: `User with this name (${name}) could not be found.`,
 		}, DataResponses.UserNotFound)
 	}
 

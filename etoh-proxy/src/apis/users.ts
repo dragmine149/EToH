@@ -9,7 +9,7 @@ import { fetchRequest } from "../wrappers";
 export async function getIdFromName(name: string): Promise<Response> {
 	// if we have no name, then return as there is no reason for us to do anything.
 	if (!name) {
-		return DataResponse.UserNotFound(name);
+		return DataResponse.UserNotFoundName(name);
 	}
 
 	// Test for username as per the api.
@@ -45,12 +45,12 @@ export async function getIdFromName(name: string): Promise<Response> {
 		});
 	}
 
-	return DataResponse.UserNotFound(name);
+	return DataResponse.UserNotFoundName(name);
 }
 
 export async function getNameFromId(id: number): Promise<Response> {
 	if (!id) {
-		return DataResponse.UserNotFound(id);
+		return DataResponse.UserNotFoundId(id);
 	}
 
 	let response = await tryCatch(fetch(fetchRequest(`https://users.roblox.com/v1/users/${id}`, {
@@ -68,7 +68,7 @@ export async function getNameFromId(id: number): Promise<Response> {
 
 	if (data.data.errors) {
 		console.warn(data.data.errors);
-		return DataResponse.UserNotFound(id);
+		return DataResponse.UserNotFoundId(id);
 	}
 
 	return DataResponse.UserFound({
