@@ -1,9 +1,69 @@
 import { generateDocumentation } from '../docs/generator';
 import { fetchResponse, handleApiRequest } from './wrappers';
-
-import { getTowerData, getAllTowerData, compareBadges } from './apis/badges';
-import { getNameFromId, getIdFromName } from './apis/users';
 import { DataResponse } from './utils';
+import { UserRoutes } from './routes/UserRoutes';
+import { TowerRoutes } from './routes/TowerRoutes';
+
+async function handleRoute(route: string, details: string[], request: Request) {
+	switch (route) {
+		case 'users': {
+			const response = processDetails(details, {
+				user_id: {
+					position: 0,
+					type: 'number',
+					required: false,
+				},
+				username: {
+					position: 0,
+					type: 'string',
+					required: false,
+				},
+				option: {
+					position: 1,
+					type: 'string',
+					required: false
+				}
+			});
+			return UserRoutes.handle(response);
+		}
+
+		case 'towers': {
+			const response = processDetails(details, {
+				user_id: {
+					type: 'number',
+					position: 0,
+					required: true,
+				},
+				option: {
+					type: 'string',
+					position: 1,
+					required: true,
+				},
+				badge_1: {
+					type: 'number',
+					position: 2,
+					required: false,
+				},
+				badge_2: {
+					type: 'number',
+					position: 3,
+					required: false,
+				}
+			});
+			return TowerRoutes.handle(response, request);
+		}
+
+		case '':
+			return fetchResponse(generateDocumentation(), {
+				headers: {
+					'Content-Type': 'text/html'
+				}, status: 200
+			});
+
+		default:
+			return DataResponse.APIDoesntExist();
+	}
+}
 
 async function getRequestDetails(request: Request) {
 	let url = new URL(request.url);
@@ -74,90 +134,6 @@ export default {
 		let { route, details } = await getRequestDetails(request);
 		console.log({ route, details });
 
-		switch (route) {
-			case 'users':
-				let { user_id: userId, username, option: userOption, error } = processDetails(details, {
-					user_id: {
-						position: 0,
-						type: 'number',
-						required: false,
-					},
-					username: {
-						position: 0,
-						type: 'string',
-						required: false,
-					},
-					option: {
-						position: 1,
-						type: 'string',
-						required: false
-					}
-				});
-
-				if (Object.keys(error).length > 0) {
-					return DataResponse.URLParseFailed(error);
-				}
-
-				switch (userOption) {
-					case 'name':
-						console.log(`Getting user name from ${userId}`);
-						return handleApiRequest(getNameFromId(userId));
-
-					case '':
-						console.log(`Getting user id from ${username}`);
-						return handleApiRequest(getIdFromName(username));
-
-					default:
-						return DataResponse.APIDoesntExist();
-				}
-			case 'towers':
-				let { user_id: user, option: towerOption, badge_1, badge_2 } = processDetails(details, {
-					user_id: {
-						type: 'number',
-						position: 0,
-						required: true,
-					},
-					option: {
-						type: 'string',
-						position: 1,
-						required: true,
-					},
-					badge_1: {
-						type: 'number',
-						position: 2,
-						required: false,
-					},
-					badge_2: {
-						type: 'number',
-						position: 3,
-						required: false,
-					}
-				});
-
-
-				console.log(`Getting badge data for ${user}`, { option: towerOption, badge_1, badge_2 });
-
-				switch (towerOption) {
-					case 'compare':
-					case 'earliest':
-						return handleApiRequest(compareBadges(user, badge_1, badge_2));
-					case 'all':
-						let badges: { badgeids: number[] } = await request.json();
-						return handleApiRequest(getAllTowerData(user, badges.badgeids));
-					case 'badge':
-						return handleApiRequest(getTowerData(user, badge_1));
-					default:
-						return DataResponse.APIDoesntExist();
-				}
-
-			case '':
-				return fetchResponse(generateDocumentation(), {
-					headers: {
-						'Content-Type': 'text/html'
-					}, status: 200
-				});
-			default:
-				return DataResponse.APIDoesntExist();
-		}
+		return await handleApiRequest(handleRoute(route, details, request));
 	},
 } satisfies ExportedHandler<Env>;

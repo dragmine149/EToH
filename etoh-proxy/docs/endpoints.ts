@@ -40,7 +40,7 @@ export const ENDPOINTS = {
 	"users": [
 		{
 			method: 'GET',
-			path: '/users/{username}',
+			path: '/users/{username}/id',
 			description: 'Get user ID from username',
 			parameters: [
 				{

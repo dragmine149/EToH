@@ -85,5 +85,5 @@ type Bindings = Record<string, BindingDefinition>;
 
 type BindingsResponse = {
 	error: Record<string, string>;
-	[x: string]: any;
+	[key: string]: any;
 }
