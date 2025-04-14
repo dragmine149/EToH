@@ -55,7 +55,7 @@ enum DataResponses {
 
 export class DataResponse {
 	static __makeResponse(json: any, status: number) {
-		console.log("Making response with information:", { json, status });
+		console.trace("Making response with information:", { json, status });
 		return Response.json(json, { status });
 	}
 
