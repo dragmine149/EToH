@@ -7,6 +7,10 @@ function showError(message) {
   document.getElementById('errors').hidden = false;
 }
 
+function hideError() {
+  document.getElementById("errors").hidden = true;
+}
+
 /**
  * @template T
  * @typedef {{

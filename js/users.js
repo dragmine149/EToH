@@ -105,47 +105,50 @@ class UserManager {
   }
 
   async loadUserData() {
-    // Assumption: If we have data in towersDB.users, then we have previously loaded the user.
-    let user = await towersDB.users.get(this.user);
+    // Assumption: User has already been checked for already loaded.
+    if (!this.user.played) {
+      return;
+    }
     // attempt loading from storage.
-    let towers = await towersDB.towers.get(this.user.id);
-    if (towers)
+    let towers = await towersDB.towers.get({ user_id: this.user.id });
+    this.verbose.log(towers);
+    if (towers != undefined) {
+      updateLoadingStatus("User has tower data, loading from storage");
+      return;
+    }
 
-      if (user == undefined || user.played == undefined) {
-        this.verbose.log("Loading data from server");
+    this.verbose.log("Loading data from server as not in storage.");
+    let ids = Object.keys(towerManager.tower_ids);
+    let request = new Request(`${CLOUD_URL}/towers/${this.user.id}/all`, {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        "badgeids": ids
+      })
+    });
 
-        let request = new Request(`${CLOUD_URL}/towers/${this.user.id}/all`, {
-          method: 'POST',
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            "badgeids": towerManager.tower_ids
-          })
-        });
-
-        await network.requestStream(request, async (line) => {
-          // then insert the data (upon conversion) into the database.
-          let badge = await noSyncTryCatch(() => JSON.parse(line));
-          if (badge.error) {
-            // showNotification(`Failed to parse badge data: ${badge.error}. Please try again later. (roblox api might be down)`);
-          }
-
-          /** @type {{badgeId: number, date: number}} */
-          let badgeData = badge.data;
-          // console.log(badgeData);
-
-          towersDB.towers.put({
-            badge_id: badgeData.badgeId,
-            user_id: this.user.id,
-            completion: badgeData.date
-          });
-
-          console.log(badgeData);
-        })
-
+    await network.requestStream(request, async (line) => {
+      // then insert the data (upon conversion) into the database.
+      let badge = await noSyncTryCatch(() => JSON.parse(line));
+      if (badge.error) {
+        showError(`Failed to parse badge data: ${badge.error}. Please try again later. (roblox api might be down)`);
       }
-    console.log('User already been fetched, loading from storage');
+
+      /** @type {{badgeId: number, date: number}} */
+      let badgeData = badge.data;
+      // console.log(badgeData);
+
+      towersDB.towers.put({
+        badge_id: badgeData.badgeId,
+        user_id: this.user.id,
+        completion: badgeData.date
+      });
+
+      updateLoadingStatus(`Loaded: ${towerManager.tower_ids[badgeData.badgeId]} from server`)
+      // console.log(badgeData);
+    })
   }
 
   /**
@@ -196,6 +199,8 @@ class UserData {
   * Search a user and loads their information
   */
   searchUser() {
+    hideError();
+
     let searchElm = document.getElementById("search_input").value;
     this.currentUser = new UserManager(searchElm);
     this.users.push(this.currentUser);

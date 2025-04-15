@@ -84,8 +84,8 @@ class TowerManager {
 
   /** @type {Towers} The raw tower data from the server */
   raw_data;
-  /** @type {number[]} A list of all the badge ids that the towers have */
-  tower_ids = [];
+  /** @type {Object.<number, string>} The badge id and the name of said badge. */
+  tower_ids = {};
 
   get __areaElm() {
     return document.getElementById('towers');
@@ -151,8 +151,8 @@ class TowerManager {
 
       for (let [towerName, tower] of Object.entries(towers)) {
         this.towers.push(new Tower(towerName, finalName, tower.difficulty, tower.badge_id, tower.old_id));
-        this.tower_ids.push(tower.badge_id);
-        if (tower.old_id) this.tower_ids.push(tower.old_id);
+        this.tower_ids[tower.badge_id] = towerName;
+        if (tower.old_id) this.tower_ids[tower.old_id] = towerName;
       }
 
       if (this.areas.includes(finalName)) {
