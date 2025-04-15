@@ -1,5 +1,5 @@
 class UserManager {
-  /** @type {{id: number, name: string}} Roblox user information */
+  /** @type {{id: number, name: string, played: boolean}} Roblox user information */
   user;
 
   /** @type {{
@@ -29,15 +29,15 @@ class UserManager {
   * - dragmine149
   * - 605215929
   * @param {(string | number)} user The user name/id to get the id/name of.
-  * @returns A dictionary of the user id + name
+  * @returns {Promise<{id: number, name: string, played: boolean}>} A dictionary of the user id + name
   */
   async __getUserData(user) {
     async function get(info, name = false) {
       // Test for id
-      let response = await fetch(`https://etoh-proxy.dragmine149.workers.dev/users/${info}${name ? "/name" : ""}`);
+      let response = await fetch(`https://etoh-proxy.dragmine149.workers.dev/users/${info}${name ? "/name" : "/id"}`);
 
       if (!response.ok) {
-        showNotification(`Failed to fetch user ${name ? "name" : "id"} for ${info}. (status: ${response.status} ${response.statusText})`, true);
+        showError(`Failed to fetch user ${name ? "name" : "id"} for ${info}. (status: ${response.status} ${response.statusText})`, true);
         return null;
       }
 
@@ -64,7 +64,7 @@ class UserManager {
     }
 
     // query the database to see if we already have the user
-    this.verbose.log(data);
+    this.verbose.log(`Attempting to get: `, data, `from storage`);
     let dbuser = await towersDB.users.get(data);
     if (dbuser != undefined) {
       // return if we do
@@ -74,52 +74,77 @@ class UserManager {
     // query the server if we do not
     if (!data.id) {
       data.id = await get(data.name, false);
-      towersDB.users.put(data);
+    }
+    if (!data.name) {
+      data.name = await get(data.id, true);
+    }
+
+    this.verbose.log(`Storing: `, data);
+
+    await towersDB.users.put(data);
+    return data;
+  }
+
+  async checkPlayed() {
+    this.verbose.log("Checking if user has played EToH");
+    updateLoadingStatus("Checking if user has played EToH");
+    let data = await towersDB.users.get(this.user.id);
+    if (data == undefined) {
+      data = this.user;
+    }
+
+    if (data.played) {
+      updateLoadingStatus("User has played EToH (retrieved from storage). Loading user...");
       return data;
     }
 
-    data.name = await get(data.id, true);
-    towersDB.users.put(data);
+    data.played = await otherManager.hasBadge(data.id, "First Tower") > 0;
+    await towersDB.users.put(data);
+    updateLoadingStatus(data.played ? "User has played EToH (retrieved from server). Loading user..." : "User has not played EToH (retrieved from server).");
     return data;
   }
 
   async loadUserData() {
     // Assumption: If we have data in towersDB.users, then we have previously loaded the user.
     let user = await towersDB.users.get(this.user);
-    if (user == undefined || user.played == undefined) {
-      this.verbose.log("Loading data from server");
+    // attempt loading from storage.
+    let towers = await towersDB.towers.get(this.user.id);
+    if (towers)
 
-      let request = new Request(`${CLOUD_URL}/towers/${this.user.id}/all`, {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          "badgeids": towerManager.tower_ids
-        })
-      });
+      if (user == undefined || user.played == undefined) {
+        this.verbose.log("Loading data from server");
 
-      await network.requestStream(request, async (line) => {
-        // then insert the data (upon conversion) into the database.
-        let badge = await noSyncTryCatch(() => JSON.parse(line));
-        if (badge.error) {
-          // showNotification(`Failed to parse badge data: ${badge.error}. Please try again later. (roblox api might be down)`);
-        }
-
-        /** @type {{badgeId: number, date: number}} */
-        let badgeData = badge.data;
-        // console.log(badgeData);
-
-        towersDB.towers.put({
-          badge_id: badgeData.badgeId,
-          user_id: this.user.id,
-          completion: badgeData.date
+        let request = new Request(`${CLOUD_URL}/towers/${this.user.id}/all`, {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            "badgeids": towerManager.tower_ids
+          })
         });
 
-        console.log(badgeData);
-      })
+        await network.requestStream(request, async (line) => {
+          // then insert the data (upon conversion) into the database.
+          let badge = await noSyncTryCatch(() => JSON.parse(line));
+          if (badge.error) {
+            // showNotification(`Failed to parse badge data: ${badge.error}. Please try again later. (roblox api might be down)`);
+          }
 
-    }
+          /** @type {{badgeId: number, date: number}} */
+          let badgeData = badge.data;
+          // console.log(badgeData);
+
+          towersDB.towers.put({
+            badge_id: badgeData.badgeId,
+            user_id: this.user.id,
+            completion: badgeData.date
+          });
+
+          console.log(badgeData);
+        })
+
+      }
     console.log('User already been fetched, loading from storage');
   }
 
@@ -128,12 +153,21 @@ class UserManager {
   * @param {string} user
   */
   constructor(user) {
-    console.log(`Attempting to load: ${user}`);
+    updateLoadingStatus(`Attempting to load: ${user}`, true);
 
     this.verbose = new Verbose(`UserManager`, '#6189af');
 
     (async () => {
       this.user = await this.__getUserData(user);
+      this.user = await this.checkPlayed();
+
+      if (!this.user.played) {
+        updateLoadingStatus(`Cancelling loading of ${this.user.name} as they have not yet played EToH.<br>
+User must have '<a href=${otherManager.badgeToLink(2125419210)} target="_blank" rel="noopener noreferrer">Beat your first tower</a>' badge before they can be viewed here.`);
+        userData.clearUser();
+        return;
+      }
+
       await this.loadUserData();
     })();
   }
@@ -166,11 +200,15 @@ class UserData {
     this.currentUser = new UserManager(searchElm);
     this.users.push(this.currentUser);
   }
+
+  clearUser() {
+    this.currentUser = null;
+  }
 }
 
 let userData = new UserData();
 let towersDB = new Dexie("Towers");
 towersDB.version(1).stores({
-  towers: `[badge_id+user_id]`,
-  users: `[id+name], played`
+  towers: `[badge_id+user_id], badge_id, user_id`,
+  users: `[id+name], id, name, played`
 })

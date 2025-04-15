@@ -1169,28 +1169,6 @@
       }
     },
     {
-      "id": 2124641800,
-      "name": "Beat Your First Tower",
-      "description": "This is the start of a long journey. Good luck!",
-      "displayName": "Beat Your First Tower",
-      "displayDescription": "This is the start of a long journey. Good luck!",
-      "enabled": true,
-      "iconImageId": 7086799042,
-      "displayIconImageId": 7086799042,
-      "created": "2020-11-26T19:14:42.633+00:00",
-      "updated": "2024-11-19T19:27:09.621+00:00",
-      "statistics": {
-        "pastDayAwardedCount": 0,
-        "awardedCount": 337317,
-        "winRatePercentage": 0.0
-      },
-      "awardingUniverse": {
-        "id": 1055653882,
-        "name": "[MIGRATED] Juke's Towers of Hell ",
-        "rootPlaceId": 2919924313
-      }
-    },
-    {
       "id": 2124641801,
       "name": "Beat 10 Towers",
       "description": "Nice one. Keep going.",

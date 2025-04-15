@@ -1563,28 +1563,6 @@
       }
     },
     {
-      "id": 2125419210,
-      "name": "Beat Your First Tower",
-      "description": "This is the start of a long journey. Good luck!",
-      "displayName": "Beat Your First Tower",
-      "displayDescription": "This is the start of a long journey. Good luck!",
-      "enabled": true,
-      "iconImageId": 9160718134,
-      "displayIconImageId": 9160718134,
-      "created": "2022-03-13T08:02:57.497+00:00",
-      "updated": "2024-11-19T19:38:25.289+00:00",
-      "statistics": {
-        "pastDayAwardedCount": 1511,
-        "awardedCount": 545182,
-        "winRatePercentage": 0.054
-      },
-      "awardingUniverse": {
-        "id": 3264581003,
-        "name": "Eternal Towers of Hell",
-        "rootPlaceId": 8562822414
-      }
-    },
-    {
       "id": 2125419217,
       "name": "Beat 10 Towers",
       "description": "Nice one. Keep going.",
@@ -3248,28 +3226,6 @@
       "statistics": {
         "pastDayAwardedCount": 0,
         "awardedCount": 729,
-        "winRatePercentage": 0.0
-      },
-      "awardingUniverse": {
-        "id": 3264581003,
-        "name": "Eternal Towers of Hell",
-        "rootPlaceId": 8562822414
-      }
-    },
-    {
-      "id": 4430474450821596,
-      "name": "Beat The Tower of Empty Meaningless Patterns",
-      "description": "This is what happens to a tower under Enphoso's influence. The result looks pretty cool though! Anyways, how did you even manage to beat this???",
-      "displayName": "Beat The Tower of Empty Meaningless Patterns",
-      "displayDescription": "This is what happens to a tower under Enphoso's influence. The result looks pretty cool though! Anyways, how did you even manage to beat this???",
-      "enabled": true,
-      "iconImageId": 106314706210898,
-      "displayIconImageId": 106314706210898,
-      "created": "2024-05-10T00:26:04.196+00:00",
-      "updated": "2024-11-21T11:13:04.582+00:00",
-      "statistics": {
-        "pastDayAwardedCount": 4,
-        "awardedCount": 356,
         "winRatePercentage": 0.0
       },
       "awardingUniverse": {

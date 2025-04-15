@@ -1,6 +1,40 @@
+const CLOUD_URL = 'https://etoh-proxy.dragmine149.workers.dev';
+
+
 class Network {
   constructor() {
     this.verbose = new Verbose("Network", "#aa8323");
+  }
+
+  /**
+  * Lets the server process the two badges and return the earliest.
+  * @param {number} user_id The userid to get the data for
+  * @param {number} old_badge The first "ol" badge
+  * @param {number} new_badge The second "new" badge
+  * @returns {Promise<{
+    earliest: number,
+    data: [{ badgeId: number; date: number; }, { badgeId: number; date: number; }]
+  }>}
+  */
+  async getEarlierBadge(user_id, old_badge, new_badge) {
+    let response = await tryCatch(fetch(`${CLOUD_URL}/towers/${user_id}/earliest/${old_badge}/${new_badge}`));
+
+    if (response.error) {
+      showError(`Failed to fetch badge data. (status: ${response.status} ${response.statusText})`, true);
+      return {
+        earliest: -1, data: []
+      }
+    }
+
+    let data = await tryCatch(response.data.json());
+    if (data.error) {
+      showError(`Failed to fetch badge data. (status: ${response.status} ${response.statusText})`, true);
+      return {
+        earliest: -1, data: []
+      }
+    }
+
+    return data.data;
   }
 
   /**

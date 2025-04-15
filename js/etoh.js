@@ -180,7 +180,7 @@ class TowerManager {
 /**
 * @typedef {{
 *   old_id: number,
-*   new_id: number
+*   badge_id: number
 * }} OtherData
 */
 
@@ -190,28 +190,18 @@ class OtherManager {
 
   async hasBadge(user_id, name) {
     /** @type {OtherData} */
-    let badges = this.raw_data.get(name);
-    let badge_ids = [badges.old_id, badges.new_id];
+    let badges = this.raw_data[name];
+    this.verbose.log(`Checking badge ${name} ({old_id: ${badges.old_id}, badge_id: ${badges.badge_id}) for user ${user_id}`);
+    let has = await network.getEarlierBadge(user_id, badges.old_id, badges.badge_id);
+    return has.earliest
+  }
 
-    let response = await fetch(`${CLOUD_URL}/towers/${user_id}/all`, {
-      method: 'POST',
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        "badgeids": badge_ids
-      })
-    });
-
-    // make sure we can actually process the response.
-    if (!response.ok) {
-      const errorText = await response.text();
-      showNotification(`Failed to fetch badge data. (status: ${response.status} ${response.statusText}\n${errorText})`, true);
-      return null;
-    }
+  badgeToLink(badge_id) {
+    return `https://roblox.com/badges/${badge_id}`;
   }
 
   constructor() {
+    this.verbose = new Verbose("OtherManager", "#594832");
     (async () => {
       await this.loadOther();
     })();
@@ -220,7 +210,7 @@ class OtherManager {
   async loadOther() {
     let server_other = await fetch('data/other_data.json');
     if (!server_other.ok) {
-      showNotification(`Failed to fetch tower_data.json: ${server_other.status} ${server_other.statusText}.`, true);
+      showError(`Failed to fetch tower_data.json: ${server_other.status} ${server_other.statusText}.`, true);
       return;
     }
 
