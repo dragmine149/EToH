@@ -87,3 +87,10 @@ type BindingsResponse = {
 	error: Record<string, string>;
 	[key: string]: any;
 }
+
+
+type ResponseType = {
+	error?: string | null;
+	error_details?: any[] | null;
+	[key: string]: any;
+}

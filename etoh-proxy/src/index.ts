@@ -4,6 +4,8 @@ import { DataResponse } from './utils';
 import { UserRoutes } from './routes/UserRoutes';
 import { TowerRoutes } from './routes/TowerRoutes';
 
+const cache = caches.default;
+
 async function handleRoute(route: string, details: string[], request: Request) {
 	switch (route) {
 		case 'users': {
@@ -134,6 +136,22 @@ export default {
 		let { route, details } = await getRequestDetails(request);
 		console.log({ route, details });
 
-		return await handleApiRequest(handleRoute(route, details, request));
+		let response = await cache.match(request.url);
+		if (response) {
+			console.log(`Found ${request.url} in cache, returning cached version`);
+			return response;
+		}
+
+		response = await handleApiRequest(handleRoute(route, details, request));
+		let clone = response.clone();
+		let clone_json: ResponseType = await clone.json();
+		if (clone_json.error) {
+			console.log(`Request ${request.url} errored. Not storing in cache`);
+			return response;
+		}
+
+		console.log(`Request ${request.url} succeeded. Storing in cache (and returning)`)
+		ctx.waitUntil(cache.put(request.url, response.clone()));
+		return response;
 	},
 } satisfies ExportedHandler<Env>;
