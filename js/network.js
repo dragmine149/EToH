@@ -1,4 +1,4 @@
-const CLOUD_URL = 'https://etoh-proxy.dragmine149.workers.dev';
+const CLOUD_URL = 'https://roblox-proxy.dragmine149.workers.dev';
 
 
 class Network {

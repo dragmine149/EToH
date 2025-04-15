@@ -48,7 +48,7 @@ class Tower {
   old_badge;
 
   get shortName() {
-    return this.name.split(' ').map(word => (word.toLowerCase() == 'of' || word.toLowerCase() == 'and') ? word[0] : word[0].toUpperCase()).join('');
+    return this.name.split(' ').map(word => word.toLowerCase()).map(word => (word == 'of' || word == 'and') ? word[0] : word[0].toUpperCase()).join('');
   }
   get difficultyWord() {
     return towerManager.getDifficulty(this.difficulty);
@@ -177,47 +177,4 @@ class TowerManager {
   }
 }
 
-/**
-* @typedef {{
-*   old_id: number,
-*   badge_id: number
-* }} OtherData
-*/
-
-class OtherManager {
-  /** @type {Object.<string, OtherData>} */
-  raw_data;
-
-  async hasBadge(user_id, name) {
-    /** @type {OtherData} */
-    let badges = this.raw_data[name];
-    this.verbose.log(`Checking badge ${name} ({old_id: ${badges.old_id}, badge_id: ${badges.badge_id}) for user ${user_id}`);
-    let has = await network.getEarlierBadge(user_id, badges.old_id, badges.badge_id);
-    return has.earliest
-  }
-
-  badgeToLink(badge_id) {
-    return `https://roblox.com/badges/${badge_id}`;
-  }
-
-  constructor() {
-    this.verbose = new Verbose("OtherManager", "#594832");
-    (async () => {
-      await this.loadOther();
-    })();
-  }
-
-  async loadOther() {
-    let server_other = await fetch('data/other_data.json');
-    if (!server_other.ok) {
-      showError(`Failed to fetch tower_data.json: ${server_other.status} ${server_other.statusText}.`, true);
-      return;
-    }
-
-    this.raw_data = await server_other.json();
-    console.log(this.raw_data);
-  }
-}
-
 let towerManager = new TowerManager();
-let otherManager = new OtherManager();

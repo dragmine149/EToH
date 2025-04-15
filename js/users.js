@@ -34,7 +34,7 @@ class UserManager {
   async __getUserData(user) {
     async function get(info, name = false) {
       // Test for id
-      let response = await fetch(`https://etoh-proxy.dragmine149.workers.dev/users/${info}${name ? "/name" : "/id"}`);
+      let response = await fetch(`${CLOUD_URL}/users/${info}${name ? "/name" : "/id"}`);
 
       if (!response.ok) {
         showError(`Failed to fetch user ${name ? "name" : "id"} for ${info}. (status: ${response.status} ${response.statusText})`, true);
@@ -98,7 +98,7 @@ class UserManager {
       return data;
     }
 
-    data.played = await otherManager.hasBadge(data.id, "First Tower") > 0;
+    data.played = await badgeManager.hasBadge(data.id, "First Tower") > 0;
     await towersDB.users.put(data);
     updateLoadingStatus(data.played ? "User has played EToH (retrieved from server). Loading user..." : "User has not played EToH (retrieved from server).");
     return data;
@@ -110,7 +110,7 @@ class UserManager {
       return;
     }
     // attempt loading from storage.
-    let towers = await towersDB.towers.get({ user_id: this.user.id });
+    let towers = await towersDB.towers.where({ user_id: this.user.id });
     this.verbose.log(towers);
     if (towers != undefined) {
       updateLoadingStatus("User has tower data, loading from storage");
@@ -165,8 +165,9 @@ class UserManager {
       this.user = await this.checkPlayed();
 
       if (!this.user.played) {
+        let badge = badgeManager.badge(2125419210);
         updateLoadingStatus(`Cancelling loading of ${this.user.name} as they have not yet played EToH.<br>
-User must have '<a href=${otherManager.badgeToLink(2125419210)} target="_blank" rel="noopener noreferrer">Beat your first tower</a>' badge before they can be viewed here.`);
+User must have '<a href=${badge.link} target="_blank" rel="noopener noreferrer">Beat your first tower</a>' badge before they can be viewed here.`);
         userData.clearUser();
         return;
       }
@@ -212,8 +213,3 @@ class UserData {
 }
 
 let userData = new UserData();
-let towersDB = new Dexie("Towers");
-towersDB.version(1).stores({
-  towers: `[badge_id+user_id], badge_id, user_id`,
-  users: `[id+name], id, name, played`
-})

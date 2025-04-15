@@ -54,3 +54,10 @@ function updateLoadingStatus(text, output = false) {
   document.querySelector("[tag='status']").innerHTML = text;
   if (output) console.log(text);
 }
+
+
+let towersDB = new Dexie("Towers");
+towersDB.version(1).stores({
+  towers: `[badge_id+user_id], badge_id, user_id`,
+  users: `[id+name], id, name, played`
+})
