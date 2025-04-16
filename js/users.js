@@ -37,7 +37,7 @@ class UserManager {
       let response = await fetch(`${CLOUD_URL}/users/${info}${name ? "/name" : "/id"}`);
 
       if (!response.ok) {
-        showError(`Failed to fetch user ${name ? "name" : "id"} for ${info}. (status: ${response.status} ${response.statusText})`, true);
+        ui.showError(`Failed to fetch user ${name ? "name" : "id"} for ${info}. (status: ${response.status} ${response.statusText})`, true);
         return null;
       }
 
@@ -87,20 +87,20 @@ class UserManager {
 
   async checkPlayed() {
     this.verbose.log("Checking if user has played EToH");
-    updateLoadingStatus("Checking if user has played EToH");
+    ui.updateLoadingStatus("Checking if user has played EToH");
     let data = await towersDB.users.get(this.user.id);
     if (data == undefined) {
       data = this.user;
     }
 
     if (data.played) {
-      updateLoadingStatus("User has played EToH (retrieved from storage). Loading user...");
+      ui.updateLoadingStatus("User has played EToH (retrieved from storage). Loading user...");
       return data;
     }
 
     data.played = await badgeManager.hasBadge(data.id, "First Tower") > 0;
     await towersDB.users.put(data);
-    updateLoadingStatus(data.played ? "User has played EToH (retrieved from server). Loading user..." : "User has not played EToH (retrieved from server).");
+    ui.updateLoadingStatus(data.played ? "User has played EToH (retrieved from server). Loading user..." : "User has not played EToH (retrieved from server).");
     return data;
   }
 
@@ -113,7 +113,7 @@ class UserManager {
     let towers = await towersDB.towers.where({ user_id: this.user.id });
     this.verbose.log(towers);
     if (towers != undefined) {
-      updateLoadingStatus("User has tower data, loading from storage");
+      ui.updateLoadingStatus("User has tower data, loading from storage");
       return;
     }
 
@@ -133,7 +133,7 @@ class UserManager {
       // then insert the data (upon conversion) into the database.
       let badge = await noSyncTryCatch(() => JSON.parse(line));
       if (badge.error) {
-        showError(`Failed to parse badge data: ${badge.error}. Please try again later. (roblox api might be down)`);
+        ui.showError(`Failed to parse badge data: ${badge.error}. Please try again later. (roblox api might be down)`);
       }
 
       /** @type {{badgeId: number, date: number}} */
@@ -146,7 +146,7 @@ class UserManager {
         completion: badgeData.date
       });
 
-      updateLoadingStatus(`Loaded: ${towerManager.tower_ids[badgeData.badgeId]} from server`)
+      ui.updateLoadingStatus(`Loaded: ${towerManager.tower_ids[badgeData.badgeId]} from server`)
       // console.log(badgeData);
     })
   }
@@ -156,7 +156,7 @@ class UserManager {
   * @param {string} user
   */
   constructor(user) {
-    updateLoadingStatus(`Attempting to load: ${user}`, true);
+    ui.updateLoadingStatus(`Attempting to load: ${user}`, true);
 
     this.verbose = new Verbose(`UserManager`, '#6189af');
 
@@ -166,7 +166,7 @@ class UserManager {
 
       if (!this.user.played) {
         let badge = badgeManager.badge(2125419210);
-        updateLoadingStatus(`Cancelling loading of ${this.user.name} as they have not yet played EToH.<br>
+        ui.updateLoadingStatus(`Cancelling loading of ${this.user.name} as they have not yet played EToH.<br>
 User must have '<a href=${badge.link} target="_blank" rel="noopener noreferrer">Beat your first tower</a>' badge before they can be viewed here.`);
         userData.clearUser();
         return;
@@ -200,7 +200,7 @@ class UserData {
   * Search a user and loads their information
   */
   searchUser() {
-    hideError();
+    ui.hideError();
 
     let searchElm = document.getElementById("search_input").value;
     this.currentUser = new UserManager(searchElm);

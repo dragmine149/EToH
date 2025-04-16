@@ -51,7 +51,7 @@ class BadgeManager {
     let data = await tryCatch(server_other.json());
 
     if (data.error) {
-      showError(`Failed to parse other_data.json: ${data.error}`, true);
+      ui.showError(`Failed to parse other_data.json: ${data.error}`, true);
       return;
     }
 
@@ -63,7 +63,7 @@ class BadgeManager {
   async __loadTowerBadgesFromServer() {
     let server_tower = await fetch('data/tower_data.json');
     if (!server_tower.ok) {
-      showError(`Failed to fetch tower_data.json: ${server_tower.status} ${server_tower.statusText}.`, true);
+      ui.showError(`Failed to fetch tower_data.json: ${server_tower.status} ${server_tower.statusText}.`, true);
       return;
     }
 
@@ -71,7 +71,7 @@ class BadgeManager {
     let data = await tryCatch(server_tower.json());
 
     if (data.error) {
-      showError(`Failed to parse other_data.json: ${data.error}`, true);
+      ui.showError(`Failed to parse other_data.json: ${data.error}`, true);
       return;
     }
 

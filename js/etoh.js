@@ -115,33 +115,43 @@ class TowerManager {
 
   __create_elements() {
     this.areas.forEach(areaName => {
-      let areaElement = document.createElement('div');
+      /** @type {HTMLDivElement} */
+      let areaElement = document.getElementById("category").cloneNode(true);
       areaElement.id = `area-${areaName}`;
-      areaElement.classList.add('area');
-      this.__areaElm.appendChild(areaElement);
-      this.elements[areaName] = areaElement;
-    });
+      areaElement.classList.add("area");
+      areaElement.hidden = false;
+      /** @type {HTMLSpanElement} */
+      let title = areaElement.querySelector("[tag='title']");
+      title.innerText = areaName;
 
-    this.difficulties.forEach(difficulty => {
-      let difficultyElement = document.createElement('div');
-      difficultyElement.id = `difficulty-${difficulty}`;
-      difficultyElement.classList.add('difficulty');
-      this.__areaElm.appendChild(difficultyElement);
-      this.elements[difficulty] = difficultyElement;
-    });
+      this.elements[areaName] = areaElement;
+      this.__areaElm.appendChild(areaElement);
+    })
+
+    // this.difficulties.forEach(difficulty => {
+    //   let difficultyElement = document.createElement('div');
+    //   difficultyElement.id = `difficulty-${difficulty}`;
+    //   difficultyElement.classList.add('difficulty');
+    //   this.__areaElm.appendChild(difficultyElement);
+    //   this.elements[difficulty] = difficultyElement;
+    // });
 
     this.towers.forEach(tower => {
-      let towerElm = document.createElement("div");
-      let title = document.createElement("div");
-      title.setAttribute("tower", tower.name);
-      title.textContent = tower.shortName;
-      towerElm.appendChild(title);
-      let difficulty = document.createElement("div");
-      difficulty.textContent = tower.difficulty;
-      towerElm.appendChild(difficulty);
+      let towerElm = document.createElement("tr");
+      towerElm.setAttribute("tower", tower.name);
+      let nameElm = document.createElement("td");
+      let difficultyElm = document.createElement("td");
+
+      nameElm.innerText = tower.shortName;
+      nameElm.onmouseover = () => nameElm.innerText = tower.name;
+      nameElm.onmouseleave = () => nameElm.innerText = tower.shortName;
+
+      difficultyElm.innerText = tower.difficulty;
+
+      towerElm.appendChild(nameElm);
+      towerElm.appendChild(difficultyElm);
 
       this.elements[tower.area].appendChild(towerElm);
-      // this.elements[tower.name] = towerElm;
     })
   }
 
@@ -165,7 +175,7 @@ class TowerManager {
   async loadTowers() {
     let server_towers = await fetch('data/tower_data.json');
     if (!server_towers.ok) {
-      showNotification(`Failed to fetch tower_data.json: ${server_towers.status} ${server_towers.statusText}.`, true);
+      ui.showError(`Failed to fetch tower_data.json: ${server_towers.status} ${server_towers.statusText}.`, true);
       return;
     }
 

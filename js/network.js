@@ -20,7 +20,7 @@ class Network {
     let response = await tryCatch(fetch(`${CLOUD_URL}/towers/${user_id}/earliest/${old_badge}/${new_badge}`));
 
     if (response.error) {
-      showError(`Failed to fetch badge data. (status: ${response.status} ${response.statusText})`, true);
+      ui.showError(`Failed to fetch badge data. (status: ${response.status} ${response.statusText})`, true);
       return {
         earliest: -1, data: []
       }
@@ -28,7 +28,7 @@ class Network {
 
     let data = await tryCatch(response.data.json());
     if (data.error) {
-      showError(`Failed to fetch badge data. (status: ${response.status} ${response.statusText})`, true);
+      ui.showError(`Failed to fetch badge data. (status: ${response.status} ${response.statusText})`, true);
       return {
         earliest: -1, data: []
       }

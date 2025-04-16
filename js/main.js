@@ -1,15 +1,3 @@
-/**
-* Shows an error message to the user
-* @param {string} message The message to show
-*/
-function showError(message) {
-  document.getElementById('error_message').innerText = message;
-  document.getElementById('errors').hidden = false;
-}
-
-function hideError() {
-  document.getElementById("errors").hidden = true;
-}
 
 /**
  * @template T
@@ -47,12 +35,6 @@ function noSyncTryCatch(func) {
   } catch (error) {
     return { data: null, error: error };
   }
-}
-
-
-function updateLoadingStatus(text, output = false) {
-  document.querySelector("[tag='status']").innerHTML = text;
-  if (output) console.log(text);
 }
 
 
