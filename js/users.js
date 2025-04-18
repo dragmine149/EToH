@@ -66,7 +66,9 @@ class UserManager {
         ui.showError(`Failed to fetch userId for ${data.name}. (status: ${response.status} ${response.statusText})`, true);
         return null;
       }
-      data.id = await response.json().id;
+      let response_data = await response.json();
+      this.verbose.log(`Got data: `, response_data);
+      data.id = response_data.id;
     }
 
     let response = await fetch(`${CLOUD_URL}/users/${data.id}/name`);
@@ -75,6 +77,7 @@ class UserManager {
       return null;
     }
     let response_data = await response.json();
+    this.verbose.log(`Got data: `, response_data);
     data.name = response_data.name;
     data.ui = response_data.ui;
 
@@ -210,8 +213,27 @@ class UserData {
   searchUser() {
     ui.hideError();
 
-    let searchElm = document.getElementById("search_input").value;
-    this.currentUser = new UserManager(searchElm);
+    let searchUser = document.getElementById("search_input").value;
+
+    if (searchUser === "" || !searchUser) {
+      ui.showError("Please enter a username");
+      return;
+    }
+
+    this.currentUser = new UserManager(searchUser);
+    this.users.push(this.currentUser);
+  }
+
+  loadFromURL() {
+    let url = new URL(location);
+    let searchParams = new URLSearchParams(url.search);
+    let user = searchParams.get('user');
+    if (!user) {
+      // can't load from url as nothing from url.
+      return;
+    }
+
+    this.currentUser = new UserManager(user);
     this.users.push(this.currentUser);
   }
 
@@ -221,3 +243,7 @@ class UserData {
 }
 
 let userData = new UserData();
+
+document.addEventListener('DOMContentLoaded', () => {
+  userData.loadFromURL();
+});

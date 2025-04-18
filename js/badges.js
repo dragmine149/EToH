@@ -7,19 +7,19 @@
 
 class Badge {
   old_id;
-  new_id;
+  badge_id;
   name;
   is_tower;
 
   /**
    * @param {number} old_id The badge id of the old game.
-   * @param {number} new_id The badge id of the new game.
+   * @param {number} badge_id The badge id of the new game.
    * @param {string} name The name of the badge.
    * @param {boolean} is_tower Whether the badge is a tower badge.
    */
-  constructor(old_id, new_id, name, is_tower) {
+  constructor(old_id, badge_id, name, is_tower) {
     this.old_id = old_id;
-    this.new_id = new_id;
+    this.badge_id = badge_id;
     this.name = name;
     this.is_tower = is_tower;
   }
@@ -28,7 +28,7 @@ class Badge {
    * @returns {string} The link to the (new) badge.
    */
   get link() {
-    return `https://roblox.com/badges/${this.new_id}`;
+    return `https://roblox.com/badges/${this.badge_id}`;
   }
 }
 
@@ -38,6 +38,7 @@ class BadgeManager {
   constructor() {
     this.__loadOtherBadgesFromServer();
     this.__loadTowerBadgesFromServer();
+    this.verbose = new Verbose('BadgeManager', '#00FA9A');
   }
 
   async __loadOtherBadgesFromServer() {
@@ -87,7 +88,7 @@ class BadgeManager {
     });
   }
 
-  async hadBadge(user_id, badge_name) {
+  async hasBadge(user_id, badge_name) {
     let badge = this.badges.find(badge => badge.name === badge_name);
     if (!badge) {
       return 0;
@@ -103,12 +104,16 @@ class BadgeManager {
   * @returns {Badge | null} the found badge (or null if not found)
   */
   badge(badge) {
+    this.verbose.log(`Looking for badge: ${badge}`);
+
     if (typeof badge === 'number') {
-      return this.badges.find(badge => badge.id === badge || badge.old_id === badge);
+      this.verbose.log(`number`);
+      return this.badges.find(predict_badge => predict_badge.badge_id === badge || predict_badge.old_id === badge);
     } else if (typeof badge === 'string') {
-      return this.badges.find(badge => badge.name === badge);
+      this.verbose.log(`string`);
+      return this.badges.find(predict_badge => predict_badge.name === badge);
     }
-    return null;
+    return new Badge(0, 0, "unknown", false);
   }
 }
 

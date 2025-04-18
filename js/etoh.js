@@ -191,7 +191,7 @@ class TowerManager {
   * @param {{id: number, name: string, ui: string, played: boolean}} user The user to load.
   */
   prepareUI(user) {
-    ui.updateLoadedUser(user.ui);
+    ui.updateLoadedUser(user.name, user.ui);
   }
 
   /**

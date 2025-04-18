@@ -17,7 +17,7 @@ class Network {
   }>}
   */
   async getEarlierBadge(user_id, old_badge, new_badge) {
-    let response = await tryCatch(fetch(`${CLOUD_URL}/towers/${user_id}/earliest/${old_badge}/${new_badge}`));
+    let response = await tryCatch(fetch(`${CLOUD_URL}/badges/${user_id}/earliest/${old_badge}/${new_badge}`));
 
     if (response.error) {
       ui.showError(`Failed to fetch badge data. (status: ${response.status} ${response.statusText})`, true);
