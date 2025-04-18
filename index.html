@@ -75,5 +75,38 @@
         </div>
       </div>
     </div>
+
+    <div id="bottom_bar">
+      <input type="checkbox" id="bottom_bar_checkbox" hidden>
+      <label for="bottom_bar_checkbox" class="cog">
+        <img width="75" height="75" src="https://img.icons8.com/ios/75/settings--v1.png" alt="Settings Icon">
+      </label>
+      <div id="settings" class="settings">
+        <div class="title">Settings</div>
+        <div class="content">
+          <div>
+            <h4>Verbose</h4>
+            <ul>
+              <li>
+                <label for="verbose_Network">Network</label>
+                <input type="checkbox" id="verbose-Network" onchange="ui.updateSettings(this.id, this.checked);">
+              </li>
+              <li>
+                <label for="verbose_UI">UI</label>
+                <input type="checkbox" id="verbose_UI" onchange="ui.updateSettings(this.id, this.checked);">
+              </li>
+              <li>
+                <label for="verbose_UserManager">User Manager</label>
+                <input type="checkbox" id="verbose_UserManager" onchange="ui.updateSettings(this.id, this.checked);">
+              </li>
+              <li>
+                <label for="verbose_BadgeManager">Badge Manager</label>
+                <input type="checkbox" id="verbose_BadgeManager" onchange="ui.updateSettings(this.id, this.checked);">
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

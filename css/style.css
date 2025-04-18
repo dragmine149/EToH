@@ -132,3 +132,72 @@ bold {
 #search_button:hover {
   background-color: #343a40;
 }
+
+
+.cog {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #212529;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  transition: transform 0.3s ease;
+}
+
+#bottom_bar_checkbox~.cog {
+  transition: transform .25s linear, background-color .25s linear;
+  background-color: black;
+}
+
+#bottom_bar_checkbox:checked~.cog {
+  transform: rotate(360deg);
+  background-color: white;
+}
+
+#bottom_bar_checkbox:checked~.settings {
+  display: block;
+}
+
+.settings h4 {
+  margin: 0;
+  padding: 0;
+}
+
+.settings {
+  position: fixed;
+  bottom: 70px;
+  right: 20px;
+  background: #212529;
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  min-width: 250px;
+  z-index: 999;
+  display: none;
+}
+
+.settings .title {
+  font-size: 1.2em;
+  font-weight: bold;
+  border-bottom: 1px solid #495057;
+}
+
+.settings .content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  float: right;
+  margin-left: auto;
+}
