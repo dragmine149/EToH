@@ -185,6 +185,11 @@ class TowerManager {
     this.__loopTower(this.raw_data.rings, 'Ring');
     this.__loopTower(this.raw_data.zones, 'Zone');
   }
+
+  showTower(tower) {
+    console.log(tower);
+    // this.elements[tower.area].appendChild(tower.element);
+  }
 }
 
 let towerManager = new TowerManager();

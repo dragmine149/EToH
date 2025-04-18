@@ -30,7 +30,7 @@ class Ui {
       username = 'No-one!';
     }
 
-    document.getElementById('viewing').innerText = `Currently viewing user: ${username}`;
+    document.querySelector('[id="viewing"] user').innerText = username;
   }
 
 }

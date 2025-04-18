@@ -31,20 +31,7 @@ class UserManager {
   * @param {(string | number)} user The user name/id to get the id/name of.
   * @returns {Promise<{id: number, name: string, played: boolean}>} A dictionary of the user id + name
   */
-  async __getUserData(user) {
-    async function get(info, name = false) {
-      // Test for id
-      let response = await fetch(`${CLOUD_URL}/users/${info}${name ? "/name" : "/id"}`);
-
-      if (!response.ok) {
-        ui.showError(`Failed to fetch user ${name ? "name" : "id"} for ${info}. (status: ${response.status} ${response.statusText})`, true);
-        return null;
-      }
-
-      let data = await response.json();
-      return name ? data.name : data.id;
-    }
-
+  async __getUser(user, avoid_db = false) {
     let data = {};
 
     // attempt to see if input is JUST id.
@@ -63,21 +50,33 @@ class UserManager {
       data.name = user;
     }
 
-    // query the database to see if we already have the user
-    this.verbose.log(`Attempting to get: `, data, `from storage`);
-    let dbuser = await towersDB.users.get(data);
-    if (dbuser != undefined) {
-      // return if we do
-      return dbuser;
+    if (!avoid_db) {
+      // query the database to see if we already have the user
+      this.verbose.log(`Attempting to get: `, data, `from storage`);
+      let dbuser = await towersDB.users.get(data);
+      if (dbuser != undefined) {
+        // return if we do
+        return dbuser;
+      }
     }
 
-    // query the server if we do not
     if (!data.id) {
-      data.id = await get(data.name, false);
+      let response = await fetch(`${CLOUD_URL}/users/${data.name}/id`);
+      if (!response.ok) {
+        ui.showError(`Failed to fetch userId for ${data.name}. (status: ${response.status} ${response.statusText})`, true);
+        return null;
+      }
+      data.id = await response.json().id;
     }
-    if (!data.name) {
-      data.name = await get(data.id, true);
+
+    let response = await fetch(`${CLOUD_URL}/users/${data.id}/name`);
+    if (!response.ok) {
+      ui.showError(`Failed to fetch username for ${data.id}. (status: ${response.status} ${response.statusText})`, true);
+      return null;
     }
+    let response_data = await response.json();
+    data.name = response_data.name;
+    data.ui = response_data.ui;
 
     this.verbose.log(`Storing: `, data);
 
@@ -110,16 +109,22 @@ class UserManager {
       return;
     }
     // attempt loading from storage.
-    let towers = await towersDB.towers.where({ user_id: this.user.id });
+    let towers = await towersDB.towers.where({ user_id: this.user.id }).toArray();
     this.verbose.log(towers);
     if (towers != undefined) {
       ui.updateLoadingStatus("User has tower data, loading from storage");
+      for (let tower of towers) {
+        towerManager.showTower({
+          badgeId: tower.badge_id,
+          date: tower.completion
+        });
+      }
       return;
     }
 
     this.verbose.log("Loading data from server as not in storage.");
     let ids = Object.keys(towerManager.tower_ids);
-    let request = new Request(`${CLOUD_URL}/towers/${this.user.id}/all`, {
+    let request = new Request(`${CLOUD_URL} /towers/${this.user.id}/all`, {
       method: 'POST',
       headers: {
         "Content-Type": "application/json"
@@ -147,7 +152,7 @@ class UserManager {
       });
 
       ui.updateLoadingStatus(`Loaded: ${towerManager.tower_ids[badgeData.badgeId]} from server`)
-      // console.log(badgeData);
+      towerManager.showTower(badgeData);
     })
   }
 
@@ -161,7 +166,7 @@ class UserManager {
     this.verbose = new Verbose(`UserManager`, '#6189af');
 
     (async () => {
-      this.user = await this.__getUserData(user);
+      this.user = await this.__getUser(user);
       this.user = await this.checkPlayed();
 
       if (!this.user.played) {
