@@ -1,5 +1,5 @@
 class UserManager {
-  /** @type {{id: number, name: string, played: boolean}} Roblox user information */
+  /** @type {{id: number, name: string, ui: string, played: boolean}} Roblox user information */
   user;
 
   /** @type {{
@@ -108,6 +108,9 @@ class UserManager {
     if (!this.user.played) {
       return;
     }
+
+    towerManager.prepareUI(this.user)
+
     // attempt loading from storage.
     let towers = await towersDB.towers.where({ user_id: this.user.id }).toArray();
     this.verbose.log(towers);

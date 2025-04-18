@@ -186,8 +186,20 @@ class TowerManager {
     this.__loopTower(this.raw_data.zones, 'Zone');
   }
 
+  /**
+  * Prepare the ui for loading data
+  * @param {{id: number, name: string, ui: string, played: boolean}} user The user to load.
+  */
+  prepareUI(user) {
+    ui.updateLoadedUser(user.ui);
+  }
+
+  /**
+  * Show the tower on the UI as completed.
+  * @param {{badgeId: number, date: number}} tower The tower to show as completed.
+  */
   showTower(tower) {
-    console.log(tower);
+    // console.log(tower);
     // this.elements[tower.area].appendChild(tower.element);
   }
 }

@@ -26,6 +26,8 @@ class Ui {
   * @param {string} username The name of the user
   */
   updateLoadedUser(username) {
+    this.verbose.log(`Updating UI to show ${username}`);
+
     if (!username) {
       username = 'No-one!';
     }
