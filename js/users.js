@@ -71,11 +71,8 @@ class UserManager {
       data.id = response_data.id;
     }
 
-    let response = await fetch(`${CLOUD_URL}/users/${data.id}/name`);
-    if (!response.ok) {
-      ui.showError(`Failed to fetch username for ${data.id}. (status: ${response.status} ${response.statusText})`, true);
-      return null;
-    }
+    let response = await network.retryTilResult(new Request(`${CLOUD_URL}/users/${data.id}/name`));
+
     let response_data = await response.json();
     this.verbose.log(`Got data: `, response_data);
     data.name = response_data.name;
@@ -117,7 +114,7 @@ class UserManager {
     // attempt loading from storage.
     let towers = await towersDB.towers.where({ user_id: this.user.id }).toArray();
     this.verbose.log(towers);
-    if (towers != undefined) {
+    if (towers != undefined && towers.length > 0) {
       ui.updateLoadingStatus("User has tower data, loading from storage");
       for (let tower of towers) {
         towerManager.showTower({
@@ -130,7 +127,7 @@ class UserManager {
 
     this.verbose.log("Loading data from server as not in storage.");
     let ids = Object.keys(towerManager.tower_ids);
-    let request = new Request(`${CLOUD_URL} /towers/${this.user.id}/all`, {
+    let request = new Request(`${CLOUD_URL}/badges/${this.user.id}/all`, {
       method: 'POST',
       headers: {
         "Content-Type": "application/json"
@@ -187,12 +184,47 @@ User must have '<a href=${badge.link} target="_blank" rel="noopener noreferrer">
     })();
   }
 
-  storeUser() {
-    return {
-      id: this.user,
-      towers: this.tower_data
-    }
+  async updateAll() {
+    this.verbose.log('Updating all towers for user');
+
+    let towers = await towersDB.towers.where({ user_id: this.user.id }).toArray();
+    towers = towers.map(b => b.badge_id);
+    console.log(towers);
+    let ids = Object.keys(towerManager.tower_ids).map(v => parseInt(v)).filter(id => !towers.includes(id));
+    console.log(ids);
+
+    let request = new Request(`${CLOUD_URL}/badges/${this.user.id}/all`, {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        "badgeids": ids
+      })
+    });
+
+    await network.requestStream(request, async (line) => {
+      // then insert the data (upon conversion) into the database.
+      let badge = await noSyncTryCatch(() => JSON.parse(line));
+      if (badge.error) {
+        ui.showError(`Failed to parse badge data: ${badge.error}. Please try again later. (roblox api might be down)`);
+      }
+
+      /** @type {{badgeId: number, date: number}} */
+      let badgeData = badge.data;
+      // console.log(badgeData);
+
+      towersDB.towers.put({
+        badge_id: badgeData.badgeId,
+        user_id: this.user.id,
+        completion: badgeData.date
+      });
+
+      ui.updateLoadingStatus(`Loaded: ${towerManager.tower_ids[badgeData.badgeId]} from server`)
+      towerManager.showTower(badgeData);
+    })
   }
+
 }
 
 class UserData {
@@ -209,18 +241,20 @@ class UserData {
 
   /**
   * Search a user and loads their information
+  * @param {string} username? An option username to load instead of the one in the search input
   */
-  searchUser() {
+  searchUser(username) {
     ui.hideError();
 
-    let searchUser = document.getElementById("search_input").value;
-
-    if (searchUser === "" || !searchUser) {
+    if (!username) {
+      username = document.getElementById("search_input").value;
+    }
+    if (username === "" || !username) {
       ui.showError("Please enter a username");
       return;
     }
 
-    this.currentUser = new UserManager(searchUser);
+    this.currentUser = new UserManager(username);
     this.users.push(this.currentUser);
   }
 
@@ -239,6 +273,24 @@ class UserData {
 
   clearUser() {
     this.currentUser = null;
+  }
+
+  miniSearch() {
+    document.getElementsByTagName('user').hidden = true;
+
+    let miniSearch = document.getElementById('mini-search');
+
+    miniSearch.hidden = false;
+    if (miniSearch.value === "") {
+      miniSearch.value = this.currentUser.user.name;
+    }
+
+    miniSearch.focus();
+  }
+
+  endMiniSearch() {
+    document.getElementById('mini-search').hidden = true;
+    document.getElementsByTagName('user').hidden = false;
   }
 }
 

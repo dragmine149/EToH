@@ -203,6 +203,10 @@ class TowerManager {
   prepareUI(user) {
     ui.updateLoadedUser(user.name, user.ui);
     ui.updateMainUi(true);
+
+    Object.values(this.elements).forEach(element => {
+      element.querySelectorAll('td').forEach(td => td.classList.remove('completed'));
+    });
   }
 
   /**

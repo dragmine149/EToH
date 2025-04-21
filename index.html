@@ -41,7 +41,13 @@
         <span tag="status"></span>
       </div>
       <div id="viewing">
-        Currently viewing user: <user>No-one!</user>
+        Currently viewing user: <user onclick="userData.miniSearch()">No-one!</user>
+        <input type="text" id="mini-search" placeholder="Search..." onsubmit="userData.searchUser(this.value)" onkeydown="if(event.key === 'Enter') userData.searchUser(this.value)" hidden onblur="userData.endMiniSearch()">
+      </div>
+    </div>
+    <div id="under_top_bar">
+      <div id="update">
+        <button onclick="userData.currentUser.updateAll()">Update all not completed</button>
       </div>
     </div>
 

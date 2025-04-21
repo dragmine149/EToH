@@ -51,7 +51,7 @@ class Network {
     let response = await fetch(fetch_request);
     if (!response.ok) {
       let errorText = await response.text();
-      showNotification(`Failed to fetch badge data. (status: ${response.status} ${response.statusText}\n${errorText})`, true);
+      ui.showError(`Failed to fetch badge data. (status: ${response.status} ${response.statusText}\n${errorText})`, true);
       return;
     }
 
@@ -84,6 +84,24 @@ class Network {
       // escape the loop.
       if (done) break;
     }
+  }
+
+  /**
+  * Keeps retrying the request forever every 2 seconds until it is successful (when response.ok is true)
+  * @param {Request} request The request to retry.
+  * @returns the successful request.
+  */
+  async retryTilResult(request) {
+    let response = { ok: false };
+    while (!response.ok) {
+      response = await fetch(request);
+      if (!response.ok) {
+        ui.showError(`Failed to fetch username for ${data.id}. (status: ${response.status} ${response.statusText}). Attempting again in ~2 seconds`, true);
+        await new Promise((r) => setTimeout(r, 2000));
+        ui.hideError();
+      }
+    }
+    return response;
   }
 }
 
