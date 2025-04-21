@@ -60,6 +60,11 @@ class Ui {
     document.title = `${username} - EToH Tower Tracker`;
   }
 
+  updateMainUi(visible) {
+    document.getElementById('towers').hidden = !visible;
+    document.getElementById('search').hidden = visible;
+  }
+
 }
 
 let ui = new Ui();

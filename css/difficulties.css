@@ -39,21 +39,21 @@
 }
 
 .difficulty.insane {
-  background: 0000FF;
+  background: #0000FF;
   color: white;
 }
 
 .difficulty.extreme {
-  background: 0389FF;
+  background: #0389FF;
   color: white;
 }
 
 .difficulty.terrifying {
-  background: 00FFFF;
+  background: #00FFFF;
   color: black;
 }
 
 .difficulty.catastrophic {
-  background: FFFFFF;
+  background: #FFFFFF;
   color: black;
 }

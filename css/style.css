@@ -201,3 +201,7 @@ bold {
   float: right;
   margin-left: auto;
 }
+
+user:hover {
+  background-color: #343a40;
+}

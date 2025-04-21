@@ -1,0 +1,25 @@
+/*
+ * Styles to do with displaying the data.
+*/
+
+.area {
+  background: #f0f0f0;
+  border-radius: 10px;
+  float: left;
+}
+
+.area [tag="title"] {
+  text-align: center;
+  font-weight: bold;
+  display: block;
+  width: 100%;
+}
+
+.area .completed {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.area table {
+  width: 100%;
+}

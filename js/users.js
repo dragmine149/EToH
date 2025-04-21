@@ -244,6 +244,7 @@ class UserData {
 
 let userData = new UserData();
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('towers_loaded', () => {
+  console.log('Towers loaded');
   userData.loadFromURL();
 });

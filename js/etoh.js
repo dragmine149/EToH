@@ -95,6 +95,7 @@ class TowerManager {
     (async () => {
       await this.loadTowers();
       this.__create_elements();
+      document.dispatchEvent(new Event('towers_loaded'));
     })()
   }
 
@@ -108,9 +109,9 @@ class TowerManager {
     let sub = difficulty % 1;
 
     let stageWord = this.difficulties[stage - 1] || "Unknown";
-    let subWord = subLevels.find(level => sub >= level.threshold)?.name || "Bottom";
+    let subWord = this.subLevels.find(level => sub >= level.threshold)?.name || "Bottom";
 
-    return `${stageWord} ${subWord}`;
+    return `${subWord} ${stageWord}`;
   }
 
   __create_elements() {
@@ -143,15 +144,24 @@ class TowerManager {
       let difficultyElm = document.createElement("td");
 
       nameElm.innerText = tower.shortName;
-      nameElm.onmouseover = () => nameElm.innerText = tower.name;
-      nameElm.onmouseleave = () => nameElm.innerText = tower.shortName;
+      // difficultyElm.innerText = tower.difficulty;
+      let difficultyWord = this.difficulties[Math.trunc(tower.difficulty) - 1];
+      difficultyElm.innerText = difficultyWord;
+      difficultyElm.classList.add('difficulty', difficultyWord);
 
-      difficultyElm.innerText = tower.difficulty;
+      towerElm.onmouseover = () => {
+        nameElm.innerText = tower.name;
+        difficultyElm.innerText = `${this.getDifficulty(tower.difficulty)} (${tower.difficulty})`;
+      }
+      towerElm.onmouseleave = () => {
+        nameElm.innerText = tower.shortName;
+        difficultyElm.innerText = difficultyWord;
+      }
 
       towerElm.appendChild(nameElm);
       towerElm.appendChild(difficultyElm);
 
-      this.elements[tower.area].appendChild(towerElm);
+      this.elements[tower.area].querySelector('table').appendChild(towerElm);
     })
   }
 
@@ -192,15 +202,18 @@ class TowerManager {
   */
   prepareUI(user) {
     ui.updateLoadedUser(user.name, user.ui);
+    ui.updateMainUi(true);
   }
 
   /**
   * Show the tower on the UI as completed.
-  * @param {{badgeId: number, date: number}} tower The tower to show as completed.
+  * @param {{badgeId: number, date: number}} tower_details The tower to show as completed.
   */
-  showTower(tower) {
-    // console.log(tower);
-    // this.elements[tower.area].appendChild(tower.element);
+  showTower(tower_details) {
+    console.log(tower_details);
+    let tower = this.towers.filter(t => t.badge == tower_details.badgeId || t.old_badge == tower_details.badgeId)[0];
+    // if (!tower) return;
+    this.elements[tower.area].querySelector(`[tower="${tower.name}"] td`).classList.add('completed');
   }
 }
 
