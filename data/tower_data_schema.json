@@ -33,6 +33,12 @@
       "additionalProperties": {
         "$ref": "#/definitions/tower"
       }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/tower"
+      }
     }
   },
   "type": "object",
@@ -47,6 +53,12 @@
       "type": "object",
       "additionalProperties": {
         "$ref": "#/definitions/zone"
+      }
+    },
+    "events": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/event"
       }
     }
   }

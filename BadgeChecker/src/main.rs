@@ -53,24 +53,28 @@ pub struct Tower {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-// #[serde(rename_all = "camelCase")]
 pub struct Ring {
     #[serde(flatten)]
     pub towers: HashMap<String, Tower>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-// #[serde(rename_all = "camelCase")]
 pub struct Zone {
     #[serde(flatten)]
     pub towers: HashMap<String, Tower>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-// #[serde(rename_all = "camelCase")]
+pub struct Event {
+    #[serde(flatten)]
+    pub towers: HashMap<String, Tower>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TowerSchema {
     pub rings: HashMap<String, Ring>,
     pub zones: HashMap<String, Zone>,
+    pub events: HashMap<String, Event>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -131,6 +135,11 @@ fn main() {
     }
     for (_, zone) in used_tower_badges.zones.iter() {
         for (_, tower) in zone.towers.iter() {
+            badge_list.push(tower.badge_id);
+        }
+    }
+    for (_, event) in used_tower_badges.events.iter() {
+        for (_, tower) in event.towers.iter() {
             badge_list.push(tower.badge_id);
         }
     }

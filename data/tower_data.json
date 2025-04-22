@@ -1784,5 +1784,21 @@
         "badge_id": 340419315411712
       }
     }
+  },
+  "events": {
+    "BIOUMS -> April Fools 25": {
+      "Tower of Vesi Leikki": {
+        "badge_id": 3516710902749261,
+        "difficulty": 3.5
+      },
+      "ETOH TYCOON TYCOON TYCOON TYCOON": {
+        "badge_id": 3705364496125918,
+        "difficulty": 4.74
+      },
+      "Mush Stepl": {
+        "badge_id": 1675378900956293,
+        "difficulty": 5.44
+      }
+    }
   }
 }
