@@ -49,11 +49,13 @@ class Ui {
 
     this.verbose.log(`Updating UI to show ${ui_name} (${username})`);
 
-    if (!username) {
-      username = 'No-one!';
+    if (!username || username == '') {
+      ui_name = 'No-one!';
+      username = '';
     }
 
     document.querySelector('[id="viewing"] user').innerText = ui_name;
+
     let url = new URL(location.href);
     url.searchParams.set('user', username);
     window.history.pushState({}, '', url);
@@ -65,6 +67,12 @@ class Ui {
     document.getElementById('search').hidden = visible;
   }
 
+  resetUI() {
+    this.updateMainUi(false);
+    this.hideError();
+    this.updateLoadingStatus('');
+    this.updateLoadedUser('', '')
+  }
 }
 
 let ui = new Ui();
