@@ -162,7 +162,27 @@ class TowerManager {
       towerElm.appendChild(difficultyElm);
 
       this.elements[tower.area].querySelector('table').appendChild(towerElm);
-    })
+    });
+
+    ui.updateMainUi(true);
+
+    Object.values(this.elements).forEach(element => {
+      // Temporarily hover each tower element
+      element.querySelectorAll('[tower]').forEach(tower => {
+        const mouseOverEvent = new Event('mouseover');
+        tower.dispatchEvent(mouseOverEvent);
+      });
+
+      // Set fixed width
+      element.style.width = element.clientWidth + 'px';
+
+      // Unhover everything
+      element.querySelectorAll('[tower]').forEach(tower => {
+        const mouseLeaveEvent = new Event('mouseleave');
+        tower.dispatchEvent(mouseLeaveEvent);
+      });
+    });
+    ui.updateMainUi(false);
   }
 
   __loopTower(loopTowers, name) {
@@ -214,7 +234,7 @@ class TowerManager {
   * @param {{badgeId: number, date: number}} tower_details The tower to show as completed.
   */
   showTower(tower_details) {
-    console.log(tower_details);
+    // console.log(tower_details);
     let tower = this.towers.filter(t => t.badge == tower_details.badgeId || t.old_badge == tower_details.badgeId)[0];
     // if (!tower) return;
     this.elements[tower.area].querySelector(`[tower="${tower.name}"] td`).classList.add('completed');

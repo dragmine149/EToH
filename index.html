@@ -46,7 +46,7 @@
         <input type="text" id="mini-search" placeholder="Search..." onsubmit="userData.searchUser(this.value)" onkeydown="if(event.key === 'Enter') userData.searchUser(this.value)" hidden onblur="userData.endMiniSearch()">
       </div>
     </div>
-    <div id="under_top_bar">
+    <div id="under_top_bar" hidden>
       <div id="update">
         <button onclick="userData.currentUser.updateAll()">Update all not completed</button>
       </div>

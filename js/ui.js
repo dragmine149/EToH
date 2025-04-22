@@ -63,8 +63,10 @@ class Ui {
   }
 
   updateMainUi(visible) {
+    console.log(`Updating main UI visibility to ${visible}`);
     document.getElementById('towers').hidden = !visible;
     document.getElementById('search').hidden = visible;
+    document.getElementById("under_top_bar").hidden = !visible;
   }
 
   resetUI() {
