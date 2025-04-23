@@ -29,9 +29,15 @@
  */
 
 /**
+* Represents a zone containing towers
+* @typedef {Object.<string, TowerData>} Event
+*/
+
+/**
  * @typedef {{
  *   rings: Object.<string, Ring>,
- *   zones: Object.<string, Zone>
+ *   zones: Object.<string, Zone>,
+ *   events: Object.<string, Event>
  * }} Towers
  */
 
@@ -214,6 +220,7 @@ class TowerManager {
 
     this.__loopTower(this.raw_data.rings, 'Ring');
     this.__loopTower(this.raw_data.zones, 'Zone');
+    this.__loopTower(this.raw_data.events, 'Event');
   }
 
   /**
