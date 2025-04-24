@@ -2,6 +2,10 @@
  * Styles to do with displaying the data.
 */
 
+:root {
+  --completed: #89cf93;
+}
+
 .area {
   background: #f0f0f0;
   border-radius: 10px;
@@ -16,11 +20,15 @@
 }
 
 .area .completed {
-  background-color: #89cf93;
+  background-color: var(--completed);
   /* color: #155724; */
   color: #1a2f4b;
 }
 
 .area table {
   width: 100%;
+}
+
+.area .total_completed {
+  font-weight: bold;
 }

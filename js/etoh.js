@@ -187,6 +187,18 @@ class TowerManager {
         const mouseLeaveEvent = new Event('mouseleave');
         tower.dispatchEvent(mouseLeaveEvent);
       });
+
+      let completedElm = document.createElement('tr');
+      completedElm.classList.add('total_completed');
+      let title = document.createElement('td');
+      title.innerText = 'Completed';
+      let count = document.createElement('td');
+      count.setAttribute('counter', '0');
+      count.setAttribute('total', element.querySelectorAll('[tower]').length);
+      count.innerText = `0/${element.querySelectorAll('[tower]').length}`;
+      completedElm.appendChild(title);
+      completedElm.appendChild(count);
+      element.querySelector('table').appendChild(completedElm);
     });
     ui.updateMainUi(false);
   }
@@ -233,8 +245,11 @@ class TowerManager {
 
     Object.values(this.elements).forEach(element => {
       element.querySelectorAll('td').forEach(td => td.classList.remove('completed'));
+      element.querySelector('[counter]').setAttribute('counter', 0);
     });
   }
+
+  shown = [];
 
   /**
   * Show the tower on the UI as completed.
@@ -243,8 +258,24 @@ class TowerManager {
   showTower(tower_details) {
     // console.log(tower_details);
     let tower = this.towers.filter(t => t.badge == tower_details.badgeId || t.old_badge == tower_details.badgeId)[0];
+
+    if (this.shown.includes(tower.name)) {
+      console.log('Tower already shown: ', tower.name);
+      return;
+    }
+
     // if (!tower) return;
     this.elements[tower.area].querySelector(`[tower="${tower.name}"] td`).classList.add('completed');
+
+    // Gets the counter values and display the percent alongside the tower completion count of that area.
+    let counter = this.elements[tower.area].querySelector(`[counter]`);
+    counter.setAttribute('counter', parseInt(counter.getAttribute('counter')) + 1);
+    let percentage = parseInt(counter.getAttribute('counter')) / parseInt(counter.getAttribute('total')) * 100;
+    percentage = percentage.toFixed(1);
+    counter.innerText = `${counter.getAttribute('counter')}/${counter.getAttribute('total')} (${percentage}%)`;
+    counter.parentElement.style.background = `linear-gradient(to right, var(--completed) ${percentage}%, rgba(0, 0, 0, 0) ${percentage}%)`;
+
+    this.shown.push(tower.name);
   }
 }
 
