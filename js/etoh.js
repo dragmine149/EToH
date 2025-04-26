@@ -211,6 +211,10 @@ class TowerManager {
 
   __loopTower(loopTowers, name) {
     for (let [areaName, towers] of Object.entries(loopTowers)) {
+      if (areaName == 'area_information') {
+        continue;
+      }
+
       let finalName = !isNaN(areaName) ? `${name}-${areaName}` : areaName;
 
       for (let [towerName, tower] of Object.entries(towers)) {

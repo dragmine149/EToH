@@ -1,7 +1,13 @@
 {
   "$schema": "tower_data_schema.json",
   "rings": {
-    "1": {
+    "1: Limbo": {
+      "area_information": {
+        "requirements": {
+          "tower_points": 0,
+          "tower_difficulties": {}
+        }
+      },
       "Not Even A Tower": {
         "badge_id": 2125364331,
         "difficulty": 1.11,
@@ -78,6 +84,13 @@
       }
     },
     "Forgotten Ridge": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {},
+          "tower_points": 0
+        },
+        "sub_area": "1: Limbo"
+      },
       "Steeple of Meaningless Decisions": {
         "badge_id": 2125416661,
         "difficulty": 1.22,
@@ -162,7 +175,15 @@
         "difficulty": 8.36
       }
     },
-    "2": {
+    "2: Desire": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {
+            "medium": 1
+          },
+          "tower_points": 4
+        }
+      },
       "Maybe A Tower": {
         "badge_id": 2125365096,
         "difficulty": 1.10,
@@ -230,6 +251,13 @@
       }
     },
     "Garden of Eesh\u00f6l": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {},
+          "tower_points": 0
+        },
+        "sub_area": "2: Desire"
+      },
       "Steeple of Beginner's Journey": {
         "badge_id": 2125416740,
         "difficulty": 1.24,
@@ -300,7 +328,15 @@
         "old_id": 2124924339
       }
     },
-    "3": {
+    "3: Gluttony": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {
+            "hard": 1
+          },
+          "tower_points": 9
+        }
+      },
       "Tower of Funny Thoughts": {
         "difficulty": 1.68,
         "badge_id": 2125365471,
@@ -367,7 +403,16 @@
         "old_id": 2124457794
       }
     },
-    "4": {
+    "4: Greed": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {
+            "hard": 3,
+            "difficult": 1
+          },
+          "tower_points": 15
+        }
+      },
       "Tower of Spiraling Heights": {
         "badge_id": 2125383817,
         "difficulty": 1.76,
@@ -439,6 +484,13 @@
       }
     },
     "Silent Abyss": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {},
+          "tower_points": 0
+        },
+        "sub_area": "4: Greed"
+      },
       "Steeple of Resort In Stasis": {
         "badge_id": 2143764006,
         "difficulty": 4.71
@@ -492,7 +544,16 @@
         "difficulty": 7.53
       }
     },
-    "5": {
+    "5: Wrath": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {
+            "difficult": 3,
+            "challenging": 1
+          },
+          "tower_points": 22
+        }
+      },
       "Towere of Nice Views": {
         "badge_id": 2125383930,
         "difficulty": 2.61,
@@ -564,6 +625,13 @@
       }
     },
     "Lost River": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {},
+          "tower_points": 0
+        },
+        "sub_area": "5: Wrath"
+      },
       "Tower of Excessive Weirdness": {
         "badge_id": 2130091633,
         "difficulty": 2.61
@@ -609,7 +677,16 @@
         "difficulty": 8.19
       }
     },
-    "6": {
+    "6: Heresy": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {
+            "difficult": 5,
+            "challenging": 2
+          },
+          "tower_points": 30
+        }
+      },
       "Tower of Friendly Jumps": {
         "badge_id": 2125384025,
         "difficulty": 3.11,
@@ -675,6 +752,13 @@
       }
     },
     "Ashen Towerworks": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {},
+          "tower_points": 0
+        },
+        "sub_area": "6: Heresy"
+      },
       "Tower of Fruity Zeal": {
         "badge_id": 2150139836,
         "difficulty": 2.6
@@ -728,7 +812,16 @@
         "difficulty": 9.43
       }
     },
-    "7": {
+    "7: Violence": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {
+            "challenging": 4,
+            "intense": 1
+          },
+          "tower_points": 39
+        }
+      },
       "Tower of Rushed Building": {
         "badge_id": 2125394373,
         "difficulty": 4.58,
@@ -799,7 +892,16 @@
         "old_id": 2124496385
       }
     },
-    "8": {
+    "8: Fraud": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {
+            "challenging": 6,
+            "intense": 2
+          },
+          "tower_points": 49
+        }
+      },
       "Tower of Somewhat Simple Scaling": {
         "badge_id": 2125416493,
         "difficulty": 2.38,
@@ -865,7 +967,16 @@
         "old_id": 2124535623
       }
     },
-    "9": {
+    "9: Treachery": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {
+            "intense": 4,
+            "remorseless": 1
+          },
+          "tower_points": 60
+        }
+      },
       "Tower of Great Overcomings": {
         "badge_id": 2125416546,
         "difficulty": 6.49,
@@ -943,7 +1054,13 @@
     }
   },
   "zones": {
-    "1": {
+    "1: Sea": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {},
+          "tower_points": 0
+        }
+      },
       "Tower of Zero Disturbances": {
         "badge_id": 2125416899,
         "difficulty": 1.19
@@ -1025,6 +1142,13 @@
       }
     },
     "Paradise Atoll": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {},
+          "tower_points": 0
+        },
+        "sub_area": "1: Sea"
+      },
       "Possible A Tower": {
         "badge_id": 2125419004,
         "difficulty": 1.54,
@@ -1091,7 +1215,15 @@
         "old_id": 2124776626
       }
     },
-    "2": {
+    "2: Surface": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {
+            "medium": 1
+          },
+          "tower_points": 4
+        }
+      },
       "Tower of Buttons": {
         "badge_id": 2125418290,
         "difficulty": 2.58,
@@ -1169,6 +1301,13 @@
       }
     },
     "Arcane Area": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {},
+          "tower_points": 0
+        },
+        "sub_area": "2: Surface"
+      },
       "Steeple of Biome Traversing": {
         "badge_id": 2125419026,
         "difficulty": 2.28,
@@ -1220,7 +1359,15 @@
         "old_id": 2124546744
       }
     },
-    "3": {
+    "3: Sky": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {
+            "hard": 1
+          },
+          "tower_points": 9
+        }
+      },
       "Tower of Six Feet Under": {
         "badge_id": 2125418434,
         "difficulty": 1.12,
@@ -1303,12 +1450,28 @@
       }
     },
     "Pit of Misery": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {},
+          "tower_points": 0
+        },
+        "sub_area": "3: Sky"
+      },
       "Tower of Modernistic Design Choices": {
         "badge_id": 2125612958,
         "difficulty": 1.88
       }
     },
-    "4": {
+    "4: Exosphere": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {
+            "hard": 3,
+            "challenging": 1
+          },
+          "tower_points": 15
+        }
+      },
       "Tower of Fairly Simple Challenges": {
         "badge_id": 2125418571,
         "difficulty": 1.58,
@@ -1385,7 +1548,16 @@
         "old_id": 2124603905
       }
     },
-    "5": {
+    "5: Moon": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {
+            "difficult": 3,
+            "challenging": 1
+          },
+          "tower_points": 23
+        }
+      },
       "Tower of Sovereign Travelling": {
         "badge_id": 2125418587,
         "difficulty": 3.4,
@@ -1462,7 +1634,16 @@
         "old_id": 2124827048
       }
     },
-    "6": {
+    "6: Mars": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {
+            "difficult": 5,
+            "challenging": 3
+          },
+          "tower_points": 33
+        }
+      },
       "Tower of Foreign Domains": {
         "badge_id": 2125418711,
         "difficulty": 3.64
@@ -1520,7 +1701,16 @@
         "difficulty": 10.29
       }
     },
-    "7": {
+    "7: Asteroid Belt": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {
+            "challenging": 5,
+            "insane": 1
+          },
+          "tower_points": 45
+        }
+      },
       "The Tower of Jazz": {
         "badge_id": 2127628644,
         "difficulty": 2.75
@@ -1582,7 +1772,16 @@
         "difficulty": 10.76
       }
     },
-    "8": {
+    "8: Pluto": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {
+            "challenging": 7,
+            "intense": 3
+          },
+          "tower_points": 59
+        }
+      },
       "Tower of Melons In Time": {
         "badge_id": 2143540746,
         "difficulty": 3.76
@@ -1648,7 +1847,16 @@
         "difficulty": 11.36
       }
     },
-    "9": {
+    "9: Singularity": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {
+            "intense": 5,
+            "remorseless": 1
+          },
+          "tower_points": 75
+        }
+      },
       "Tower of Arrantly Bodeful Cavern Depths": {
         "badge_id": 4383427940994188,
         "difficulty": 5.03
@@ -1718,7 +1926,16 @@
         "difficulty": 11.42
       }
     },
-    "10": {
+    "10: Interstellar Shore": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {
+            "intense": 7,
+            "remorseless": 2
+          },
+          "tower_points": 85
+        }
+      },
       "Tower of Clandestine Zones": {
         "difficulty": 4.95,
         "badge_id": 3272958117661218
@@ -1787,6 +2004,13 @@
   },
   "events": {
     "BIOUMS -> April Fools 25": {
+      "area_information": {
+        "requirements": {
+          "tower_difficulties": {},
+          "tower_points": 0
+        },
+        "sub_area": "rings/2: Desire"
+      },
       "Tower of Vesi Leikki": {
         "badge_id": 3516710902749261,
         "difficulty": 3.5

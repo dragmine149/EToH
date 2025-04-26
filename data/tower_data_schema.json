@@ -22,20 +22,109 @@
         "badge_id"
       ]
     },
+    "area_information": {
+      "type": "object",
+      "properties": {
+        "sub_area": {
+          "type": "string",
+          "description": "Which area this area is a sub area of."
+        },
+        "requirements": {
+          "type": "object",
+          "description": "Requirements to access the area",
+          "properties": {
+            "tower_points": {
+              "type": "number",
+              "description": "The number of tower points required to access this area"
+            },
+            "tower_difficulties": {
+              "type": "object",
+              "description": "The number of towers required of each difficulty level to access this area",
+              "properties": {
+                "easy": {
+                  "type": "integer"
+                },
+                "medium": {
+                  "type": "integer"
+                },
+                "hard": {
+                  "type": "integer"
+                },
+                "difficult": {
+                  "type": "integer"
+                },
+                "challenging": {
+                  "type": "integer"
+                },
+                "intense": {
+                  "type": "integer"
+                },
+                "remorseless": {
+                  "type": "integer"
+                },
+                "insane": {
+                  "type": "integer"
+                },
+                "extreme": {
+                  "type": "integer"
+                },
+                "terrifying": {
+                  "type": "integer"
+                },
+                "catastrophic": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "required": [
+            "tower_points",
+            "tower_difficulties"
+          ]
+        }
+      },
+      "required": [
+        "requirements"
+      ]
+    },
     "ring": {
       "type": "object",
+      "properties": {
+        "area_information": {
+          "$ref": "#/definitions/area_information"
+        }
+      },
+      "required": [
+        "area_information"
+      ],
       "additionalProperties": {
         "$ref": "#/definitions/tower"
       }
     },
     "zone": {
       "type": "object",
+      "properties": {
+        "area_information": {
+          "$ref": "#/definitions/area_information"
+        }
+      },
+      "required": [
+        "area_information"
+      ],
       "additionalProperties": {
         "$ref": "#/definitions/tower"
       }
     },
     "event": {
       "type": "object",
+      "properties": {
+        "area_information": {
+          "$ref": "#/definitions/area_information"
+        }
+      },
+      "required": [
+        "area_information"
+      ],
       "additionalProperties": {
         "$ref": "#/definitions/tower"
       }
