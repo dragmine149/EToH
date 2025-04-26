@@ -172,6 +172,8 @@ class TowerManager {
 
     ui.updateMainUi(true);
 
+    let tallest = 0;
+
     Object.values(this.elements).forEach(element => {
       // Temporarily hover each tower element
       element.querySelectorAll('[tower]').forEach(tower => {
@@ -181,6 +183,7 @@ class TowerManager {
 
       // Set fixed width
       element.style.width = element.clientWidth + 'px';
+      tallest = Math.max(tallest, element.clientHeight);
 
       // Unhover everything
       element.querySelectorAll('[tower]').forEach(tower => {
@@ -200,6 +203,9 @@ class TowerManager {
       completedElm.appendChild(count);
       element.querySelector('table').appendChild(completedElm);
     });
+
+    Object.values(this.elements).forEach(element => element.style.height = tallest + 'px');
+
     ui.updateMainUi(false);
   }
 

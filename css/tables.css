@@ -7,9 +7,20 @@
 }
 
 .area {
-  background: #f0f0f0;
-  border-radius: 10px;
   float: left;
+  margin: 10px;
+  align-items: center;
+}
+
+.area [tag="title"],
+.area [tag="badges"] {
+  /* border-radius: 10px; */
+  background: #f0f0f0;
+}
+
+.area [tag="badges"] {
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
 }
 
 .area [tag="title"] {
@@ -17,6 +28,9 @@
   font-weight: bold;
   display: block;
   width: 100%;
+
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 }
 
 .area .completed {
