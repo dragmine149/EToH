@@ -96,7 +96,7 @@ class Network {
     while (!response.ok) {
       response = await fetch(request);
       if (!response.ok) {
-        ui.showError(`Failed to fetch username for ${data.id}. (status: ${response.status} ${response.statusText}). Attempting again in ~2 seconds`, true);
+        ui.showError(`Failed to fetch (${request.url}). (status: ${response.status} ${response.statusText}). Attempting again in ~2 seconds`, true);
         await new Promise((r) => setTimeout(r, 2000));
         ui.hideError();
       }
