@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "definitions": {
+    "badgeData": {
+      "type": "object",
+      "properties": {
+        "badge_id": {
+          "type": "integer"
+        },
+        "old_id": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "badge_id",
+        "old_id"
+      ]
+    },
+    "categoryContent": {
+      "type": "object",
+      "patternProperties": {
+        ".*": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/badgeData"
+            },
+            {
+              "$ref": "#/definitions/categoryContent"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "patternProperties": {
+    ".*": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/badgeData"
+        },
+        {
+          "$ref": "#/definitions/categoryContent"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

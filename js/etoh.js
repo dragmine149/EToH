@@ -20,17 +20,17 @@
 
 /**
  * Represents a ring containing towers
- * @typedef {Object.<string, TowerData>} Ring
+ * @typedef {{area_information: AreaInformation, [x: string]: TowerData}} Ring
  */
 
 /**
  * Represents a zone containing towers
- * @typedef {Object.<string, TowerData>} Zone
+ * @typedef {{area_information: AreaInformation, [x: string]: TowerData}} Zone
  */
 
 /**
 * Represents a zone containing towers
-* @typedef {Object.<string, TowerData>} Event
+* @typedef {{area_information: AreaInformation, [x: string]: TowerData}} Event
 */
 
 /**
