@@ -113,13 +113,24 @@ pub struct TowerSchema {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct TowerSchemaParent {
+    pub data: TowerSchema,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct BadgeCategory {
-    badge: HashMap<String, Tower>,
-    category: HashMap<String, BadgeCategory>,
+    #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    badge: Option<HashMap<String, Tower>>,
+    #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    category: Option<HashMap<String, BadgeCategory>>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct OtherSchema {
+    // #[serde(rename = "$schema")]
+    // _schema: String,
     data: HashMap<String, BadgeCategory>,
 }
 
@@ -158,18 +169,18 @@ fn main() {
     // )
     // .unwrap();
 
-    let used_tower_badges = serde_json::from_str::<TowerSchema>(
+    let used_tower_badges = serde_json::from_str::<TowerSchemaParent>(
         &std::fs::read_to_string("./data/tower_data.json").unwrap(),
     )
     .unwrap();
-    let used_badges = serde_json::from_str::<HashMap<String, Tower>>(
+    let used_badges = serde_json::from_str::<OtherSchema>(
         &std::fs::read_to_string("./data/other_data.json").unwrap(),
     )
     .unwrap();
     let mut badge_list: Vec<u64> = Vec::new();
 
     // Process tower badges
-    for (_, ring) in used_tower_badges.rings.iter() {
+    for (_, ring) in used_tower_badges.data.rings.iter() {
         for (_, tower) in ring.towers.iter() {
             let id = tower.badge_id;
             if let Some(id) = id {
@@ -177,7 +188,7 @@ fn main() {
             }
         }
     }
-    for (_, zone) in used_tower_badges.zones.iter() {
+    for (_, zone) in used_tower_badges.data.zones.iter() {
         for (_, tower) in zone.towers.iter() {
             let id = tower.badge_id;
             if let Some(id) = id {
@@ -185,7 +196,7 @@ fn main() {
             }
         }
     }
-    for (_, event) in used_tower_badges.events.iter() {
+    for (_, event) in used_tower_badges.data.events.iter() {
         for (_, tower) in event.towers.iter() {
             let id = tower.badge_id;
             if let Some(id) = id {
@@ -195,11 +206,23 @@ fn main() {
     }
 
     // Process other badges
-    for (_, tower) in used_badges.iter() {
-        let id = tower.badge_id;
-        if let Some(id) = id {
-            badge_list.push(id);
+    fn process_badge_category(category: &BadgeCategory, badge_list: &mut Vec<u64>) {
+        if let Some(badges) = &category.badge {
+            for (_, tower) in badges.iter() {
+                if let Some(id) = tower.badge_id {
+                    badge_list.push(id);
+                }
+            }
         }
+        if let Some(subcategories) = &category.category {
+            for (_, subcategory) in subcategories.iter() {
+                process_badge_category(subcategory, badge_list);
+            }
+        }
+    }
+
+    for (_, category) in used_badges.data.iter() {
+        process_badge_category(category, &mut badge_list);
     }
     // used_tower_badges.iter().map(|badge| badge.id).collect::<Vec<_>>();
     // used_badges.iter().map(|badge| badge.id).collect::<Vec<_>>();

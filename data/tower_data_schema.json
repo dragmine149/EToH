@@ -132,23 +132,36 @@
   },
   "type": "object",
   "properties": {
-    "rings": {
+    "data": {
       "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/ring"
-      }
-    },
-    "zones": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/zone"
-      }
-    },
-    "events": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/event"
-      }
+      "properties": {
+        "rings": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/ring"
+          }
+        },
+        "zones": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/zone"
+          }
+        },
+        "events": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/event"
+          }
+        }
+      },
+      "required": [
+        "rings",
+        "zones",
+        "events"
+      ]
     }
-  }
+  },
+  "required": [
+    "data"
+  ]
 }

@@ -34,17 +34,21 @@
       "additionalProperties": false
     }
   },
-  "patternProperties": {
-    ".*": {
-      "oneOf": [
-        {
-          "$ref": "#/definitions/badgeData"
-        },
-        {
-          "$ref": "#/definitions/categoryContent"
+  "properties": {
+    "data": {
+      "type": "object",
+      "patternProperties": {
+        ".*": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/badgeData"
+            },
+            {
+              "$ref": "#/definitions/categoryContent"
+            }
+          ]
         }
-      ]
+      }
     }
-  },
-  "additionalProperties": false
+  }
 }
