@@ -36,7 +36,7 @@ async function loadOtherFromServer() {
     return;
   }
 
-  /** @type {{data: Categories | null, error: Error | null}} */
+  /** @type {{data: {data: Categories} | null, error: Error | null}} */
   let data = await tryCatch(server_other.json());
 
   if (data.error) {
@@ -45,7 +45,7 @@ async function loadOtherFromServer() {
   }
 
   let root = new Category('root')
-  CategoryLoop(root, data.data)
+  CategoryLoop(root, data.data.data)
   return root;
 }
 
@@ -56,7 +56,7 @@ async function loadTowersFromServer() {
     return;
   }
 
-  /** @type {{data: Towers | null, error: Error | null}} */
+  /** @type {{data: {data: Towers | null}, error: Error | null}} */
   let data = await tryCatch(server_tower.json());
 
   if (data.error) {
@@ -65,6 +65,6 @@ async function loadTowersFromServer() {
   }
 
   let root = new Category('root')
-  CategoryLoop(root, data.data)
+  CategoryLoop(root, data.data.data)
   return root;
 }
