@@ -1,9 +1,15 @@
 {
   "$schema": "other_data_schema.json",
   "data": {
-    "Played": {
-      "badge_id": 2125364252,
-      "old_id": 2124457503
+    "Playing": {
+      "Played": {
+        "badge_id": 2125364252,
+        "old_id": 2124457503
+      },
+      "First Tower": {
+        "badge_id": 2125419210,
+        "old_id": 2124641800
+      }
     },
     "First Tower": {
       "badge_id": 2125419210,
