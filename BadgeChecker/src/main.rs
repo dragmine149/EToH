@@ -100,7 +100,6 @@ pub struct Zone {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Event {
-    pub area_information: AreaInformation,
     #[serde(flatten)]
     pub towers: HashMap<String, Tower>,
 }

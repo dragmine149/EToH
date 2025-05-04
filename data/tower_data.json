@@ -2078,13 +2078,6 @@
     },
     "events": {
       "BIOUMS -> April Fools 25": {
-        "area_information": {
-          "requirements": {
-            "tower_difficulties": {},
-            "tower_points": 0
-          },
-          "sub_area": "rings/2: Desire"
-        },
         "Tower of Vesi Leikki": {
           "badge_id": 3516710902749261,
           "difficulty": 3.5

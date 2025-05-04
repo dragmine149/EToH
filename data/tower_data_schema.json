@@ -117,14 +117,6 @@
     },
     "event": {
       "type": "object",
-      "properties": {
-        "area_information": {
-          "$ref": "#/definitions/area_information"
-        }
-      },
-      "required": [
-        "area_information"
-      ],
       "additionalProperties": {
         "$ref": "#/definitions/tower"
       }
