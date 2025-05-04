@@ -2090,6 +2090,20 @@
           "badge_id": 1675378900956293,
           "difficulty": 5.44
         }
+      },
+      "Glacial Outpost -> Christmas 24": {
+        "Steeple of Seeking Asylum": {
+          "badge_id": 1310711882037948,
+          "difficulty": 4.86
+        },
+        "Steeple of Scrumptious Souvenirs": {
+          "badge_id": 752079474375688,
+          "difficulty": 5.7
+        },
+        "Steeple of Psycho Eyes": {
+          "badge_id": 827771120600062,
+          "difficulty": 6.28
+        }
       }
     }
   }

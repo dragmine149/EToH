@@ -13,8 +13,7 @@
         }
       },
       "required": [
-        "badge_id",
-        "old_id"
+        "badge_id"
       ]
     },
     "categoryContent": {

@@ -46,6 +46,25 @@
         "badge_id": 2125419244,
         "old_id": 2124784502
       }
+    },
+    "events": {
+      "Christmas24": {
+        "Present of Naughty or Nice": {
+          "badge_id": 2083401300452068
+        },
+        "Present of Present of...": {
+          "badge_id": 696870991727933
+        },
+        "Present of Jolly Remembrance": {
+          "badge_id": 1168244153099122
+        },
+        "Present of Somber Nights": {
+          "badge_id": 473292534416280
+        },
+        "Present of Wishing Star": {
+          "badge_id": 2363457678065839
+        }
+      }
     }
   }
 }
