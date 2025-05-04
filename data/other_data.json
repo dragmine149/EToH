@@ -11,9 +11,31 @@
         "old_id": 2124641800
       }
     },
-    "First Tower": {
-      "badge_id": 2125419210,
-      "old_id": 2124641800
+    "Tower Difficulties": {
+      "Easy": {
+        "badge_id": 2125419249
+      },
+      "Medium": {
+        "badge_id": 2125419253
+      },
+      "Hard": {
+        "badge_id": 2125419256
+      },
+      "Difficult": {
+        "badge_id": 2125419261
+      },
+      "Challenging": {
+        "badge_id": 2125419265
+      },
+      "Intense": {
+        "badge_id": 2125419275
+      },
+      "Remorseless": {
+        "badge_id": 2125419276
+      },
+      "Soul-Crushing": {
+        "badge_id": 2125419280
+      }
     },
     "Tower Count": {
       "10": {
