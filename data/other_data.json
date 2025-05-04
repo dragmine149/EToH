@@ -76,7 +76,15 @@
       }
     },
     "events": {
-      "Christmas24": {
+      "BIOUMS -> April Fools 25": {
+        "Advanced Adventurer": {
+          "badge_id": 636455601311934
+        },
+        "Soul Crushing Adventurer": {
+          "badge_id": 985606617596736
+        }
+      },
+      "Glacial Outpost -> Christmas 24": {
         "Present of Naughty or Nice": {
           "badge_id": 2083401300452068
         },
