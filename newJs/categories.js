@@ -12,7 +12,7 @@ class Badge {
    * @returns {string} URL to the badge page
    */
   get link() {
-    return `https://www.roblox.com/badge/${this.primaryId}`;
+    return `https://www.roblox.com/badges/${this.primaryId}`;
   }
 
   /**
