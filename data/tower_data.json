@@ -968,6 +968,79 @@
           "old_id": 2124535623
         }
       },
+      "The Starlit Archives": {
+        "area_information": {
+          "requirements": {
+            "tower_difficulties": {},
+            "tower_points": 0
+          },
+          "sub_area": "8: Fraud"
+        },
+        "Tower of Lethean Recollection": {
+          "badge_id": 1289207222729699,
+          "difficulty": 100
+        },
+        "Tower of You're Late For Work": {
+          "badge_id": 3753365954140761,
+          "difficulty": 100
+        },
+        "Tower of Pursuit Led Astray": {
+          "badge_id": 2766842373955971,
+          "difficulty": 100
+        },
+        "Steeple of Balloon Commune": {
+          "badge_id": 53740875259774,
+          "difficulty": 100
+        },
+        "Steeple of After-Life Detention": {
+          "badge_id": 2634745481559417,
+          "difficulty": 100
+        },
+        "Steeple of The Manufactured Monstrosity": {
+          "badge_id": 2763253159461072,
+          "difficulty": 100
+        },
+        "Tower of The Umbrella, The User": {
+          "badge_id": 165330479439546,
+          "difficulty": 100
+        },
+        "Steeple of Two Minute Noodles": {
+          "badge_id": 3730347966032771,
+          "difficulty": 100
+        },
+        "Steeple of Itsy Bitsy": {
+          "badge_id": 391052562773885,
+          "difficulty": 100
+        },
+        "Tower of Infiltrated Ruins": {
+          "badge_id": 4465046116074335,
+          "difficulty": 100
+        },
+        "Tower of A Disillusioned Existence": {
+          "badge_id": 491118547215153,
+          "difficulty": 100
+        },
+        "Tower of Warranted Retribution": {
+          "badge_id": 2122020127306477,
+          "difficulty": 100
+        },
+        "Tower of House Without Home": {
+          "badge_id": 4114801218397975,
+          "difficulty": 100
+        },
+        "Tower of Fleeing From Everything Ending": {
+          "badge_id": 2919301511601152,
+          "difficulty": 100
+        },
+        "Steeple of Cheesy Vengeance": {
+          "badge_id": 1358487401757254,
+          "difficulty": 100
+        },
+        "Steeple of Forlorn Blizzard": {
+          "badge_id": 1391896070846757,
+          "difficulty": 100
+        }
+      },
       "9: Treachery": {
         "area_information": {
           "requirements": {
