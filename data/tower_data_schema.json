@@ -4,27 +4,36 @@
     "tower": {
       "type": "object",
       "properties": {
+        "name": {
+          "type": "string",
+          "description": "The full name of the tower"
+        },
         "difficulty": {
           "type": "number",
-          "description": "The difficult of the tower, gotten from wiki/in-game"
+          "description": "The difficult of the tower, gotten from wiki/in-game",
+          "minimum": 1,
+          "maximum": 12,
+          "default": 1
         },
-        "badge_id": {
-          "type": "integer",
-          "description": "The badge id of the tower (for the new place)"
-        },
-        "old_id": {
-          "type": "integer",
-          "description": "The badge if of the tower (for the old place). Blank if doesn't exist"
+        "badges": {
+          "type": "array",
+          "description": "A list of badges for this tower (moved places). Sorted by newest first",
+          "minItems": 1
         }
       },
       "required": [
+        "name",
         "difficulty",
-        "badge_id"
+        "badges"
       ]
     },
     "area_information": {
       "type": "object",
       "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the area. Also includes the word area number (e.g. Ring 1: Limbo)"
+        },
         "sub_area": {
           "type": "string",
           "description": "Which area this area is a sub area of."
@@ -33,127 +42,129 @@
           "type": "object",
           "description": "Requirements to access the area",
           "properties": {
-            "tower_points": {
+            "points": {
               "type": "number",
-              "description": "The number of tower points required to access this area"
+              "description": "The number of tower points required to access this area",
+              "minimum": 0,
+              "default": 1
             },
-            "tower_difficulties": {
+            "difficulties": {
               "type": "object",
               "description": "The number of towers required of each difficulty level to access this area",
               "properties": {
                 "easy": {
-                  "type": "integer"
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
                 },
                 "medium": {
-                  "type": "integer"
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
                 },
                 "hard": {
-                  "type": "integer"
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
                 },
                 "difficult": {
-                  "type": "integer"
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
                 },
                 "challenging": {
-                  "type": "integer"
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
                 },
                 "intense": {
-                  "type": "integer"
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
                 },
                 "remorseless": {
-                  "type": "integer"
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
                 },
                 "insane": {
-                  "type": "integer"
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
                 },
                 "extreme": {
-                  "type": "integer"
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
                 },
                 "terrifying": {
-                  "type": "integer"
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
                 },
                 "catastrophic": {
-                  "type": "integer"
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
                 }
               }
             }
           },
           "required": [
-            "tower_points",
-            "tower_difficulties"
+            "points",
+            "difficulties"
           ]
+        },
+        "towers": {
+          "type": "array",
+          "description": "A list of towers that can be found in this area",
+          "items": {
+            "$ref": "#/definitions/tower"
+          }
         }
       },
       "required": [
-        "requirements"
+        "name",
+        "requirements",
+        "towers"
       ]
-    },
-    "ring": {
-      "type": "object",
-      "properties": {
-        "area_information": {
-          "$ref": "#/definitions/area_information"
-        }
-      },
-      "required": [
-        "area_information"
-      ],
-      "additionalProperties": {
-        "$ref": "#/definitions/tower"
-      }
-    },
-    "zone": {
-      "type": "object",
-      "properties": {
-        "area_information": {
-          "$ref": "#/definitions/area_information"
-        }
-      },
-      "required": [
-        "area_information"
-      ],
-      "additionalProperties": {
-        "$ref": "#/definitions/tower"
-      }
-    },
-    "event": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/tower"
-      }
     }
   },
   "type": "object",
   "properties": {
-    "data": {
+    "areas": {
       "type": "object",
       "properties": {
-        "rings": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/ring"
+        "permanent": {
+          "type": "array",
+          "description": "Information about towers that are perminately in the game.",
+          "items": {
+            "$ref": "#/definitions/area_information"
           }
         },
-        "zones": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/zone"
+        "temporary": {
+          "type": "array",
+          "description": "Information about towers that are temporary in the game for an event.",
+          "items": {
+            "$ref": "#/definitions/area_information"
           }
         },
-        "events": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/event"
+        "other": {
+          "type": "array",
+          "description": "Information about towers that are in the game and give a badgee yet don't count towards any progress",
+          "items": {
+            "$ref": "#/definitions/area_information"
           }
         }
       },
       "required": [
-        "rings",
-        "zones",
-        "events"
+        "permanent",
+        "temporary",
+        "other"
       ]
     }
   },
   "required": [
-    "data"
+    "areas"
   ]
 }
