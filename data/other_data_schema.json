@@ -2,52 +2,43 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "definitions": {
-    "badgeData": {
+    "badge": {
       "type": "object",
       "properties": {
-        "badge_id": {
-          "type": "integer"
+        "name": {
+          "type": "string",
+          "description": "The name of the badge",
+          "$comment": "Will be converted to snake case in code for ease of use"
         },
-        "old_id": {
-          "type": "integer"
+        "category": {
+          "type": "string",
+          "description": "Where this badge belongs"
+        },
+        "badges": {
+          "description": "A list of badges this is associated with. Newest badge first",
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 1
         }
       },
       "required": [
-        "badge_id"
+        "name",
+        "category",
+        "badges"
       ]
-    },
-    "categoryContent": {
-      "type": "object",
-      "patternProperties": {
-        ".*": {
-          "oneOf": [
-            {
-              "$ref": "#/definitions/badgeData"
-            },
-            {
-              "$ref": "#/definitions/categoryContent"
-            }
-          ]
-        }
-      },
-      "additionalProperties": false
     }
   },
   "properties": {
     "data": {
-      "type": "object",
-      "patternProperties": {
-        ".*": {
-          "oneOf": [
-            {
-              "$ref": "#/definitions/badgeData"
-            },
-            {
-              "$ref": "#/definitions/categoryContent"
-            }
-          ]
-        }
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/badge"
       }
     }
-  }
+  },
+  "required": [
+    "data"
+  ]
 }

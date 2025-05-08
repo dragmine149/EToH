@@ -1,114 +1,230 @@
 {
   "$schema": "other_data_schema.json",
-  "data": {
-    "Playing": {
-      "Played": {
-        "badge_id": 2125364252,
-        "old_id": 2124457503
-      },
-      "First Tower": {
-        "badge_id": 2125419210,
-        "old_id": 2124641800
-      }
+  "data": [
+    {
+      "name": "Played",
+      "category": "Playing",
+      "badges": [
+        2125364252,
+        2124457503
+      ]
     },
-    "Tower Difficulties": {
-      "Easy": {
-        "badge_id": 2125419249
-      },
-      "Medium": {
-        "badge_id": 2125419253
-      },
-      "Hard": {
-        "badge_id": 2125419256
-      },
-      "Difficult": {
-        "badge_id": 2125419261
-      },
-      "Challenging": {
-        "badge_id": 2125419265
-      },
-      "Intense": {
-        "badge_id": 2125419275
-      },
-      "Remorseless": {
-        "badge_id": 2125419276
-      },
-      "Soul-Crushing": {
-        "badge_id": 2125419280
-      }
+    {
+      "name": "First Tower",
+      "category": "Playing",
+      "badges": [
+        2125419210,
+        2124641800
+      ]
     },
-    "Tower Count": {
-      "10": {
-        "badge_id": 2125419217,
-        "old_id": 2124641801
-      },
-      "25": {
-        "badge_id": 2125419218,
-        "old_id": 2124641802
-      },
-      "50": {
-        "badge_id": 2125419221,
-        "old_id": 2124641804
-      },
-      "75": {
-        "badge_id": 2125419224,
-        "old_id": 2124641805
-      },
-      "100": {
-        "badge_id": 2125419228,
-        "old_id": 2124641806
-      },
-      "125": {
-        "badge_id": 2125419230,
-        "old_id": 2124705710
-      },
-      "150": {
-        "badge_id": 2125419234,
-        "old_id": 2124705712
-      },
-      "175": {
-        "badge_id": 2125419236,
-        "old_id": 2124705722
-      },
-      "200": {
-        "badge_id": 2125419244,
-        "old_id": 2124784502
-      }
+    {
+      "name": "Easy",
+      "category": "Difficulties",
+      "badges": [
+        2125419249,
+        2124641807
+      ]
     },
-    "events": {
-      "BIOUMS -> April Fools 25": {
-        "Advanced Adventurer": {
-          "badge_id": 636455601311934
-        },
-        "Soul Crushing Adventurer": {
-          "badge_id": 985606617596736
-        }
-      },
-      "Glacial Outpost -> Christmas 24": {
-        "Present of Naughty or Nice": {
-          "badge_id": 2083401300452068
-        },
-        "Present of Present of...": {
-          "badge_id": 696870991727933
-        },
-        "Present of Jolly Remembrance": {
-          "badge_id": 1168244153099122
-        },
-        "Present of Somber Nights": {
-          "badge_id": 473292534416280
-        },
-        "Present of Wishing Star": {
-          "badge_id": 2363457678065839
-        }
-      }
+    {
+      "name": "Medium",
+      "category": "Difficulties",
+      "badges": [
+        2125419253,
+        2124641808
+      ]
     },
-    "challenges": {
-      "8": {
-        "badge_id": 2125435357
-      },
-      "all": {
-        "badge_id": 2125435360
-      }
+    {
+      "name": "Hard",
+      "category": "Difficulties",
+      "badges": [
+        2125419256,
+        2124641811
+      ]
+    },
+    {
+      "name": "Difficult",
+      "category": "Difficulties",
+      "badges": [
+        2125419261,
+        2124641812
+      ]
+    },
+    {
+      "name": "Challenging",
+      "category": "Difficulties",
+      "badges": [
+        2125419265,
+        2124641813
+      ]
+    },
+    {
+      "name": "Intense",
+      "category": "Difficulties",
+      "badges": [
+        2125419275,
+        2124641814
+      ]
+    },
+    {
+      "name": "Remorseless",
+      "category": "Difficulties",
+      "badges": [
+        2125419276,
+        2124641815
+      ]
+    },
+    {
+      "name": "Soul-Crushing",
+      "category": "Difficulties",
+      "badges": [
+        2125419280,
+        2124641816
+      ]
+    },
+    {
+      "name": "10",
+      "category": "Tower Count",
+      "badges": [
+        2125419217,
+        2124641801
+      ]
+    },
+    {
+      "name": "25",
+      "category": "Tower Count",
+      "badges": [
+        2125419218,
+        2124641802
+      ]
+    },
+    {
+      "name": "50",
+      "category": "Tower Count",
+      "badges": [
+        2125419221,
+        2124641804
+      ]
+    },
+    {
+      "name": "75",
+      "category": "Tower Count",
+      "badges": [
+        2125419224,
+        2124641805
+      ]
+    },
+    {
+      "name": "100",
+      "category": "Tower Count",
+      "badges": [
+        2125419228,
+        2124641806
+      ]
+    },
+    {
+      "name": "125",
+      "category": "Tower Count",
+      "badges": [
+        2125419230,
+        2124705710
+      ]
+    },
+    {
+      "name": "150",
+      "category": "Tower Count",
+      "badges": [
+        2125419234,
+        2124705712
+      ]
+    },
+    {
+      "name": "175",
+      "category": "Tower Count",
+      "badges": [
+        2125419236,
+        2124705722
+      ]
+    },
+    {
+      "name": "200",
+      "category": "Tower Count",
+      "badges": [
+        2125419244,
+        2124784502
+      ]
+    },
+    {
+      "name": "Advanced Adventurer",
+      "category": "BIOUMS: April Fools 2025",
+      "badges": [
+        636455601311934
+      ]
+    },
+    {
+      "name": "Soul Crushing Adventurer",
+      "category": "BIOUMS: April Fools 2025",
+      "badges": [
+        985606617596736
+      ]
+    },
+    {
+      "name": "Present of Naughty or Nice",
+      "category": "Glacial Outpost: Christmas 2024",
+      "badges": [
+        2083401300452068
+      ]
+    },
+    {
+      "name": "Present of Present of ...",
+      "category": "Glacial Outpost: Christmas 2024",
+      "badges": [
+        696870991727933
+      ]
+    },
+    {
+      "name": "Present of Jolly Remembrance",
+      "category": "Glacial Outpost: Christmas 2024",
+      "badges": [
+        1168244153099122
+      ]
+    },
+    {
+      "name": "Present of Somber Nights",
+      "category": "Glacial Outpost: Christmas 2024",
+      "badges": [
+        473292534416280
+      ]
+    },
+    {
+      "name": "Present of Wishing Star",
+      "category": "Glacial Outpost: Christmas 2024",
+      "badges": [
+        2363457678065839
+      ]
+    },
+    {
+      "name": "8",
+      "category": "Challenges",
+      "badges": [
+        2125435357,
+        2124733939
+      ]
+    },
+    {
+      "name": "all",
+      "category": "Challenges",
+      "badges": [
+        2125435360,
+        2124733940
+      ]
+    },
+    {
+      "name": "mobile",
+      "category": "Playing",
+      "badges": [
+        2125364381,
+        2124457649
+      ]
     }
-  }
+  ]
 }

@@ -16,10 +16,11 @@ jobs:
           sparse-checkout: |
             data/*
             !data/Guy_sql
-            BadgeChecker/Checker
+            BadgeChecker/
           sparse-checkout-cone-mode: false
 
-      - name: Run Checker
-        run: |
-          chmod +X ./BadgeChecker/Checker
-          ./BadgeChecker/Checker
+      - name: Dir Changer
+        run: cd BadgeChecker
+
+      - name: Test Badges
+        run: cargo run

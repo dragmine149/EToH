@@ -3325,6 +3325,24 @@
         ]
       }
     ],
-    "other": []
+    "other": [
+      {
+        "name": "Time-Lost Tempest",
+        "requirements": {
+          "difficulties": {},
+          "points": 0
+        },
+        "sub_area": "Ring 1: Limbo",
+        "towers": [
+          {
+            "name": "Do Dat Look Like A Tower",
+            "difficulty": 5.83,
+            "badges": [
+              2965533401798823
+            ]
+          }
+        ]
+      }
+    ]
   }
 }
