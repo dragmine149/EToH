@@ -19,8 +19,7 @@ jobs:
             BadgeChecker/
           sparse-checkout-cone-mode: false
 
-      - name: Dir Changer
-        run: cd BadgeChecker
-
       - name: Test Badges
-        run: cargo run
+        run: |
+          cd BadgeChecker
+          cargo run
