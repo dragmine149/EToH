@@ -89,7 +89,7 @@ class Network {
   /**
   * Keeps retrying the request forever every 2 seconds until it is successful (when response.ok is true)
   * @param {Request} request The request to retry.
-  * @returns the successful request.
+  * @returns {Promise<Response>} the successful request.
   */
   async retryTilResult(request) {
     let response = { ok: false };
