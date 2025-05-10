@@ -1,22 +1,22 @@
 /**
 @typedef {{
-  "name": string,
-  "difficulty": number,
-  "ids": number[]
+  name: string,
+  difficulty: number,
+  badges: number[]
 }} ServerTower
 
 @typedef {{
-  "easy": number?,
-  "medium": number?,
-  "hard": number?,
-  "difficult": number?,
-  "challenging": number?,
-  "intense": number?,
-  "remorseless": number?,
-  "insane": number?,
-  "extreme": number?,
-  "terrifying": number?,
-  "catastrophic": number?
+  easy: number?,
+  medium: number?,
+  hard: number?,
+  difficult: number?,
+  challenging: number?,
+  intense: number?,
+  remorseless: number?,
+  insane: number?,
+  extreme: number?,
+  terrifying: number?,
+  catastrophic: number?
 }} ServerDifficulties
 
 @typedef {{
@@ -90,9 +90,12 @@ async function loadTowersFromServer() {
     return;
   }
   Object.entries(data.data.areas).forEach(
+    /**
+    * @param {[String, ServerAreas[]]} areas
+    */
     (areas) => {
       areas[1].forEach((area) => area.towers.forEach((tower) => {
-        badgeManager.addBadge(new Tower(tower.name, tower.ids, tower.difficulty, area.name));
+        badgeManager.addBadge(new Tower(tower.name, tower.badges, tower.difficulty, area.name));
       }))
     })
 }
