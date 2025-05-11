@@ -11,6 +11,7 @@ class User {
   /** @type {string} */
   display;
 
+  /** @type {boolean} */
   played = false;
 
   /** @type {number} */

@@ -18,7 +18,9 @@ class Badge {
   * @param {any} value The value to assign to this property.
   */
   __addProperty(name, value) {
-    if (this[name]) return;
+    if (this[name]) return; // don't readd it.
+
+    // Custom getter and setter functions. These are meant to not set and always get. Badge data is never going to update live unless a system is implemented, these help with that.
     Object.defineProperty(this, name, {
       get: function () { return this[`__${name}`] },
       set: function (v) { return false }
@@ -47,16 +49,19 @@ class BadgeManager {
   * @param {BadgeManager} self
   * @param {Map} map
   * @param {any} item
+  * @returns {Badge[]}
   */
   __mapGetter(self, map, item) {
     if (item == null || item == undefined) {
+      // No item? Return the keys to allow us to view what we can use.
+      // Not sorted, we'll let the user deal with sorting.
       return Array.from(map.keys());
     }
 
     /** @type {number[]} */
     let indexes = map.get(item);
     if (indexes == undefined) return undefined;
-    return indexes.map((index) => self.__badges[index]);
+    return indexes.map((index) => self.__badges[index]); // got to return the badges (hence the map). No use otherwise.
   }
 
   /**
@@ -69,6 +74,7 @@ class BadgeManager {
   __mapSetter(self, map, item, value) {
     let data = map.get(item);
     if (data == undefined) {
+      // we love arrays
       data = [];
     }
     data.push(value);
@@ -82,9 +88,10 @@ class BadgeManager {
   addBadge(badge) {
     let index = this.__badges.push(badge);
 
+    // no point in adding a badge if we don't also filter said badge.
     this.__filters.forEach((filter) => {
       let key = filter.callback(badge);
-      if (key == undefined || key == null) return;
+      if (key == undefined || key == null || Number.isNaN(key)) return;
 
       this.__mapSetter(this, this[`__${filter.filter}`], key, index - 1);
     });
@@ -105,7 +112,7 @@ class BadgeManager {
     if (this.__badges.length > 0) {
       this.__badges.forEach((badge, index) => {
         let key = callback(badge);
-        if (key == undefined || key == null) return;
+        if (key == undefined || key == null || Number.isNaN(key)) return;
 
         this[`__${filter}`].set(key, index);
       })
