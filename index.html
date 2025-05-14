@@ -19,6 +19,7 @@
     <script src="https://cdn.jsdelivr.net/npm/compress-json@3/bundle.min.js"></script>
     <script src="https://dragmine149.github.io/Scripts/storage.js"></script>
     <script src="https://dragmine149.github.io/Scripts/verbose.js"></script>
+    <script src="https://dragmine149.github.io/Scripts/verbose.css"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <!-- <script src="js/badges.js"></script> -->
     <!-- <script src="js/etoh.js"></script> -->
@@ -26,10 +27,11 @@
     <script src="newJs/main.js"></script>
     <script src="newJs/network.js"></script>
 
+    <script src="newJs/DataManager.js"></script>
     <script src="newJs/BadgeManager.js"></script>
-    <script src="newJs/EToH.js"></script>
-
     <script src="newJs/user.js"></script>
+
+    <script src="newJs/EToH.js"></script>
   </head>
   <body>
     <div id="top_bar">
@@ -67,6 +69,15 @@
       <br>
       <span id="error_details">Please reload and try again. If the issue persists, please open an <a href="https://github.com/dragmine149/ETOH/issues">issue</a></span>
     </div>
+
+    <div id="logs" hidden>
+      <div id="template" hidden>
+        <div tag="icon"></div>
+        <span tag="category"></span><span tag="time"></span><br>
+        <span tag="message"></span><br>
+      </div>
+    </div>
+
     <div id="main">
       <div id="search">
         <div class="title">Load EToH Status</div>

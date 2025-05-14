@@ -1,3 +1,7 @@
+/*global Verbose, tryCatch, ui */
+/*eslint no-undef: "error"*/
+/*exported network */
+
 const CLOUD_URL = 'https://roblox-proxy.dragmine149.workers.dev';
 
 

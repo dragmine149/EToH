@@ -1,3 +1,7 @@
+/*global GenericManager*/
+/*eslint no-undef: "error"*/
+/*exported badgeManager, Badge */
+
 class Badge {
   /** @type {number[]} The ids that are associated with the badge. As games will sometimes "move", we need a list to store all possibilities. Sorted as newest -> oldest */
   ids;
@@ -23,7 +27,7 @@ class Badge {
     // Custom getter and setter functions. These are meant to not set and always get. Badge data is never going to update live unless a system is implemented, these help with that.
     Object.defineProperty(this, name, {
       get: function () { return this[`__${name}`] },
-      set: function (v) { return false }
+      set: function () { }
     });
     this[`__${name}`] = value;
   }
@@ -39,89 +43,23 @@ class Badge {
   }
 }
 
-class BadgeManager {
-  __badges = [];
-  /** @type {{filter: String, callback: (b: Badge) => any}[]} A list of filters to apply to badges */
-  __filters = [];
-
+class BadgeManager extends GenericManager {
   /**
-  * Get an item from a map. Returns the map keys if no item is defined.
-  * @param {BadgeManager} self
-  * @param {Map} map
-  * @param {any} item
-  * @returns {Badge[]}
-  */
-  __mapGetter(self, map, item) {
-    if (item == null || item == undefined) {
-      // No item? Return the keys to allow us to view what we can use.
-      // Not sorted, we'll let the user deal with sorting.
-      return Array.from(map.keys());
-    }
-
-    /** @type {number[]} */
-    let indexes = map.get(item);
-    if (indexes == undefined) return undefined;
-    return indexes.map((index) => self.__badges[index]); // got to return the badges (hence the map). No use otherwise.
-  }
-
-  /**
-  * Add a badge to the map.
-  * @param {BadgeManager} self
-  * @param {Map} map
-  * @param {any} item
-  * @param {number} value
-  */
-  __mapSetter(self, map, item, value) {
-    let data = map.get(item);
-    if (data == undefined) {
-      // we love arrays
-      data = [];
-    }
-    data.push(value);
-    map.set(item, data);
-  }
-
-  /**
-  * Add a badge to the manager of badges.
-  * @param {Badge} badge The badge to add.
-  */
+   * Add a Badge to the manager.
+   * @param {Badge} badge The badge to add.
+   */
   addBadge(badge) {
-    let index = this.__badges.push(badge);
-
-    // no point in adding a badge if we don't also filter said badge.
-    this.__filters.forEach((filter) => {
-      let key = filter.callback(badge);
-      if (key == undefined || key == null || Number.isNaN(key)) return;
-
-      this.__mapSetter(this, this[`__${filter.filter}`], key, index - 1);
-    });
-  }
-
-  /**
-  * Makes a new map to have a shortcut way of getting tower data. Data can now be retrieved using `class['filter']('test')`
-  * @param {String} filter The thing to store in order to filter badges
-  * @param {(b: Badge) => any} callback What gets stored in the map for quick access to the badges
-  */
-  addFilter(filter, callback) {
-    this.__filters.push({
-      filter, callback: callback
-    })
-    this[`__${filter}`] = new Map();
-    this[filter] = this.__mapGetter.bind(null, this, this[`__${filter}`]);
-
-    if (this.__badges.length > 0) {
-      this.__badges.forEach((badge, index) => {
-        let key = callback(badge);
-        if (key == undefined || key == null || Number.isNaN(key)) return;
-
-        this[`__${filter}`].set(key, index);
-      })
+    if (!(badge instanceof Badge)) {
+      throw new Error("Only instances of Badge can be added to BadgeManager.");
     }
+    super.addItem(badge);
   }
 
   constructor() {
-    this.addFilter('names', b => b.name);
+    super();
+    this.addFilter('names', badge => badge.name);
   }
 }
+
 
 let badgeManager = new BadgeManager();

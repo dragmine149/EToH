@@ -1,3 +1,8 @@
+/*global tryCatch, badgeManager, Badge, User, network, UserManager, ui, etohDB */
+/*eslint no-undef: "error"*/
+/*exported Tower, Other, EToHUser, userManager */
+
+
 /**
 @typedef {{
   name: string,
@@ -75,6 +80,34 @@ class Other extends Badge {
   }
 }
 
+class EToHUser extends User {
+  static async create(user_data, db) {
+    let result = await User.create(user_data, db);
+    console.log(result);
+    if (!Number.isNaN(Number(result)) && result !== true) {
+      console.log('number user');
+      return result;
+    }
+    console.log(result instanceof User);
+    if (result !== true && !(result instanceof User)) {
+      console.log(`Some sort of error...`);
+      return null;
+    }
+
+    result.verbose.info(`Checking if user has played`);
+
+    /** @type {number[]} */
+    let played = badgeManager.names("Played")[0].ids;
+    result.verbose.info(played);
+    let hasPlayed = await network.getEarlierBadge(result.id, played[0], played[1]);
+    if (hasPlayed.earliest > 0) {
+      result.verbose.debug(`Upgrading user to type ETOH`);
+      return new EToHUser(result.database);
+    }
+    return null;
+  }
+}
+
 async function loadTowersFromServer() {
   let server_tower = await fetch('data/tower_data.json');
   if (!server_tower.ok) {
@@ -116,13 +149,16 @@ async function loadOthersFromServer() {
   }
 
   data.data.data.forEach((badge) => {
-    badgeManager.addBadge(new Other(badge.name, badge.ids, badge.category));
+    badgeManager.addBadge(new Other(badge.name, badge.badges, badge.category));
   })
 }
 
 badgeManager.addFilter('difficulty', b => Math.floor(b.difficulty));
 badgeManager.addFilter('area', b => b.area);
 badgeManager.addFilter('category', b => b.category);
+
+let userManager = new UserManager(etohDB);
+userManager.userClass = EToHUser;
 
 loadTowersFromServer();
 loadOthersFromServer();
