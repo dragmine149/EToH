@@ -25,6 +25,15 @@ fn get_badges(client: &Client, url: String) -> Result<Vec<Badge>, reqwest::Error
     Ok(badges)
 }
 
+fn process_badges(badge_list: &[u64], badges: Vec<Badge>) -> String {
+    badges
+        .iter()
+        .filter(|badge| !badge_list.contains(&badge.id))
+        .filter(|badge| badge.name != "Placeholder")
+        .map(|badge| format!("{} - {}\n", badge.id, badge.name))
+        .collect::<String>()
+}
+
 fn main() {
     let badges = get_badges(
         &Client::new(),
@@ -65,17 +74,8 @@ fn main() {
 
     // println!("{:?}", badge_list.collect::<Vec<u64>>());
 
-    let unused = badges
-        .iter()
-        .filter(|badge| !badge_list.contains(&badge.id))
-        .map(|badge| format!("{} - {}\n", badge.id, badge.name))
-        .collect::<String>();
-
-    let old_unused = old_badges
-        .iter()
-        .filter(|badge| !badge_list.contains(&badge.id))
-        .map(|badge| format!("{} - {}\n", badge.id, badge.name))
-        .collect::<String>();
+    let unused = process_badges(&badge_list, badges);
+    let old_unused = process_badges(&badge_list, old_badges);
 
     if !old_unused.is_empty() {
         println!();
