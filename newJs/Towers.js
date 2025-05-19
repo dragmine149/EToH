@@ -56,6 +56,7 @@ class TowerManager {
 
       towers.forEach((tower) => {
         // debugger;
+        if (tower.difficulty >= 100) return; // AKA: Towers which have not been added yet.
 
         /** @type {HTMLDivElement} */
         let towerClone = clone.querySelector("[tag='badges'] [tag='tower']").cloneNode(true);
@@ -85,7 +86,9 @@ class TowerManager {
 
       let node = areaManager.name(area)[0];
       node.ui = clone;
-
+      // console.log(clone.querySelectorAll("[tag='tower']"), clone.querySelectorAll("[tag='tower']").length, node);
+      node.valid = clone.querySelectorAll("[tag='tower']").length > 1;
+      if (node.valid === false) return;
 
       // console.log(node);
       // console.log(node.parent ?? area);
@@ -102,6 +105,9 @@ class TowerManager {
 
     areas.forEach((area) => {
       let node = areaManager.name(area)[0];
+      // console.log(node);
+      if (node.valid === false) return;
+
       // console.log(node);
       if (!node.ui_parent) {
         document.getElementById("towers").appendChild(node.background_ui ?? node.ui);
