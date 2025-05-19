@@ -65,6 +65,7 @@ class TowerManager {
 
         let towerDifficulty = towerClone.querySelector("[tag='difficulty']");
         towerDifficulty.innerText = this.getDifficultyWord(tower.difficulty);
+        towerDifficulty.classList.add("difficulty", this.getDifficultyWord(tower.difficulty));
 
         // implement hovering features.
         towerClone.onmouseover = () => {
