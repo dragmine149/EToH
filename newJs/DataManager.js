@@ -86,4 +86,8 @@ class GenericManager {
 
     this.#items.forEach((item, index) => this.#processFilter(filter, item, index));
   }
+
+  type(type) {
+    return this.#items.filter((item) => item instanceof type);
+  }
 }
