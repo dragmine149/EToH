@@ -81,9 +81,11 @@ class TowerManager {
     { threshold: 0.67, name: "High" },
     { threshold: 0.56, name: "Mid-High" },
     { threshold: 0.45, name: "Mid" },
-    { threshold: 0.33, name: "Low-Mid" },
-    { threshold: 0.22, name: "Low" },
-    { threshold: 0.11, name: "Bottom-Low" }
+    { threshold: 0.34, name: "Low-Mid" },
+    { threshold: 0.23, name: "Low" },
+    { threshold: 0.12, name: "Bottom-Low" },
+    { threshold: 0.01, name: "Bottom" },
+    { threshold: 0.00, name: "Baseline" }
   ];
 
   elements = {};
