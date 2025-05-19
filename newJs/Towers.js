@@ -1,4 +1,4 @@
-/*global Tower, Verbose, badgeManager, DIFFICULTIES, SUB_LEVELS */
+/*global Tower, Verbose, badgeManager, DIFFICULTIES, SUB_LEVELS, areaManager */
 /*eslint no-undef: "error" */
 /*exported TowerManager */
 
@@ -28,7 +28,17 @@ class TowerManager {
   }
 
   __createUI() {
-    let areas = badgeManager.area();
+    let parents = areaManager.parent();
+    parents.forEach((parent) => {
+      let background = document.createElement("div");
+      background.classList.add("parent-background");
+      let node = areaManager.name(parent)[0];
+      node.background_ui = background;
+
+      // document.getElementById("towers").appendChild(background);
+    })
+
+    let areas = areaManager.name();
     areas.forEach(area => {
       // list of all towers for this area.
       /** @type {Tower[]} */
@@ -70,8 +80,27 @@ class TowerManager {
         clone.querySelector("[tag='badges']").appendChild(towerClone);
       });
 
-      document.getElementById("towers").appendChild(clone);
+      let node = areaManager.name(area)[0];
+      node.ui = clone;
+      // console.log(node);
+      // console.log(node.parent ?? area);
+      // debugger;
+      let parentNode = areaManager.name(node.parent ?? area)[0];
+      if (parentNode.background_ui) {
+        parentNode.background_ui.appendChild(clone);
+        node.ui_parent = node.parent ? true : false;
+        return;
+      }
+
+      // document.getElementById("towers").appendChild(clone);
     });
+
+    areas.forEach((area) => {
+      let node = areaManager.name(area)[0];
+      console.log(node);
+      if (node.ui_parent) return;
+      document.getElementById("towers").appendChild(node.background_ui ?? node.ui);
+    })
   }
 
   constructor() {

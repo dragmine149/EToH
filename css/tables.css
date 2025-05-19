@@ -46,3 +46,9 @@
 .area .total_completed {
   font-weight: bold;
 }
+
+.parent-background {
+  background-color: #5c656d;
+  float: left;
+  margin: 5px;
+}
