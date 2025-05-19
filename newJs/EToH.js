@@ -1,4 +1,4 @@
-/*global tryCatch, badgeManager, Badge, User, network, UserManager, ui, etohDB */
+/*global tryCatch, badgeManager, Badge, User, network, UserManager, ui, etohDB, logs */
 /*eslint no-undef: "error"*/
 /*exported Tower, Other, EToHUser, userManager */
 
@@ -162,3 +162,7 @@ userManager.userClass = EToHUser;
 
 loadTowersFromServer();
 loadOthersFromServer();
+
+logs.addCallback("*", "info", (log) => {
+  document.querySelector("[tag='status']").innerText = log.params.toString();
+})

@@ -72,15 +72,15 @@ class User {
     let result = await user.updateDetails(db);
     user.verbose.info(`Received: ${result} from request server data.`);
     if (!Number.isNaN(result) && result !== true) {
-      user.verbose.info(`Is number!`);
+      user.verbose.debug(`Is number!`);
       return result;
     }
     if (result !== true) {
-      user.verbose.info(`Is not true!`)
+      user.verbose.debug(`Is not true!`)
       return null;
     }
 
-    user.verbose.info(`Is user!`);
+    user.verbose.debug(`Is user!`);
     return user;
   }
 
@@ -110,10 +110,10 @@ class User {
     let userData = userRequest.data;
 
     if (!this.id && db) {
-      this.verbose.debug(`Checking database to see if we already have ${userData.id} in the database`);
+      this.verbose.info(`Checking database to see if we already have ${userData.id} in the database`);
       let potential = await etohDB.users.get({ id: userData.id });
       if (potential) {
-        this.verbose.debug(`Found user id, returning to use that user instead.`);
+        this.verbose.info(`Found user id, returning to use that user instead.`);
         return userData.id;
       }
       this.verbose.info(`We do not, hence saving data.`);
@@ -145,7 +145,7 @@ class UserManager extends GenericManager {
     if (this.current_user != null) {
       this.verbose.debug(identifier, this.current_user);
       if (this.current_user.id == identifier || this.current_user.name == identifier) {
-        this.verbose.debug(`Cancelling finding as user is already loaded.`);
+        this.verbose.info(`Cancelling finding as user is already loaded.`);
         return;
       }
 
@@ -155,13 +155,13 @@ class UserManager extends GenericManager {
 
     // try to find it in our filters first.
     let id = this.id(identifier);
-    this.verbose.debug(`Loaded id?: ${id}`);
+    this.verbose.info(`Loaded id?: ${id}`);
     if (id != undefined) {
       this.current_user = id;
       return;
     }
     let name = this.names(identifier);
-    this.verbose.debug(`Loaded name?: ${id}`);
+    this.verbose.info(`Loaded name?: ${id}`);
     if (name != undefined) {
       this.current_user = name;
       return;
@@ -175,14 +175,14 @@ class UserManager extends GenericManager {
       json.name = undefined;
     }
 
-    this.verbose.debug(`Attempting to load ${JSON.stringify(json)} from database`);
+    this.verbose.info(`Attempting to load ${JSON.stringify(json)} from database`);
     // and load the user. Even if it doesn't exist.
     let user = await this.db.users.get(json);
-    this.verbose.debug(`Found: `, user);
+    this.verbose.info(`Found: `, user);
     if (user == undefined && json.name != undefined) {
-      this.verbose.debug(`Attempting to search past names of data`);
+      this.verbose.info(`Attempting to search past names of data`);
       user = await this.db.users.where('past').anyOf(json.name).toArray();
-      this.verbose.debug(`Found: `, user);
+      this.verbose.info(`Found: `, user);
       user = user.length != 0 ? user[0] : undefined;
     }
 
