@@ -73,4 +73,8 @@ class TowerManager {
       document.getElementById("towers").appendChild(clone);
     });
   }
+
+  constructor() {
+    this.verbose = new Verbose("TowerManager", "#7842dc");
+  }
 }
