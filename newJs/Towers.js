@@ -3,20 +3,6 @@
 /*exported TowerManager */
 
 class TowerManager {
-  difficulties = Object.freeze(["Easy", "Medium", "Hard", "Difficult", "Challenging", "Intense", "Remorseless", "Insane", "Extreme", "Terrifying", "Catastrophic"]);
-  subLevels = Object.freeze([
-    Object.freeze({ threshold: 0.89, name: "Peak" }),
-    Object.freeze({ threshold: 0.78, name: "High-Peak" }),
-    Object.freeze({ threshold: 0.67, name: "High" }),
-    Object.freeze({ threshold: 0.56, name: "Mid-High" }),
-    Object.freeze({ threshold: 0.45, name: "Mid" }),
-    Object.freeze({ threshold: 0.34, name: "Low-Mid" }),
-    Object.freeze({ threshold: 0.23, name: "Low" }),
-    Object.freeze({ threshold: 0.12, name: "Bottom-Low" }),
-    Object.freeze({ threshold: 0.01, name: "Bottom" }),
-    Object.freeze({ threshold: 0.00, name: "Baseline" })
-  ]);
-
   /**
   * Returns the word that describes the number.
   * @param {number} difficulty The difficuty of the tower.
