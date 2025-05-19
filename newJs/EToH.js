@@ -1,6 +1,6 @@
-/*global tryCatch, badgeManager, Badge, User, network, UserManager, ui, etohDB, logs */
+/*global tryCatch, badgeManager, Badge, User, network, UserManager, ui, etohDB, logs, TowerManager */
 /*eslint no-undef: "error"*/
-/*exported Tower, Other, EToHUser, userManager */
+/*exported Tower, Other, EToHUser, userManager, towerManager */
 
 
 /**
@@ -165,6 +165,12 @@ async function loadOthersFromServer() {
   })
 }
 
+
+
+logs.addCallback("*", logs.serveriety.INFO, (log) => {
+  document.querySelector("[tag='status']").innerText = log.params.toString();
+})
+
 badgeManager.addFilter('difficulty', b => Math.floor(b.difficulty));
 badgeManager.addFilter('area', b => b.area);
 badgeManager.addFilter('category', b => b.category);
@@ -175,6 +181,4 @@ userManager.userClass = EToHUser;
 loadTowersFromServer();
 loadOthersFromServer();
 
-logs.addCallback("*", logs.serveriety.INFO, (log) => {
-  document.querySelector("[tag='status']").innerText = log.params.toString();
-})
+let towerManager = new TowerManager();

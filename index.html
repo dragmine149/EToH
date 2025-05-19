@@ -31,6 +31,7 @@
     <script src="newJs/BadgeManager.js"></script>
     <script src="newJs/user.js"></script>
 
+    <script src="newJs/Towers.js"></script>
     <script src="newJs/EToH.js"></script>
   </head>
   <body>
@@ -90,9 +91,13 @@
         </div>
       </div>
       <div id="towers" hidden>
-        <div id="category" hidden>
+        <div id="category" hidden class="area">
           <span tag="title"></span>
           <table tag="badges">
+            <tr tag="template" hidden>
+              <td tag="name"></td>
+              <td tag="difficulty"></td>
+            </tr>
           </table>
         </div>
       </div>
