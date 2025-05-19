@@ -58,7 +58,7 @@ class TowerManager {
         // debugger;
 
         /** @type {HTMLDivElement} */
-        let towerClone = clone.querySelector("[tag='badges'] [tag='template']").cloneNode(true);
+        let towerClone = clone.querySelector("[tag='badges'] [tag='tower']").cloneNode(true);
         towerClone.hidden = false;
         let towerName = towerClone.querySelector("[tag='name']")
         towerName.innerText = tower.shortName;
@@ -77,12 +77,16 @@ class TowerManager {
           towerDifficulty.innerText = this.getDifficultyWord(tower.difficulty);;
         }
 
+        const mouseOverEvent = new Event('mouseover');
+        towerClone.dispatchEvent(mouseOverEvent);
         tower.ui = towerClone;
         clone.querySelector("[tag='badges']").appendChild(towerClone);
       });
 
       let node = areaManager.name(area)[0];
       node.ui = clone;
+
+
       // console.log(node);
       // console.log(node.parent ?? area);
       // debugger;
@@ -98,9 +102,17 @@ class TowerManager {
 
     areas.forEach((area) => {
       let node = areaManager.name(area)[0];
-      console.log(node);
-      if (node.ui_parent) return;
-      document.getElementById("towers").appendChild(node.background_ui ?? node.ui);
+      // console.log(node);
+      if (!node.ui_parent) {
+        document.getElementById("towers").appendChild(node.background_ui ?? node.ui);
+      }
+
+      node.ui.style.width = node.ui.clientWidth + 'px';
+      // console.log(node.ui.style.width);
+      node.ui.querySelectorAll("[tag='tower']").forEach(tower => {
+        const mouseLeaveEvent = new Event('mouseleave');
+        tower.dispatchEvent(mouseLeaveEvent);
+      });
     })
   }
 
