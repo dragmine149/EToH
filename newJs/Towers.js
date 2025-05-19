@@ -1,4 +1,4 @@
-/*global Tower, Verbose, badgeManager */
+/*global Tower, Verbose, badgeManager, DIFFICULTIES, SUB_LEVELS */
 /*eslint no-undef: "error" */
 /*exported TowerManager */
 
@@ -9,7 +9,7 @@ class TowerManager {
   * @returns The word to describe it.
   */
   getDifficultyWord(difficulty) {
-    return this.difficulties[Math.trunc(difficulty) - 1];
+    return DIFFICULTIES[Math.trunc(difficulty) - 1];
   }
 
   /**
@@ -21,8 +21,8 @@ class TowerManager {
     let stage = Math.trunc(difficulty);
     let sub = difficulty % 1;
 
-    let stageWord = this.difficulties[stage - 1] || "Unknown";
-    let subWord = this.subLevels.find(level => sub >= level.threshold)?.name || "Baseline";
+    let stageWord = DIFFICULTIES[stage - 1] || "Unknown";
+    let subWord = SUB_LEVELS.find(level => sub >= level.threshold)?.name || "Baseline";
 
     return `${subWord} ${stageWord}`;
   }

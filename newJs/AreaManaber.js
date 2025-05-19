@@ -1,3 +1,7 @@
+/*global GenericManager, DIFFICULTIES */
+/*eslint no-undef: "error" */
+/*exported Area, AreaManager */
+
 class Area {
   /** @type {string} The name of this area */
   name;
