@@ -98,7 +98,7 @@ class EToHUser extends User {
 
     /** @type {number[]} */
     let played = badgeManager.names("Played")[0].ids;
-    result.verbose.info(played);
+    result.verbose.debug(played);
     let hasPlayed = await network.getEarlierBadge(result.id, played[0], played[1]);
     if (hasPlayed.earliest > 0) {
       result.verbose.debug(`Upgrading user to type ETOH`);
@@ -163,6 +163,6 @@ userManager.userClass = EToHUser;
 loadTowersFromServer();
 loadOthersFromServer();
 
-logs.addCallback("*", "info", (log) => {
+logs.addCallback("*", logs.serveriety.INFO, (log) => {
   document.querySelector("[tag='status']").innerText = log.params.toString();
 })
