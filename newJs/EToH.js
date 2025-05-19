@@ -65,6 +65,18 @@ class Tower extends Badge {
     this.__addProperty('difficulty', difficulty);
     this.__addProperty('area', area);
   }
+
+  get shortName() {
+    // Tower codes are made up of:
+    // each word
+    return this.name.split(' ')
+      // lowered
+      .map(word => word.toLowerCase())
+      // for 'of' and 'and' to be lower, and the rest upper.
+      .map(word => (word == 'of' || word == 'and') ? word[0] : word[0].toUpperCase())
+      // and combined.
+      .join('');
+  }
 }
 
 class Other extends Badge {
