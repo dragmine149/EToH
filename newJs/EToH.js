@@ -1,4 +1,4 @@
-/*global tryCatch, badgeManager, Badge, User, network, UserManager, ui, etohDB, logs, TowerManager */
+/*global tryCatch, badgeManager, Badge, User, network, UserManager, ui, etohDB, logs, TowerManager, areaManager, Area */
 /*eslint no-undef: "error"*/
 /*exported Tower, Other, EToHUser, userManager, towerManager */
 
@@ -139,9 +139,12 @@ async function loadTowersFromServer() {
     * @param {[String, ServerAreas[]]} areas
     */
     (areas) => {
-      areas[1].forEach((area) => area.towers.forEach((tower) => {
-        badgeManager.addBadge(new Tower(tower.name, tower.badges, tower.difficulty, area.name));
-      }))
+      areas[1].forEach((area) => {
+        area.towers.forEach((tower) => {
+          badgeManager.addBadge(new Tower(tower.name, tower.badges, tower.difficulty, area.name));
+        });
+        areaManager.addArea(new Area(area.name, area.sub_area, area.requirements));
+      })
     })
 }
 

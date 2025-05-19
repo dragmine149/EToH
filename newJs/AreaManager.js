@@ -1,6 +1,6 @@
 /*global GenericManager, DIFFICULTIES */
 /*eslint no-undef: "error" */
-/*exported Area, AreaManager */
+/*exported Area, areaManager */
 
 class Area {
   /** @type {string} The name of this area */
@@ -13,6 +13,12 @@ class Area {
     points: number
   }} The requirements to access that area */
   requirements;
+
+  constructor(name, parent, requirements) {
+    this.name = name;
+    this.parent = parent;
+    this.requirements = requirements;
+  }
 }
 
 class AreaManager extends GenericManager {
@@ -33,7 +39,9 @@ class AreaManager extends GenericManager {
     this.addFilter("name", area => area.name);
     this.addFilter("points", area => area.requirements.points);
     DIFFICULTIES.forEach((diff) => {
-      this.addFilter(diff, area => area.requirements[diff]);
+      this.addFilter(diff, area => area.requirements.difficulties[diff.toLowerCase()]);
     })
   }
 }
+
+let areaManager = new AreaManager();
