@@ -103,6 +103,7 @@ class TowerManager {
       // document.getElementById("towers").appendChild(clone);
     });
 
+    let tallest = 0;
     areas.forEach((area) => {
       let node = areaManager.name(area)[0];
       // console.log(node);
@@ -114,11 +115,17 @@ class TowerManager {
       }
 
       node.ui.style.width = node.ui.clientWidth + 'px';
+      tallest = Math.max(tallest, node.ui.clientHeight);
       // console.log(node.ui.style.width);
       node.ui.querySelectorAll("[tag='tower']").forEach(tower => {
         const mouseLeaveEvent = new Event('mouseleave');
         tower.dispatchEvent(mouseLeaveEvent);
       });
+    });
+
+    areas.forEach((area) => {
+      let node = areaManager.name(area)[0];
+      node.ui.style.height = tallest + 'px';
     })
   }
 
