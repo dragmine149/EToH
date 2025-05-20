@@ -218,6 +218,10 @@ user:hover {
   background-color: #343a40;
 }
 
+user[hidden] {
+  display: none;
+}
+
 #towers {
   /* height: 95%; */
   overflow: scroll;

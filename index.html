@@ -49,8 +49,13 @@
         <span tag="status"></span>
       </div>
       <div id="viewing">
-        Currently viewing user: <user onclick="userData.miniSearch()">No-one!</user>
-        <input type="text" id="mini-search" placeholder="Search..." onsubmit="userData.searchUser(this.value)" onkeydown="if(event.key === 'Enter') userData.searchUser(this.value)" hidden onblur="userData.endMiniSearch()">
+        Currently viewing user: <user onclick="miniSearch()">No-one!</user>
+        <input type="text" id="mini-search" placeholder="Search..." hidden
+          onsubmit="userManager.findUser(this.value); endMiniSearch();"
+          onkeydown="if(event.key === 'Enter') { userManager.findUser(this.value); endMiniSearch(); }"
+          onblur="endMiniSearch()"
+          onmouseup="return false;"
+          onfocus="this.select();">
       </div>
     </div>
     <div id="under_top_bar" hidden>

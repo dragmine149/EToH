@@ -1,6 +1,6 @@
 /*global tryCatch, badgeManager, Badge, User, network, UserManager, ui, etohDB, logs, TowerManager, areaManager, Area, CLOUD_URL */
 /*eslint no-undef: "error"*/
-/*exported Tower, Other, EToHUser, userManager, towerManager */
+/*exported Tower, Other, EToHUser, userManager, towerManager, miniSearch, endMiniSearch */
 
 
 /**
@@ -213,6 +213,24 @@ async function loadOthersFromServer() {
   data.data.data.forEach((badge) => {
     badgeManager.addBadge(new Other(badge.name, badge.badges, badge.category));
   })
+}
+
+
+function miniSearch() {
+  document.getElementsByTagName('user')[0].hidden = true;
+
+  let miniSearch = document.getElementById('mini-search');
+
+  miniSearch.hidden = false;
+  if (miniSearch.value === "") {
+    miniSearch.value = this.currentUser.user.name;
+  }
+
+  miniSearch.focus();
+}
+function endMiniSearch() {
+  document.getElementById('mini-search').hidden = true;
+  document.getElementsByTagName('user')[0].hidden = false;
 }
 
 
