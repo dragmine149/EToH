@@ -159,6 +159,16 @@ class TowerManager {
         tower.ui.querySelector("[tag='name']").classList.add("completed");
       }
     });
+
+    this.verbose.info("Finish loading user!")
+  }
+
+  unloadUI() {
+    this.verbose.info("Unloading tower ui!");
+    document.getElementById("search").hidden = false;
+    document.getElementById("towers").hidden = true;
+    document.getElementsByTagName("user")[0].innerText = "No-one!";
+    this.verbose.info("Finished unloading towers ui!");
   }
 
   constructor() {

@@ -242,6 +242,14 @@ class UserManager extends GenericManager {
     return await this.findUser(url.searchParams.get("user"));
   }
 
+  unloadUser() {
+    this.current_user = null;
+    let new_url = new URL(location);
+    new_url.searchParams.delete("user");
+    history.pushState({}, null, new_url);
+    this.unload_callback();
+  }
+
   /**
   * Saves the current user to the database for future quick reference.
   */
@@ -287,15 +295,20 @@ class UserManager extends GenericManager {
     this.#userClass = v;
   }
 
-  constructor(database) {
+  constructor(database, unload_callback) {
     super();
     this.addFilter('names', user => [user.name, ...user.past]);
     this.addFilter('id', user => user.id);
     this.verbose = new Verbose("UserManager", '#afe9ca');
     this.db = database;
+    this.unload_callback = unload_callback;
 
     // listen for when we pop the state.
     addEventListener('popstate', async (event) => {
+      if (!event.state.id) {
+        this.unload_callback();
+        return;
+      }
       await this.findUser(event.state.id);
     })
   }

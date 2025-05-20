@@ -246,6 +246,9 @@ badgeManager.addFilter('category', b => b.category);
 let userManager = new UserManager(etohDB);
 userManager.limit = 250;
 userManager.userClass = EToHUser;
+userManager.unload_callback = () => {
+  towerManager.unloadUI();
+}
 
 async function loadData(callback) {
   await loadTowersFromServer();
