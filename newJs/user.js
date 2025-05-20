@@ -135,6 +135,10 @@ class User {
     this.name = userData.name;
     return true;
   }
+
+  async postCreate() {
+    throw new Error("postCreate not yet impletmented");
+  }
 }
 
 
@@ -156,6 +160,7 @@ class UserManager extends GenericManager {
       this.verbose.debug(identifier, this.current_user);
       if (this.current_user.id == identifier || this.current_user.name == identifier) {
         this.verbose.info(`Cancelling finding as user is already loaded.`);
+        // don't need to post create here as we already loaded them.
         return;
       }
 
@@ -168,12 +173,16 @@ class UserManager extends GenericManager {
     this.verbose.info(`Loaded id?: ${id}`);
     if (id != undefined) {
       this.current_user = id;
+      this.verbose.info(`Found user by id. Stopping load`);
+      this.current_user.postCreate();
       return;
     }
     let name = this.names(identifier);
     this.verbose.info(`Loaded name?: ${id}`);
     if (name != undefined) {
       this.current_user = name;
+      this.verbose.info(`Found user by name. Stopping load`);
+      this.current_user.postCreate();
       return;
     }
 
@@ -218,6 +227,7 @@ class UserManager extends GenericManager {
     this.addItem(this.current_user);
     await this.storeUser();
     await this.deleteOldest(); // always delete oldest when we load something.
+    await this.current_user.postCreate();
   }
 
   /**
