@@ -55,9 +55,20 @@ class BadgeManager extends GenericManager {
     super.addItem(badge);
   }
 
+  /**
+  * FIlters out all the badges we have to see if any of them are uncompleted o not.
+  * @param {number[]} completed The completed badge ids.
+  * @returns {number[]} A list of uncompleted basges.
+  */
+  uncompleted(completed) {
+    return this.ids()
+      .filter((id) => !completed.includes(id));
+  }
+
   constructor() {
     super();
     this.addFilter('names', badge => badge.name);
+    this.addFilter('ids', badge => badge.ids);
   }
 }
 
