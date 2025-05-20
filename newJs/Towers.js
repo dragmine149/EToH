@@ -27,12 +27,17 @@ class TowerManager {
     return `${subWord} ${stageWord}`;
   }
 
+  /**
+  * Create the UI with all the towers and everything.
+  */
   createUI() {
     let parents = areaManager.parent();
     parents.forEach((parent) => {
+      let node = areaManager.name(parent)[0];
+      if (node.background_ui) return;
+
       let background = document.createElement("div");
       background.classList.add("parent-background");
-      let node = areaManager.name(parent)[0];
       node.background_ui = background;
 
       // document.getElementById("towers").appendChild(background);
@@ -40,6 +45,9 @@ class TowerManager {
 
     let areas = areaManager.name();
     areas.forEach(area => {
+      let node = areaManager.name(area)[0];
+      if (node.ui) return;
+
       // list of all towers for this area.
       /** @type {Tower[]} */
       let towers = badgeManager.area(area);
@@ -54,7 +62,7 @@ class TowerManager {
       let title = clone.querySelector("[tag='title']");
       title.innerText = area;
 
-      towers.forEach((tower) => {
+      towers.filter(tower => !tower.ui).forEach((tower) => {
         // debugger;
         if (tower.difficulty >= 100) return; // AKA: Towers which have not been added yet.
 
@@ -84,7 +92,6 @@ class TowerManager {
         clone.querySelector("[tag='badges']").appendChild(towerClone);
       });
 
-      let node = areaManager.name(area)[0];
       node.ui = clone;
       // console.log(clone.querySelectorAll("[tag='tower']"), clone.querySelectorAll("[tag='tower']").length, node);
       node.valid = clone.querySelectorAll("[tag='tower']").length > 1;
@@ -135,6 +142,21 @@ class TowerManager {
   */
   loadUI(user) {
     this.verbose.info(`Loading user... (${user.ui_name})`);
+    document.getElementsByTagName("user")[0].innerText = user.ui_name;
+
+    document.getElementById("search").hidden = true;
+    document.getElementById("towers").hidden = false;
+    this.createUI();
+
+    let completed = user.completed.map(b => b.badgeId);
+
+    badgeManager.area().forEach((area) => {
+      badgeManager.area(area).forEach((tower) => {
+        if (completed.some(v => tower.ids.includes(v))) {
+          tower.ui.querySelector("[tag='name']").classList.add("completed");
+        }
+      })
+    })
   }
 
   constructor() {
