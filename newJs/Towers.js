@@ -150,13 +150,15 @@ class TowerManager {
 
     let completed = user.completed.map(b => b.badgeId);
 
-    badgeManager.area().forEach((area) => {
-      badgeManager.area(area).forEach((tower) => {
-        if (completed.some(v => tower.ids.includes(v))) {
-          tower.ui.querySelector("[tag='name']").classList.add("completed");
-        }
-      })
-    })
+    badgeManager.ids().forEach((id) => {
+      let tower = badgeManager.ids(id)[0];
+      this.verbose.debug(tower.ui);
+      if (!tower.ui) return;
+      tower.ui.querySelector("[tag='name']").classList.remove("completed");
+      if (completed.some(v => tower.ids.includes(v))) {
+        tower.ui.querySelector("[tag='name']").classList.add("completed");
+      }
+    });
   }
 
   constructor() {

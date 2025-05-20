@@ -247,11 +247,13 @@ let userManager = new UserManager(etohDB);
 userManager.limit = 250;
 userManager.userClass = EToHUser;
 
-loadTowersFromServer();
-loadOthersFromServer();
+async function loadData(callback) {
+  await loadTowersFromServer();
+  await loadOthersFromServer();
+  callback();
+}
 
 let towerManager = new TowerManager();
-
-addEventListener('DOMContentLoaded', () => {
+loadData(() => {
   userManager.loadURL();
-})
+});
