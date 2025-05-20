@@ -1,4 +1,4 @@
-/*global tryCatch, badgeManager, Badge, User, network, UserManager, ui, etohDB, logs, TowerManager, areaManager, Area */
+/*global tryCatch, badgeManager, Badge, User, network, UserManager, ui, etohDB, logs, TowerManager, areaManager, Area, CLOUD_URL */
 /*eslint no-undef: "error"*/
 /*exported Tower, Other, EToHUser, userManager, towerManager */
 
@@ -93,7 +93,11 @@ class Other extends Badge {
 }
 
 // EToHUser, extension of User designed for specifically targeting EToH
+// TODO: Split part of this code up into a new class "BadgeUser"?
 class EToHUser extends User {
+  /** @type {{badgeId: number, date: number}[]} The users completed badges */
+  completed = [];
+
   static async create(user_data, db) {
     // have to call the parent function.
     let result = await User.create(user_data, db);
@@ -125,6 +129,39 @@ class EToHUser extends User {
       return new EToHUser(result.database);
     }
     return null;
+  }
+
+  /**
+  * Function is called upon the user finish loading from userManager.findUser()
+  */
+  async postCreate() {
+    this.verbose.info("Loading completed badges");
+    this.completed = await etohDB.badges.toArray();
+
+    this.verbose.info("Checking to see if any uncompleted badge has been completed");
+    await this.loadBadges(badgeManager.uncompleted(this.completed
+      .map(badge => badge.badgeId)
+    ));
+    this.verbose.info("Post Create has been completed!");
+  }
+
+  async loadBadges(badges) {
+    await network.requestStream(new Request(`${CLOUD_URL}/badges/${this.id}/all`, {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        'badgeids': badges
+      })
+    }), (line) => {
+      this.completed.push(JSON.parse(line));
+    });
+    this.storeCompleted();
+  }
+
+  async storeCompleted() {
+    etohDB.badges.bulkPut(this.completed);
   }
 }
 

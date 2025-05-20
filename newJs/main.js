@@ -42,7 +42,7 @@ function noSyncTryCatch(func) {
 
 let etohDB = new Dexie("EToH");
 etohDB.version(1).stores({
-  towers: `[badge_id+user_id], badge_id, user_id`,
+  badges: `[badge_id+user_id], badge_id, user_id`,
   users: `&id, name, display, past, last`
 })
 
