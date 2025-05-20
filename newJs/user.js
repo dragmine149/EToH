@@ -172,7 +172,7 @@ class UserManager extends GenericManager {
     let id = this.id(identifier);
     this.verbose.info(`Loaded id?: ${id}`);
     if (id != undefined) {
-      this.current_user = id;
+      this.current_user = id[0];
       this.verbose.info(`Found user by id. Stopping load`);
       this.current_user.postCreate();
       return;
@@ -180,7 +180,7 @@ class UserManager extends GenericManager {
     let name = this.names(identifier);
     this.verbose.info(`Loaded name?: ${id}`);
     if (name != undefined) {
-      this.current_user = name;
+      this.current_user = name[0];
       this.verbose.info(`Found user by name. Stopping load`);
       this.current_user.postCreate();
       return;
@@ -228,6 +228,18 @@ class UserManager extends GenericManager {
     await this.storeUser();
     await this.deleteOldest(); // always delete oldest when we load something.
     await this.current_user.postCreate();
+
+    let new_url = new URL(location);
+    // although we could do id, name is just easier for the client. And we support loading from name...
+    new_url.searchParams.set("user", this.current_user.name);
+    history.pushState({
+      id: this.current_user.id
+    }, null, new_url);
+  }
+
+  async loadURL() {
+    let url = new URL(location);
+    return await this.findUser(url.searchParams.get("user"));
   }
 
   /**
@@ -281,5 +293,10 @@ class UserManager extends GenericManager {
     this.addFilter('id', user => user.id);
     this.verbose = new Verbose("UserManager", '#afe9ca');
     this.db = database;
+
+    // listen for when we pop the state.
+    addEventListener('popstate', async (event) => {
+      await this.findUser(event.state.id);
+    })
   }
 }

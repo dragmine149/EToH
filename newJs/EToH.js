@@ -251,3 +251,7 @@ loadTowersFromServer();
 loadOthersFromServer();
 
 let towerManager = new TowerManager();
+
+addEventListener('DOMContentLoaded', () => {
+  userManager.loadURL();
+})
