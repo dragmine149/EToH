@@ -239,7 +239,9 @@ class UserManager extends GenericManager {
 
   async loadURL() {
     let url = new URL(location);
-    return await this.findUser(url.searchParams.get("user"));
+    let user = url.searchParams.get("user");
+    if (!user) return;
+    return await this.findUser(user);
   }
 
   unloadUser() {
