@@ -27,7 +27,7 @@ class TowerManager {
     return `${subWord} ${stageWord}`;
   }
 
-  __createUI() {
+  createUI() {
     let parents = areaManager.parent();
     parents.forEach((parent) => {
       let background = document.createElement("div");
