@@ -179,6 +179,7 @@ badgeManager.addFilter('area', b => b.area);
 badgeManager.addFilter('category', b => b.category);
 
 let userManager = new UserManager(etohDB);
+userManager.limit = 250;
 userManager.userClass = EToHUser;
 
 loadTowersFromServer();

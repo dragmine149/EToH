@@ -15,9 +15,9 @@ class User {
   /** @type {string} */
   display;
 
-  /** @type {number} */
+  /** @type {number} When was the user last viewed, in seconds. */
   // If we run out of space, we'll remove the users that have not been viewed in a while first.
-  last = 0;
+  last = -1;
 
   get ui_name() {
     if (this.display != null) {
@@ -140,6 +140,8 @@ class User {
 
 // Note: Current assumption is down to using Dexie w/ a table called `users`
 class UserManager extends GenericManager {
+  /** @type {number} How many users can we store locally before we start to delete old users to save on space. */
+  limit = 100;
   async findUser(identifier) {
     // store the current user as we've finished with them.
     if (this.current_user != null) {
@@ -203,11 +205,47 @@ class UserManager extends GenericManager {
 
     this.verbose.info(`Storing and setting user! Loading completed!`);
     this.current_user = userClass;
+    // store the fact that we just accessed the user.
+    this.current_user.last = Math.floor(new Date().getTime() / 1000);
     this.addItem(this.current_user);
+    await this.storeUser();
+    await this.deleteOldest(); // always delete oldest when we load something.
   }
 
+  /**
+  * Saves the current user to the database for future quick reference.
+  */
   async storeUser() {
-    await this.db.users.add(this.current_user.database);
+    await this.db.users.put(this.current_user.database);
+  }
+
+  /**
+  * Deletes the user specified, or the current user if no user specified.
+  * @type {number} id The id of the user to delete.
+  */
+  async deleteUser(id) {
+    await this.db.users.delete(id ?? this.current_user.id);
+  }
+
+  /**
+  * Deletes the oldest users according to the limit of users that we can have.
+  */
+  async deleteOldest() {
+    this.verbose.info("Deletting oldest users");
+    /** @type {User[]} */
+    let users = await this.db.users
+      .orderBy("last")
+      .reverse()
+      .offset(this.limit)
+      .toArray();
+
+    this.verbose.debug(users);
+
+    users.forEach((user) => {
+      this.deleteUser(user.id);
+    })
+
+    this.verbose.info("Deleted oldest users");
   }
 
   /** @type {User} */
@@ -225,8 +263,5 @@ class UserManager extends GenericManager {
     this.addFilter('id', user => user.id);
     this.verbose = new Verbose("UserManager", '#afe9ca');
     this.db = database;
-
-    // store user upon leaving the page. Hence we don't lose any data.
-    addEventListener('unload', () => this.storeUser());
   }
 }
