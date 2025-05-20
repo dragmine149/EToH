@@ -129,6 +129,14 @@ class TowerManager {
     })
   }
 
+  /**
+  * Load the UI specifically for that user.
+  * @param {EToHUser} user The user to load.
+  */
+  loadUI(user) {
+    this.verbose.info(`Loading user... (${user.ui_name})`);
+  }
+
   constructor() {
     this.verbose = new Verbose("TowerManager", "#7842dc");
   }

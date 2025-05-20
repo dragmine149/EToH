@@ -143,6 +143,8 @@ class EToHUser extends User {
       .map(badge => badge.badgeId)
     ));
     this.verbose.info("Post Create has been completed!");
+
+    towerManager.loadUI(this);
   }
 
   async loadBadges(badges) {
