@@ -1,4 +1,4 @@
-/*global Verbose, CLOUD_URL, tryCatch, network, GenericManager, etohDB */
+/*global Verbose, CLOUD_URL, tryCatch, network, GenericManager */
 /*eslint no-undef: "error"*/
 /*exported User, UserManager */
 
@@ -111,7 +111,7 @@ class User {
 
     if (!this.id && db) {
       this.verbose.info(`Checking database to see if we already have ${userData.id} in the database`);
-      let potential = await etohDB.users.get({ id: userData.id });
+      let potential = await db.users.get({ id: userData.id });
       if (potential) {
         this.verbose.info(`Found user id, returning to use that user instead.`);
         return userData.id;
@@ -140,8 +140,16 @@ class User {
 
 // Note: Current assumption is down to using Dexie w/ a table called `users`
 class UserManager extends GenericManager {
+  /** @type {User} */
+  current_user;
+
   /** @type {number} How many users can we store locally before we start to delete old users to save on space. */
   limit = 100;
+
+  /**
+  * Attempts to find the user in storage, if fails to find, attempts to load the user from the server and store them.
+  * @param {string|number} identifier How does one identify the user, can either be userid or username.
+  */
   async findUser(identifier) {
     // store the current user as we've finished with them.
     if (this.current_user != null) {

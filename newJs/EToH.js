@@ -92,8 +92,10 @@ class Other extends Badge {
   }
 }
 
+// EToHUser, extension of User designed for specifically targeting EToH
 class EToHUser extends User {
   static async create(user_data, db) {
+    // have to call the parent function.
     let result = await User.create(user_data, db);
     console.log(result);
     if (!Number.isNaN(Number(result)) && result !== true) {
@@ -106,6 +108,12 @@ class EToHUser extends User {
       return null;
     }
 
+    // If we have loaded the user recently, then we must have played.
+    if (result.last >= 0) {
+      return new EToHUser(result.database);
+    }
+
+    // request the server to see if we have played or not.
     result.verbose.info(`Checking if user has played`);
 
     /** @type {number[]} */
