@@ -136,15 +136,22 @@ class EToHUser extends User {
   */
   async postCreate() {
     this.verbose.info("Loading completed badges");
+
+    this.verbose.info(`Loading badges from storage`);
     this.completed = await etohDB.badges.toArray();
+    towerManager.loadUI(this);
 
     this.verbose.info("Checking to see if any uncompleted badge has been completed");
     await this.loadBadges(badgeManager.uncompleted(this.completed
       .map(badge => badge.badgeId)
-    ));
-    this.verbose.info("Post Create has been completed!");
+    ),
+      /** @param {{badgeId: number, date: number}} json */
+      (json) => {
+        towerManager.loadUI(json.badgeId, true);
+      }
+    );
 
-    towerManager.loadUI(this);
+    this.verbose.info("Post Create has been completed!");
   }
 
   async loadUncompleted() {
@@ -161,6 +168,7 @@ class EToHUser extends User {
   }
 
   async loadBadges(badges, callback) {
+    this.verbose.info(`Loading badges from server`);
     await network.requestStream(new Request(`${CLOUD_URL}/badges/${this.id}/all`, {
       method: 'POST',
       headers: {
@@ -173,11 +181,20 @@ class EToHUser extends User {
       this.completed.push(JSON.parse(line));
       if (callback) callback(JSON.parse(line));
     });
+
+    this.verbose.info(`Storing badges`);
     this.storeCompleted();
+    this.verbose.info(`Badges loaded and stored`);
   }
 
   storeCompleted() {
-    etohDB.badges.bulkPut(this.completed);
+    let completed = this.completed.map((b) => {
+      return {
+        userId: this.id,
+        ...b
+      }
+    });
+    etohDB.badges.bulkPut(completed);
   }
 }
 
