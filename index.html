@@ -122,19 +122,19 @@
             <ul>
               <li>
                 <label for="verbose_Network">Network</label>
-                <input type="checkbox" id="verbose-Network" onchange="ui.updateSettings(this.id, this.checked);">
-              </li>
-              <li>
-                <label for="verbose_UI">UI</label>
-                <input type="checkbox" id="verbose_UI" onchange="ui.updateSettings(this.id, this.checked);">
+                <input type="checkbox" id="verbose-Network" onchange="localStorage.setItem(`setting-Debug-${this.id}`, this.checked);">
               </li>
               <li>
                 <label for="verbose_UserManager">User Manager</label>
-                <input type="checkbox" id="verbose_UserManager" onchange="ui.updateSettings(this.id, this.checked);">
+                <input type="checkbox" id="verbose_UserManager" onchange="localStorage.setItem(`setting-Debug-${this.id}`, this.checked);">
               </li>
               <li>
-                <label for="verbose_BadgeManager">Badge Manager</label>
-                <input type="checkbox" id="verbose_BadgeManager" onchange="ui.updateSettings(this.id, this.checked);">
+                <label for="verbose_user">User</label>
+                <input type="checkbox" id="verbose_user" onchange="localStorage.setItem(`setting-Debug-${this.id}`, this.checked);">
+              </li>
+              <li>
+                <label for="verbose_TowerManager">Tower Manager</label>
+                <input type="checkbox" id="verbose_TowerManager" onchange="localStorage.setItem(`setting-Debug-${this.id}`, this.checked);">
               </li>
             </ul>
           </div>

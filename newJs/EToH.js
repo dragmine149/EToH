@@ -283,3 +283,15 @@ let towerManager = new TowerManager();
 loadData(() => {
   userManager.loadURL();
 });
+
+addEventListener('DOMContentLoaded', () => {
+  // update the settings checkboxes.
+  let checkboxes = document.querySelectorAll('.settings input[type="checkbox"]');
+  checkboxes.forEach(checkbox => {
+    if (!checkbox.id.startsWith("verbose")) {
+      return;
+    }
+
+    checkbox.checked = localStorage.getItem(`setting-Debug-${checkbox.id}`) === 'true';
+  });
+})
