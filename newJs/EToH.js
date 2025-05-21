@@ -147,7 +147,20 @@ class EToHUser extends User {
     towerManager.loadUI(this);
   }
 
-  async loadBadges(badges) {
+  async loadUncompleted() {
+    this.verbose.info("Attempting to update uncompleted badges");
+    await this.loadBadges(badgeManager.uncompleted(this.completed
+      .map(badge => badge.badgeId)
+    ),
+      /** @param {{badgeId: number, date: number}} json */
+      (json) => {
+        this.verbose.info(`Found new uncompleted badge: ${json.badgeId}`);
+        towerManager.loadBadge(json.badgeId, true);
+      });
+    this.verbose.info("Uncompleted badges updated!");
+  }
+
+  async loadBadges(badges, callback) {
     await network.requestStream(new Request(`${CLOUD_URL}/badges/${this.id}/all`, {
       method: 'POST',
       headers: {
@@ -158,11 +171,12 @@ class EToHUser extends User {
       })
     }), (line) => {
       this.completed.push(JSON.parse(line));
+      if (callback) callback(JSON.parse(line));
     });
     this.storeCompleted();
   }
 
-  async storeCompleted() {
+  storeCompleted() {
     etohDB.badges.bulkPut(this.completed);
   }
 }

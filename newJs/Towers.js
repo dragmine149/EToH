@@ -163,6 +163,17 @@ class TowerManager {
     this.verbose.info("Finish loading user!")
   }
 
+  loadBadge(badge_id, state) {
+    let badge = badgeManager.ids(badge_id)[0];
+    if (!badge.ui) return;
+    let ui = badge.ui.querySelector("[tag='name']");
+    if (state) {
+      ui.classList.add("completed");
+      return;
+    }
+    ui.classList.remove("completed");
+  }
+
   unloadUI() {
     this.verbose.info("Unloading tower ui!");
     document.getElementById("search").hidden = false;
