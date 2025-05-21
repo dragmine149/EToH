@@ -52,6 +52,11 @@ bold {
   flex: 1;
 }
 
+#under_top_bar {
+  display: flex;
+  background-color: #414549;
+}
+
 #under_top_bar button,
 #top_bar>.links>a {
   display: inline-block;
@@ -74,6 +79,19 @@ bold {
 #under_top_bar>#update {
   flex: 1;
   text-align: right;
+}
+
+#count {
+  text-wrap-mode: nowrap;
+  width: min-content;
+  display: flex;
+  flex-wrap: nowrap;
+  font-size: 1.2rem;
+  color: white;
+}
+
+#count>div {
+  padding: 10px;
 }
 
 

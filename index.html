@@ -22,6 +22,7 @@
     <script src="https://dragmine149.github.io/Scripts/verbose.css"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
 
+    <script src="newJs/constants.js"></script>
     <script src="newJs/main.js"></script>
     <script src="newJs/network.js"></script>
 
@@ -57,6 +58,14 @@
       </div>
     </div>
     <div id="under_top_bar">
+      <div id="count">
+        <div count="NAT">Other: </div>
+        <div count="Other">Mini-Towers (NEATs): </div>
+        <div count="Steeple">Steeples: </div>
+        <div count="Tower">Towers: </div>
+        <div count="Citadel">Citadels: </div>
+        <div count="Obelisk">Obelisk: </div>
+      </div>
       <div id="update">
         <button onclick="userManager.current_user.loadUncompleted()">Update all not completed</button>
       </div>

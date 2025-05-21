@@ -1,6 +1,6 @@
 /*global tryCatch, badgeManager, Badge, User, network, UserManager, ui, etohDB, logs, TowerManager, areaManager, Area, CLOUD_URL */
 /*eslint no-undef: "error"*/
-/*exported Tower, Other, EToHUser, userManager, towerManager, miniSearch, endMiniSearch */
+/*exported Tower, Other, EToHUser, userManager, towerManager, miniSearch, endMiniSearch, TOWER_TYPE, DIFFICULTIES, SUB_LEVELS, pointsFromType */
 
 
 /**

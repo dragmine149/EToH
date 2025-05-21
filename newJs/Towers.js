@@ -1,8 +1,10 @@
-/*global Tower, Verbose, badgeManager, DIFFICULTIES, SUB_LEVELS, areaManager */
+/*global Tower, Verbose, badgeManager, DIFFICULTIES, SUB_LEVELS, areaManager, TOWER_TYPE */
 /*eslint no-undef: "error" */
 /*exported TowerManager */
 
 class TowerManager {
+  count = {};
+
   /**
   * Returns the word that describes the number.
   * @param {number} difficulty The difficuty of the tower.
@@ -25,6 +27,30 @@ class TowerManager {
     let subWord = SUB_LEVELS.find(level => sub >= level.threshold)?.name || "Baseline";
 
     return `${subWord} ${stageWord}`;
+  }
+
+  /**
+  * Returns what type the tower is from its name. (Please don't make this too confusing EToH Devs...)
+  * @param {String} name The name of the tower.
+  * @returns The type of tower.
+  */
+  getTowerType(name) {
+    if (name.startsWith("Steeple")) {
+      return TOWER_TYPE.Steeple;
+    }
+    if (name.startsWith('Tower of') || name == 'Thanos Tower') {
+      return TOWER_TYPE.Tower;
+    }
+    if (name.startsWith('Citadel of')) {
+      return TOWER_TYPE.Citadel;
+    }
+    if (name.startsWith('Obeisk of')) {
+      return TOWER_TYPE.Obelisk;
+    }
+    if (badgeManager.names(name)[0] instanceof Tower) {
+      return TOWER_TYPE.Other;
+    }
+    return TOWER_TYPE.NAT;
   }
 
   /**
@@ -141,6 +167,8 @@ class TowerManager {
   * @param {EToHUser} user The user to load.
   */
   loadUI(user) {
+    this.count = {};
+
     this.verbose.info(`Loading user... (${user.ui_name})`);
     document.getElementsByTagName("user")[0].innerText = user.ui_name;
 
@@ -150,12 +178,20 @@ class TowerManager {
 
     let completed = user.completed.map(b => b.badgeId);
 
-    badgeManager.ids().forEach((id) => {
-      let tower = badgeManager.ids(id)[0];
-      this.verbose.debug(tower.ui);
+    badgeManager.names().forEach((name) => {
+      let tower = badgeManager.names(name)[0];
+      // this.verbose.debug(tower.ui);
+      let towerType = this.getTowerType(name);
+      if (Number.isNaN(Number(this.count[towerType]))) this.count[towerType] = 0;
+      if (Number.isNaN(Number(this.count[`${towerType}_max`]))) this.count[`${towerType}_max`] = 0;
+      this.count[`${towerType}_max`] += 1;
+
       if (!tower.ui) return;
       tower.ui.querySelector("[tag='name']").classList.remove("completed");
       if (completed.some(v => tower.ids.includes(v))) {
+        // this.verbose.log(`${name} -> ${towerType}`, this.count[towerType]);
+        this.count[towerType] += 1;
+        this.displayCount();
         tower.ui.querySelector("[tag='name']").classList.add("completed");
       }
     });
@@ -166,12 +202,17 @@ class TowerManager {
   loadBadge(badge_id, state) {
     let badge = badgeManager.ids(badge_id)[0];
     if (!badge.ui) return;
+    let type = this.getTowerType(badge.name);
     let ui = badge.ui.querySelector("[tag='name']");
     if (state) {
+      this.count[type] += 1;
       ui.classList.add("completed");
+      this.displayCount();
       return;
     }
+    this.count[type] -= 1;
     ui.classList.remove("completed");
+    this.displayCount();
   }
 
   unloadUI() {
@@ -179,7 +220,16 @@ class TowerManager {
     document.getElementById("search").hidden = false;
     document.getElementById("towers").hidden = true;
     document.getElementsByTagName("user")[0].innerText = "No-one!";
+    this.count = {};
     this.verbose.info("Finished unloading towers ui!");
+    this.displayCount();
+  }
+
+  displayCount() {
+    Object.entries(TOWER_TYPE).forEach(([type, word]) => {
+      // this.verbose.debug(`[id='count'] [count='${type}']`);
+      document.querySelector(`[id='count'] [count='${type}']`).innerText = `${word}: ${this.count[type] ?? 0}/${this.count[`${type}_max`] ?? 0}`;
+    })
   }
 
   constructor() {
