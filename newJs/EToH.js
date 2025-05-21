@@ -248,10 +248,19 @@ function endMiniSearch() {
 }
 
 
-
-logs.addCallback("*", logs.serveriety.INFO, (log) => {
-  document.querySelector("[tag='status']").innerText = log.params.toString();
-})
+// Shows the user what we are doing in the background. Always good to keep them up to date.
+logs.addCallback("*", logs.serveriety.INFO,
+  /** @param {{category: String, serveriety: String, params: any[], trace: String | undefined, time: dayjs}} log */
+  (log) => {
+    document.querySelector("[tag='status']").innerText = log.params.toString();
+  });
+// Shows the user any important errors they should be cautious of.
+logs.addCallback("*", logs.serveriety.ERROR,
+  /** @param {{category: String, serveriety: String, params: any[], trace: String | undefined, time: dayjs}} log */
+  (log) => {
+    document.getElementById("errors").hidden = false;
+    document.getElementById("error_message").innerText = log.params.toString();
+  });
 
 badgeManager.addFilter('difficulty', b => Math.floor(b.difficulty));
 badgeManager.addFilter('area', b => b.area);
