@@ -1,15 +1,4 @@
-class TestTemplate {
-  /** @type {(() => {})[]} List of functions to call before the test. */
-  before;
-
-  /** @type {Object.<string, Expect[]>} The tests to run. */
-  functions;
-
-  constructor() {
-    this.before = [];
-    this.functions = {};
-  }
-}
+const enabled_log = false;
 
 const TESTTYPE = Object.freeze({
   INFO: 0,
@@ -21,15 +10,7 @@ const TESTTYPE = Object.freeze({
 })
 
 class Test {
-  /** @type {Object.<string, TestTemplate>}} Information about every single test */
-  test_data = {}
-  excude = [];
-  /** The current test we are working on. */
-  current = {
-    category: "",
-    test: "",
-    last: ""
-  }
+  test_data = [];
 
   log(type, prefix, ...params) {
     let consoleMethod;
@@ -39,7 +20,7 @@ class Test {
         consoleMethod = console.info;
         break;
       case TESTTYPE.DEBUG:
-        consoleMethod = console.log; // console.debug isn't universally styled
+        consoleMethod = console.debug();
         break;
       case TESTTYPE.WARNING:
         consoleMethod = console.warn;
@@ -47,11 +28,11 @@ class Test {
       case TESTTYPE.ERROR:
         consoleMethod = console.error;
         break;
-      case TESTTYPE.SUCCESS: // Added case for SUCCESS
-        consoleMethod = console.log; // Often success can just be a regular log
+      case TESTTYPE.SUCCESS:
+        consoleMethod = console.log;
         break;
-      case TESTTYPE.FAILED: // Added case for FAILED
-        consoleMethod = console.error; // Or you could use console.warn depending on severity
+      case TESTTYPE.FAILED:
+        consoleMethod = console.error;
         break;
       default:
         consoleMethod = console.log;
@@ -59,7 +40,7 @@ class Test {
 
     consoleMethod(...prefix, ...params);
 
-    if (new URL(location).hostname == "localhost") {
+    if (new URL(location).hostname == "localhost" && enabled_log) {
       fetch(`${location.origin}/log`, {
         method: 'POST',
         headers: {
@@ -76,8 +57,9 @@ class Test {
   * @param {() => {}} setup The code to run. Must return a json of globals to use in the test.
   */
   before(setup) {
-    this.test_data[this.current.category].before.push(setup);
-    this.test_data[this.current.category].before.push({
+    this.test_data.push(setup);
+    // we also add the logging function as a global. This allows tests to report more things.
+    this.test_data.push({
       log: this.log
     })
   }
@@ -91,10 +73,8 @@ class Test {
   describe(category_name, test_function) {
     this.log(TESTTYPE.INFO, [`%cStarting test suite:%c`, `color: cyan`, ``], `${category_name}`);
 
-    this.current.category = category_name;
-    this.test_data[category_name] = new TestTemplate();
+    this.test_data = [];
     test_function();
-    this.current.category = "";
   }
 
   /**
@@ -105,97 +85,116 @@ class Test {
   test(test_name, test_function) {
     this.log(TESTTYPE.INFO, [`%cStarting test:%c`, `color: orange`, ``], `${test_name}`);
 
-    let globals = this.test_data[this.current.category].before.map((v) => v())
+    let globals = this.test_data.map((v) => (typeof v == "function") ? v() : v)
     let combinedGlobals = {};
     globals.forEach(global => {
       Object.assign(combinedGlobals, global);
     });;
 
-    let expect = new Expect(globals);
-    test_function(expect);
+    let expect = new Expect(combinedGlobals);
+    let result = test_function(expect);
+    this.log(TESTTYPE.INFO, [`%cFinished test:%c`, `color: orange`, ``], `${test_name}`);
+    this.log(result.state.passed ? TESTTYPE.SUCCESS : TESTTYPE.FAILED, [`%cTest results: %c`, `color: orange`, ``], result.state.passed ? `Passed!` : `Failed: ${result.state.reason}`);
   }
 }
 
 class Expect {
-  /** @type {Object.<string, {
-    info: any, hit: bool, condition: (user, globals, result) => [bool, string], reason: string
-  }>} */
-  exptects = {};
+  exptects = {
+    state: {
+      passed: true,
+      reason: ""
+    }
+  };
 
   /** @type {() => any} */
   test;
 
-  #exptects(expect, condition, info) {
+  #exptects(expect, callback) {
     if (this.exptects[expect]) {
       console.warn(`Attempted to add another ${expect} to an expect where a ${expect} already exists.`);
       return this;
     }
-    this.exptects[expect] = {
-      info,
-      condition: condition?.bind(this, info),
-      hit: false,
-      reason: "",
-    }
+    this.exptects[expect] = (function (...params) {
+      if (this.exptects.state.passed == false) {
+        this.globals.log(TESTTYPE.WARNING, [], `Skipping ${expect} due to the test already failing (passed = ${this.exptects.state.passed}, expected 'false')`);
+        // Skip over the check if we failed the test anyway.
+        return this.exptects;
+      }
+
+      let data = callback(this.globals, this.result, ...params);
+      this.exptects.state.passed = data.passed;
+      this.exptects.state.reason = `(${expect}) ${data.reason}`;
+      return this.exptects
+    }).bind(this);
+
     return this;
   }
 
-  #newExpect(name, condition) {
-    this[name] = this.#exptects.bind(this, name, condition);
-    return this[name];
-  }
-
-  #verify_test(globals, info) {
-    Object.values(this.exptects).forEach((v) => {
-      let r = v.condition(globals, info);
-      v.hit = r[0];
-      v.reason = r[1];
-    })
-  }
-
   from(test_callback) {
-    let results = noSyncTryCatch(test_callback(this.globals));
-
-
+    this.globals.log(TESTTYPE.INFO, ["%cRunning test function%c", "color: yellow", ""])
+    this.result = noSyncTryCatch(test_callback(this.globals));
+    this.globals.log(TESTTYPE.INFO, ["%cTest function completed, running tests on result%c", "color: yellow", ""])
     return this.exptects;
   }
 
-  // execute(globals) {
-  //   try {
-  //     let result = this.test(globals);
-  //     this.#verify_test(globals, result);
-  //   }
-  //   catch (e) {
-  //     this.#verify_test(globals, e);
-  //   }
+  /**
+  *
+  * @param {*} globals
+  * @param {*} result
+  * @param {string} object
+  */
+  #getObject(globals, result, object) {
+    let path = object.split(".");
+    let start;
+    switch (path.shift()) {
+      case "globals": start = globals; break;
+      case "result": start = result; break;
+      default: throw new Error("#getObject couldn't determine which path to get the object from!");
+    }
+    let goal = start[path.shift()];
+    path.forEach((subPath) => {
+      if (goal == undefined) return undefined;
+      if (/^\[\d+/.test(subPath)) {
+        let index = parseInt(subPath.match(/^\[(\d+)\]/)[1], 10);
+        goal = goal[index];
+        return;
+      }
+      goal = goal[subPath];
+    })
+    return goal;
+  }
 
-  //   let success = true;
-  //   let msg = "";
-  //   Object.entries(this.exptects).forEach(([key, info], index) => {
-  //     console.log(index);
-  //     success = info.hit ? success : false;
-  //     if (!info.hit) msg += `${index} -> Condition ${key} was not met: ${info.reason}\n`;
-  //   });
-
-  //   return [success, msg];
-  // }
+  #typeOf(obj) {
+    return obj?.name ?? typeof obj;
+  }
 
   constructor(globals) {
     this.globals = globals;
 
-    this.#newExpect("custom", (user, globals, result) => user(globals, result));
+    this.#exptects('type', (globals, result, path, type) => {
+      this.globals.log(TESTTYPE.INFO, ["%cType Test:%c", "color: lime", ""], `Attempting to see if ${path} is of ${this.#typeOf(type)}`);
 
-    this.#newExpect('type', (v, globals, t) => {
-      if (t == undefined) return [false, `Found result of 'from' to be undefined.`];
-      return v(t) ? [true, ''] : [false, `Expected type ${typeof (v)} found type ${typeof (t)}`]
+      let obj = this.#getObject(globals, result, path);
+      let isType = obj instanceof type;
+
+      this.globals.log(isType ? TESTTYPE.SUCCESS : TESTTYPE.ERROR, ["%cType Test:%c", "color: lime", ""], isType ? 'Succeeded' : `Failed: ${path} -> Found '${this.#typeOf(obj)}' expected '${this.#typeOf(type)}'`);
+      return {
+        passed: isType,
+        reason: isType ? '' : `${path} -> Found '${this.#typeOf(obj)}' expected '${this.#typeOf(type)}'`
+      }
     });
-    this.#newExpect('error',
-      /** @param {Error} v @param {Error} i  */
-      (v, globals, i) =>
-        (v.name === i.name && v.message === i.message && v.stack !== i.stack)
-          ? [true, '']
-          : [false, `Expected error with name "${i.name}" and message "${i.message}", but got name "${v.name}" and message "${v.message}".`]
-    );
-    this.#newExpect('global_exists', (user, globals, _) => user(globals))
+    this.#exptects('exists', (globals, result, path) => {
+      this.globals.log(TESTTYPE.INFO, ["%cExist Test:%c", "color: lime", ""], `Attempting to see if ${path} exists`);
+
+      let obj = this.#getObject(globals, result, path);
+      let exists = obj != undefined;
+
+      this.globals.log(exists ? TESTTYPE.SUCCESS : TESTTYPE.ERROR, ["%cType Test:%c", "color: lime", ""], exists ? 'Succeeded' : `Failed: ${path} not found`);
+      return {
+        passed: exists,
+        reason: exists ? '' : `${path} not found'`
+      }
+    })
   }
 }
 
