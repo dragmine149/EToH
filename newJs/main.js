@@ -27,8 +27,8 @@ async function tryCatch(promise) {
 /**
  * Same as tryCatch but with no async
  * @template T
- * @param {Promise<T>} promise - Promise to handle
- * @returns {Promise<TryCatchResult<T>>} Standardised result with data/error
+ * @param {T} func - function to handle
+ * @returns {TryCatchResult<T>} Standardised result with data/error
  */
 function noSyncTryCatch(func) {
   try {
