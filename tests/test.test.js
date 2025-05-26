@@ -16,9 +16,8 @@ test.describe("Test System Validation", () => {
         /** @param {{test: Test}} globals  */
         (globals) => globals.test.describe("Test in a test", () => { })
       )
-      .type('globals.test', Test)
-      .exists('globals.test.test_data')
-      .type('globals.test.test_data', Array)
+      .exists_type('globals.test', Test)
+      .exists_type('globals.test.test_data', Array)
   );
 
   test.test("Before test working",
@@ -28,7 +27,7 @@ test.describe("Test System Validation", () => {
         /** @param {{test: Test}} globals  */
         (globals) => {
           globals.test.describe("Test in a test", () => {
-            test.before({
+            globals.test.before({
               test_func: (function (a, b) {
                 return a * b;
               })
@@ -36,11 +35,34 @@ test.describe("Test System Validation", () => {
           })
 
         })
-      .exists('globals.test.test_data')
-      .type('globals.test.test_data', Array)
-      .exists('globals.test.test_data.[0]')
-      .type('globals.test.test_data.[0]', "function")
+      .exists_type('globals.test.test_data', Array)
+      .exists_type('globals.test.test_data.[0]', "object")
   );
+
+  test.test("Testing the test",
+    /** @param {Expect} expect  */
+    (expect) => expect.from(
+      /** @param {{test: Test}} globals  */
+      (globals) => {
+
+        globals.test.describe("Test in a test", () => {
+          globals.test.before({
+            test_func: (function (a, b) {
+              return a * b;
+            })
+          })
+        })
+        globals.test.test("5 * 3 = 15",
+          /** @param {Expect} expect */
+          (expect) => expect.from(
+            /** @param {{test_func: (a: number, b: number) => number}} inner_globals  */
+            (inner_globals) => inner_globals.test.test_func(5, 3)
+          )
+            .exists_type('result', "number")
+        )
+
+      }
+    ))
 });
 
 

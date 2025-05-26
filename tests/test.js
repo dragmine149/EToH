@@ -16,26 +16,15 @@ class Test {
     let consoleMethod;
 
     switch (type) {
-      case TESTTYPE.INFO:
-        consoleMethod = console.info;
-        break;
-      case TESTTYPE.DEBUG:
-        consoleMethod = console.debug();
-        break;
-      case TESTTYPE.WARNING:
-        consoleMethod = console.warn;
-        break;
-      case TESTTYPE.ERROR:
-        consoleMethod = console.error;
-        break;
-      case TESTTYPE.SUCCESS:
-        consoleMethod = console.log;
-        break;
-      case TESTTYPE.FAILED:
-        consoleMethod = console.error;
-        break;
-      default:
-        consoleMethod = console.log;
+      case true: consoleMethod = console.log; break;
+      case false: consoleMethod = console.error; break;
+      case TESTTYPE.INFO: consoleMethod = console.info; break;
+      case TESTTYPE.DEBUG: consoleMethod = console.debug; break;
+      case TESTTYPE.WARNING: consoleMethod = console.warn; break;
+      case TESTTYPE.ERROR: consoleMethod = console.error; break;
+      case TESTTYPE.SUCCESS: consoleMethod = console.log; break;
+      case TESTTYPE.FAILED: consoleMethod = console.error; break;
+      default: consoleMethod = console.log; break;
     }
 
     consoleMethod(...prefix, ...params);
@@ -74,6 +63,8 @@ class Test {
     this.log(TESTTYPE.INFO, [`%cStarting test suite:%c`, `color: cyan`, ``], `${category_name}`);
 
     this.test_data = [];
+    this.test_count = 0;
+    this.test_passed = 0;
     test_function();
   }
 
@@ -83,6 +74,7 @@ class Test {
   * @param {() => any)} test_function The function to test.
   */
   test(test_name, test_function) {
+    this.test_count += 1;
     this.log(TESTTYPE.INFO, [`%cStarting test:%c`, `color: orange`, ``], `${test_name}`);
 
     let globals = this.test_data.map((v) => (typeof v == "function") ? v() : v)
@@ -93,8 +85,10 @@ class Test {
 
     let expect = new Expect(combinedGlobals);
     let result = test_function(expect);
+    this.test_passed += result.state.passed ? 1 : 0;
     this.log(TESTTYPE.INFO, [`%cFinished test:%c`, `color: orange`, ``], `${test_name}`);
-    this.log(result.state.passed ? TESTTYPE.SUCCESS : TESTTYPE.FAILED, [`%cTest results: %c`, `color: orange`, ``], result.state.passed ? `Passed!` : `Failed: ${result.state.reason}`);
+    this.log(result.state.passed ? TESTTYPE.SUCCESS : TESTTYPE.FAILED, [`%cTest results: %c`, `color: orange`, ``], result.state.passed ? `Passed (${this.test_passed}/${this.test_count})!` : `Failed (${this.test_passed}/${this.test_count}): ${result.state.reason}`);
+    this.log(TESTTYPE.DEBUG, [`%c-------------------------------------------------%c`, 'color: orange', '']);
   }
 }
 
@@ -109,13 +103,12 @@ class Expect {
   /** @type {() => any} */
   test;
 
-  #exptects(expect, callback) {
+  #exptects(expect, callback, bypassFail) {
     if (this.exptects[expect]) {
       console.warn(`Attempted to add another ${expect} to an expect where a ${expect} already exists.`);
-      return this;
     }
     this.exptects[expect] = (function (...params) {
-      if (this.exptects.state.passed == false) {
+      if (this.exptects.state.passed == false && !bypassFail) {
         this.globals.log(TESTTYPE.WARNING, [], `Skipping ${expect} due to the test already failing (passed = ${this.exptects.state.passed}, expected 'false')`);
         // Skip over the check if we failed the test anyway.
         return this.exptects;
@@ -126,14 +119,30 @@ class Expect {
       this.exptects.state.reason = `(${expect}) ${data.reason}`;
       return this.exptects
     }).bind(this);
-
-    return this;
   }
 
   from(test_callback) {
+    if (!this.#test_type(test_callback, "function")) {
+      this.globals.log(TESTTYPE.WARNING, [], "Failed to find function passed in. Skipping test suite");
+      this.exptects.state = {
+        passed: false,
+        reason: 'No test function found'
+      }
+      return this.exptects;
+    }
+
     this.globals.log(TESTTYPE.INFO, ["%cRunning test function%c", "color: yellow", ""])
-    this.result = noSyncTryCatch(test_callback(this.globals));
+    this.result = noSyncTryCatch(test_callback.bind(globalThis, this.globals));
     this.globals.log(TESTTYPE.INFO, ["%cTest function completed, running tests on result%c", "color: yellow", ""])
+    if (this.result.error) {
+      this.globals.log(TESTTYPE.ERROR, ["%cTest function erroed!%c", "color: yellow", ""], this.result.error);
+      this.exptects.state = {
+        passed: false,
+        reason: `Something failed whilst trying to run the test function: ${this.result.error}`
+      };
+    }
+    this.result = this.result.data;
+
     return this.exptects;
   }
 
@@ -165,7 +174,54 @@ class Expect {
   }
 
   #typeOf(obj) {
+    if (typeof obj === "string") return obj;
     return obj?.name ?? typeof obj;
+  }
+
+  /**
+   * Tests if a variable is of a given type.
+   * @param {*} variable - The variable to test.
+   * @param {string | Function} type - The type to test against.
+   *   Can be a string for primitive types (including "null", "undefined",
+   *   "boolean", "number", "string", "symbol", "bigint"), or a constructor function (like Array, Object, custom classes).
+   *   Does not currently support complex JSDoc types like union types,
+   *   object shapes, etc.
+   * @returns {boolean} - True if the variable matches the type, false otherwise.
+   */
+  #test_type(variable, type) {
+    if (typeof type === 'string') {
+      // Handle primitive type names
+      switch (type) {
+        case "null": return variable === null;
+        case "undefined": return typeof variable === "undefined";
+        case "boolean": return typeof variable === "boolean";
+        case "number": return typeof variable === "number";
+        case "string": return typeof variable === "string";
+        case "symbol": return typeof variable === "symbol";
+        case "bigint": return typeof variable === "bigint";
+        case "function": return typeof variable === "function";
+        case "object": return typeof variable === "object";
+        default:
+          this.globals.log(TESTTYPE.WARNING, [], `Unknown primitive type string: ${type}`);
+          return false;
+      }
+    }
+
+    if (typeof type === 'function') {
+      // Handle constructors/classes
+      if (type === Array) return Array.isArray(variable);
+
+      // instanceof works for most other constructors
+      try {
+        return variable instanceof type;
+      } catch (_) {
+        // instanceof will throw if variable is a primitive
+        return false;
+      }
+    }
+
+    this.globals.log(TESTTYPE.WARNING, [], `Invalid type argument provided. Must be a string or a constructor. (Got: ${type})`);
+    return false;
   }
 
   constructor(globals) {
@@ -175,7 +231,7 @@ class Expect {
       this.globals.log(TESTTYPE.INFO, ["%cType Test:%c", "color: lime", ""], `Attempting to see if ${path} is of ${this.#typeOf(type)}`);
 
       let obj = this.#getObject(globals, result, path);
-      let isType = obj instanceof type;
+      let isType = this.#test_type(obj, type);
 
       this.globals.log(isType ? TESTTYPE.SUCCESS : TESTTYPE.ERROR, ["%cType Test:%c", "color: lime", ""], isType ? 'Succeeded' : `Failed: ${path} -> Found '${this.#typeOf(obj)}' expected '${this.#typeOf(type)}'`);
       return {
@@ -193,6 +249,26 @@ class Expect {
       return {
         passed: exists,
         reason: exists ? '' : `${path} not found'`
+      }
+    });
+    this.#exptects('exists_type', (globals, result, path, type) => {
+      this.globals.log(TESTTYPE.INFO, ["%cExist Type Test:%c", "color: lime", ""], `Attempting to see if ${path} exists and is of ${this.#typeOf(type)}`);
+
+      let obj = this.#getObject(globals, result, path);
+      let exists = obj != undefined;
+      this.globals.log(exists ? TESTTYPE.SUCCESS : TESTTYPE.ERROR, ["%cExists Type (Exists) Test:%c", "color: lime", ""], exists ? 'Succeeded' : `Failed: ${path} not found`);
+      if (!exists) {
+        return {
+          passed: false,
+          reason: `${path} not found'`
+        }
+      }
+
+      let isType = this.#test_type(obj, type);
+      this.globals.log(isType ? TESTTYPE.SUCCESS : TESTTYPE.ERROR, ["%cExists Type (Type) Test:%c", "color: lime", ""], isType ? 'Succeeded' : `Failed: ${path} -> Found '${this.#typeOf(obj)}' expected '${this.#typeOf(type)}'`);
+      return {
+        passed: isType,
+        reason: isType ? '' : `${path} -> Found '${this.#typeOf(obj)}' expected '${this.#typeOf(type)}'`
       }
     })
   }
