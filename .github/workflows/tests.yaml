@@ -21,7 +21,7 @@ jobs:
 
       - name: Start server
         run: python github_tests/server.py &
-        working-directory: /
+        # working-directory: /
         timeout-minutes: 1
         id: start_server
 
