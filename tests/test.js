@@ -47,10 +47,6 @@ class Test {
   */
   before(setup) {
     this.test_data.push(setup);
-    // we also add the logging function as a global. This allows tests to report more things.
-    this.test_data.push({
-      log: this.log
-    })
   }
 
   /**
@@ -77,17 +73,30 @@ class Test {
     this.test_count += 1;
     this.log(TESTTYPE.INFO, [`%cStarting test:%c`, `color: orange`, ``], `${test_name}`);
 
-    let globals = this.test_data.map((v) => (typeof v == "function") ? v() : v)
+    let globals = this.test_data.map((v) => (typeof v == "function") ? v() : v);
     let combinedGlobals = {};
     globals.forEach(global => {
       Object.assign(combinedGlobals, global);
     });;
+    combinedGlobals.log = this.log;
 
     let expect = new Expect(combinedGlobals);
     let result = test_function(expect);
+    if (result.state.passed) {
+      // only do this on pass, because we have other issues to deal with first.
+      let errors = expect.log.filter((v) => v.method == 'error');
+      let throws = expect.log.filter((v) => v.method == 'throw');
+      if (errors.length > 0 || throws.length > 0) {
+        result.state = {
+          passed: false,
+          reason: `Found '${errors.length} errors, ${throws.length} throws' that were not expected during testing.`
+        }
+      }
+    }
+
     this.test_passed += result.state.passed ? 1 : 0;
     this.log(TESTTYPE.INFO, [`%cFinished test:%c`, `color: orange`, ``], `${test_name}`);
-    this.log(result.state.passed ? TESTTYPE.SUCCESS : TESTTYPE.FAILED, [`%cTest results: %c`, `color: orange`, ``], result.state.passed ? `Passed (${this.test_passed}/${this.test_count})!` : `Failed (${this.test_passed}/${this.test_count}): ${result.state.reason}`);
+    this.log(result.state.passed ? TESTTYPE.SUCCESS : TESTTYPE.FAILED, [`%cTest results:%c`, `color: orange`, ``], result.state.passed ? `Passed (${this.test_passed}/${this.test_count})!` : `Failed (${this.test_passed}/${this.test_count}): ${result.state.reason}`);
     this.log(TESTTYPE.DEBUG, [`%c-------------------------------------------------%c`, 'color: orange', '']);
   }
 }
@@ -99,6 +108,7 @@ class Expect {
       reason: ""
     }
   };
+  paths = {};
 
   /** @type {{method: string, arguments: IArguments}[]} */
   log;
@@ -134,9 +144,11 @@ class Expect {
       'debug': console.debug,
     };
 
-    function consoleBind(method) {
-      this.log.push({ method: method, arguments: arguments });
-      return this._logs[method].apply(console, arguments);
+    function consoleBind() {
+      let args = [...arguments];
+      let method = args.shift();
+      this.log.push({ method: method, arguments: args });
+      return this._logs[method].apply(console, args);
     }
 
     console.log = consoleBind.bind(this, 'log');
@@ -162,7 +174,7 @@ class Expect {
         passed: false,
         reason: 'No test function found'
       }
-      return this.exptects.log_no_has("error");
+      return this.exptects;
     }
 
     this.globals.log(TESTTYPE.INFO, ["%cRunning test function%c", "color: yellow", ""])
@@ -172,16 +184,17 @@ class Expect {
     this.releaseLog();
 
     this.globals.log(TESTTYPE.INFO, ["%cTest function completed, running tests on result%c", "color: yellow", ""])
-    if (this.result.error) {
-      this.globals.log(TESTTYPE.ERROR, ["%cTest function erroed!%c", "color: yellow", ""], this.result.error);
-      this.exptects.state = {
-        passed: false,
-        reason: `Something failed whilst trying to run the test function: ${this.result.error}`
-      };
-    }
+    // if (this.result.error) {
+    //   this.globals.log(TESTTYPE.ERROR, ["%cTest function errored!%c", "color: yellow", ""], this.result.error);
+    //   this.exptects.state = {
+    //     passed: false,
+    //     reason: `Something failed whilst trying to run the test function: ${this.result.error}`
+    //   };
+    // }
+    if (this.result.error) this.log.push({ method: 'throw', arguments: this.result.error });
     this.result = this.result.data;
 
-    return this.exptects.log_no_has("error");
+    return this.exptects;
   }
 
   /**
@@ -191,6 +204,7 @@ class Expect {
   * @param {string} object
   */
   #getObject(globals, result, object) {
+    if (this.paths[object]) return this.paths[object];
     let path = object.split(".");
     let start;
     switch (path.shift()) {
@@ -210,6 +224,7 @@ class Expect {
       }
       goal = goal[subPath];
     })
+    this.paths[object] = goal;
     return goal;
   }
 
@@ -327,27 +342,24 @@ class Expect {
       this.globals.log(TESTTYPE.INFO, ["%cIs Test:%c", "color: lime", ""], `Attempting to see if ${path} is ${goal}`);
       let obj = this.#getObject(globals, result, path);
       let is = obj === goal;
-      return this.#expects_return(is, "Is", `${path} does not (triple) equal ${goal}`);
+      return this.#expects_return(is, "Is", `${path} does not (triple) equal ${goal} (Found: ${obj})`);
     });
-    this.#exptects('log_has', (globals, result, type, count) => {
-      count = count ? count : 1;
-      this.globals.log(TESTTYPE.INFO, ["%cLog Test:%c", "color: lime", ""], `Attempting to see if log has at least ${count} of ${type}`);
 
-      let typeLog = this.log.filter(log => log.method === type);
-      let threshold = typeLog.length >= count;
+    this.#exptects('expect', (globals, result, type, message, count) => {
+      count ||= 1;
+      this.globals.log(TESTTYPE.INFO, ["%cExpect Test", "color: lime", ""], `Checking logs for ${count} ${type} with msg: ${message}`);
 
-      return this.#expects_return(threshold, "Log", `log does not have at least ${count} of ${type} (found: ${typeLog.length}`);
-    });
-    this.#exptects('log_no_has', (globals, result, type, count) => {
-      count = count ? count : 1;
-      this.globals.log(TESTTYPE.INFO, ["%cLog invert Test:%c", "color: lime", ""], `Attempting to see if log has less than ${count} of ${type}`);
+      let typeLog = this.log.filter(log => log.method === type && Array.from(log.arguments).join(" ") === message);
+      let equalCount = typeLog.length == count;
+      this.log = this.log.filter((v) => !typeLog.includes(v)); // remove from log.
 
-      let typeLog = this.log.filter(log => log.method === type);
-      let threshold = typeLog.length < count;
-
-      return this.#expects_return(threshold, "Log invert", `log has more of ${type} that expected! (found: ${typeLog.length}, expected: ${count}`);
-    });
+      return this.#expects_return(equalCount, `Expect Test`, `Expected ${count} ${type} with msg: ${message}. Found ${typeLog.length} instead`);
+    })
   }
 }
 
 let test = new Test();
+
+function other_file_test() {
+  return document.createElement("a");
+}
