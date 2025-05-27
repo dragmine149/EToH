@@ -198,6 +198,8 @@ class Expect {
       case "result": start = result; break;
       default: throw new Error("#getObject couldn't determine which path to get the object from!");
     }
+    if (path.length == 0) return start;
+
     let goal = start[path.shift()];
     path.forEach((subPath) => {
       if (goal == undefined) return undefined;
