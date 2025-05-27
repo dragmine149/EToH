@@ -1,4 +1,16 @@
-const enabled_log = false;
+// const enabled_log = false;
+// const enabled_log = true;
+let enabled_log = false;
+(async () => {
+  try {
+    const response = await fetch(`${location.origin}/log`, { method: 'POST' });
+    if (!response.status.toString().startsWith('4')) {
+      enabled_log = true;
+    }
+  } catch { enabled_log = false }
+})();
+
+let waiting_timeout;
 
 const TESTTYPE = Object.freeze({
   INFO: 0,
@@ -35,7 +47,7 @@ class Test {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(params)
+        body: JSON.stringify({ type, prefix, params })
       }).catch(() => { });
     }
 
@@ -58,10 +70,13 @@ class Test {
   describe(category_name, test_function) {
     this.log(TESTTYPE.INFO, [`%cStarting test suite:%c`, `color: cyan`, ``], `${category_name}`);
 
+    clearTimeout(waiting_timeout);
     this.test_data = [];
     this.test_count = 0;
     this.test_passed = 0;
     test_function();
+    this.log(TESTTYPE.INFO, [`%cFinished test suite:%c`, `color: cyan`, ``], this.test_count == this.test_passed ? `Passed (${this.test_passed}/${this.test_count})!` : `Failed (${this.test_passed}/${this.test_count})`);
+    waiting_timeout = setTimeout(() => window.areTestsFinished = true, 10000); // 10 seconds to finish all tests.
   }
 
   /**
