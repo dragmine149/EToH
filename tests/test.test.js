@@ -44,7 +44,7 @@ test.describe("Test System Validation", () => {
     (expect) => expect.from(
       /** @param {{test: Test}} globals  */
       (globals) => {
-
+        //--------------------------------------------
         globals.test.describe("Test in a test", () => {
           globals.test.before({
             test_func: (function (a, b) {
@@ -56,13 +56,15 @@ test.describe("Test System Validation", () => {
           /** @param {Expect} expect */
           (expect) => expect.from(
             /** @param {{test_func: (a: number, b: number) => number}} inner_globals  */
-            (inner_globals) => inner_globals.test.test_func(5, 3)
+            (inner_globals) => inner_globals.test_func(5, 3)
           )
             .exists_type('result', "number")
+            .is('result', 15)
         )
-
-      }
-    ))
+        //--------------------------------------------
+      })
+    // .log_no_has("error")
+  )
 });
 
 
