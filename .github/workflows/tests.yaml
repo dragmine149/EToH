@@ -16,8 +16,33 @@ jobs:
         with:
           python-version: "3.x"
 
+      # Cache Python dependencies
+      - name: Cache pip dependencies
+        id: cache-pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('github_tests/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Install dependencies
+        if: steps.cache-pip.outputs.cache-hit != 'true'
         run: pip install -r github_tests/requirements.txt
+
+      # Cache Playwright browsers
+      - name: Cache Playwright browsers
+        id: cache-play
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Install Playwright Browsers
+        if: steps.cache-play.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps
 
       - name: Start server
         run: python github_tests/server.py &
@@ -30,9 +55,6 @@ jobs:
           #!/bin/bash
           timeout 60 bash -c 'until echo > /dev/tcp/localhost/8080; do sleep 1; done'
         shell: bash
-
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
 
       - name: Run tests in headless browser
         run: python github_tests/run_browser_tests.py
@@ -51,6 +73,8 @@ jobs:
             echo "Server process not found."
           fi
         if: always()
+
+      - run: ls
 
       - name: Analyze logs and check for test failures
         run: python github_tests/analyse_logs.py

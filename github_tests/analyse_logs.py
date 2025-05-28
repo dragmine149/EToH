@@ -2,7 +2,7 @@ import json
 import sys
 import os
 
-LOG_FILE = "github_tests/post_data.log"
+LOG_FILE = "post_data.log"
 GITHUB_OUTPUT = os.getenv('GITHUB_OUTPUT') # Get the path to the GitHub output file
 
 def log_to_github_output(name, value):
