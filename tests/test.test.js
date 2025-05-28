@@ -165,7 +165,7 @@ test.describe("Test System Validation", () => {
             (expect) => expect.from(() => console.debug('e16'))
               .expect("debug", "e16", 1)
           )
-        },)
+        }, true)
       })
       .expect("error", "e5", 1)
       .expect("error", "e6", 5)

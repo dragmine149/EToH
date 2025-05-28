@@ -61,7 +61,7 @@ jobs:
         timeout-minutes: 5 # Adjust timeout based on how long your browser tests take
 
       - name: Wait for logs to be written
-        run: sleep 10 # Adjust as needed
+        run: sleep 1 # Adjust as needed
 
       - name: Stop server
         run: |
