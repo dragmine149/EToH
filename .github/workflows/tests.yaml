@@ -45,7 +45,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Start server
-        run: python github_tests/server.py &
+        run: python -m http.server 8080 &
         # working-directory: /
         timeout-minutes: 1
         id: start_server
