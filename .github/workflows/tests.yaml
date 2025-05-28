@@ -75,6 +75,7 @@ jobs:
         if: always()
 
       - run: ls
+      - run: cat post_data.log
 
       - name: Analyze logs and check for test failures
         run: python github_tests/analyse_logs.py
