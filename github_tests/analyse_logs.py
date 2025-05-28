@@ -1,5 +1,6 @@
 import json
 import re
+import sys
 
 def append_to_all(list, log):
     for item in list:
@@ -47,10 +48,10 @@ def process_test_logs(log_entries):
             continue
 
         if "Finished test suite:" in text:
-            print("-----------")
-            print(text)
+            # print("-----------")
+            # print(text)
             suite_result_match = re.search(r"Finished test suite:\s*(.*?)\s*(\w+)\s*\((\d+)/(\d+)\)!?$", text)
-            print(suite_result_match)
+            # print(suite_result_match)
             if not suite_result_match: continue
 
             current = suite_result_match.group(1).strip()
@@ -75,6 +76,7 @@ def print_github_output(test_suites):
     Args:
         test_suites: A dictionary containing the results for each test suite.
     """
+    failed = False
     print("::group::Test Suite Results")
     for suite_name, results in test_suites.items():
         print(f"Suite: {suite_name}")
@@ -82,6 +84,7 @@ def print_github_output(test_suites):
         print(f"Result: {results['passed']}/{results['total']}")
 
         if results["status"] != "Passed":
+            failed = True
             print("Failed Tests:")
             for failed_test in results["failed_tests"]:
                 print(f"- {failed_test}")
@@ -93,6 +96,9 @@ def print_github_output(test_suites):
 
         print("-" * 30)
     print("::endgroup::")
+
+    if failed:
+        sys.exit("Some test failed!")
 
 
 if __name__ == "__main__":

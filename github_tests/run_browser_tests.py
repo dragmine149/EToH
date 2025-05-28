@@ -66,7 +66,7 @@ async def run_browser_tests():
 
             # Add a small delay after the completion message
             print("Waiting a bit more to ensure all final messages are logged...")
-            await asyncio.sleep(5) # Adjust delay as needed
+            await asyncio.sleep(2) # Adjust delay as needed
 
         except Exception as e:
             print(f"Timeout or error waiting for test completion console message: {e}")

@@ -1,4 +1,4 @@
-/*global test, Test*/
+/*global test, Test, other_file_test*/
 /**
 * @typedef { import('./test') }
 */
@@ -21,7 +21,7 @@ test.describe("Test System Validation", () => {
     (expect) => expect
       .from(
         /** @param {{test: Test}} globals  */
-        (globals) => globals.test.describe("Test in a test", () => { })
+        (globals) => globals.test.describe("Test in a test", () => { }, true)
       )
       .exists_type('globals.test', Test)
       .exists_type('globals.test.test_data', Array)
@@ -39,7 +39,7 @@ test.describe("Test System Validation", () => {
                 return a * b;
               })
             })
-          })
+          }, true)
 
         })
       .exists_type('globals.test.test_data', Array)
@@ -58,7 +58,7 @@ test.describe("Test System Validation", () => {
               return a * b;
             })
           })
-        })
+        }, true)
         globals.test.test("5 * 3 = 15",
           /** @param {Expect} expect */
           (expect) => expect.from(
@@ -143,7 +143,7 @@ test.describe("Test System Validation", () => {
               .expect("info", "e11", 1)
               .expect("debug", "e11", 1)
           )
-        });
+        }, true);
 
         globals.test.describe("Console inner test, with uneven expect", () => {
           globals.test.test("log x1 but expect 2", /** @param {Expect} expect */
@@ -165,7 +165,7 @@ test.describe("Test System Validation", () => {
             (expect) => expect.from(() => console.debug('e16'))
               .expect("debug", "e16", 1)
           )
-        })
+        },)
       })
       .expect("error", "e5", 1)
       .expect("error", "e6", 5)

@@ -1,7 +1,7 @@
 {"type": "info", "text": "%cStarting test suite:%c color: cyan  Test System Validation ", "location": "http://localhost:8080/ETOH/tests/test.js:31:4"}
 {"type": "info", "text": "%cStarting test:%c color: orange  Describe test", "location": "http://localhost:8080/ETOH/tests/test.js:31:4"}
 {"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/ETOH/tests/test.js:31:4"}
-{"type": "info", "text": "%cStarting test suite:%c color: cyan  Test in a test ", "location": "http://localhost:8080/ETOH/tests/test.js:145:32"}
+{"type": "info", "text": "%cStarting test suite:%c color: cyan  Test in a test (.gitignore)", "location": "http://localhost:8080/ETOH/tests/test.js:145:32"}
 {"type": "info", "text": "%cFinished test suite:%c color: cyan  Test in a test Passed (0/0)!", "location": "http://localhost:8080/ETOH/tests/test.js:145:32"}
 {"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/ETOH/tests/test.js:31:4"}
 {"type": "info", "text": "%cExist Type Test:%c color: lime  Attempting to see if globals.test exists and is of Test", "location": "http://localhost:8080/ETOH/tests/test.js:31:4"}
@@ -15,7 +15,7 @@
 {"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/ETOH/tests/test.js:31:4"}
 {"type": "info", "text": "%cStarting test:%c color: orange  Before test working", "location": "http://localhost:8080/ETOH/tests/test.js:31:4"}
 {"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/ETOH/tests/test.js:31:4"}
-{"type": "info", "text": "%cStarting test suite:%c color: cyan  Test in a test ", "location": "http://localhost:8080/ETOH/tests/test.js:145:32"}
+{"type": "info", "text": "%cStarting test suite:%c color: cyan  Test in a test (.gitignore)", "location": "http://localhost:8080/ETOH/tests/test.js:145:32"}
 {"type": "info", "text": "%cFinished test suite:%c color: cyan  Test in a test Passed (0/0)!", "location": "http://localhost:8080/ETOH/tests/test.js:145:32"}
 {"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/ETOH/tests/test.js:31:4"}
 {"type": "info", "text": "%cExist Type Test:%c color: lime  Attempting to see if globals.test.test_data exists and is of Array", "location": "http://localhost:8080/ETOH/tests/test.js:31:4"}
@@ -29,7 +29,7 @@
 {"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/ETOH/tests/test.js:31:4"}
 {"type": "info", "text": "%cStarting test:%c color: orange  Testing the test", "location": "http://localhost:8080/ETOH/tests/test.js:31:4"}
 {"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/ETOH/tests/test.js:31:4"}
-{"type": "info", "text": "%cStarting test suite:%c color: cyan  Test in a test ", "location": "http://localhost:8080/ETOH/tests/test.js:145:32"}
+{"type": "info", "text": "%cStarting test suite:%c color: cyan  Test in a test (.gitignore)", "location": "http://localhost:8080/ETOH/tests/test.js:145:32"}
 {"type": "info", "text": "%cFinished test suite:%c color: cyan  Test in a test Passed (0/0)!", "location": "http://localhost:8080/ETOH/tests/test.js:145:32"}
 {"type": "info", "text": "%cStarting test:%c color: orange  5 * 3 = 15", "location": "http://localhost:8080/ETOH/tests/test.js:145:32"}
 {"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/ETOH/tests/test.js:145:32"}
@@ -76,7 +76,7 @@
 {"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/ETOH/tests/test.js:31:4"}
 {"type": "info", "text": "%cStarting test:%c color: orange  Console logging inside test", "location": "http://localhost:8080/ETOH/tests/test.js:31:4"}
 {"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/ETOH/tests/test.js:31:4"}
-{"type": "info", "text": "%cStarting test suite:%c color: cyan  Console inner test ", "location": "http://localhost:8080/ETOH/tests/test.js:145:32"}
+{"type": "info", "text": "%cStarting test suite:%c color: cyan  Console inner test (.gitignore)", "location": "http://localhost:8080/ETOH/tests/test.js:145:32"}
 {"type": "info", "text": "%cStarting test:%c color: orange  log x1", "location": "http://localhost:8080/ETOH/tests/test.js:145:32"}
 {"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/ETOH/tests/test.js:145:32"}
 {"type": "log", "text": "e", "location": "http://localhost:8080/ETOH/tests/test.js:145:32"}
