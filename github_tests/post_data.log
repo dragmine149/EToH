@@ -1,0 +1,285 @@
+{"type": "info", "text": "%cStarting test suite:%c color: cyan  Test System Validation", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cStarting test:%c color: orange  Describe test", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cStarting test suite:%c color: cyan  Test in a test", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test suite:%c color: cyan  Test in a test Passed (0/0)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cExist Type Test:%c color: lime  Attempting to see if globals.test exists and is of Test", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cExists Type (Exists) Test:%c color: lime  Succeeded", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cExists Type (Type) Test:%c color: lime  Succeeded", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cExist Type Test:%c color: lime  Attempting to see if globals.test.test_data exists and is of Array", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cExists Type (Exists) Test:%c color: lime  Succeeded", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cExists Type (Type) Test:%c color: lime  Succeeded", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cFinished test:%c color: orange  Describe test", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (1/1)!", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cStarting test:%c color: orange  Before test working", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cStarting test suite:%c color: cyan  Test in a test", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test suite:%c color: cyan  Test in a test Passed (0/0)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cExist Type Test:%c color: lime  Attempting to see if globals.test.test_data exists and is of Array", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cExists Type (Exists) Test:%c color: lime  Succeeded", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cExists Type (Type) Test:%c color: lime  Succeeded", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cExist Type Test:%c color: lime  Attempting to see if globals.test.test_data.[0] exists and is of object", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cExists Type (Exists) Test:%c color: lime  Succeeded", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cExists Type (Type) Test:%c color: lime  Succeeded", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cFinished test:%c color: orange  Before test working", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (2/2)!", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cStarting test:%c color: orange  Testing the test", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cStarting test suite:%c color: cyan  Test in a test", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test suite:%c color: cyan  Test in a test Passed (0/0)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  5 * 3 = 15", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExist Type Test:%c color: lime  Attempting to see if result exists and is of number", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExists Type (Exists) Test:%c color: lime  Succeeded", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExists Type (Type) Test:%c color: lime  Succeeded", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cIs Test:%c color: lime  Attempting to see if result is 15", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cIs:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  5 * 3 = 15", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (1/1)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  outside function. Rebirth of 42", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExist Type Test:%c color: lime  Attempting to see if result.multiplier exists and is of number", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExists Type (Exists) Test:%c color: lime  Succeeded", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExists Type (Type) Test:%c color: lime  Succeeded", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExist Type Test:%c color: lime  Attempting to see if result.cash exists and is of number", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExists Type (Exists) Test:%c color: lime  Succeeded", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExists Type (Type) Test:%c color: lime  Succeeded", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cIs Test:%c color: lime  Attempting to see if result.multiplier is 6.6535077938434775", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cIs:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cIs Test:%c color: lime  Attempting to see if result.cash is 5589", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cIs:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  outside function. Rebirth of 42", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (2/2)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  different file function. Creating an 'a' tag", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExist Test:%c color: lime  Attempting to see if result exists", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cType Test:%c color: lime  Succeeded", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExist Test:%c color: lime  Attempting to see if result.tagName exists", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cType Test:%c color: lime  Succeeded", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cIs Test:%c color: lime  Attempting to see if result.tagName is A", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cIs:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  different file function. Creating an 'a' tag", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (3/3)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cFinished test:%c color: orange  Testing the test", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (3/3)!", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cStarting test:%c color: orange  Console logging inside test", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cStarting test suite:%c color: cyan  Console inner test", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  log x1", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "e", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 log with msg: e", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  log x1", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (1/1)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  log x5", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "e2", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "e2", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "e2", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "e2", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "e2", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 5 log with msg: e2", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  log x5", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (2/2)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  warn x1", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "warning", "text": "e3", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 warn with msg: e3", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  warn x1", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (3/3)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  warn x5", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "warning", "text": "e4", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "warning", "text": "e4", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "warning", "text": "e4", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "warning", "text": "e4", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "warning", "text": "e4", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 5 warn with msg: e4", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  warn x5", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (4/4)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  error x1", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "error", "text": "e5", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 error with msg: e5", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  error x1", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (5/5)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  error x5", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "error", "text": "e6", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "error", "text": "e6", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "error", "text": "e6", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "error", "text": "e6", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "error", "text": "e6", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 5 error with msg: e6", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  error x5", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (6/6)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  info x1", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "e7", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 info with msg: e7", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  info x1", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (7/7)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  info x5", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "e8", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "e8", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "e8", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "e8", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "e8", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 5 info with msg: e8", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  info x5", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (8/8)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  debug x1", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "e9", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 debug with msg: e9", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  debug x1", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (9/9)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  debug x5", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "e10", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "e10", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "e10", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "e10", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "e10", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 5 debug with msg: e10", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  debug x5", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (10/10)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  log x1 warn x1 error x1 info x1 debug x1", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "e11", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "warning", "text": "e11", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "error", "text": "e11", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "e11", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "e11", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 log with msg: e11", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 warn with msg: e11", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 error with msg: e11", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 info with msg: e11", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 debug with msg: e11", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  log x1 warn x1 error x1 info x1 debug x1", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (11/11)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test suite:%c color: cyan  Console inner test Passed (11/11)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test suite:%c color: cyan  Console inner test, with uneven expect (.gitignore)", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  log x1 but expect 2", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "e12", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 2 log with msg: e12", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "error", "text": "%cExpect Test:%c color: lime  Failed: Expected 2 log with msg: e12. Found 1 instead", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  log x1 but expect 2", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "error", "text": "%cTest results:%c color: orange  Failed (0/1): (expect) Expected 2 log with msg: e12. Found 1 instead", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  warn x2 but expect 1", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "warning", "text": "e13", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "warning", "text": "e3", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 warn with msg: e13", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  warn x2 but expect 1", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (1/2)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  error x1 with no catch", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "error", "text": "e14", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  error x1 with no catch", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "error", "text": "%cTest results:%c color: orange  Failed (1/3): Found '1 errors, 0 throws' that were not expected during testing.", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  info x1 but catch debug", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "e15", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 debug with msg: e15", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "error", "text": "%cExpect Test:%c color: lime  Failed: Expected 1 debug with msg: e15. Found 0 instead", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  info x1 but catch debug", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "error", "text": "%cTest results:%c color: orange  Failed (1/4): (expect) Expected 1 debug with msg: e15. Found 0 instead", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cStarting test:%c color: orange  debug x1", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cRunning test function%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "e16", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 debug with msg: e16", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test:%c color: orange  debug x1", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (2/5)!", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cFinished test suite:%c color: cyan  Console inner test, with uneven expect Failed (2/5)", "location": "http://localhost:8080/tests/test.js:165:32"}
+{"type": "info", "text": "%cTest function completed, running tests on result%c color: yellow ", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 error with msg: e5", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 5 error with msg: e6", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 error with msg: e11", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 error with msg: e14", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 debug with msg: e16", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 error with msg: %cExpect Test:%c color: lime  Failed: Expected 2 log with msg: e12. Found 1 instead", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 error with msg: %cExpect Test:%c color: lime  Failed: Expected 1 debug with msg: e15. Found 0 instead", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 error with msg: %cTest results:%c color: orange  Failed (0/1): (expect) Expected 2 log with msg: e12. Found 1 instead", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 error with msg: %cTest results:%c color: orange  Failed (1/3): Found '1 errors, 0 throws' that were not expected during testing.", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cExpect Test color: lime  Checking logs for 1 error with msg: %cTest results:%c color: orange  Failed (1/4): (expect) Expected 1 debug with msg: e15. Found 0 instead", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cExpect Test:%c color: lime  Passed", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cFinished test:%c color: orange  Console logging inside test", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "log", "text": "%cTest results:%c color: orange  Passed (4/4)!", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "debug", "text": "%c-------------------------------------------------%c color: orange ", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "info", "text": "%cFinished test suite:%c color: cyan  Test System Validation Passed (4/4)!", "location": "http://localhost:8080/tests/test.js:41:4"}
+{"type": "error", "text": "Failed to load resource: the server responded with a status of 501 (Unsupported method ('POST'))", "location": "http://localhost:8080/log:0:0"}
+{"type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)", "location": "http://localhost:8080/tests/data/other_data.json:0:0"}
+{"type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)", "location": "http://localhost:8080/tests/data/tower_data.json:0:0"}

@@ -1,16 +1,6 @@
-// const enabled_log = false;
-// const enabled_log = true;
-let enabled_log = false;
-(async () => {
-  try {
-    const response = await fetch(`${location.origin}/log`, { method: 'POST' });
-    if (!response.status.toString().startsWith('4')) {
-      enabled_log = true;
-    }
-  } catch { enabled_log = false }
-})();
-
 let waiting_timeout;
+
+// throw new Error("e");
 
 const TESTTYPE = Object.freeze({
   INFO: 0,
@@ -40,17 +30,6 @@ class Test {
     }
 
     consoleMethod(...prefix, ...params);
-
-    if (new URL(location).hostname == "localhost" && enabled_log) {
-      fetch(`${location.origin}/log`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ type, prefix, params })
-      }).catch(() => { });
-    }
-
   }
 
   /**
@@ -65,10 +44,11 @@ class Test {
   * Describe a new category of tests.
   * @param {String} category_name The name of the category.
   * @param {() => any)} test_function The function for all the tests.
+  * @param {boolean} ignore Tell the server to ignore this test whilst processing tests.
   * @returns {{exclude: () => any, include: () => any}} Functions that can further affect the test suite.
   */
-  describe(category_name, test_function) {
-    this.log(TESTTYPE.INFO, [`%cStarting test suite:%c`, `color: cyan`, ``], `${category_name}`);
+  describe(category_name, test_function, ignore) {
+    this.log(TESTTYPE.INFO, [`%cStarting test suite:%c`, `color: cyan`, ``], `${category_name}`, ignore ? `(.gitignore)` : ``);
 
     clearTimeout(waiting_timeout);
     this.test_data = [];
