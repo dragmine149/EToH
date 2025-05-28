@@ -6,7 +6,8 @@ import sys
 import os
 
 SERVER_URL = "http://localhost:8080"
-TESTS_PAGE = f"{SERVER_URL}/tests"
+# TESTS_PAGE = f"{SERVER_URL}/ETOH/tests.html"
+TESTS_PAGE = f"{SERVER_URL}/tests.html"
 # We no longer need the LOG_ENDPOINT as we're logging directly
 # LOG_ENDPOINT = f"{SERVER_URL}/log"
 LOG_FILE = "post_data.log" # Define the log file here
@@ -58,8 +59,7 @@ async def run_browser_tests():
         # --- IMPORTANT: WAITING FOR TESTS TO FINISH (Using Console Output) ---
         # Wait for the specific console message indicating test completion.
 
-        test_completion_message = "All test suite XYZ tests are complete." # *** REPLACE WITH YOUR ACTUAL MESSAGE ***
-        print(f"Waiting for console message indicating test completion: '{test_completion_message}'")
+        print("Waiting for window.areTestsFinished === true indicating test completion")
 
         try:
             await page.wait_for_function('window.areTestsFinished === true', timeout=120000)
