@@ -27,7 +27,7 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install dependencies
-        if: steps.cache-pip.outputs.cache-hit != 'true'
+        # if: steps.cache-pip.outputs.cache-hit != 'true'
         run: pip install -r github_tests/requirements.txt
 
       # Cache Playwright browsers
