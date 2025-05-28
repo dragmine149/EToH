@@ -16,6 +16,10 @@ class Badge {
     return `https://www.roblox.com/badges/${this.ids[0]}`;
   }
 
+  get links() {
+    return this.ids.map(v => `https://www.roblox.com/badges/${v}`);
+  }
+
   /**
   * Adds a new uneditable property to the object.
   * @param {String} name The name of this property.
@@ -26,20 +30,20 @@ class Badge {
 
     // Custom getter and setter functions. These are meant to not set and always get. Badge data is never going to update live unless a system is implemented, these help with that.
     Object.defineProperty(this, name, {
-      get: function () { return this[`__${name}`] },
+      get: function () { return JSON.parse(JSON.stringify(this[`#${name}`])) },
       set: function () { }
     });
-    this[`__${name}`] = value;
+    this[`#${name}`] = value;
   }
 
   /**
   * Create a new badge.
   * @param {String} name The name of the badge.
-  * @param {number[]} ids IDs associated with this badge.
+  * @param {number|number[]} ids IDs associated with this badge.
   */
   constructor(name, ids) {
     this.__addProperty('name', name);
-    this.__addProperty('ids', ids);
+    this.__addProperty('ids', [].concat(ids));
   }
 }
 
