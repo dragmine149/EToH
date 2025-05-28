@@ -1,140 +1,124 @@
 import json
 import sys
 import os
+import re # Import regex module
 
 LOG_FILE = "post_data.log"
-GITHUB_OUTPUT = os.getenv('GITHUB_OUTPUT') # Get the path to the GitHub output file
+GITHUB_OUTPUT = os.getenv('GITHUB_OUTPUT')
 
 def log_to_github_output(name, value):
     """Logs a key-value pair to GitHub Actions output."""
-    # Escape necessary characters for GitHub Actions output
-    # print(f"Attempting to log to GitHub output: {name}={value}") # Debugging print
     value = value.replace('%', '%25').replace('\n', '%0A').replace('\r', '%0D')
     try:
         with open(GITHUB_OUTPUT, 'a') as f:
             f.write(f'{name}={value}\n')
-        # print(f"Successfully logged {name} to GitHub output.") # Debugging print
     except Exception as e:
-        print(f"Error writing to GitHub output file {GITHUB_OUTPUT}: {e}") # Debugging print
+        print(f"Error writing to GitHub output file {GITHUB_OUTPUT}: {e}")
 
 
 def analyze_log_file(log_file):
-    print(f"Analyzing log file: {log_file}") # Debugging print
+    print(f"Analyzing log file: {log_file}")
     test_results = {}
     current_test_logs = []
-    in_test = False
-    current_test_name = None
+    # We will now track tests individually based on the "Expect Test:" pattern
+    # We no longer need a global 'in_test' state for a full suite,
+    # but rather process each "Expect Test:" log entry as a test result.
+    # We will group logs per test if you have a way to identify them.
+    # For now, let's process each "Expect Test:" line as a result entry.
+    # If there are other logs related to a specific test that you want to group,
+    # we'll need a way to associate them (e.g., based on time, or if your tests
+    # log a start/end boundary for each individual "Expect Test:").
 
     if not os.path.exists(log_file):
-        print(f"Error: Log file not found at {log_file}") # Debugging print
-        return {} # Returning empty dictionary, will lead to exit(1) later
+        print(f"Error: Log file not found at {log_file}")
+        return {}
 
     try:
         with open(log_file, "r") as f:
             log_content = f.read()
-        print(f"Successfully read log file. Content length: {len(log_content)}") # Debugging print
-        # print(f"Log file content:\n---\n{log_content}\n---") # Debugging: Print the whole file content
+        print(f"Successfully read log file. Content length: {len(log_content)}")
 
-        log_entries = log_content.strip().split('\n')
-        print(f"Split log content into {len(log_entries)} potential lines.") # Debugging print
+        log_entries_raw = log_content.strip().split('\n')
         parsed_entries = []
-        for i, entry_str in enumerate(log_entries):
-            if not entry_str.strip(): # Skip empty lines
+        for i, entry_str in enumerate(log_entries_raw):
+            if not entry_str.strip():
                 continue
-            # print(f"Attempting to parse line {i}: {entry_str[:100]}...") # Debugging print
             try:
                 parsed_entries.append(json.loads(entry_str))
-                # print(f"Successfully parsed line {i}.") # Debugging print
             except json.JSONDecodeError as e:
-                print(f"Error decoding JSON from line {i}: {entry_str[:100]}... Error: {e}") # Debugging print
-                # Continue processing other lines
+                print(f"Error decoding JSON from line {i}: {entry_str[:100]}... Error: {e}")
             except Exception as e:
-                 print(f"Unexpected error parsing line {i}: {entry_str[:100]}... Error: {e}") # Debugging print
+                 print(f"Unexpected error parsing line {i}: {entry_str[:100]}... Error: {e}")
 
+        print(f"Successfully parsed {len(parsed_entries)} valid JSON entries.")
 
-        print(f"Successfully parsed {len(parsed_entries)} valid JSON entries.") # Debugging print
-
+        # We'll iterate through parsed entries and look for test results
         for i, entry in enumerate(parsed_entries):
-            # print(f"Processing entry {i}: {entry}") # Debugging print
-            current_test_logs.append(json.dumps(entry)) # Store the raw log entry
+            # Store all parsed entries in current_test_logs for now,
+            # as we might want to show all logs if any test fails.
+            # A more sophisticated approach would group logs by test if possible.
+            current_test_logs.append(json.dumps(entry))
 
-            if "prefix" in entry and isinstance(entry["prefix"], list):
-                prefix_text = "".join(entry["prefix"])
+            if "text" in entry and isinstance(entry["text"], str):
+                log_text = entry["text"]
 
-                if "Starting test suite:" in prefix_text and "params" in entry and isinstance(entry["params"], list):
-                    print(f"Found 'Starting test suite:' entry.") # Debugging print
-                    if in_test:
-                        print(f"Warning: Found a new test start before the previous one ended. Test: {current_test_name}") # Debugging print
-                        # Handle the previous test logs if needed
-                        current_test_logs = [json.dumps(entry)] # Start new log tracking
-                    in_test = True
-                    current_test_name = entry["params"][0] if entry["params"] else "Unknown Test Suite"
-                    print(f"Starting test: {current_test_name}") # Debugging print
-                    test_results[current_test_name] = {"status": "running", "logs": current_test_logs}
-                    current_test_logs = []
+                # Look for the "Expect Test:" pattern
+                match = re.search(r"%cExpect Test:%c\s*(.*?)\s*(Passed|Failed|Error)$", log_text)
 
-                elif "Finished test suite:" in prefix_text and "params" in entry and isinstance(entry["params"], list):
-                    print(f"Found 'Finished test suite:' entry.") # Debugging print
-                    if not in_test:
-                        print(f"Warning: Found a test end before a test start.") # Debugging print
-                        continue
+                if match:
+                    # Found a test result entry
+                    test_name = match.group(1).strip()
+                    result_status_text = match.group(2).strip() # Passed, Failed, or Error
 
-                    result_params = entry["params"]
-                    test_result = "Unknown"
-                    if result_params:
-                        test_result = result_params[0]
+                    status = "Passed" if result_status_text == "Passed" else "Failed" # Assuming Failed/Error means failure
 
-                    status = "Failed" if "Failed" in test_result or "Error" in test_result else "Passed"
-                    print(f"Finishing test: {current_test_name} with status {status}") # Debugging print
-                    test_results[current_test_name]["status"] = status
-                    test_results[current_test_name]["result"] = test_result
-                    test_results[current_test_name]["logs"].extend(current_test_logs)
-                    in_test = False
-                    current_test_name = None
-                    current_test_logs = []
+                    # Store the result for this specific test name
+                    # If a test name appears multiple times, the last one wins.
+                    # You might need to refine this if you have multiple checks
+                    # within a single named "Expect Test".
+                    test_results[test_name] = {
+                        "status": status,
+                        "result": result_status_text,
+                        # We are not currently grouping logs per test in this version.
+                        # If you need that, you'll need a way to identify logs
+                        # belonging to a specific test run (e.g., timestamps, test ID in log).
+                        "logs": [json.dumps(entry)] # For simplicity, only include the result line itself for now
+                    }
+                    print(f"Found test result: Test Name='{test_name}', Status='{status}', Result='{result_status_text}'")
 
-                elif in_test:
-                   # print(f"Adding log entry to current test logs: {entry_str[:50]}...") # Debugging print
-                   pass # Log is already added at the start of the loop
+                # If you had other logs you wanted to associate with tests,
+                # you would add logic here to group them based on surrounding
+                # "Expect Test:" entries or other markers.
 
     except FileNotFoundError:
-        # This case is now handled by the initial check, but keeping the print
-        print(f"Error: Log file not found at {log_file} (within try block)") # Debugging print
+        print(f"Error: Log file not found at {log_file} (within try block)")
         return {}
     except json.JSONDecodeError as e:
-        print(f"Critical Error decoding JSON from log file content: {e}") # Debugging print
+        print(f"Critical Error decoding JSON from log file content: {e}")
         return {}
     except Exception as e:
-        print(f"An unexpected error occurred during log analysis: {e}") # Debugging print
+        print(f"An unexpected error occurred during log analysis: {e}")
         return {}
 
-    # If a test started but didn't finish
-    if in_test and current_test_name:
-         print(f"Warning: Test suite '{current_test_name}' started but did not finish.") # Debugging print
-         if current_test_name in test_results:
-             test_results[current_test_name]["status"] = "Incomplete"
-             test_results[current_test_name]["logs"].extend(current_test_logs)
-         else:
-             # Handle case where start was found but dictionary entry wasn't created (less likely)
-             print(f"Error: Test '{current_test_name}' was in_test but no entry in test_results.") # Debugging print
-             test_results[current_test_name] = {"status": "Incomplete", "logs": current_test_logs}
+    # In this version, we process individual test results as they appear.
+    # We don't have a concept of an overall test suite start/end anymore,
+    # so we don't check for incomplete suites in the same way.
 
-
-    print(f"Finished analyzing log file. Found {len(test_results)} test suites.") # Debugging print
+    print(f"Finished analyzing log file. Found {len(test_results)} individual test results.")
     return test_results
 
 def format_log_entry_single_line(entry_json_string):
-    """Formats a single JSON log entry into a single readable line."""
+    """Formats a single JSON log entry into a single readable line from the new format."""
     try:
         entry = json.loads(entry_json_string)
         log_line = ""
         if "type" in entry:
-            log_line += f"Type: {entry['type']} | "
-        if "prefix" in entry and isinstance(entry["prefix"], list):
-            filtered_prefix = [p for p in entry["prefix"] if p]
-            log_line += f"Prefix: {''.join(filtered_prefix)} | "
-        if "params" in entry and isinstance(entry["params"], list):
-            log_line += f"Params: {', '.join(map(str, entry['params']))}"
+            log_line += f"Type: {entry.get('type', 'N/A').upper()} | "
+        if "location" in entry:
+             log_line += f"Location: {entry.get('location', 'N/A')} | "
+        if "text" in entry:
+            log_line += f"Text: {entry.get('text', 'N/A')}"
+
 
         if log_line.endswith(" | "):
             log_line = log_line[:-3]
@@ -147,49 +131,77 @@ def format_log_entry_single_line(entry_json_string):
 
 
 if __name__ == "__main__":
-    print("Starting log analysis script.") # Debugging print
+    print("Starting log analysis script.")
     results = analyze_log_file(LOG_FILE)
 
     all_tests_passed = True
     test_summary = []
 
     if not results:
-        print("No test results found in log file. Logging failure.") # Debugging print
-        log_to_github_output("test_summary", "No test results found in log file.")
+        print("No individual test results found in log file.")
+        # Check if the log file exists but contains no test results
+        if os.path.exists(LOG_FILE) and os.path.getsize(LOG_FILE) > 0:
+             # If file exists and has content but no test results found, might indicate parsing issue or no tests ran
+             log_to_github_output("test_summary", "Log file found, but no individual test results (Expect Test:) were identified.")
+             # Optionally log the raw content for debugging
+             try:
+                 with open(LOG_FILE, "r") as f:
+                      raw_content = f.read()
+                      log_to_github_output("raw_log_content", raw_content)
+             except Exception as e:
+                 log_to_github_output("raw_log_content_error", f"Could not read raw log content: {e}")
+        else:
+             log_to_github_output("test_summary", "Log file not found or is empty.")
+
         sys.exit(1) # Indicate failure if no results are found
 
-    print("Processing test results for logging.") # Debugging print
+
+    print(f"Processing {len(results)} individual test results for logging.")
     for test_name, data in results.items():
         status = data.get("status", "Unknown")
         result_string = data.get("result", "N/A")
         summary_line = f"{test_name}: {status}"
-        if status in ["Passed", "Failed", "Incomplete"]: # Add result string for finished tests
+        if result_string != "N/A":
              summary_line += f" ({result_string})"
         test_summary.append(summary_line)
-        print(f"Processing test: {test_name}, Status: {status}, Result: {result_string}") # Debugging print
+        print(f"Processing test result: {test_name}, Status: {status}, Result: {result_string}")
 
 
         if status != "Passed":
             all_tests_passed = False
-            print(f"Logging details for non-passed test: {test_name}") # Debugging print
-            log_to_github_output(f"{test_name.replace(' ', '_')}_status", status)
-            log_to_github_output(f"{test_name.replace(' ', '_')}_result", result_string)
+            print(f"Logging details for non-passed test result: {test_name}")
+            # Sanitize test name for output keys
+            safe_test_name = re.sub(r'[^a-zA-Z0-9_]', '_', test_name)
+            log_to_github_output(f"{safe_test_name}_status", status)
+            log_to_github_output(f"{safe_test_name}_result", result_string)
 
+            # In this version, 'logs' only contains the result line itself.
+            # If you need all logs related to a test, you would need to
+            # group them in the analyze_log_file function.
+            # For now, we'll just log the result line as the detailed log.
             detailed_logs = "\n".join([format_log_entry_single_line(log_entry) for log_entry in data.get("logs", [])])
+
+            # If you wanted to log *all* console output captured during the run
+            # when any test fails, you would iterate through the 'current_test_logs'
+            # list that was populated *before* the test results were processed
+            # and log that. Be mindful of potentially large log output.
+            # For now, we stick to the log entry specifically identified as a result.
+
             if detailed_logs:
-                 log_to_github_output(f"{test_name.replace(' ', '_')}_logs", detailed_logs)
+                 log_to_github_output(f"{safe_test_name}_logs", detailed_logs)
             else:
-                 log_to_github_output(f"{test_name.replace(' ', '_')}_logs", "No detailed logs available for this test.")
+                 # This case shouldn't happen if 'logs' always contains the result line
+                 log_to_github_output(f"{safe_test_name}_logs", "No detailed log entry available for this result.")
 
 
     # Log the overall test summary
-    print("Logging overall test summary.") # Debugging print
+    print("Logging overall test summary.")
     log_to_github_output("test_summary", "\n".join(test_summary))
 
     # Set the exit code based on whether all tests passed
     if all_tests_passed:
-        print("All test suites passed! Exiting with code 0.") # Debugging print
+        print("All test results passed! Exiting with code 0.")
         sys.exit(0)
     else:
-        print("Some test suites failed or were incomplete. Exiting with code 1.") # Debugging print
-        sys.exit(1) # Indicate failure
+        print("Some test results failed or had errors. Exiting with code 1.")
+        sys.exit(1)
