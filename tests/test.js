@@ -75,7 +75,7 @@ class Test {
     this.test_count = 0;
     this.test_passed = 0;
     test_function();
-    this.log(TESTTYPE.INFO, [`%cFinished test suite:%c`, `color: cyan`, ``], this.test_count == this.test_passed ? `Passed (${this.test_passed}/${this.test_count})!` : `Failed (${this.test_passed}/${this.test_count})`);
+    this.log(TESTTYPE.INFO, [`%cFinished test suite:%c`, `color: cyan`, ``], category_name, this.test_count == this.test_passed ? `Passed (${this.test_passed}/${this.test_count})!` : `Failed (${this.test_passed}/${this.test_count})`);
     waiting_timeout = setTimeout(() => window.areTestsFinished = true, 10000); // 10 seconds to finish all tests.
   }
 

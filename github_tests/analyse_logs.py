@@ -18,16 +18,11 @@ def log_to_github_output(name, value):
 
 def analyze_log_file(log_file):
     print(f"Analyzing log file: {log_file}")
-    test_results = {}
-    current_test_logs = []
-    # We will now track tests individually based on the "Expect Test:" pattern
-    # We no longer need a global 'in_test' state for a full suite,
-    # but rather process each "Expect Test:" log entry as a test result.
-    # We will group logs per test if you have a way to identify them.
-    # For now, let's process each "Expect Test:" line as a result entry.
-    # If there are other logs related to a specific test that you want to group,
-    # we'll need a way to associate them (e.g., based on time, or if your tests
-    # log a start/end boundary for each individual "Expect Test:").
+    test_suites = {} # Stores results per test suite
+    current_suite_logs = [] # Stores all logs within the current test suite
+    in_suite = False
+    current_suite_name = None
+    individual_test_statuses = {} # Track status of individual Expect Tests within the current suite
 
     if not os.path.exists(log_file):
         print(f"Error: Log file not found at {log_file}")
@@ -52,43 +47,96 @@ def analyze_log_file(log_file):
 
         print(f"Successfully parsed {len(parsed_entries)} valid JSON entries.")
 
-        # We'll iterate through parsed entries and look for test results
         for i, entry in enumerate(parsed_entries):
-            # Store all parsed entries in current_test_logs for now,
-            # as we might want to show all logs if any test fails.
-            # A more sophisticated approach would group logs by test if possible.
-            current_test_logs.append(json.dumps(entry))
+            log_entry_json_str = json.dumps(entry) # Get JSON string of current entry
 
             if "text" in entry and isinstance(entry["text"], str):
                 log_text = entry["text"]
 
-                # Look for the "Expect Test:" pattern
-                match = re.search(r"%cExpect Test:%c\s*(.*?)\s*(Passed|Failed|Error)$", log_text)
+                # Check for the start of a new test suite
+                start_match = re.search(r"%cStarting test suite:%c.*?(\s*(.*))$", log_text)
+                if start_match:
+                    suite_name = start_match.group(2).strip() if start_match.group(2) else "Unknown Test Suite"
+                    print(f"Found 'Starting test suite:' entry: {suite_name}")
 
-                if match:
-                    # Found a test result entry
-                    test_name = match.group(1).strip()
-                    result_status_text = match.group(2).strip() # Passed, Failed, or Error
+                    # If we were already in a suite, the previous one ended implicitly
+                    if in_suite:
+                        print(f"Warning: Found a new test suite start ('{suite_name}') before the previous one ('{current_suite_name}') explicitly ended.")
+                        # Finalize the previous suite as incomplete
+                        if current_suite_name and current_suite_name in test_suites:
+                            test_suites[current_suite_name]["status"] = "Incomplete"
+                            # The logs are already in current_suite_logs from the previous suite run
+                        # The individual_test_statuses for the previous suite are already captured in test_suites entry.
 
-                    status = "Passed" if result_status_text == "Passed" else "Failed" # Assuming Failed/Error means failure
+                    # Start the new suite
+                    in_suite = True
+                    current_suite_name = suite_name
+                    current_suite_logs = [log_entry_json_str] # Start new log tracking with the current entry
+                    individual_test_statuses = {} # Reset individual test statuses for the new suite
 
-                    # Store the result for this specific test name
-                    # If a test name appears multiple times, the last one wins.
-                    # You might need to refine this if you have multiple checks
-                    # within a single named "Expect Test".
-                    test_results[test_name] = {
-                        "status": status,
-                        "result": result_status_text,
-                        # We are not currently grouping logs per test in this version.
-                        # If you need that, you'll need a way to identify logs
-                        # belonging to a specific test run (e.g., timestamps, test ID in log).
-                        "logs": [json.dumps(entry)] # For simplicity, only include the result line itself for now
+                    test_suites[current_suite_name] = {
+                        "status": "running", # Initially running
+                        "result_summary": "N/A", # Will be updated by the end marker or implicit end
+                        "logs": current_suite_logs, # Reference the current log list
+                        "individual_test_statuses": individual_test_statuses # Reference individual statuses for the current suite
                     }
-                    print(f"Found test result: Test Name='{test_name}', Status='{status}', Result='{result_status_text}'")
 
-                # If you had other logs you wanted to associate with tests,
-                # you would add logic here to group them based on surrounding
-                # "Expect Test:" entries or other markers.
+                # Check for the end of the current test suite
+                end_match = re.search(r"%cFinished test suite:%c.*?(\s*(.*))$", log_text)
+                # We are more specific now - check if the end marker text *contains* the current suite name
+                # This handles cases where the end marker might appear out of order but matches a known running suite
+                if in_suite and current_suite_name and current_suite_name in log_text and end_match:
+                    end_suite_name_and_result = end_match.group(2).strip() if end_match.group(2) else "Unknown"
+                    print(f"Found 'Finished test suite:' entry for current suite: {current_suite_name}")
+
+                    suite_status = "Passed" # Assume passed unless individual tests failed or end marker indicates failure
+                    final_result_summary = end_suite_name_and_result # Store the full text from the end marker
+
+                    # Check individual test results collected for this suite
+                    if any(status != "Passed" for status in individual_test_statuses.values()):
+                         suite_status = "Failed"
+                    # Also check the end marker text itself for "Failed" or "Error"
+                    elif "Failed" in final_result_summary or "Error" in final_result_summary:
+                         suite_status = "Failed"
+
+
+                    test_suites[current_suite_name]["status"] = suite_status
+                    test_suites[current_suite_name]["result_summary"] = final_result_summary
+                    # Logs were already added as we went along
+                    # Individual test statuses are already updated in individual_test_statuses which is referenced
+
+                    print(f"Finished test suite: {current_suite_name} with final status: {suite_status}")
+
+                    # End the current suite tracking
+                    in_suite = False
+                    current_suite_name = None
+                    current_suite_logs = [] # Reset logs for the next suite
+                    individual_test_statuses = {} # Reset individual statuses for the next suite
+
+                # Look for the "Expect Test:" pattern (individual test results)
+                # We only care about these if we are currently tracking a suite
+                expect_test_match = re.search(r"%cExpect Test:%c\s*(.*?)\s*(Passed|Failed|Error)$", log_text)
+                if in_suite and current_suite_name and expect_test_match:
+                    individual_test_name = expect_test_match.group(1).strip()
+                    result_status_text = expect_test_match.group(2).strip()
+
+                    status = "Passed" if result_status_text == "Passed" else "Failed"
+
+                    # Record the status of this individual test within the current suite's tracking
+                    individual_test_statuses[individual_test_name] = status
+                    print(f"Found individual test result within suite '{current_suite_name}': Test Name='{individual_test_name}', Status='{status}'")
+
+                # If currently in a suite and this is not a start/end/expect marker,
+                # add the log entry to the current suite's logs.
+                # (This is already done at the beginning of the loop if in_suite is True)
+                # else:
+                #     if in_suite:
+                #          pass # Log is already added
+                #     else:
+                #          # Log entry outside any tracked suite
+                #          print(f"Ignoring log entry outside suite tracking: {log_text[:100]}...")
+                #          pass # Optionally handle logs that occur before the first suite starts or after the last one ends
+
 
     except FileNotFoundError:
         print(f"Error: Log file not found at {log_file} (within try block)")
@@ -100,12 +148,15 @@ def analyze_log_file(log_file):
         print(f"An unexpected error occurred during log analysis: {e}")
         return {}
 
-    # In this version, we process individual test results as they appear.
-    # We don't have a concept of an overall test suite start/end anymore,
-    # so we don't check for incomplete suites in the same way.
+    # If a test suite started but didn't finish by the end of the log file
+    if in_suite and current_suite_name:
+         print(f"Warning: Test suite '{current_suite_name}' started but did not finish at the end of the log file.")
+         if current_suite_name in test_suites:
+             test_suites[current_suite_name]["status"] = "Incomplete"
+             # Logs and individual statuses are already captured in the test_suites entry.
 
-    print(f"Finished analyzing log file. Found {len(test_results)} individual test results.")
-    return test_results
+    print(f"Finished analyzing log file. Found {len(test_suites)} test suites.")
+    return test_suites
 
 def format_log_entry_single_line(entry_json_string):
     """Formats a single JSON log entry into a single readable line from the new format."""
@@ -117,7 +168,8 @@ def format_log_entry_single_line(entry_json_string):
         if "location" in entry:
              log_line += f"Location: {entry.get('location', 'N/A')} | "
         if "text" in entry:
-            log_line += f"Text: {entry.get('text', 'N/A')}"
+            # Simple formatting of the text content
+            log_line += f"Text: {entry.get('text', 'N/A').strip()}"
 
 
         if log_line.endswith(" | "):
@@ -132,18 +184,15 @@ def format_log_entry_single_line(entry_json_string):
 
 if __name__ == "__main__":
     print("Starting log analysis script.")
-    results = analyze_log_file(LOG_FILE)
+    suites = analyze_log_file(LOG_FILE) # Renamed 'results' to 'suites' for clarity
 
-    all_tests_passed = True
-    test_summary = []
+    all_suites_passed = True
+    suite_summary_lines = []
 
-    if not results:
-        print("No individual test results found in log file.")
-        # Check if the log file exists but contains no test results
+    if not suites: # Check if any suites were found
+        print("No test suites found in log file.")
         if os.path.exists(LOG_FILE) and os.path.getsize(LOG_FILE) > 0:
-             # If file exists and has content but no test results found, might indicate parsing issue or no tests ran
-             log_to_github_output("test_summary", "Log file found, but no individual test results (Expect Test:) were identified.")
-             # Optionally log the raw content for debugging
+             log_to_github_output("test_summary", "Log file found, but no test suite start/end markers were identified.")
              try:
                  with open(LOG_FILE, "r") as f:
                       raw_content = f.read()
@@ -153,55 +202,61 @@ if __name__ == "__main__":
         else:
              log_to_github_output("test_summary", "Log file not found or is empty.")
 
-        sys.exit(1) # Indicate failure if no results are found
+        sys.exit(1) # Indicate failure if no suites are found
 
 
-    print(f"Processing {len(results)} individual test results for logging.")
-    for test_name, data in results.items():
-        status = data.get("status", "Unknown")
-        result_string = data.get("result", "N/A")
-        summary_line = f"{test_name}: {status}"
-        if result_string != "N/A":
-             summary_line += f" ({result_string})"
-        test_summary.append(summary_line)
-        print(f"Processing test result: {test_name}, Status: {status}, Result: {result_string}")
+    print(f"Processing {len(suites)} test suites for logging.")
+    for suite_name, data in suites.items():
+        suite_status = data.get("status", "Unknown")
+        result_summary = data.get("result_summary", "N/A")
+        summary_line = f"Suite '{suite_name}': {suite_status}"
+        if result_summary != "N/A":
+             summary_line += f" ({result_summary})"
+        suite_summary_lines.append(summary_line)
+        print(f"Processing suite: '{suite_name}', Status: {suite_status}, Result Summary: {result_summary}")
+
+        # Determine if the overall suite should be marked as failed
+        # This happens if the final status is not 'Passed' OR if any individual test within it failed.
+        suite_failed = suite_status != "Passed" or any(status != "Passed" for status in data.get("individual_test_statuses", {}).values())
 
 
-        if status != "Passed":
-            all_tests_passed = False
-            print(f"Logging details for non-passed test result: {test_name}")
-            # Sanitize test name for output keys
-            safe_test_name = re.sub(r'[^a-zA-Z0-9_]', '_', test_name)
-            log_to_github_output(f"{safe_test_name}_status", status)
-            log_to_github_output(f"{safe_test_name}_result", result_string)
+        if suite_failed:
+            all_suites_passed = False
+            print(f"Logging details for non-passed suite: '{suite_name}'")
+            # Sanitize suite name for output keys
+            safe_suite_name = re.sub(r'[^a-zA-Z0-9_]', '_', suite_name)
+            log_to_github_output(f"{safe_suite_name}_status", suite_status)
+            log_to_github_output(f"{safe_suite_name}_summary", result_summary)
 
-            # In this version, 'logs' only contains the result line itself.
-            # If you need all logs related to a test, you would need to
-            # group them in the analyze_log_file function.
-            # For now, we'll just log the result line as the detailed log.
-            detailed_logs = "\n".join([format_log_entry_single_line(log_entry) for log_entry in data.get("logs", [])])
-
-            # If you wanted to log *all* console output captured during the run
-            # when any test fails, you would iterate through the 'current_test_logs'
-            # list that was populated *before* the test results were processed
-            # and log that. Be mindful of potentially large log output.
-            # For now, we stick to the log entry specifically identified as a result.
-
-            if detailed_logs:
-                 log_to_github_output(f"{safe_test_name}_logs", detailed_logs)
+            # Log the status of individual tests within this suite
+            individual_results_summary = "Individual Test Results:\n"
+            individual_statuses = data.get("individual_test_statuses", {})
+            if individual_statuses:
+                # Sort individual test results for consistent output
+                sorted_individual_tests = sorted(individual_statuses.items())
+                for test_name, status in sorted_individual_tests:
+                    individual_results_summary += f"- {test_name}: {status}\n"
             else:
-                 # This case shouldn't happen if 'logs' always contains the result line
-                 log_to_github_output(f"{safe_test_name}_logs", "No detailed log entry available for this result.")
+                individual_results_summary += "No individual test results (Expect Test:) logged for this suite."
+            log_to_github_output(f"{safe_suite_name}_individual_results", individual_results_summary.strip())
 
 
-    # Log the overall test summary
-    print("Logging overall test summary.")
-    log_to_github_output("test_summary", "\n".join(test_summary))
+            # Log all captured logs for this failing/incomplete suite
+            detailed_logs = "\n".join([format_log_entry_single_line(log_entry) for log_entry in data.get("logs", [])])
+            if detailed_logs:
+                 log_to_github_output(f"{safe_suite_name}_logs", detailed_logs)
+            else:
+                 log_to_github_output(f"{safe_suite_name}_logs", "No detailed logs captured for this suite.")
 
-    # Set the exit code based on whether all tests passed
-    if all_tests_passed:
-        print("All test results passed! Exiting with code 0.")
+
+    # Log the overall suite summary
+    print("Logging overall suite summary.")
+    log_to_github_output("suite_summary", "\n".join(suite_summary_lines))
+
+    # Set the exit code based on whether all suites passed
+    if all_suites_passed:
+        print("All test suites passed! Exiting with code 0.")
         sys.exit(0)
     else:
-        print("Some test results failed or had errors. Exiting with code 1.")
+        print("Some test suites failed or were incomplete. Exiting with code 1.")
         sys.exit(1)
