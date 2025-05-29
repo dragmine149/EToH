@@ -2,6 +2,12 @@
 /*eslint no-undef: "error" */
 /*exported TowerManager */
 
+/**
+* @typedef {import('./constants')}
+* @typedef {import('./BadgeManager')}
+* @typedef {import('./AreaManager')}
+*/
+
 class TowerManager {
   count = {};
 
