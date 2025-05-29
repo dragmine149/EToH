@@ -2,6 +2,8 @@
 /*eslint no-undef: "error" */
 /*exported Area, areaManager */
 
+/** @typedef {import('./DataManager')} */
+
 class Area {
   /** @type {string} The name of this area */
   name;
