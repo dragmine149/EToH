@@ -2,6 +2,12 @@
 /*eslint no-undef: "error"*/
 /*exported User, UserManager */
 
+/**
+* @typedef {import('./DataManager')}
+* @typedef {import('./main')}
+* @typedef {import('./network')}
+*/
+
 class User {
   /** @type {number} */
   id;
@@ -169,17 +175,19 @@ class UserManager extends GenericManager {
     }
 
     // try to find it in our filters first.
+    /** @type {number[]} */
     let id = this.id(identifier);
     this.verbose.info(`Loaded id?: ${id}`);
-    if (id != undefined) {
+    if (id.length > 0) {
       this.current_user = id[0];
       this.verbose.info(`Found user by id. Stopping load`);
       this.current_user.postCreate();
       return;
     }
+    /** @type {string[]} */
     let name = this.names(identifier);
     this.verbose.info(`Loaded name?: ${id}`);
-    if (name != undefined) {
+    if (name.length > 0) {
       this.current_user = name[0];
       this.verbose.info(`Found user by name. Stopping load`);
       this.current_user.postCreate();
@@ -205,17 +213,17 @@ class UserManager extends GenericManager {
       user = user.length != 0 ? user[0] : undefined;
     }
 
-    let userClass = await this.#userClass.create(user ?? identifier, this.db);
+    let userClass = await this.userClass.create(user ?? identifier, this.db);
     this.verbose.info(`First user result is: `, userClass);
     if (typeof userClass === "number") {
       this.verbose.debug(`Making new user from previously found data`);
-      userClass = new this.#userClass(await this.db.users.get({ id: userClass }));
+      userClass = new this.userClass(await this.db.users.get({ id: userClass }));
     }
     this.verbose.debug(userClass);
     this.verbose.debug(userClass == null);
     this.verbose.debug(typeof userClass == "number");
-    this.verbose.debug(userClass instanceof this.#userClass);
-    if (userClass == null || typeof userClass == "number" || !(userClass instanceof this.#userClass)) {
+    this.verbose.debug(userClass instanceof this.userClass);
+    if (userClass == null || typeof userClass == "number" || !(userClass instanceof this.userClass)) {
       this.verbose.warn(`Cancelling load of user due to internal error.`)
       return;
     }
@@ -267,6 +275,13 @@ class UserManager extends GenericManager {
     await this.db.users.delete(id ?? this.current_user.id);
   }
 
+  async load_database() {
+    /** @type {User[]} */
+    let users = await this.db.users
+      .toArray();
+    users.forEach((user) => this.addItem(new this.userClass(user)));
+  }
+
   /**
   * Deletes the oldest users according to the limit of users that we can have.
   */
@@ -301,6 +316,7 @@ class UserManager extends GenericManager {
     super();
     this.addFilter('names', user => [user.name, ...user.past]);
     this.addFilter('id', user => user.id);
+    this.addFilter('name_id', user => `${user.name} (${user.past})`);
     this.verbose = new Verbose("UserManager", '#afe9ca');
     this.db = database;
     this.unload_callback = unload_callback;

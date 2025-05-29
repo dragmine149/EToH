@@ -2,7 +2,6 @@
 /*eslint no-undef: "error"*/
 /*exported Tower, Other, EToHUser, userManager, towerManager, miniSearch, endMiniSearch, TOWER_TYPE, DIFFICULTIES, SUB_LEVELS, pointsFromType */
 
-
 /**
 @typedef {{
   name: string,
@@ -50,6 +49,11 @@
   data: ServerOther[]
 }} ServerOtherParent
 
+@typedef {import('./BadgeManager')}
+@typedef {import('./user')}
+@typedef {import('./network')}
+@typedef {import('./main')}
+@typedef {import('./AreaManager')}
 */
 
 class Tower extends Badge {
@@ -289,6 +293,7 @@ userManager.userClass = EToHUser;
 userManager.unload_callback = () => {
   towerManager.unloadUI();
 }
+userManager.load_database();
 
 async function loadData(callback) {
   await loadTowersFromServer();
