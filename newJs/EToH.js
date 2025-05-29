@@ -146,24 +146,14 @@ class EToHUser extends User {
     towerManager.loadUI(this);
 
     this.verbose.info("Checking to see if any uncompleted badge has been completed");
-    await this.loadBadges(badgeManager.uncompleted(this.completed
-      .map(badge => badge.badgeId)
-    ),
-      /** @param {{badgeId: number, date: number}} json */
-      (json) => {
-        towerManager.loadUI(json.badgeId, true);
-      }
-    );
+    await this.loadUncompleted();
 
     this.verbose.info("Post Create has been completed!");
   }
 
   async loadUncompleted() {
     this.verbose.info("Attempting to update uncompleted badges");
-    await this.loadBadges(badgeManager.uncompleted(this.completed
-      .map(badge => badge.badgeId)
-    ),
-      /** @param {{badgeId: number, date: number}} json */
+    await this.loadBadges(badgeManager.uncompleted(this.completed.map(badge => badge.badgeId)).flatMap(badge => badge.ids),
       (json) => {
         this.verbose.info(`Found new uncompleted badge: ${json.badgeId}`);
         towerManager.loadBadge(json.badgeId, true);
@@ -171,6 +161,11 @@ class EToHUser extends User {
     this.verbose.info("Uncompleted badges updated!");
   }
 
+  /**
+  * Load request badges from the server and stores them.
+  * @param {number[]} badges The badges to load.
+  * @param {(badge: {badgeId: number, date: number}) => void} callback What to do upon receiving a badge. (other than storing it)
+  */
   async loadBadges(badges, callback) {
     this.verbose.info(`Loading badges from server`);
     await network.requestStream(new Request(`${CLOUD_URL}/badges/${this.id}/all`, {

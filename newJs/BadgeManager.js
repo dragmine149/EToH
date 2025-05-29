@@ -7,8 +7,6 @@
 */
 
 class Badge {
-  /** @type {bool[]} The ids that have been achieved. */
-  achieved;
   /** @type {number[]} The ids that are associated with the badge. As games will sometimes "move", we need a list to store all possibilities. Sorted as newest -> oldest */
   ids;
   /** @type {String} The name of the badge, doesn't have to match the one provided by the game, just has to be something useable. */
@@ -69,10 +67,10 @@ class BadgeManager extends GenericManager {
   /**
   * FIlters out all the badges we have to see if any of them are uncompleted o not.
   * @param {number[]} completed The completed badge ids.
-  * @returns {number[]} A list of uncompleted basges.
+  * @returns {Badge[]} A list of uncompleted basges.
   */
   uncompleted(completed) {
-    return this.names().map(name => this.names(name)[0]).filter((badge) => badge.ids.some(v => completed.includes(v)));
+    return this.names().map(name => this.names(name)[0]).filter((badge) => badge.ids.some(v => !completed.includes(v)));
 
     // return this.ids()
     //   .filter((id) => !completed.includes(id));
