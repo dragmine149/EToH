@@ -9,12 +9,11 @@ class GenericManager {
 
   /**
   * Get an item from a map. Returns the map keys if no item is defined.
-  * @param {GenericManager} self
   * @param {Map<any, number[]>} map
   * @param {any} item
   * @returns {any[]|T[]} A list of keys or the items that have been mapped.
   */
-  #mapGetter(self, map, item) {
+  #mapGetter(map, item) {
     if (item == null || item == undefined) {
       // No item? Return the keys to allow us to view what we can use.
       // Not sorted, we'll let the user deal with sorting.
@@ -23,8 +22,8 @@ class GenericManager {
 
     /** @type {number[]} */
     let indexes = map.get(item);
-    if (indexes == undefined) return undefined; // couldn't be found.
-    return indexes.map((index) => self.#items[index]); // got to return the items (hence the map). No use otherwise.
+    if (indexes == undefined) return []; // couldn't be found.
+    return indexes.map((index) => this.#items[index]); // got to return the items (hence the map). No use otherwise.
   }
 
   /**
@@ -80,10 +79,14 @@ class GenericManager {
   * @param {(item: T) => any} callback What gets stored in the map for quick access to the items
   */
   addFilter(filter, callback) {
+    if (filter.includes(" ")) {
+      throw new Error("Filter should not contain spaces for code readability reasons!");
+    }
+
     this.#filters[filter] = callback;
 
     this[`#${filter}`] = new Map();
-    this[filter] = this.#mapGetter.bind(null, this, this[`#${filter}`]);
+    this[filter] = this.#mapGetter.bind(this, this[`#${filter}`]);
 
     this.#items.forEach((item, index) => this.#processFilter(filter, item, index));
   }

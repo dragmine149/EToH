@@ -36,7 +36,7 @@ class Test {
 
   /**
   * Runs this code before every test.
-  * @param {() => {}} setup The code to run. Must return a json of globals to use in the test.
+  * @param {() => any|any} setup The code to run. Must return a json of globals to use in the test.
   */
   before(setup) {
     this.test_data.push(setup);
@@ -102,7 +102,11 @@ class Expect {
   exptects = {
     state: {
       passed: true,
-      reason: ""
+      reason: "",
+      inverse: false,
+    },
+    inverse: function (state) {
+      this.state.inverse = state ||= !this.state.inverse;
     }
   };
   paths = {};
@@ -278,6 +282,9 @@ class Expect {
   }
 
   #expects_return(passed, test, message) {
+    if (this.exptects.state.inverse) passed = !passed;
+    this.exptects.state.inverse = false;
+
     this.globals.log(
       passed ? TESTTYPE.SUCCESS : TESTTYPE.ERROR,
       [`%c${test}:%c`, "color: lime", ""],
@@ -292,17 +299,27 @@ class Expect {
   constructor(globals) {
     this.globals = globals;
 
+    this.#exptects('custom', (globals, result, path, func) => {
+      this.globals.log(TESTTYPE.INFO, ["%cCustom Test:%c", "color: lime", ""], `Running user provided function on ${path}`);
+
+      let obj = this.#getObject(globals, result, path);
+      let custom_result = func(obj);
+
+      return this.#expects_return(custom_result, "Custom", `Failed to run user provided function on ${path}`);
+    });
+    this.#exptects('debug', (globals, result, path) => {
+      let obj = this.#getObject(globals, result, path);
+      this.globals.log(TESTTYPE.DEBUG, ["%cTest Debug:%c", "color: lime", ""], obj);
+      return this.exptects.state;
+    }, true)
+
     this.#exptects('type', (globals, result, path, type) => {
       this.globals.log(TESTTYPE.INFO, ["%cType Test:%c", "color: lime", ""], `Attempting to see if ${path} is of ${this.#typeOf(type)}`);
 
       let obj = this.#getObject(globals, result, path);
       let isType = this.#test_type(obj, type);
 
-      this.globals.log(isType ? TESTTYPE.SUCCESS : TESTTYPE.ERROR, ["%cType Test:%c", "color: lime", ""], isType ? 'Succeeded' : `Failed: ${path} -> Found '${this.#typeOf(obj)}' expected '${this.#typeOf(type)}'`);
-      return {
-        passed: isType,
-        reason: isType ? '' : `${path} -> Found '${this.#typeOf(obj)}' expected '${this.#typeOf(type)}'`
-      }
+      return this.#expects_return(isType, "Type", `${path} -> Found '${this.#typeOf(obj)}' expected '${this.#typeOf(type)}'`);
     });
     this.#exptects('exists', (globals, result, path) => {
       this.globals.log(TESTTYPE.INFO, ["%cExist Test:%c", "color: lime", ""], `Attempting to see if ${path} exists`);
@@ -310,11 +327,7 @@ class Expect {
       let obj = this.#getObject(globals, result, path);
       let exists = obj != undefined;
 
-      this.globals.log(exists ? TESTTYPE.SUCCESS : TESTTYPE.ERROR, ["%cType Test:%c", "color: lime", ""], exists ? 'Succeeded' : `Failed: ${path} not found`);
-      return {
-        passed: exists,
-        reason: exists ? '' : `${path} not found'`
-      }
+      return this.#expects_return(exists, "Exists", `${path} not found'`);
     });
     this.#exptects('exists_type', (globals, result, path, type) => {
       this.globals.log(TESTTYPE.INFO, ["%cExist Type Test:%c", "color: lime", ""], `Attempting to see if ${path} exists and is of ${this.#typeOf(type)}`);
@@ -323,18 +336,11 @@ class Expect {
       let exists = obj != undefined;
       this.globals.log(exists ? TESTTYPE.SUCCESS : TESTTYPE.ERROR, ["%cExists Type (Exists) Test:%c", "color: lime", ""], exists ? 'Succeeded' : `Failed: ${path} not found`);
       if (!exists) {
-        return {
-          passed: false,
-          reason: `${path} not found'`
-        }
+        return this.#expects_return(false, "Exists Type (Exists)", `${path} not found'`);
       }
 
       let isType = this.#test_type(obj, type);
-      this.globals.log(isType ? TESTTYPE.SUCCESS : TESTTYPE.ERROR, ["%cExists Type (Type) Test:%c", "color: lime", ""], isType ? 'Succeeded' : `Failed: ${path} -> Found '${this.#typeOf(obj)}' expected '${this.#typeOf(type)}'`);
-      return {
-        passed: isType,
-        reason: isType ? '' : `${path} -> Found '${this.#typeOf(obj)}' expected '${this.#typeOf(type)}'`
-      }
+      return this.#expects_return(isType, "Exists Type (Type)", `${path} -> Found '${this.#typeOf(obj)}' expected '${this.#typeOf(type)}'`);
     });
     this.#exptects('is', (globals, result, path, goal) => {
       this.globals.log(TESTTYPE.INFO, ["%cIs Test:%c", "color: lime", ""], `Attempting to see if ${path} is ${goal}`);
@@ -348,6 +354,16 @@ class Expect {
       let length = obj.length === len;
       return this.#expects_return(length, "Length", `${path} length is not equal to ${len} (Found: ${obj.length})`);
     });
+    this.#exptects('array_has', (globals, result, path, value) => {
+      this.globals.log(TESTTYPE.INFO, ["%cArray Has Test:%c", "color: lime", ""], `Attempting to see if ${path} has ${value}`);
+      let obj = this.#getObject(globals, result, path);
+      let isType = this.#test_type(obj, Array);
+      if (!isType) {
+        return this.#expects_return(false, "Array Has", `path '${path}' is not an Array! Can't do logic on not an array`);
+      }
+      let has = obj.includes(value);
+      return this.#expects_return(has, "Array Has", `path '${path}' does not contain ${value}`);
+    })
 
     this.#exptects('expect', (globals, result, type, message, count) => {
       count ||= 1;
@@ -359,7 +375,6 @@ class Expect {
 
       return this.#expects_return(equalCount, `Expect Test`, `Expected ${count} ${type} with msg: ${message}. Found ${typeLog.length} instead`);
     });
-
     this.#exptects('catch_throw', (globals, result, expected, message, count) => {
       count ||= 1;
       this.globals.log(TESTTYPE.INFO, ["%cCatch Throw Test%c", "color: lime", ""], `Checking logs for throw of type ${this.#typeOf(expected)} with msg: ${message}`);
@@ -369,7 +384,7 @@ class Expect {
       this.log = this.log.filter((v) => !typeLog.includes(v)); // remove from log.
 
       return this.#expects_return(equalCount, `Catch Throw Test`, `Expected ${count} throw with type '${this.#typeOf(expected)}' with msg: ${message}. Found ${typeLog.length} instead`);
-    })
+    });
   }
 }
 
