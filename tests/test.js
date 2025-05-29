@@ -45,7 +45,7 @@ class Test {
   /**
   * Describe a new category of tests.
   * @param {String} category_name The name of the category.
-  * @param {() => any)} test_function The function for all the tests.
+  * @param {() => any} test_function The function for all the tests.
   * @param {boolean} ignore Tell the server to ignore this test whilst processing tests.
   * @returns {{exclude: () => any, include: () => any}} Functions that can further affect the test suite.
   */
