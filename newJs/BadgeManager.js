@@ -30,7 +30,7 @@ class Badge {
 
     // Custom getter and setter functions. These are meant to not set and always get. Badge data is never going to update live unless a system is implemented, these help with that.
     Object.defineProperty(this, name, {
-      get: function () { return JSON.parse(JSON.stringify(this[`#${name}`])) },
+      get: function () { return structuredClone(this[`#${name}`]) },
       set: function () { }
     });
     this[`#${name}`] = value;
