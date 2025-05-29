@@ -93,11 +93,14 @@
       </div>
     </div>
 
+    <datalist id="user_list"></datalist>
     <div id="main">
       <div id="search">
         <div class="title">Load EToH Status</div>
         <div class="subtitle">Enter a Roblox username, user ID, or profile link to load their EToH status.</div>
-        <input type="text" id="search_input" placeholder="Load towers via roblox username, user id or profile link" onsubmit="userManager.findUser(this.value)" onkeydown="if(event.key === 'Enter') userManager.findUser(this.value)">
+        <input type="text" id="search_input" list="user_list"placeholder="Load towers via roblox username, user id or profile link"
+          onsubmit="userManager.findUser(this.value)"
+          onkeydown="if(event.key === 'Enter') userManager.findUser(this.value)">
         <button id="search_button" onclick="userManager.findUser(this.parentNode.querySelector('[id=\'search_input\']').value)">Search</button>
         <div id="progress">
           <span>Please note, first time load will take a bit longer than normal</span><br>

@@ -316,7 +316,7 @@ class UserManager extends GenericManager {
     super();
     this.addFilter('names', user => [user.name, ...user.past]);
     this.addFilter('id', user => user.id);
-    this.addFilter('name_id', user => `${user.name} (${user.past})`);
+    this.addFilter('name_id', user => `${user.name} (${user.id})`);
     this.verbose = new Verbose("UserManager", '#afe9ca');
     this.db = database;
     this.unload_callback = unload_callback;

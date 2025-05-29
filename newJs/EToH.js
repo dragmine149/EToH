@@ -285,10 +285,10 @@ badgeManager.addFilter('category', b => b.category);
 let userManager = new UserManager(etohDB);
 userManager.limit = 250;
 userManager.userClass = EToHUser;
+userManager.load_database();
 userManager.unload_callback = () => {
   towerManager.unloadUI();
 }
-userManager.load_database();
 
 async function loadData(callback) {
   await loadTowersFromServer();
@@ -298,6 +298,15 @@ async function loadData(callback) {
 
 let towerManager = new TowerManager();
 loadData(() => {
+  let user_list = document.getElementById("user_list");
+  userManager.names().forEach(user => {
+    if (user_list === null) return;
+    let option_node = document.createElement("option");
+    option_node.innerText = user;
+    option_node.value = user;
+    user_list.appendChild(option_node);
+  });
+
   userManager.loadURL();
 });
 
