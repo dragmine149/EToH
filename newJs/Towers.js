@@ -11,53 +11,6 @@
 class TowerManager {
   count = {};
 
-  /**
-  * Returns the word that describes the number.
-  * @param {number} difficulty The difficuty of the tower.
-  * @returns The word to describe it.
-  */
-  getDifficultyWord(difficulty) {
-    return DIFFICULTIES[Math.trunc(difficulty) - 1];
-  }
-
-  /**
-  * Translates the number form into a more readable word form. Defaults to "Baseline Unknown" if it can't find anything.
-  * @param {number} difficulty The difficulty of the tower
-  * @returns {string} The word form of the difficulty
-  */
-  getDifficulty(difficulty) {
-    let stage = Math.trunc(difficulty);
-    let sub = difficulty % 1;
-
-    let stageWord = DIFFICULTIES[stage - 1] || "Unknown";
-    let subWord = SUB_LEVELS.find(level => sub >= level.threshold)?.name || "Baseline";
-
-    return `${subWord} ${stageWord}`;
-  }
-
-  /**
-  * Returns what type the tower is from its name. (Please don't make this too confusing EToH Devs...)
-  * @param {String} name The name of the tower.
-  * @returns The type of tower.
-  */
-  getTowerType(name) {
-    if (name.startsWith("Steeple")) {
-      return TOWER_TYPE.Steeple;
-    }
-    if (name.startsWith('Tower of') || name == 'Thanos Tower') {
-      return TOWER_TYPE.Tower;
-    }
-    if (name.startsWith('Citadel of')) {
-      return TOWER_TYPE.Citadel;
-    }
-    if (name.startsWith('Obeisk of')) {
-      return TOWER_TYPE.Obelisk;
-    }
-    if (badgeManager.names(name)[0] instanceof Tower) {
-      return TOWER_TYPE.Other;
-    }
-    return TOWER_TYPE.NAT;
-  }
 
   /**
   * Create the UI with all the towers and everything.
@@ -184,8 +137,8 @@ class TowerManager {
 
     let completed = user.completed.map(b => b.badgeId);
 
-    badgeManager.names().forEach((name) => {
-      let tower = badgeManager.names(name)[0];
+    badgeManager.name().forEach((name) => {
+      let tower = badgeManager.name(name)[0];
       // this.verbose.debug(tower.ui);
       let towerType = this.getTowerType(name);
       if (Number.isNaN(Number(this.count[towerType]))) this.count[towerType] = 0;

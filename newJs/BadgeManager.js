@@ -48,7 +48,6 @@ class Badge {
   constructor(name, ids) {
     this.__addProperty('name', name);
     this.__addProperty('ids', [].concat(ids));
-    this.achieved = [].fill(false, this.ids.length);
   }
 }
 
@@ -78,8 +77,8 @@ class BadgeManager extends GenericManager {
 
   constructor() {
     super();
-    this.addFilter('names', badge => badge.name);
-    this.addFilter('ids', badge => badge.ids);
+    this.addFilter('name', badge => badge.name);
+    // this.addFilter('ids', badge => badge.ids);
   }
 }
 

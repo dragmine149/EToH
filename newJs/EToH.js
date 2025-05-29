@@ -1,4 +1,4 @@
-/*global tryCatch, badgeManager, Badge, User, network, UserManager, ui, etohDB, logs, TowerManager, areaManager, Area, CLOUD_URL */
+/*global tryCatch, badgeManager, Badge, User, network, UserManager, ui, etohDB, logs, TOWER_TYPE, DIFFICULTIES, SUB_LEVELS, areaManager, Area, CLOUD_URL, UI */
 /*eslint no-undef: "error"*/
 /*exported Tower, Other, EToHUser, userManager, towerManager, miniSearch, endMiniSearch, TOWER_TYPE, DIFFICULTIES, SUB_LEVELS, pointsFromType */
 
@@ -54,9 +54,52 @@
 @typedef {import('./network')}
 @typedef {import('./main')}
 @typedef {import('./AreaManager')}
+@typedef {import('./Ui')}
 */
 
+
+/**
+* Returns the word that describes the number.
+* @param {number} difficulty The difficuty of the tower.
+* @returns The word to describe it.
+*/
+function getDifficultyWord(difficulty) { return DIFFICULTIES[Math.trunc(difficulty) - 1]; }
+
+/**
+* Translates the number form into a more readable word form. Defaults to "Baseline Unknown" if it can't find anything.
+* @param {number} difficulty The difficulty of the tower
+* @returns {string} The word form of the difficulty
+*/
+function getDifficulty(difficulty) {
+  let stage = Math.trunc(difficulty);
+  let sub = difficulty % 1;
+
+  let stageWord = DIFFICULTIES[stage - 1] || "Unknown";
+  let subWord = SUB_LEVELS.find(level => sub >= level.threshold)?.name || "Baseline";
+
+  return `${subWord} ${stageWord}`;
+}
+
+/**
+* Returns what type the tower is from its name. (Please don't make this too confusing EToH Devs...)
+* @param {String} name The name of the tower.
+* @returns The type of tower.
+*/
+function getTowerType(name) {
+  if (name.startsWith("Steeple")) return TOWER_TYPE.Steeple;
+  if (name.startsWith('Tower of') || name == 'Thanos Tower') return TOWER_TYPE.Tower;
+  if (name.startsWith('Citadel of')) return TOWER_TYPE.Citadel;
+  if (name.startsWith('Obeisk of')) return TOWER_TYPE.Obelisk;
+  if (badgeManager.name(name)[0] instanceof Tower) return TOWER_TYPE.Other;
+  return TOWER_TYPE.NAT;
+}
+
 class Tower extends Badge {
+  /** @type {number} The difficulty of the tower. */
+  difficulty;
+  /** @type {string} The area where the tower is located */
+  area;
+
   /**
   * Makes a new tower badge.
   * @param {String} name FULL NAME of the tower.
@@ -84,6 +127,9 @@ class Tower extends Badge {
 }
 
 class Other extends Badge {
+  /** @type {string} The category the badge belongs to */
+  category;
+
   /**
   * Makes a new "Other" type badge.
   * @param {string} name Name of the badge.
@@ -125,7 +171,7 @@ class EToHUser extends User {
     result.verbose.info(`Checking if user has played`);
 
     /** @type {number[]} */
-    let played = badgeManager.names("Played")[0].ids;
+    let played = badgeManager.name("Played")[0].ids;
     result.verbose.debug(played);
     let hasPlayed = await network.getEarlierBadge(result.id, played[0], played[1]);
     if (hasPlayed.earliest > 0) {
@@ -194,6 +240,55 @@ class EToHUser extends User {
       }
     });
     etohDB.badges.bulkPut(completed);
+  }
+}
+
+class EToHUI extends UI {
+  show() { super.show(); this.search.hidden = true; }
+  hide() { super.hide(); this.search.hidden = false; }
+
+  constructor() {
+    // create a list of categories.
+    let categories = [];
+    categories = categories.concat(areaManager.name());
+    categories = categories.concat(badgeManager.category());
+    categories.push("other");
+
+    // then get the base class to generate the ui.
+    super(categories, /** @param {String} badge_name */(badge_name) => {
+      // callback for determinding where badges go.
+      /** @type {Badge} Converting from name to object. */
+      let badge = badgeManager.name(badge_name)[0];
+
+      if (badge instanceof Tower) return badge.area;
+      if (badge instanceof Other) return badge.category;
+      // The, "What do i do with this?" Category.
+      return "other";
+    }, /** @param {String} category */(category) => {
+      // Callback for determinding where categories go.
+
+      /** @type {Area[]} */
+      let area = areaManager.name(category);
+      if (area.length > 0) return area[0].parent ?? "root";
+      /** @type {Other[]} */
+      // let other = badgeManager.category(category);
+      // if (other.length > 0) return "root";
+      // Got to have a comment here... for some reason.
+      return "root";
+    });
+
+    this.search = document.getElementById("search");
+
+    // Update the elements to show better data.
+    badgeManager.name().forEach(/** @param {String} badge_name */(badge_name) => {
+      /** @type {Badge[]} Converting from name to object. */
+      let badge = badgeManager.name(badge_name)[0];
+
+      if (badge instanceof Tower) this.set_data(badge_name, badge.shortName, getDifficultyWord(badge.difficulty));
+      if (badge instanceof Tower) this.set_hover(badge_name, badge.name, `${getDifficulty(badge.difficulty)} (${badge.difficulty})`);
+      // if (badge instanceof Other) this.set_data(badge_name, badge.shortName, badge.difficulty);
+      // if (badge instanceof Other) this.set_hover(badge_name, badge.shortName, badge.difficulty);
+    })
   }
 }
 
@@ -287,7 +382,7 @@ userManager.limit = 250;
 userManager.userClass = EToHUser;
 userManager.load_database();
 userManager.unload_callback = () => {
-  towerManager.unloadUI();
+  etohUI.unloadUI();
 }
 
 async function loadData(callback) {
@@ -296,8 +391,13 @@ async function loadData(callback) {
   callback();
 }
 
-let towerManager = new TowerManager();
+// let towerManager = new TowerManager();
+/** @type {EToHUI} */
+let etohUI;
+
 loadData(() => {
+  etohUI = new EToHUI();
+
   let user_list = document.getElementById("user_list");
   userManager.names().forEach(user => {
     if (user_list === null) return;

@@ -163,6 +163,10 @@ bold {
   background-color: #343a40;
 }
 
+#badges {
+  height: 100%;
+}
+
 
 .cog {
   position: fixed;

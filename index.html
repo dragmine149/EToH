@@ -32,7 +32,8 @@
     <script src="newJs/AreaManager.js"></script>
     <script src="newJs/user.js"></script>
 
-    <script src="newJs/Towers.js"></script>
+    <!-- <script src="newJs/Towers.js"></script> -->
+    <script src="newJs/Ui.js"></script>
     <script src="newJs/EToH.js"></script>
   </head>
   <body>
@@ -107,13 +108,16 @@
           <!-- <br> -->
         </div>
       </div>
-      <div id="towers" hidden>
+      <div id="badges" hidden>
         <div id="category" hidden class="area">
           <span tag="title"></span>
           <table tag="badges">
-            <tr tag="tower" hidden>
+            <tr tag="badge" hidden>
               <td tag="name"></td>
-              <td tag="difficulty"></td>
+              <td tag="information">
+                <span tag="info"></span><br>
+                <span tag="completed"></span>
+              </td>
             </tr>
           </table>
         </div>
@@ -144,8 +148,8 @@
                 <input type="checkbox" id="verbose_user" onchange="localStorage.setItem(`setting-Debug-${this.id}`, this.checked);">
               </li>
               <li>
-                <label for="verbose_TowerManager">Tower Manager</label>
-                <input type="checkbox" id="verbose_TowerManager" onchange="localStorage.setItem(`setting-Debug-${this.id}`, this.checked);">
+                <label for="verbose_ETOHUI">UI Manager</label>
+                <input type="checkbox" id="verbose_ETOHUI" onchange="localStorage.setItem(`setting-Debug-${this.id}`, this.checked);">
               </li>
             </ul>
           </div>
