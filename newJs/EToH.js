@@ -300,6 +300,7 @@ class EToHUI extends UI {
   * @param {EToHUser} user The user to display.
   */
   loadUser(user) {
+    this.unload_loaded();
     this.show();
     user.completed.forEach((completed) => {
       /** @type {Badge} */
@@ -317,10 +318,6 @@ class EToHUI extends UI {
     /** @type {Badge} */
     let badge = badgeManager.ids(badge_id)[0];
     this.update_badge(badge.name, completion);
-  }
-
-  unloadUser() {
-    badgeManager.name().forEach(/** @param {string} name */(name) => this.update_badge(name, null));
   }
 }
 
@@ -414,7 +411,7 @@ userManager.limit = 250;
 userManager.userClass = EToHUser;
 userManager.load_database();
 userManager.unload_callback = () => {
-  etohUI.unloadUser();
+  etohUI.unload_loaded();
 }
 
 async function loadData(callback) {

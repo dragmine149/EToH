@@ -7,14 +7,17 @@
 */
 
 class UI {
-  /** @type {Map<string, HTMLDivElement>} */
+  /** @type {Map<string, HTMLDivElement>} A map of badges and the elements that they control */
   badges;
-  /** @type {Map<string, HTMLDivElement>} */
+  /** @type {Map<string, HTMLDivElement>} A map of categories and the elements they control */
   categories;
+  /** @type {string[]} A list of badges that have been loaded. */
+  loaded;
 
   constructor(categories, badge_callback, category_callback) {
     this.badges = new Map();
     this.categories = new Map();
+    this.loaded = [];
     this.verbose = new Verbose("ETOHUI", '#34A853');
     this.creator_verbose = new Verbose("ETOHUI_Creator", '#34A853');
 
@@ -84,6 +87,16 @@ class UI {
     date = Math.min(badgeCompleted.date, date);
     badgeCompleted.innerText = date ? new dayjs(date).format('LLL') : '';
     elm.classList[date ? "add" : "remove"]("completed");
+
+    date ? this.loaded.push(name) : this.loaded.filter((v) => v != name);
+  }
+
+  /**
+  * Unloads a loaded UI, by hiding itself and setting all the badges to uncompleted.
+  */
+  unload_loaded() {
+    this.loaded.forEach((badge) => this.update_badge(badge, undefined));
+    this.hide();
   }
 
   /**
