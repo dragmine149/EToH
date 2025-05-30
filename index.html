@@ -52,6 +52,7 @@
       <div id="viewing">
         Currently viewing user: <user onclick="miniSearch()">No-one!</user>
         <input type="text" id="mini-search" placeholder="Search..." hidden
+          list="user_list"
           onsubmit="userManager.findUser(this.value); endMiniSearch();"
           onkeydown="if(event.key === 'Enter') { userManager.findUser(this.value); endMiniSearch(); }"
           onblur="endMiniSearch()"
@@ -84,6 +85,7 @@
       <span id="error_message"></span>
       <br>
       <span id="error_details">Please reload and try again. If the issue persists, please open an <a href="https://github.com/dragmine149/ETOH/issues">issue</a></span>
+      <span id="error_hint">Click me to hide!</span>
     </div>
 
     <div id="logs" hidden>
