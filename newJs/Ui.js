@@ -51,7 +51,21 @@ class UI {
   show() { this.root.hidden = false; }
   hide() { this.root.hidden = true; }
 
+  syncSize() {
+    this.badges.forEach((elm) => elm.dispatchEvent(new Event("mouseover")));
+    let height = 0, width = 0;
+    function set_size(h, w) { height = Math.max(height, h); width = Math.max(width, w); }
 
+    this.categories.forEach((elm) => {
+      set_size(elm.clientHeight, elm.clientWidth);
+      // let table_size =
+
+    });
+    // this.categories.forEach((elm) => elm.style = `width: ${width}px; height: ${height}px;`);
+    this.categories.forEach((elm) => elm.style = `width: ${width}px;`);
+
+    this.badges.forEach((elm) => elm.dispatchEvent(new Event("mouseleave")));
+  }
 
   /**
   * Update a badge on the ui.

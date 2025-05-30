@@ -167,6 +167,10 @@ bold {
   height: 100%;
 }
 
+td {
+  width: 50%;
+}
+
 
 .cog {
   position: fixed;
