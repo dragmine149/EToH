@@ -188,8 +188,8 @@ class EToHUser extends User {
     this.verbose.info("Loading completed badges");
 
     this.verbose.info(`Loading badges from storage`);
-    this.completed = await etohDB.badges.toArray();
-    towerManager.loadUI(this);
+    this.completed = await etohDB.badges.where({ userId: this.id }).toArray();
+    etohUI.loadUser(this);
 
     this.verbose.info("Checking to see if any uncompleted badge has been completed");
     await this.loadUncompleted();
@@ -202,7 +202,7 @@ class EToHUser extends User {
     await this.loadBadges(badgeManager.uncompleted(this.completed.map(badge => badge.badgeId)).flatMap(badge => badge.ids),
       (json) => {
         this.verbose.info(`Found new uncompleted badge: ${json.badgeId}`);
-        towerManager.loadBadge(json.badgeId, true);
+        etohUI.loadBadge(json.badgeId, json.date);
       });
     this.verbose.info("Uncompleted badges updated!");
   }
@@ -294,6 +294,34 @@ class EToHUI extends UI {
       if (badge instanceof Tower) this.set_classes(badge_name, [], ["difficulty", getDifficultyWord(badge.difficulty).toLowerCase()]);
     });
   }
+
+  /**
+  * Load a user onto the UI.
+  * @param {EToHUser} user The user to display.
+  */
+  loadUser(user) {
+    this.show();
+    user.completed.forEach((completed) => {
+      /** @type {Badge} */
+      let badge = badgeManager.ids(completed.badgeId)[0];
+      this.update_badge(badge.name, completed.date);
+    });
+  }
+
+  /**
+  * Load a badge onto the UI.
+  * @param {number} badge_id The id of the badge.
+  * @param {number} completion The date/time of completion.
+  */
+  loadBadge(badge_id, completion) {
+    /** @type {Badge} */
+    let badge = badgeManager.ids(badge_id)[0];
+    this.update_badge(badge.name, completion);
+  }
+
+  unloadUser() {
+    badgeManager.name().forEach(/** @param {string} name */(name) => this.update_badge(name, null));
+  }
 }
 
 async function loadTowersFromServer() {
@@ -352,7 +380,7 @@ function miniSearch() {
 
   miniSearch.hidden = false;
   if (miniSearch.value === "") {
-    miniSearch.value = this.currentUser.user.name;
+    miniSearch.value = userManager.current_user.name;
   }
 
   miniSearch.focus();
@@ -386,7 +414,7 @@ userManager.limit = 250;
 userManager.userClass = EToHUser;
 userManager.load_database();
 userManager.unload_callback = () => {
-  etohUI.unloadUI();
+  etohUI.unloadUser();
 }
 
 async function loadData(callback) {

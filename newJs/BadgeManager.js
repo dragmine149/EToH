@@ -69,7 +69,7 @@ class BadgeManager extends GenericManager {
   * @returns {Badge[]} A list of uncompleted basges.
   */
   uncompleted(completed) {
-    return this.names().map(name => this.names(name)[0]).filter((badge) => badge.ids.some(v => !completed.includes(v)));
+    return this.name().map(name => this.name(name)[0]).filter((badge) => badge.ids.some(v => !completed.includes(v)));
 
     // return this.ids()
     //   .filter((id) => !completed.includes(id));
@@ -78,7 +78,7 @@ class BadgeManager extends GenericManager {
   constructor() {
     super();
     this.addFilter('name', badge => badge.name);
-    // this.addFilter('ids', badge => badge.ids);
+    this.addFilter('ids', badge => badge.ids);
   }
 }
 

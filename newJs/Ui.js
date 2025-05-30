@@ -79,6 +79,8 @@ class UI {
   update_badge(name, date) {
     let elm = this.badges.get(name);
     let badgeCompleted = elm.querySelector("[tag='completed']");
+    badgeCompleted.date = date;
+    date = Math.min(badgeCompleted.date, date);
     badgeCompleted.innerText = date ? new dayjs(date).format('LLL') : '';
     elm.classList[date ? "add" : "remove"]("completed");
   }
