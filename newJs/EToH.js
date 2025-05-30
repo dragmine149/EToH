@@ -196,6 +196,8 @@ class EToHUser extends User {
   * Function is called upon the user finish loading from userManager.findUser()
   */
   async postCreate() {
+    super.postCreate();
+
     this.verbose.info("Loading completed badges");
 
     this.verbose.info(`Loading badges from storage`);

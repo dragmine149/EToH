@@ -143,7 +143,16 @@ class User {
   }
 
   async postCreate() {
-    throw new Error("postCreate not yet impletmented");
+    this.verbose.info("Attempting to update URL");
+    let new_url = new URL(location);
+    // although we could do id, name is just easier for the client. And we support loading from name...
+    new_url.searchParams.set("user", this.name);
+    if (history.state != null && history.state.id == this.id) return;
+
+    history.pushState({
+      id: this.id
+    }, null, new_url);
+    this.verbose.info(`New url: ${new_url}`);
   }
 }
 
@@ -236,13 +245,6 @@ class UserManager extends GenericManager {
     await this.storeUser();
     await this.deleteOldest(); // always delete oldest when we load something.
     await this.current_user.postCreate();
-
-    let new_url = new URL(location);
-    // although we could do id, name is just easier for the client. And we support loading from name...
-    new_url.searchParams.set("user", this.current_user.name);
-    history.pushState({
-      id: this.current_user.id
-    }, null, new_url);
   }
 
   async loadURL() {
@@ -320,13 +322,18 @@ class UserManager extends GenericManager {
     this.verbose = new Verbose("UserManager", '#afe9ca');
     this.db = database;
     this.unload_callback = unload_callback;
+    // this.unloadUser(); // unload user by default.
 
     // listen for when we pop the state.
     addEventListener('popstate', async (event) => {
-      if (!event.state.id) {
+      this.verbose.debug(event);
+      if (event.state == null || !event.state.id) {
+        this.verbose.log(`Unloading user as no user found in history.`);
+        this.current_user = null;
         this.unload_callback();
         return;
       }
+      this.verbose.log(`Loading user as found in history.`)
       await this.findUser(event.state.id);
     })
   }
