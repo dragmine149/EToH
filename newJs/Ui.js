@@ -75,10 +75,16 @@ class UI {
   update_badge(name, date) {
     let elm = this.badges.get(name);
     let badgeCompleted = elm.querySelector("[tag='completed']");
-    badgeCompleted.innerText = new dayjs(date).format('LLL');
+    badgeCompleted.innerText = date ? new dayjs(date).format('LLL') : '';
     elm.classList[date ? "add" : "remove"]("completed");
   }
 
+  /**
+  * Set data for a specific badge when the user is not hovering that badge.
+  * @param {String} badge The name of the badge.
+  * @param {String} text The text to show in the name field.
+  * @param {String} information The text to show in the information field.
+  */
   set_data(badge, text, information) {
     let elm = this.badges.get(badge);
     elm.nHover = { text: text, information }
@@ -89,9 +95,32 @@ class UI {
     badgeName.innerText = text;
     badgeInformation.innerText = information;
   }
+  /**
+  * Set data for a specific badge when the user is hovering that badge.
+  * @param {String} badge The name of the badge.
+  * @param {String} text The text to show in the name field.
+  * @param {String} information The text to show in the information field.
+  */
   set_hover(badge, text, information) {
     let elm = this.badges.get(badge);
     elm.hover = { text: text, information }
+  }
+  /**
+  * Sets classes for a specific badge.
+  * @param {String} badge The name of the badge.
+  * @param {Array[]} name The classes for the text field.
+  * @param {Array[]} information The classes for the information field.
+  */
+  set_classes(badge, name, information) {
+    let elm = this.badges.get(badge);
+    let badgeName = elm.querySelector("[tag='name']")
+    let badgeInformation = elm.querySelector("[tag='information']");
+
+    badgeName.classList.remove(...badgeName.classList);
+    name.forEach((n) => badgeName.classList.add(n));
+
+    badgeInformation.classList.remove(...badgeInformation.classList);
+    information.forEach((n) => badgeInformation.classList.add(n));
   }
 
   #createBadges() {

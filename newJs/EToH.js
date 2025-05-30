@@ -63,7 +63,7 @@
 * @param {number} difficulty The difficuty of the tower.
 * @returns The word to describe it.
 */
-function getDifficultyWord(difficulty) { return DIFFICULTIES[Math.trunc(difficulty) - 1]; }
+function getDifficultyWord(difficulty) { return DIFFICULTIES[Math.trunc(difficulty) - 1] ?? "Unknown"; }
 
 /**
 * Translates the number form into a more readable word form. Defaults to "Baseline Unknown" if it can't find anything.
@@ -288,7 +288,11 @@ class EToHUI extends UI {
       if (badge instanceof Tower) this.set_hover(badge_name, badge.name, `${getDifficulty(badge.difficulty)} (${badge.difficulty})`);
       // if (badge instanceof Other) this.set_data(badge_name, badge.shortName, badge.difficulty);
       // if (badge instanceof Other) this.set_hover(badge_name, badge.shortName, badge.difficulty);
-    })
+
+      // Update the classes
+      // this.verbose.log(badge);
+      if (badge instanceof Tower) this.set_classes(badge_name, [], ["difficulty", getDifficultyWord(badge.difficulty).toLowerCase()]);
+    });
   }
 }
 
