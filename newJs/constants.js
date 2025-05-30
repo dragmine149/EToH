@@ -19,8 +19,8 @@ const TOWER_TYPE = Object.freeze({
   Tower: "Tower",
   Citadel: "Citadel",
   Obelisk: "Obelisk",
-  Other: "Other",
-  NAT: "Not a Tower"
+  Mini_Tower: "Mini_Tower",
+  Other: "Other"
 });
 
 /**

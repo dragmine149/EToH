@@ -15,7 +15,8 @@
             "badges": [
               2125364331,
               2124457516
-            ]
+            ],
+            "type": "Mini_Tower"
           },
           {
             "name": "Tower of Annoyingly Simple Trials",
@@ -126,7 +127,8 @@
             "badges": [
               2125364309,
               2124457513
-            ]
+            ],
+            "type": "Tower"
           }
         ]
       },
@@ -289,7 +291,8 @@
             "badges": [
               2125365096,
               2124574951
-            ]
+            ],
+            "type": "Mini_Tower"
           },
           {
             "name": "Tower of Phone Snapping",
@@ -482,7 +485,8 @@
             "difficulty": 5.02,
             "badges": [
               3872937943626202
-            ]
+            ],
+            "type": "Mini_Tower"
           },
           {
             "name": "Steeple of Flourishing Wastelands",
@@ -613,7 +617,8 @@
             "badges": [
               2125365536,
               2124609985
-            ]
+            ],
+            "type": "Mini_Tower"
           },
           {
             "name": "Tower of Confusion",
@@ -697,7 +702,8 @@
             "badges": [
               2125383846,
               2124700551
-            ]
+            ],
+            "type": "Mini_Tower"
           },
           {
             "name": "Tower of Holy Flip",
@@ -860,7 +866,7 @@
         },
         "towers": [
           {
-            "name": "Towere of Nice Views",
+            "name": "Tower of Nice Views",
             "difficulty": 2.61,
             "badges": [
               2125383930,
@@ -880,7 +886,8 @@
             "difficulty": 4.04,
             "badges": [
               2125383958
-            ]
+            ],
+            "type": "Mini_Tower"
           },
           {
             "name": "Tower of Rigid Success",
@@ -1137,7 +1144,8 @@
             "difficulty": 6.76,
             "badges": [
               2125384279
-            ]
+            ],
+            "type": "Mini_Tower"
           },
           {
             "name": "Tower of Niflheim",
@@ -1297,7 +1305,8 @@
             "difficulty": 4.79,
             "badges": [
               4089026193358070
-            ]
+            ],
+            "type": "Mini_Tower"
           },
           {
             "name": "Tower of Feeling Lazy",
@@ -1915,7 +1924,8 @@
             "badges": [
               2125419004,
               2124776627
-            ]
+            ],
+            "type": "Mini_Tower"
           },
           {
             "name": "Steeple of Mystical Marine",
@@ -3283,14 +3293,16 @@
             "difficulty": 4.74,
             "badges": [
               3705364496125918
-            ]
+            ],
+            "type": "Steeple"
           },
           {
             "name": "Mush Stepl",
             "difficulty": 5.44,
             "badges": [
               1675378900956293
-            ]
+            ],
+            "type": "Steeple"
           }
         ]
       },
@@ -3338,7 +3350,8 @@
             "difficulty": 5.83,
             "badges": [
               2965533401798823
-            ]
+            ],
+            "type": "Mini_Tower"
           }
         ]
       }

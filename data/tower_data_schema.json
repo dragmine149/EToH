@@ -19,6 +19,17 @@
           "type": "array",
           "description": "A list of badges for this tower (moved places). Sorted by newest first",
           "minItems": 1
+        },
+        "type": {
+          "type": "string",
+          "description": "An override of the tower type if it can't be determined from its name.",
+          "enum": [
+            "Mini_Tower",
+            "Tower",
+            "Steeple",
+            "Citadel",
+            "Obelisk"
+          ]
         }
       },
       "required": [

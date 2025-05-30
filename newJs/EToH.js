@@ -6,7 +6,8 @@
 @typedef {{
   name: string,
   difficulty: number,
-  badges: number[]
+  badges: number[],
+  type: string?
 }} ServerTower
 
 @typedef {{
@@ -83,15 +84,18 @@ function getDifficulty(difficulty) {
 /**
 * Returns what type the tower is from its name. (Please don't make this too confusing EToH Devs...)
 * @param {String} name The name of the tower.
+* @param {String} type The type to use when we can't determine from name or from badge.
 * @returns The type of tower.
 */
-function getTowerType(name) {
+function getTowerType(name, type) {
   if (name.startsWith("Steeple")) return TOWER_TYPE.Steeple;
   if (name.startsWith('Tower of') || name == 'Thanos Tower') return TOWER_TYPE.Tower;
   if (name.startsWith('Citadel of')) return TOWER_TYPE.Citadel;
   if (name.startsWith('Obeisk of')) return TOWER_TYPE.Obelisk;
-  if (badgeManager.name(name)[0] instanceof Tower) return TOWER_TYPE.Other;
-  return TOWER_TYPE.NAT;
+  let badge = badgeManager.name(name)[0];
+  if (badge instanceof Tower) return badge.type;
+  if (type) return type;
+  return TOWER_TYPE.Other;
 }
 
 class Tower extends Badge {
@@ -99,6 +103,10 @@ class Tower extends Badge {
   difficulty;
   /** @type {string} The area where the tower is located */
   area;
+  /** @type {string} The type of the tower. */
+  type;
+  /** @type {string} What "category" this comes under as, "permanent", "temporary", "other" */
+  category;
 
   /**
   * Makes a new tower badge.
@@ -106,11 +114,14 @@ class Tower extends Badge {
   * @param {number[]} ids List of tower badge ids.
   * @param {number} difficulty The difficulty of the tower
   * @param {String} area The area where the tower is located
+  * @param {String?} type The type of the tower if it can't be determined by name.
   */
-  constructor(name, ids, difficulty, area) {
+  constructor(name, ids, difficulty, area, type, category) {
     super(name, ids);
     this.__addProperty('difficulty', difficulty);
     this.__addProperty('area', area);
+    this.__addProperty('type', getTowerType(name, type));
+    this.__addProperty('category', category);
   }
 
   get shortName() {
@@ -247,6 +258,16 @@ class EToHUI extends UI {
   show() { super.show(); if (this.search) this.search.hidden = true; }
   hide() { super.hide(); if (this.search) this.search.hidden = false; }
 
+  // How many typees of each badge there is.
+  types = {
+    Mini_Tower: { total: 0, achieved: [] },
+    Steeple: { total: 0, achieved: [] },
+    Tower: { total: 0, achieved: [] },
+    Citadel: { total: 0, achieved: [] },
+    Obelisk: { total: 0, achieved: [] },
+    Other: { total: 0, achieved: [] }
+  }
+
   constructor() {
     // create a list of categories.
     let categories = [];
@@ -286,6 +307,10 @@ class EToHUI extends UI {
 
       if (badge instanceof Tower) this.set_data(badge_name, badge.shortName, getDifficultyWord(badge.difficulty));
       if (badge instanceof Tower) this.set_hover(badge_name, badge.name, `${getDifficulty(badge.difficulty)} (${badge.difficulty})`);
+
+      // Add the badge to the types total list. Ignoring those towers which are "temporary" as the badge is limited edition.
+      if (badge instanceof Tower && badge.category != "temporary") this.types[badge.type].total += 1;
+      if (badge instanceof Other) this.types.Other.total += 1;
       // if (badge instanceof Other) this.set_data(badge_name, badge.shortName, badge.difficulty);
       // if (badge instanceof Other) this.set_hover(badge_name, badge.shortName, badge.difficulty);
 
@@ -293,6 +318,18 @@ class EToHUI extends UI {
       // this.verbose.log(badge);
       if (badge instanceof Tower) this.set_classes(badge_name, [], ["difficulty", getDifficultyWord(badge.difficulty).toLowerCase()]);
     });
+    this.updateTowerCountUI();
+  }
+
+  unload_loaded() {
+    this.types.Citadel.achieved = [];
+    this.types.Mini_Tower.achieved = [];
+    this.types.Obelisk.achieved = [];
+    this.types.Other.achieved = [];
+    this.types.Steeple.achieved = [];
+    this.types.Tower.achieved = [];
+    this.updateTowerCountUI();
+    super.unload_loaded();
   }
 
   /**
@@ -302,11 +339,7 @@ class EToHUI extends UI {
   loadUser(user) {
     this.unload_loaded();
     this.show();
-    user.completed.forEach((completed) => {
-      /** @type {Badge} */
-      let badge = badgeManager.ids(completed.badgeId)[0];
-      this.update_badge(badge.name, completed.date);
-    });
+    user.completed.forEach((completed) => this.loadBadge(completed.badgeId, completed.date));
   }
 
   /**
@@ -317,7 +350,29 @@ class EToHUI extends UI {
   loadBadge(badge_id, completion) {
     /** @type {Badge} */
     let badge = badgeManager.ids(badge_id)[0];
+    /** @type {string[]} */
+    let type = this.types[badge instanceof Tower ? badge.type : TOWER_TYPE.Other].achieved;
+    if (!type.includes(badge.name) && badge.category != "temporary") type.push(badge.name);
     this.update_badge(badge.name, completion);
+    this.updateTowerCountUI();
+  }
+
+  updateTowerCountUI() {
+    let count = document.getElementById("count");
+    /**
+    * @param {HTMLDivElement} elm
+    * @param {TOWER_TYPE} goal
+    */
+    function update(elm, goal) {
+      elm.innerText = `${goal}: ${this.types[goal].achieved.length}/${this.types[goal].total} (${(this.types[goal].achieved.length / this.types[goal].total * 100).toFixed(2)}%)`;
+    }
+
+    update.bind(this)(count.querySelector("[count='NAT']"), TOWER_TYPE.Other);
+    update.bind(this)(count.querySelector("[count='Mini']"), TOWER_TYPE.Mini_Tower);
+    update.bind(this)(count.querySelector("[count='Steeple']"), TOWER_TYPE.Steeple);
+    update.bind(this)(count.querySelector("[count='Tower']"), TOWER_TYPE.Tower);
+    update.bind(this)(count.querySelector("[count='Citadel']"), TOWER_TYPE.Citadel);
+    update.bind(this)(count.querySelector("[count='Obelisk']"), TOWER_TYPE.Obelisk);
   }
 }
 
@@ -342,7 +397,7 @@ async function loadTowersFromServer() {
     (areas) => {
       areas[1].forEach((area) => {
         area.towers.forEach((tower) => {
-          badgeManager.addBadge(new Tower(tower.name, tower.badges, tower.difficulty, area.name));
+          badgeManager.addBadge(new Tower(tower.name, tower.badges, tower.difficulty, area.name, tower.type, areas[0]));
         });
         areaManager.addArea(new Area(area.name, area.sub_area, area.requirements));
       })
