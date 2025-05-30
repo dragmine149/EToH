@@ -26,10 +26,7 @@ class User {
   last = -1;
 
   get ui_name() {
-    if (this.display != null) {
-      return `${this.display} (@${this.name})`;
-    }
-    return this.name
+    return `${this.display} ${this.display != this.name ? `(@${this.name})}` : ``}`;
   }
 
   get link() {

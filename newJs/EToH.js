@@ -331,6 +331,7 @@ class EToHUI extends UI {
     this.types.Steeple.achieved = [];
     this.types.Tower.achieved = [];
     this.updateTowerCountUI();
+    document.getElementsByTagName("user")[0].innerText = "No-one!";
     super.unload_loaded();
   }
 
@@ -341,6 +342,7 @@ class EToHUI extends UI {
   loadUser(user) {
     this.unload_loaded();
     this.show();
+    document.getElementsByTagName("user")[0].innerText = user.ui_name;
     user.completed.forEach((completed) => this.loadBadge(completed.badgeId, completed.date));
   }
 
