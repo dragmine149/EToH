@@ -25,6 +25,7 @@ class UI {
     // the root element of all evil.
     // Ignore the above comment, the AI snuck in.
     this.root = document.getElementById("badges");
+    this.show();
 
     this.verbose.log("Adding elements to the correct categories.");
     // then deal with setting the parent elements.
@@ -46,6 +47,9 @@ class UI {
       if (!parentElm) throw new Error(`Trying to add category '${key}' to an existing category '${parent}' which doesn't exist`);
       parentElm.appendChild(elm);
     });
+
+    this.syncSize();
+    this.hide();
   }
 
   show() { this.root.hidden = false; }

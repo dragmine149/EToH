@@ -244,8 +244,8 @@ class EToHUser extends User {
 }
 
 class EToHUI extends UI {
-  show() { super.show(); this.search.hidden = true; }
-  hide() { super.hide(); this.search.hidden = false; }
+  show() { super.show(); if (this.search) this.search.hidden = true; }
+  hide() { super.hide(); if (this.search) this.search.hidden = false; }
 
   constructor() {
     // create a list of categories.
