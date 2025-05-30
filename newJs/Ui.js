@@ -16,8 +16,9 @@ class UI {
     this.badges = new Map();
     this.categories = new Map();
     this.verbose = new Verbose("ETOHUI", '#34A853');
+    this.creator_verbose = new Verbose("ETOHUI_Creator", '#34A853');
 
-    this.verbose.log("Creating the elements", categories);
+    this.creator_verbose.log("Creating the elements", categories);
     // create the ui elements.
     this.#createBadges();
     this.#createCategories(categories);
@@ -27,19 +28,19 @@ class UI {
     this.root = document.getElementById("badges");
     this.show();
 
-    this.verbose.log("Adding elements to the correct categories.");
+    this.creator_verbose.log("Adding elements to the correct categories.");
     // then deal with setting the parent elements.
     this.badges.forEach((elm, key) => {
-      this.verbose.log("Processing badge (callback): ", key);
+      this.creator_verbose.log("Processing badge (callback): ", key);
       let category = badge_callback(key);
       let catElm = this.categories.get(category);
-      this.verbose.log(`Desired category: ${category}`);
+      this.creator_verbose.log(`Desired category: ${category}`);
       if (!catElm) throw new Error(`Trying to add badge to category '${category}' which was not created`);
       catElm.querySelector("table").appendChild(elm);
     });
 
     this.categories.forEach((elm, key) => {
-      this.verbose.log("Processing category (callback): ", key);
+      this.creator_verbose.log("Processing category (callback): ", key);
       let parent = category_callback(key);
       if (parent == "root") return this.root.appendChild(elm);
       // if (parent == key) return
@@ -131,8 +132,8 @@ class UI {
 
   #createBadges() {
     badgeManager.name().forEach((badge) => {
-      this.verbose.log("Processing Badge: ", badge);
-      if (this.badges.has(badge)) return this.verbose.log("already exists");
+      this.creator_verbose.log("Processing Badge: ", badge);
+      if (this.badges.has(badge)) return this.creator_verbose.log("already exists");
 
       /** @type {HTMLDivElement} */
       // create a clone of the element.
@@ -171,8 +172,8 @@ class UI {
 
   #createCategories(category_list) {
     category_list.forEach((category) => {
-      this.verbose.log("Processing Category: ", category);
-      if (this.categories.has(category)) return this.verbose.log("already exists");
+      this.creator_verbose.log("Processing Category: ", category);
+      if (this.categories.has(category)) return this.creator_verbose.log("already exists");
 
       /** @type {HTMLDivElement} */
       let clone = document.getElementById("category").cloneNode(true);
