@@ -31,12 +31,17 @@
 
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
+  font-size: 1.25rem;
 }
 
 .area .completed {
   background-color: var(--completed);
   /* color: #155724; */
   color: #1a2f4b;
+}
+
+.area :not(.completed)+:not(.completed)>td[tag='name'] {
+  border-top: 1px solid black;
 }
 
 .area table {
