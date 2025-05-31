@@ -269,8 +269,8 @@ class EToHUser extends User {
 }
 
 class EToHUI extends UI {
-  show() { super.show(); if (this.search) this.search.hidden = true; }
-  hide() { super.hide(); if (this.search) this.search.hidden = false; }
+  show() { super.show(); if (this.main_search) this.main_search.hidden = true; }
+  hide() { super.hide(); if (this.main_search) this.main_search.hidden = false; }
 
   // How many typees of each badge there is.
   types = {
@@ -312,7 +312,7 @@ class EToHUI extends UI {
       return "root";
     });
 
-    this.search = document.getElementById("search");
+    this.main_search = document.getElementById("search");
 
     // Update the elements to show better data.
     badgeManager.name().forEach(/** @param {String} badge_name */(badge_name) => {
