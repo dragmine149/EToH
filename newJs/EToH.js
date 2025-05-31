@@ -368,7 +368,11 @@ class EToHUI extends UI {
     * @param {TOWER_TYPE} goal
     */
     function update(elm, goal) {
-      elm.innerText = `${goal}: ${this.types[goal].achieved.length}/${this.types[goal].total} (${(this.types[goal].achieved.length / this.types[goal].total * 100).toFixed(2)}%)`;
+      let achieved = this.types[goal].achieved.length ?? 0;
+      let total = this.types[goal].total;
+      let percent = achieved / total;
+      percent = Number.isNaN(percent) ? 0 : percent * 100;
+      elm.innerText = `${goal}: ${achieved}/${total} (${percent.toFixed(2)}%)`;
     }
 
     update.bind(this)(count.querySelector("[count='NAT']"), TOWER_TYPE.Other);

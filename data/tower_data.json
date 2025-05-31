@@ -177,7 +177,8 @@
             "difficulty": 3.61,
             "badges": [
               1359907317047556
-            ]
+            ],
+            "type": "Mini_Tower"
           },
           {
             "name": "Steeple of Uninstalling Roblox",
@@ -2787,7 +2788,7 @@
         },
         "towers": [
           {
-            "name": "The Tower of Jazz",
+            "name": "Tower of Jazz",
             "difficulty": 2.75,
             "badges": [
               2127628644
