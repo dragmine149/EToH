@@ -29,7 +29,6 @@ class UI {
     // the root element of all evil.
     // Ignore the above comment, the AI snuck in.
     this.root = document.getElementById("badges");
-    this.show();
 
     this.creator_verbose.log("Adding elements to the correct categories.");
     // then deal with setting the parent elements.
@@ -53,13 +52,14 @@ class UI {
     });
 
     this.syncSize();
-    this.hide();
   }
 
   show() { this.root.hidden = false; }
   hide() { this.root.hidden = true; }
 
   syncSize() {
+    this.show();
+    this.categories.forEach((elm) => elm.style = ``);
     this.badges.forEach((elm) => elm.dispatchEvent(new Event("mouseover")));
     let height = 0, width = 0;
     function set_size(h, w) { height = Math.max(height, h); width = Math.max(width, w); }
@@ -73,6 +73,7 @@ class UI {
     this.categories.forEach((elm) => elm.style = `width: ${width}px;`);
 
     this.badges.forEach((elm) => elm.dispatchEvent(new Event("mouseleave")));
+    this.hide();
   }
 
   /**

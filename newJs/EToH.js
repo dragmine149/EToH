@@ -321,6 +321,7 @@ class EToHUI extends UI {
       if (badge instanceof Tower) this.set_classes(badge_name, [], ["difficulty", getDifficultyWord(badge.difficulty).toLowerCase()]);
     });
     this.updateTowerCountUI();
+    this.syncSize();
   }
 
   unload_loaded() {
