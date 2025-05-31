@@ -156,7 +156,7 @@ class Other extends Badge {
 // EToHUser, extension of User designed for specifically targeting EToH
 // TODO: Split part of this code up into a new class "BadgeUser"?
 class EToHUser extends User {
-  /** @type {{badgeId: number, date: number}[]} The users completed badges */
+  /** @type {{badgeId: number, date: number, userId: number}[]} The users completed badges */
   completed = [];
 
   static async create(user_data, db) {
@@ -212,7 +212,7 @@ class EToHUser extends User {
 
   async loadUncompleted() {
     this.verbose.info("Attempting to update uncompleted badges");
-    await this.loadBadges(badgeManager.uncompleted(this.completed.map(badge => badge.badgeId)).flatMap(badge => badge.ids),
+    await this.loadBadges(badgeManager.uncompleted(this.completed.map(badge => badge.badgeId)),
       (json) => {
         this.verbose.info(`Found new uncompleted badge: ${json.badgeId}`);
         etohUI.loadBadge(json.badgeId, json.date);
@@ -236,8 +236,16 @@ class EToHUser extends User {
         'badgeids': badges
       })
     }), (line) => {
-      this.completed.push(JSON.parse(line));
-      if (callback) callback(JSON.parse(line));
+      /** @type {{badgeId: number, date: number}} */
+      let info = JSON.parse(line);
+      // skip "loading" it if we already have it.
+      if (this.completed.map(b => b.badgeId).includes(info.badgeId)) {
+        this.verbose.warn(`Received ${line} from server even though we already have that badgeId...`);
+        return;
+      }
+
+      this.completed.push(info);
+      if (callback) callback(info);
     });
 
     this.verbose.info(`Storing badges`);
@@ -245,14 +253,18 @@ class EToHUser extends User {
     this.verbose.info(`Badges loaded and stored`);
   }
 
-  storeCompleted() {
+  async storeCompleted() {
     let completed = this.completed.map((b) => {
       return {
         userId: this.id,
         ...b
       }
     });
-    etohDB.badges.bulkPut(completed);
+    await etohDB.badges.bulkPut(completed)
+      .then(() => { this.verbose.info(`Finished storing all badges in database`); })
+      .catch(e => {
+        this.verbose.error(`Failed to add in ${completed.length - e.failures.length} badges`, e);
+      })
   }
 }
 
