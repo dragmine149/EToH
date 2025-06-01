@@ -219,6 +219,16 @@ class EToHUser extends User {
       });
     this.verbose.info("Uncompleted badges updated!");
   }
+  async loadAll() {
+    this.verbose.info("Attempting to load all badges");
+    // LOCAL (Yes local) check to see when was the last time we did this.
+    // Yes, they could techniaclly bypass this / delete data / etc. But those users are "power" users who know how to use the API anyway.
+    // TODO: implement said above check.
+    await this.loadBadges(badgeManager.ids(), (json) => {
+      etohUI.loadBadge(json.badgeId, json.date);
+    })
+    this.verbose.info("Completed loading all badges!");
+  }
 
   /**
   * Load request badges from the server and stores them.
