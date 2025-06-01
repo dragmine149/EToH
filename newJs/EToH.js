@@ -109,6 +109,21 @@ class Tower extends Badge {
   /** @type {string} What "category" this comes under as, "permanent", "temporary", "other" */
   category;
 
+  /** @param {boolean} hover @param {string|undefined} highlight */
+  get_name_field(hover, highlight) {
+    // if (highlight != undefined) {
+    //   let regex = new RegExp(`[${highlight}]`);
+    //   this.name = this.name.replace(regex, (match) => {
+    //     return `<span class="search">${match}</span>`;
+    //   });
+    // }
+    return hover ? this.name : this.shortName;
+  }
+
+
+  /** @param {boolean} hover @param {string|undefined} highlight */
+  get_information_field(hover) { return hover ? `${getDifficulty(this.difficulty)} (${this.difficulty})` : getDifficultyWord(this.difficulty); }
+
   /**
   * Makes a new tower badge.
   * @param {String} name FULL NAME of the tower.
@@ -125,17 +140,24 @@ class Tower extends Badge {
     this.__addProperty('category', category);
   }
 
-  get shortName() {
+  /**
+  * Returns the shortened version of the text, in accordance to tower format.
+  * @param {string} text The text to shorten.
+  */
+  #short(text) {
     // Tower codes are made up of:
     // each word
-    return this.name.split(' ')
+    return text.split(' ')
       // lowered
       .map(word => word.toLowerCase())
       // for 'of' and 'and' to be lower, and the rest upper.
       .map(word => (word == 'of' || word == 'and') ? word[0] : word[0].toUpperCase())
       // and combined.
       .join('');
+
   }
+
+  get shortName() { return this.#short(this.name); }
 }
 
 class Other extends Badge {
@@ -330,14 +352,9 @@ class EToHUI extends UI {
       /** @type {Badge[]} Converting from name to object. */
       let badge = badgeManager.name(badge_name)[0];
 
-      if (badge instanceof Tower) this.set_data(badge_name, badge.shortName, getDifficultyWord(badge.difficulty));
-      if (badge instanceof Tower) this.set_hover(badge_name, badge.name, `${getDifficulty(badge.difficulty)} (${badge.difficulty})`);
-
       // Add the badge to the types total list. Ignoring those towers which are "temporary" as the badge is limited edition.
       if (badge instanceof Tower && badge.category != "temporary") this.types[badge.type].total += 1;
       if (badge instanceof Other) this.types.Other.total += 1;
-      // if (badge instanceof Other) this.set_data(badge_name, badge.shortName, badge.difficulty);
-      // if (badge instanceof Other) this.set_hover(badge_name, badge.shortName, badge.difficulty);
 
       // Update the classes
       // this.verbose.log(badge);
@@ -434,6 +451,17 @@ class EToHUI extends UI {
 
     points.querySelector("[count='towers']").innerText = `Towers: ${towers_completed}/${towers_total} (${towers_percent.toFixed(2)}%)`;
     points.querySelector("[count='points']").innerText = `Tower Points: ${tower_points} `;
+  }
+
+  onFinishedCreate() {
+    badgeManager.name().forEach((badge_name) => {
+      /** @type {Badge} */
+      let badge = badgeManager.name(badge_name)[0];
+
+      if (badge instanceof Tower) {
+        this.search_data[badge.shortName] = badge_name;
+      }
+    })
   }
 }
 

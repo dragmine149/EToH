@@ -61,6 +61,22 @@ bold {
   background-color: #414549;
 }
 
+#under_top_bar #badge-search[hidden] {
+  display: none;
+}
+
+#under_top_bar #badge-search {
+  width: 30%;
+}
+
+#under_top_bar #badge-search-input {
+  width: 100%;
+  background: none;
+  border: none;
+  color: white;
+}
+
+#under_top_bar #badge-search,
 #under_top_bar button,
 #top_bar>.links>a {
   display: inline-block;
@@ -85,10 +101,6 @@ bold {
   text-align: right;
 }
 
-/* #under_top_bar>#badge-search {
-  flex: 1;
-  text-align: right;
-} */
 
 #points,
 #count {

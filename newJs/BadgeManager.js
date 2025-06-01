@@ -25,6 +25,26 @@ class Badge {
   }
 
   /**
+  * Data to show in the name field.
+  * @param {boolean} hover Is this element being hovered.
+  * @param {string|undefined} highlight The text to highlight via searching.
+  * @returns
+  */
+  get_name_field() {
+    return this.name;
+  }
+
+  /**
+  * Data to show in the information field.
+  * @param {boolean} hover Is this element being hovered.
+  * @param {string|undefined} highlight The text to highlight via searching.
+  * @returns
+  */
+  get_information_field() {
+    return `<a href="${this.link}">Badge Link</a>`;
+  }
+
+  /**
   * Adds a new uneditable property to the object.
   * @param {String} name The name of this property.
   * @param {any} value The value to assign to this property.

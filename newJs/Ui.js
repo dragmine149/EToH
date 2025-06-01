@@ -43,6 +43,9 @@ class UI {
 
     this.categories.forEach((elm, key) => {
       this.creator_verbose.log("Processing category (callback): ", key);
+      // ignore those categories, which have no badges.
+      if (elm.querySelectorAll("[tag='badge']").length <= 0) return;
+
       let parent = category_callback(key);
       if (parent == "root") return this.root.appendChild(elm);
       // if (parent == key) return
@@ -126,45 +129,6 @@ class UI {
   search_data = {};
 
   /**
-  * Set data for a specific badge when the user is not hovering that badge.
-  * @param {String} badge The name of the badge.
-  * @param {String} text The text to show in the name field.
-  * @param {String} information The text to show in the information field.
-  */
-  set_data(badge, text, information) {
-    let elm = this.badges.get(badge);
-    elm.nHover = { text: text, information }
-
-    let badgeName = elm.querySelector("[tag='name']")
-    let badgeInformation = elm.querySelector("[tag='info']");
-
-    this.search_data[badgeName.innerHTML] = undefined;
-    this.search_data[badgeInformation.innerHTML] = undefined;
-
-    badgeName.innerHTML = text;
-    badgeInformation.innerHTML = information;
-
-    this.search_data[badgeName.innerHTML] = badge;
-    this.search_data[badgeInformation.innerHTML] = badge;
-  }
-  /**
-  * Set data for a specific badge when the user is hovering that badge.
-  * @param {String} badge The name of the badge.
-  * @param {String} text The text to show in the name field.
-  * @param {String} information The text to show in the information field.
-  */
-  set_hover(badge, text, information) {
-    let elm = this.badges.get(badge);
-
-    this.search_data[elm.hover.text] = undefined;
-    this.search_data[elm.hover.information] = undefined;
-
-    elm.hover = { text: text, information };
-
-    this.search_data[elm.hover.text] = text;
-    this.search_data[elm.hover.information] = information;
-  }
-  /**
   * Sets classes for a specific badge.
   * @param {String} badge The name of the badge.
   * @param {Array[]} name The classes for the text field.
@@ -192,13 +156,24 @@ class UI {
   search(search_elm) {
     // this.verbose.log(search_elm);
     // this.verbose.log(search_elm.value);
-    let value = search_elm.value; // .toLowerCase();
-    // let filteredSearch = Object.entries(this.search_data).map((v) => [v[0].toLowerCase(), v[1]]).filter((v) => v[0].startsWith(value));
-    let filteredSearch = Object.entries(this.search_data).filter((v) => v[0].startsWith(value));
+    // let value = search_elm.value;
+    // transform to lower case as it makes everything easier to work with.
+    let value = search_elm.value.toLowerCase();
+    let filteredSearch = Object.entries(this.search_data).map((v) => [v[0].toLowerCase(), v[1]]).filter((v) => v[0].includes(value));
+    // let filteredSearch = Object.entries(this.search_data).filter((v) => v[0].includes(value));
     // this.verbose.log(filteredSearch);
+    if (filteredSearch.length < 10) this.verbose.log(filteredSearch);
+
+    // just clean up the old search.
+    if (this.previous_search && this.previous_search.length > 0) this.previous_search
+      // ignore those of this search.
+      .filter((v) => !filteredSearch.includes(v))
+      // remove the rest.
+      .forEach((badge) => this.#effectElm(this.badges.get(badge[1]), undefined, ''));
+
     filteredSearch.forEach((badge) => this.#effectElm(this.badges.get(badge[1]), undefined, value));
     // special filter on those that are not in the new search but was in the old to reset them.
-    this.previous_search.filter((v) => !filteredSearch.includes(v)).forEach((badge) => this.#effectElm(this.badges.get(badge[1]), undefined, value));
+    // this.previous_search.filter((v) => !filteredSearch.includes(v)).forEach((badge) => this.#effectElm(this.badges.get(badge[1]), undefined, ''));
 
     this.previous_search = filteredSearch;
   }
@@ -220,20 +195,30 @@ class UI {
     elm.isHover = hover == undefined ? elm.isHover : hover;
     elm.search = search == undefined ? elm.search : search;
 
+    /** @type {Badge} */
+    let badgeInfo = badgeManager.name(elm.badge)[0];
+
     // this.verbose.log(elm, hover, elm.isHover, search, elm.search);
 
     // get the base text.
     /** @type {string} */
-    let name_text = elm.isHover ? elm.hover.text : elm.nHover.text;
-    if (elm.search != '') {
-      name_text = name_text.replace(elm.search, `<span class="search">${elm.search}</span>`);
+    let name_text = badgeInfo.get_name_field(elm.isHover);
+    if (elm.search != '' && elm.search != undefined) {
+      let regex = new RegExp(`[${elm.search}]`, "gi");
+      name_text = name_text.replaceAll(regex, (match) => {
+        return `<span class="search">${match}</span>`;
+      });
     }
 
-    let info_text = elm.isHover ? elm.hover.information : elm.nHover.information;
+    let info_text = badgeInfo.get_information_field(elm.isHover);
 
     badgeName.innerHTML = name_text;
+    // this.verbose.log(info_text);
     badgeInformation.innerHTML = info_text;
+    // this.verbose.log(badgeInformation.innerHTML);
   }
+
+  onFinishedCreate() { }
 
   #createBadges() {
     badgeManager.name().forEach((badge) => {
@@ -248,42 +233,20 @@ class UI {
       // by default, set the badge name to the name,
       /** @type {HTMLDivElement} */
       let badgeName = clone.querySelector("[tag='name']")
-      /** @type {HTMLDivElement} */
-      let badgeInformation = clone.querySelector("[tag='info']");
+      // /** @type {HTMLDivElement} */
+      // let badgeInformation = clone.querySelector("[tag='info']");
       // let badgeCompleted = clone.querySelector("[tag='completed']");
       badgeName.innerHTML = badge;
-
-      // Store data inside `nHover` and `hover`. These are hidden and allow for dynamic stuff.
-      clone.nHover = {
-        text: badge,
-        information: ""
-      }
-      clone.hover = {
-        text: badge,
-        information: ""
-      }
+      clone.badge = badge;
 
       // Hovering functions. Dynamic text changing.
       clone.onmouseover = () => this.#effectElm(clone, true);
       clone.onmouseleave = () => this.#effectElm(clone, false);
-      // clone.onmouseover = () => {
-      //   badgeName.innerHTML = clone.hover.text;
-      //   badgeInformation.innerHTML = clone.hover.information;
-      // }
-      // clone.onmouseleave = () => {
-      //   badgeName.innerHTML = clone.nHover.text;
-      //   badgeInformation.innerHTML = clone.nHover.information;
-      // }
-      // clone.highlight = (text) => {
-      //   badgeName.innerHTML = clone.hover.text ? clone.hover.text : clone.nHover.text;
-      //   if (text == null) return;
-      //   badgeName.innerHTML = badgeName.innerHTML.replaceAll(text, `<span class='search'>${text}</span>`);
-      // }
 
       this.search_data[badge] = badge;
-
       this.badges.set(badge, clone);
-    })
+    });
+    this.onFinishedCreate();
   }
 
   #createCategories(category_list) {
