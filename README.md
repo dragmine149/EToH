@@ -6,4 +6,4 @@ Visit the product here: https://dragmine149.github.io/ETOH
 
 ## Potential
 - Switch over to [Cypress](https://docs.cypress.io/app/end-to-end-testing/writing-your-first-end-to-end-test)
-- "Scrap" the ETOH fandom so that we can get more accurate and up to date data quicker.
+- "Scrape" the ETOH fandom so that we can get more accurate and up to date data quicker.

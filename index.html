@@ -60,13 +60,10 @@
       </div>
     </div>
     <div id="under_top_bar">
-      <div id="count">
-        <span count="NAT">Other: </span>
-        <span count="Mini"> Mini-Towers (NEATs): </span>
-        <span count="Steeple"> Steeples: </span>
-        <span count="Tower">Towers: </span>
-        <span count="Citadel">Citadels: </span>
-        <span count="Obelisk">Obelisk: </span>
+      <div id="points">
+        <span count="towers">Towers: </span>
+        <span count="points">Tower points: </span>
+        <span count="info">Only permanent, non mini towers are included in the above count. Hover to see all badges.</span>
       </div>
       <div id="update">
         <div id="badge-search" hidden>
@@ -76,6 +73,15 @@
         <button onclick="userManager.current_user.loadUncompleted()">Update all not completed</button>
         <button onclick="userManager.current_user.loadAll()">Update all badges</button>
       </div>
+    </div>
+
+    <div id="count" hidden>
+      <span count="NAT">Other: </span>
+      <span count="Mini"> Mini-Towers (NEATs): </span>
+      <span count="Steeple"> Steeples: </span>
+      <span count="Tower">Towers: </span>
+      <span count="Citadel">Citadels: </span>
+      <span count="Obelisk">Obelisk: </span>
     </div>
 
     <noscript class="noscript">

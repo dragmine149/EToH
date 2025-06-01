@@ -56,6 +56,7 @@
 @typedef {import('./main')}
 @typedef {import('./AreaManager')}
 @typedef {import('./Ui')}
+@typedef {import('./constants')}
 */
 
 
@@ -344,6 +345,11 @@ class EToHUI extends UI {
     });
     this.updateTowerCountUI();
     this.syncSize();
+
+    let points = document.getElementById("points");
+    let counts = document.getElementById("count");
+    points.onmouseover = () => counts.hidden = false;
+    points.onmouseleave = () => counts.hidden = true;
   }
 
   unload_loaded() {
@@ -385,6 +391,7 @@ class EToHUI extends UI {
   }
 
   updateTowerCountUI() {
+    let points = document.getElementById("points");
     let count = document.getElementById("count");
     /**
     * @param {HTMLDivElement} elm
@@ -404,6 +411,29 @@ class EToHUI extends UI {
     update.bind(this)(count.querySelector("[count='Tower']"), TOWER_TYPE.Tower);
     update.bind(this)(count.querySelector("[count='Citadel']"), TOWER_TYPE.Citadel);
     update.bind(this)(count.querySelector("[count='Obelisk']"), TOWER_TYPE.Obelisk);
+
+    let tower_points =
+      (this.types.Obelisk.achieved.length * 3) +
+      (this.types.Citadel.achieved.length * 2) +
+      (this.types.Tower.achieved.length * 1) +
+      (this.types.Steeple.achieved.length * 0.5);
+
+    let towers_total = 0;
+    let towers_completed = 0;
+    badgeManager.name().forEach((badge_name) => {
+      /** @type {Badge} */
+      let badge = badgeManager.name(badge_name)[0];
+      if (!(badge instanceof Tower)) return;
+      if (badge.category != "permanent" && badge.category != "other") return;
+      if (badge.type == TOWER_TYPE.Mini_Tower) return;
+      towers_total += 1;
+      towers_completed += this.types[badge.type].achieved.includes(badge_name) ? 1 : 0;
+    }, 0)
+
+    let towers_percent = (towers_completed / towers_total) * 100;
+
+    points.querySelector("[count='towers']").innerText = `Towers: ${towers_completed}/${towers_total} (${towers_percent.toFixed(2)}%)`;
+    points.querySelector("[count='points']").innerText = `Tower Points: ${tower_points} `;
   }
 }
 
@@ -418,7 +448,7 @@ async function loadTowersFromServer() {
   let data = await tryCatch(server_tower.json());
 
   if (data.error) {
-    ui.showError(`Failed to parse other_data.json: ${data.error}`, true);
+    ui.showError(`Failed to parse other_data.json: ${data.error} `, true);
     return;
   }
   Object.entries(data.data.areas).forEach(
@@ -446,7 +476,7 @@ async function loadOthersFromServer() {
   let data = await tryCatch(server_other.json());
 
   if (data.error) {
-    ui.showError(`Failed to parse other_data.json: ${data.error}`, true);
+    ui.showError(`Failed to parse other_data.json: ${data.error} `, true);
     return;
   }
 
@@ -533,6 +563,6 @@ addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    checkbox.checked = localStorage.getItem(`setting-Debug-${checkbox.id}`) === 'true';
+    checkbox.checked = localStorage.getItem(`setting - Debug - ${checkbox.id} `) === 'true';
   });
 })
