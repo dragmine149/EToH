@@ -58,6 +58,7 @@ class UI {
 
     this.badgeSearch = document.getElementById("badge-search");
     this.badgeSearchInput = document.getElementById("badge-search-input");
+    this.badgeSearchCount = document.getElementById("badge-search").querySelector("[tag='search_count']");
     if (this.badgeSearch) {
       const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
 
@@ -75,8 +76,8 @@ class UI {
           this.badgeSearchInput.blur();
         }
       });
-
     }
+    document.getElementById("badge-search").querySelector("[tag='search_count']").innerHTML = `${Object.keys(this.search_data).length}`;
   }
 
   show() { this.root.hidden = false; }
@@ -147,7 +148,7 @@ class UI {
   }
 
   /** @type [string, string][] */
-  previous_search = [];
+  previous_search_list = [];
 
   /**
   * Custom search function to do a bit more than the browser.
@@ -160,16 +161,46 @@ class UI {
     if (filteredSearch.length < 10) this.verbose.log(filteredSearch);
 
     // just clean up the old search.
-    if (this.previous_search && this.previous_search.length > 0) this.previous_search
+    if (this.previous_search_list && this.previous_search_list.length > 0) this.previous_search_list
       // ignore those of this search.
       .filter((v) => !filteredSearch.includes(v))
       // remove the rest.
       .forEach((badge) => this.#effectElm(this.badges.get(badge[1]), undefined, ''));
 
     filteredSearch.forEach((badge) => this.#effectElm(this.badges.get(badge[1]), undefined, value));
+    this.searchIndex = this.searchIndex;
+    if (this.searchIndex > filteredSearch.length) {
+      this.searchIndex = filteredSearch.length;
+    }
 
     // assign this search to a storage so that we can clean it up when we search again.
-    this.previous_search = filteredSearch;
+    this.previous_search_list = filteredSearch;
+  }
+
+  #searchIndex = 0;
+  /** @param {number} v */
+  set searchIndex(v) {
+    let badge = this.previous_search_list[this.#searchIndex];
+    if (badge) this.#effectElm(this.badges.get(badge[1]), undefined, undefined, false);
+
+    this.#searchIndex = Math.min(this.previous_search_list.length - 1, Math.max(0, v));
+    this.badgeSearchCount.innerHTML = `${this.#searchIndex + 1}/${this.previous_search_list.length}`;
+
+    badge = this.previous_search_list[this.#searchIndex];
+    if (badge) {
+      let elm = this.badges.get(badge[1]);
+      this.#effectElm(elm, undefined, undefined, true);
+      elm.scrollIntoView(false);
+    }
+  }
+  get searchIndex() { return this.#searchIndex; }
+
+  next_search() {
+    this.searchIndex += 1;
+  }
+
+  previous_search() {
+    this.searchIndex -= 1;
   }
 
   /**
@@ -177,8 +208,9 @@ class UI {
   * @param {HTMLDivElement} elm The element to affect.
   * @param {boolean} hover Is the user hovering us.
   * @param {String} search Search terms.
+  * @param {boolean} selected Selected the search for this item
   */
-  #effectElm(elm, hover, search) {
+  #effectElm(elm, hover, search, selected) {
     // Get the children first.
     /** @type {HTMLDivElement} */
     let badgeName = elm.querySelector("[tag='name']")
@@ -188,6 +220,7 @@ class UI {
     // check for hovering.
     elm.isHover = hover == undefined ? elm.isHover : hover;
     elm.search = search == undefined ? elm.search : search;
+    elm.selected = selected == undefined ? elm.selected : selected;
 
     /** @type {Badge} */
     let badgeInfo = badgeManager.name(elm.badge)[0];
@@ -200,7 +233,7 @@ class UI {
     if (elm.search != '' && elm.search != undefined) {
       let regex = new RegExp(`[${elm.search}]`, "gi");
       name_text = name_text.replaceAll(regex, (match) => {
-        return `<span class="search">${match}</span>`;
+        return `<span class="search ${elm.selected ? 'selected' : ''}">${match}</span>`;
       });
     }
 

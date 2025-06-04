@@ -18,6 +18,10 @@ bold {
   background-color: yellow;
 }
 
+.search.selected {
+  background-color: lightyellow;
+}
+
 .noscript {
   width: 100%;
   font-size: 2rem;
@@ -69,8 +73,15 @@ bold {
   width: 30%;
 }
 
+/* #under_top_bar [tag=search_count] {
+  display: flex;
+} */
+
 #under_top_bar #badge-search-input {
-  width: 100%;
+  text-align: left;
+  float: left;
+  /* width: 100%; */
+  width: 84%;
   background: none;
   border: none;
   color: white;
