@@ -112,7 +112,6 @@ bold {
   text-align: right;
 }
 
-
 #points,
 #count {
   text-wrap-mode: nowrap;
@@ -162,6 +161,12 @@ bold {
 #count>div {
   padding: 10px;
 }
+
+
+#under_top_bar #categories {
+  text-align: center;
+}
+
 
 
 .qa {

@@ -4,6 +4,7 @@
 
 :root {
   --completed: #89cf93;
+  --new: #86ff64
 }
 
 .area {
@@ -38,6 +39,10 @@
   background-color: var(--completed);
   /* color: #155724; */
   color: #1a2f4b;
+}
+
+.area .completed.new {
+  background-color: var(--new);
 }
 
 .area :not(.completed)+:not(.completed)>td[tag='name'] {
