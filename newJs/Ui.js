@@ -154,14 +154,9 @@ class UI {
   * @param {HTMLInputElement} search_elm The element of searching.
   */
   search(search_elm) {
-    // this.verbose.log(search_elm);
-    // this.verbose.log(search_elm.value);
-    // let value = search_elm.value;
     // transform to lower case as it makes everything easier to work with.
     let value = search_elm.value.toLowerCase();
     let filteredSearch = Object.entries(this.search_data).map((v) => [v[0].toLowerCase(), v[1]]).filter((v) => v[0].includes(value));
-    // let filteredSearch = Object.entries(this.search_data).filter((v) => v[0].includes(value));
-    // this.verbose.log(filteredSearch);
     if (filteredSearch.length < 10) this.verbose.log(filteredSearch);
 
     // just clean up the old search.
@@ -172,9 +167,8 @@ class UI {
       .forEach((badge) => this.#effectElm(this.badges.get(badge[1]), undefined, ''));
 
     filteredSearch.forEach((badge) => this.#effectElm(this.badges.get(badge[1]), undefined, value));
-    // special filter on those that are not in the new search but was in the old to reset them.
-    // this.previous_search.filter((v) => !filteredSearch.includes(v)).forEach((badge) => this.#effectElm(this.badges.get(badge[1]), undefined, ''));
 
+    // assign this search to a storage so that we can clean it up when we search again.
     this.previous_search = filteredSearch;
   }
 

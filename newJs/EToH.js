@@ -109,19 +109,13 @@ class Tower extends Badge {
   /** @type {string} What "category" this comes under as, "permanent", "temporary", "other" */
   category;
 
-  /** @param {boolean} hover @param {string|undefined} highlight */
-  get_name_field(hover, highlight) {
-    // if (highlight != undefined) {
-    //   let regex = new RegExp(`[${highlight}]`);
-    //   this.name = this.name.replace(regex, (match) => {
-    //     return `<span class="search">${match}</span>`;
-    //   });
-    // }
+  /** @param {boolean} hover */
+  get_name_field(hover) {
     return hover ? this.name : this.shortName;
   }
 
 
-  /** @param {boolean} hover @param {string|undefined} highlight */
+  /** @param {boolean} hover */
   get_information_field(hover) { return hover ? `${getDifficulty(this.difficulty)} (${this.difficulty})` : getDifficultyWord(this.difficulty); }
 
   /**
