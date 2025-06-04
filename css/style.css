@@ -15,11 +15,11 @@ bold {
 }
 
 .search {
-  background-color: yellow;
+  background-color: skyblue;
 }
 
 .search.selected {
-  background-color: lightyellow;
+  background-color: aqua;
 }
 
 .noscript {
@@ -81,7 +81,7 @@ bold {
   text-align: left;
   float: left;
   /* width: 100%; */
-  width: 84%;
+  width: 83%;
   background: none;
   border: none;
   color: white;

@@ -64,20 +64,22 @@ class UI {
 
       window.addEventListener("keydown", (e) => {
         if ((isMac ? e.metaKey : e.ctrlKey) && e.key === "f") {
-          e.preventDefault();
+          // prevent the search if the search isn't in focus.
+          if (!this.badgeSearchInput.matches(':focus')) e.preventDefault();
           this.badgeSearch.hidden = false;
           this.badgeSearchInput.focus();
           this.badgeSearchInput.select();
+          this.search(this.badgeSearchInput.value);
         }
         if (e.key === "Escape") {
           if (!this.badgeSearchInput.matches(':focus')) {
+            this.searchCleanUp();
             this.badgeSearch.hidden = true;
           }
           this.badgeSearchInput.blur();
         }
       });
     }
-    document.getElementById("badge-search").querySelector("[tag='search_count']").innerHTML = `${Object.keys(this.search_data).length}`;
   }
 
   show() { this.root.hidden = false; }
@@ -92,8 +94,6 @@ class UI {
 
     this.categories.forEach((elm) => {
       set_size(elm.clientHeight, elm.clientWidth);
-      // let table_size =
-
     });
     // this.categories.forEach((elm) => elm.style = `width: ${width}px; height: ${height}px;`);
     this.categories.forEach((elm) => elm.style = `width: ${width}px;`);
@@ -149,16 +149,17 @@ class UI {
 
   /** @type [string, string][] */
   previous_search_list = [];
+  search_value = "";
 
   /**
   * Custom search function to do a bit more than the browser.
-  * @param {HTMLInputElement} search_elm The element of searching.
+  * @param {string} value The element of searching.
   */
-  search(search_elm) {
+  search(value) {
     // transform to lower case as it makes everything easier to work with.
-    let value = search_elm.value.toLowerCase();
+    value = value.toLowerCase();
     let filteredSearch = Object.entries(this.search_data).map((v) => [v[0].toLowerCase(), v[1]]).filter((v) => v[0].includes(value));
-    if (filteredSearch.length < 10) this.verbose.log(filteredSearch);
+    // if (filteredSearch.length < 10) this.verbose.log(filteredSearch);
 
     // just clean up the old search.
     if (this.previous_search_list && this.previous_search_list.length > 0) this.previous_search_list
@@ -167,25 +168,50 @@ class UI {
       // remove the rest.
       .forEach((badge) => this.#effectElm(this.badges.get(badge[1]), undefined, ''));
 
-    filteredSearch.forEach((badge) => this.#effectElm(this.badges.get(badge[1]), undefined, value));
-    this.searchIndex = this.searchIndex;
-    if (this.searchIndex > filteredSearch.length) {
-      this.searchIndex = filteredSearch.length;
+    // clean up the lists if we don't have anything worth searching for.
+    if (value == '') {
+      this.previous_search_list = [];
+      this.#setSearchIndex(0);
+      return;
     }
+
+    // filter the badges depending on the search.
+    filteredSearch.forEach((badge) => this.#effectElm(this.badges.get(badge[1]), undefined, value));
 
     // assign this search to a storage so that we can clean it up when we search again.
     this.previous_search_list = filteredSearch;
+    this.search_value = value;
+    this.#setSearchIndex();
+  }
+
+  searchCleanUp() {
+    // just clean up the old search.
+    this.previous_search_list
+      .forEach((badge) => this.#effectElm(this.badges.get(badge[1]), undefined, ''));
+    this.previous_search_list = [];
+    // this.#setSearchIndex(0);
   }
 
   #searchIndex = 0;
+  set searchIndex(v) { this.#setSearchIndex(v); }
   /** @param {number} v */
-  set searchIndex(v) {
+  #setSearchIndex(v) {
+    // assume display purposes.
+    if (v === undefined) v = this.#searchIndex;
+    // get and clear the previous selected badge.
     let badge = this.previous_search_list[this.#searchIndex];
     if (badge) this.#effectElm(this.badges.get(badge[1]), undefined, undefined, false);
 
+    // loop around if we go out of bounds.
+    if (v > this.previous_search_list.length - 1) v = 0;
+    if (v < 0) v = this.previous_search_list.length;
+
+    // make sure we're in bounds (probably don't need this)
     this.#searchIndex = Math.min(this.previous_search_list.length - 1, Math.max(0, v));
+    // and update.
     this.badgeSearchCount.innerHTML = `${this.#searchIndex + 1}/${this.previous_search_list.length}`;
 
+    // show new badge data.
     badge = this.previous_search_list[this.#searchIndex];
     if (badge) {
       let elm = this.badges.get(badge[1]);
@@ -195,13 +221,9 @@ class UI {
   }
   get searchIndex() { return this.#searchIndex; }
 
-  next_search() {
-    this.searchIndex += 1;
-  }
+  next_search() { this.searchIndex += 1; }
 
-  previous_search() {
-    this.searchIndex -= 1;
-  }
+  previous_search() { this.searchIndex -= 1; }
 
   /**
   * Effects an element depending on whats happening.
