@@ -344,59 +344,73 @@ class UI {
   display_categories = {};
 
   /**
+  * Add badges to the category.
+  * @param {string|string[]} badges Name of badges.
+  * @param {string} name The sub*-category name.
+  * @param {string} parent The parent they belong under.
+  */
+  #addBadges(cat_name, parents, badges, name, parent) {
+    this.verbose.log(`Adding: `, badges, `to ${name}, ${parent}`);
+    // defaults set up so user provides less.
+    if (!Array.isArray(badges)) badges = [badges]; // single badge support
+    if (name === undefined || name == null || name == '') name = cat_name; // default to root
+    if (parent === undefined || parent == null || parent == '') parent = cat_name;
+    if (!parents[name]) parents[name] = parent; // make sure our parent exists.
+
+    this.#createCategories(name);
+    this.#createCategories(parent);
+
+    // gets the path which we must take to get to the child to add the badges.
+    let path = [name];
+    let node = name;
+    while (node != cat_name) {
+      node = parents[node];
+      path.push(node);
+    }
+    path.reverse();
+
+    // follow the path we must take so that we can add badges.
+    /** @type {ParentCategories} */
+    let data = this.display_categories;
+    path.forEach((node) => {
+      if (!data[node]) data[node] = { data: [] };
+      data = data[node];
+    });
+    if (!data.data) data.data = [];
+
+    // add badges.
+    data.data = data.data.concat(badges);
+
+    // this.display_categories[parents[name]].data.concat(badges);
+
+    // return itself for easy to continue usage.
+    return {
+      addBadges:
+        /**
+        * @param {string|string[]} badges Name of badges.
+        * @param {string} name The sub*-category name.
+        * @param {string} parent The parent they belong under.
+        */
+        (badges, name, parent) => this.#addBadges(cat_name, parents, badges, name, parent)
+    }
+  }
+
+  /**
   * Set a category containing information about how to modify the display.
   * @param {string} cat_name of the category.
-  * @returns {{addBadges: (badges: string|string[], name: string, parent: string) => {addBadges: (badges: string|string[], name: string, parent: string) => ... }}}
   */
   setCategory(cat_name) {
     this.display_categories[cat_name] = {};
     let parents = {};
-
-    /**
-    * Add badges to the category.
-    * @param {string|string[]} badges Name of badges.
-    * @param {string} name The sub*-category name.
-    * @param {string} parent The parent they belong under.
-    */
-    function addBadges(badges, name, parent) {
-      this.verbose.log(`Adding: `, badges, `to ${name}, ${parent}`);
-      // defaults set up so user provides less.
-      if (!Array.isArray(badges)) badges = [badges]; // single badge support
-      if (name === undefined || name == null || name == '') name = cat_name; // default to root
-      if (parent === undefined || parent == null || parent == '') parent = cat_name;
-      if (!parents[name]) parents[name] = parent; // make sure our parent exists.
-
-      this.#createCategories(name);
-      this.#createCategories(parent);
-
-      // gets the path which we must take to get to the child to add the badges.
-      let path = [name];
-      let node = name;
-      while (node != cat_name) {
-        node = parents[node];
-        path.push(node);
-      }
-      path.reverse();
-
-      // follow the path we must take so that we can add badges.
-      /** @type {ParentCategories} */
-      let data = this.display_categories;
-      path.forEach((node) => {
-        if (!data[node]) data[node] = { data: [] };
-        data = data[node];
-      });
-      if (!data.data) data.data = [];
-
-      // add badges.
-      data.data = data.data.concat(badges);
-
-      // this.display_categories[parents[name]].data.concat(badges);
-
-      // return itself for easy to continue usage.
-      return { addBadges: addBadges.bind(this) }
+    return {
+      addBadges:
+        /**
+        * @param {string|string[]} badges Name of badges.
+        * @param {string} name The sub*-category name.
+        * @param {string} parent The parent they belong under.
+        */
+        (badges, name, parent) => this.#addBadges(cat_name, parents, badges, name, parent)
     }
-
-    return { addBadges: addBadges.bind(this) }
   }
 
   /**
