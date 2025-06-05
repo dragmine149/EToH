@@ -74,10 +74,9 @@ class UI {
     this.badgeSearchInput = document.getElementById("badge-search-input");
     this.badgeSearchCount = document.getElementById("badge-search").querySelector("[tag='search_count']");
     if (this.badgeSearch) {
-      const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
-
       window.addEventListener("keydown", (e) => {
-        if ((isMac ? e.metaKey : e.ctrlKey) && e.key === "f") {
+        // NOTE: Users can either do (ctrl/cmd/win/meta) + f. Partially due to no widely supported (not deprecated) js web standard function for this.
+        if ((e.metaKey || e.ctrlKey) && e.key === "f") {
           // prevent the search if the search isn't in focus.
           if (!this.badgeSearchInput.matches(':focus')) e.preventDefault();
           this.badgeSearch.hidden = false;
@@ -343,7 +342,7 @@ class UI {
     return clone;
   }
 
-  /** @typedef {{ data: string[], parents: { [category: string]: string }, [category: string]: ParentCategories }} ParentCategories */
+  /** @typedef {{ data: { [category: string]: string[] }, parents: { [category: string]: string } }} ParentCategories */
   /** @type {ParentCategories} */
   display_categories = {};
 
@@ -377,17 +376,9 @@ class UI {
       }
     }
 
-    // follow the path we must take so that we can add badges.
-    /** @type {ParentCategories} */
-    let data = this.display_categories;
-    path.split('.').forEach((node) => {
-      if (!data[node]) data[node] = { data: [] };
-      data = data[node];
-    });
-    if (!data.data) data.data = [];
-
-    // add badges.
-    data.data = data.data.concat(badges);
+    // add all badges into the route node under their specific name.
+    // and this syntax... wtf js.
+    (this.display_categories[cat_name].data[name] ||= []).push(...badges);
 
     // return itself for easy to continue usage.
     return {
@@ -406,7 +397,7 @@ class UI {
   * @param {string} cat_name of the category.
   */
   setCategory(cat_name) {
-    this.display_categories[cat_name] = { parents: {} };
+    this.display_categories[cat_name] = { parents: {}, data: {} };
     // let parents = {};
     return {
       addBadges:
