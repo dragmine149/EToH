@@ -1,4 +1,4 @@
-/*global tryCatch, badgeManager, Badge, User, network, UserManager, ui, etohDB, logs, TOWER_TYPE, DIFFICULTIES, SUB_LEVELS, areaManager, Area, CLOUD_URL, UI, dayjs*/
+/*global tryCatch, badgeManager, Badge, User, network, UserManager, ui, etohDB, logs, TOWER_TYPE, DIFFICULTIES, SUB_LEVELS, areaManager, Area, CLOUD_URL, UI */
 /*eslint no-undef: "error"*/
 /*exported Tower, Other, EToHUser, userManager, towerManager, miniSearch, endMiniSearch, TOWER_TYPE, DIFFICULTIES, SUB_LEVELS, pointsFromType */
 
@@ -178,6 +178,8 @@ class EToHUser extends User {
   /** @type {{badgeId: number, date: number, userId: number}[]} The users completed badges */
   completed = [];
 
+
+
   #all_loaded;
   /** @type {number} When the user can next load all badges, without developer access. */
   set all_loaded(v) {
@@ -272,9 +274,9 @@ class EToHUser extends User {
     this.verbose.info("Attempting to load all badges");
     // LOCAL (Yes local) check to see when was the last time we did this.
     // Yes, they could techniaclly bypass this / delete data / etc. But those users are "power" users who know how to use the API anyway.
-    let date = new dayjs();
-    date = date.date(date.date() + 7);
-    this.all_loaded = date.valueOf();
+    let date = new Date().getTime();
+    date += 604800000;
+    this.all_loaded = date;
 
     await this.loadBadges(badgeManager.ids(), (json) => {
       etohUI.loadBadge(json.badgeId, json.date);

@@ -1,4 +1,4 @@
-/*global badgeManager, dayjs, Verbose */
+/*global badgeManager, Verbose */
 /*eslint no-undef: "error"*/
 /*exported UI */
 
@@ -107,7 +107,9 @@ class UI {
     let badgeCompleted = elm.querySelector("[tag='completed']");
     badgeCompleted.date = date;
     date = Math.min(badgeCompleted.date, date);
-    badgeCompleted.innerHTML = date ? new dayjs(date).format('L LT') : '';
+    badgeCompleted.innerHTML = date ? new Date(date).toLocaleString(undefined, {
+      year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: false,
+    }) : '';
     elm.classList[date ? "add" : "remove"]("completed");
     if (date && new_since) elm.classList.add("new");
 
