@@ -14,6 +14,12 @@ class UI {
   /** @type {string[]} A list of badges that have been loaded. */
   loaded;
 
+  /**
+  * Create a new UI whilst doing a lot of js setup for it.
+  * @param {string[]} categories A list of categories to make.
+  * @param {(badge_name: string) => string} badge_callback What category a specific badge should be added to.
+  * @param {(category_name: string) => string} category_callback What category should be the parent of this category.
+  */
   constructor(categories, badge_callback, category_callback) {
     this.badges = new Map();
     this.categories = new Map();
@@ -24,13 +30,21 @@ class UI {
     this.creator_verbose.log("Creating the elements", categories);
     // create the ui elements.
     this.#createBadges();
-    this.#createCategories(categories);
+    // this.#createCategories(categories);
 
     // the root element of all evil.
     // Ignore the above comment, the AI snuck in.
     this.root = document.getElementById("badges");
 
     this.creator_verbose.log("Adding elements to the correct categories.");
+    let defaultCategory = this.setCategory("default");
+    Array.from(this.badges.keys()).forEach((key) => {
+      let category = badge_callback(key);
+      let parent = category_callback(category);
+      if (parent == "root") parent = "default";
+      defaultCategory.addBadges(key, category, parent);
+    })
+
     // then deal with setting the parent elements.
     this.badges.forEach((elm, key) => {
       this.creator_verbose.log("Processing badge (callback): ", key);
@@ -303,7 +317,12 @@ class UI {
     this.onFinishedCreate();
   }
 
+  /**
+  * Create the node (table) for the desired category. Result is saved in this.categories under the provided name.
+  * @param {string|string[]} category_list The list (or name) of chategories to display.
+  */
   #createCategories(category_list) {
+    if (!Array.isArray(category_list)) category_list = [category_list];
     category_list.forEach((category) => {
       this.creator_verbose.log("Processing Category: ", category);
       if (this.categories.has(category)) return this.creator_verbose.log("already exists");
@@ -327,6 +346,7 @@ class UI {
   /**
   * Set a category containing information about how to modify the display.
   * @param {string} cat_name of the category.
+  * @returns {{addBadges: (badges: string|string[], name: string, parent: string) => {addBadges: (badges: string|string[], name: string, parent: string) => ... }}}
   */
   setCategory(cat_name) {
     this.display_categories[cat_name] = {};
@@ -339,11 +359,15 @@ class UI {
     * @param {string} parent The parent they belong under.
     */
     function addBadges(badges, name, parent) {
+      this.verbose.log(`Adding: `, badges, `to ${name}, ${parent}`);
       // defaults set up so user provides less.
       if (!Array.isArray(badges)) badges = [badges]; // single badge support
       if (name === undefined || name == null || name == '') name = cat_name; // default to root
       if (parent === undefined || parent == null || parent == '') parent = cat_name;
       if (!parents[name]) parents[name] = parent; // make sure our parent exists.
+
+      this.#createCategories(name);
+      this.#createCategories(parent);
 
       // gets the path which we must take to get to the child to add the badges.
       let path = [name];
