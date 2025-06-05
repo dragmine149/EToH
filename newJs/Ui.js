@@ -433,7 +433,7 @@ class UI {
     Object.entries(data.data).forEach(([key, value]) => {
       let node = this.categories.get(key);
       value.forEach((badge) => {
-        node.appendChild(this.badges.get(badge))
+        node.querySelector("[tag='badges']").appendChild(this.badges.get(badge))
         badgeManager.name(badge)[0].search(this.search_data);
       });
     });
