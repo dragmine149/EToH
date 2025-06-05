@@ -60,10 +60,9 @@ class UI {
     this.badgeSearchInput = document.getElementById("badge-search-input");
     this.badgeSearchCount = document.getElementById("badge-search").querySelector("[tag='search_count']");
     if (this.badgeSearch) {
-      const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
-
       window.addEventListener("keydown", (e) => {
-        if ((isMac ? e.metaKey : e.ctrlKey) && e.key === "f") {
+        // NOTE: Users can either do (ctrl/cmd/win/meta) + f. Partially due to no widely supported (not deprecated) js web standard function for this.
+        if ((e.metaKey || e.ctrlKey) && e.key === "f") {
           // prevent the search if the search isn't in focus.
           if (!this.badgeSearchInput.matches(':focus')) e.preventDefault();
           this.badgeSearch.hidden = false;
