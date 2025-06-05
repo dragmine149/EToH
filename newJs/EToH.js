@@ -366,7 +366,14 @@ class EToHUI extends UI {
     let difficultyCategory = this.setCategory("difficulty");
     badgeManager
       .difficulty()
-      .forEach((diff) => difficultyCategory.addBadges(badgeManager.difficulty(diff).flatMap((b) => b.name), getDifficultyWord(diff)));
+      .sort((a, b) => a > b)
+      .forEach((diff) => difficultyCategory.addBadges(
+        badgeManager
+          .difficulty(diff)
+          .sort((a, b) => a.difficulty > b.difficulty)
+          .flatMap((b) => b.name),
+        getDifficultyWord(diff)
+      ));
   }
 
   unload_loaded() {

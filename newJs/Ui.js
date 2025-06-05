@@ -43,17 +43,19 @@ class UI {
       let parent = category_callback(category);
       if (parent == "root") parent = "default";
       defaultCategory.addBadges(key, category, parent);
-    })
+    });
+
+    this.load_category("default");
 
     // then deal with setting the parent elements.
-    this.badges.forEach((elm, key) => {
-      this.creator_verbose.log("Processing badge (callback): ", key);
-      let category = badge_callback(key);
-      let catElm = this.categories.get(category);
-      this.creator_verbose.log(`Desired category: ${category}`);
-      if (!catElm) throw new Error(`Trying to add badge to category '${category}' which was not created`);
-      catElm.querySelector("table").appendChild(elm);
-    });
+    // this.badges.forEach((elm, key) => {
+    //   this.creator_verbose.log("Processing badge (callback): ", key);
+    //   let category = badge_callback(key);
+    //   let catElm = this.categories.get(category);
+    //   this.creator_verbose.log(`Desired category: ${category}`);
+    //   if (!catElm) throw new Error(`Trying to add badge to category '${category}' which was not created`);
+    //   catElm.querySelector("table").appendChild(elm);
+    // });
 
     // this.categories.forEach((elm, key) => {
     //   this.creator_verbose.log("Processing category (callback): ", key);
@@ -343,7 +345,7 @@ class UI {
   }
 
   /** @typedef {{ data: { [category: string]: string[] }, parents: { [category: string]: string } }} ParentCategories */
-  /** @type {ParentCategories} */
+  /** @type {{[filter: string]: ParentCategories}} */
   display_categories = {};
 
   /**
@@ -355,7 +357,7 @@ class UI {
   * @param {string} parent The parent they belong under.
   */
   #addBadges(cat_name, parents, badges, name, parent) {
-    this.verbose.log(`Adding: `, badges, `to ${name}, ${parent}`);
+    this.creator_verbose.log(`Adding: `, badges, `to ${name}, ${parent}`);
     // defaults set up so user provides less.
     if (!Array.isArray(badges)) badges = [badges]; // single badge support
     if (name === undefined || name == null || name == '') name = cat_name; // default to root
@@ -426,5 +428,9 @@ class UI {
     });
 
     // now time for the badges.
+    Object.entries(data.data).forEach(([key, value]) => {
+      let node = this.categories.get(key);
+      value.forEach((badge) => node.appendChild(this.badges.get(badge)));
+    })
   }
 }
