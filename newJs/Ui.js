@@ -55,20 +55,20 @@ class UI {
       catElm.querySelector("table").appendChild(elm);
     });
 
-    this.categories.forEach((elm, key) => {
-      this.creator_verbose.log("Processing category (callback): ", key);
-      // ignore those categories, which have no badges.
-      if (elm.querySelectorAll("[tag='badge']").length <= 0) return;
+    // this.categories.forEach((elm, key) => {
+    //   this.creator_verbose.log("Processing category (callback): ", key);
+    //   // ignore those categories, which have no badges.
+    //   if (elm.querySelectorAll("[tag='badge']").length <= 0) return;
 
-      let parent = category_callback(key);
-      if (parent == "root") return this.root.appendChild(elm);
-      // if (parent == key) return
-      let parentElm = this.categories.get(parent);
-      if (!parentElm) throw new Error(`Trying to add category '${key}' to an existing category '${parent}' which doesn't exist`);
-      parentElm.appendChild(elm);
-    });
+    //   let parent = category_callback(key);
+    //   if (parent == "root") return this.root.appendChild(elm);
+    //   // if (parent == key) return
+    //   let parentElm = this.categories.get(parent);
+    //   if (!parentElm) throw new Error(`Trying to add category '${key}' to an existing category '${parent}' which doesn't exist`);
+    //   parentElm.appendChild(elm);
+    // });
 
-    this.syncSize();
+    // this.syncSize();
 
     this.badgeSearch = document.getElementById("badge-search");
     this.badgeSearchInput = document.getElementById("badge-search-input");
@@ -319,32 +319,38 @@ class UI {
 
   /**
   * Create the node (table) for the desired category. Result is saved in this.categories under the provided name.
-  * @param {string|string[]} category_list The list (or name) of chategories to display.
+  * @param {string} category The list (or name) of chategories to display.
+  * @param {HTMLDivElement} parent_node The parent node that this category goes under.
   */
-  #createCategories(category_list) {
-    if (!Array.isArray(category_list)) category_list = [category_list];
-    category_list.forEach((category) => {
-      this.creator_verbose.log("Processing Category: ", category);
-      if (this.categories.has(category)) return this.creator_verbose.log("already exists");
+  #createCategory(category, parent_node) {
+    this.creator_verbose.log("Processing Category: ", category);
+    if (this.categories.has(category)) {
+      this.creator_verbose.log("already exists");
+      return this.categories.get(category);
+    }
 
-      /** @type {HTMLDivElement} */
-      let clone = document.getElementById("category").cloneNode(true);
-      clone.hidden = false;
+    /** @type {HTMLDivElement} */
+    let clone = document.getElementById("category").cloneNode(true);
+    clone.hidden = false;
 
-      // set the title of the category.
-      let title = clone.querySelector("[tag='title']");
-      title.innerHTML = category;
+    // set the title of the category.
+    let title = clone.querySelector("[tag='title']");
+    title.innerHTML = category;
 
-      this.categories.set(category, clone);
-    })
+    this.categories.set(category, clone);
+    if (parent_node == undefined) parent_node = this.root;
+    parent_node.appendChild(clone);
+    return clone;
   }
 
-  /** @typedef {{ data: string[], [category: string]: ParentCategories }} ParentCategories */
+  /** @typedef {{ data: string[], parents: { [category: string]: string }, [category: string]: ParentCategories }} ParentCategories */
   /** @type {ParentCategories} */
   display_categories = {};
 
   /**
   * Add badges to the category.
+  * @param {string} cat_name The name of the category to add stuff to.
+  * @param {{[category_name: string]: string}} parents The parent reference list.
   * @param {string|string[]} badges Name of badges.
   * @param {string} name The sub*-category name.
   * @param {string} parent The parent they belong under.
@@ -355,24 +361,26 @@ class UI {
     if (!Array.isArray(badges)) badges = [badges]; // single badge support
     if (name === undefined || name == null || name == '') name = cat_name; // default to root
     if (parent === undefined || parent == null || parent == '') parent = cat_name;
-    if (!parents[name]) parents[name] = parent; // make sure our parent exists.
+    // if (!parents[name]) parents[name] = parent; // make sure our parent exists.
 
-    this.#createCategories(name);
-    this.#createCategories(parent);
+    let pNode = this.#createCategory(parent, this.categories.get(parents[parent]));
+    this.#createCategory(name, pNode);
 
-    // gets the path which we must take to get to the child to add the badges.
-    let path = [name];
-    let node = name;
-    while (node != cat_name) {
-      node = parents[node];
-      path.push(node);
+    let path = parents[name];
+    if (!path) {
+      path = `${parents[parent]}.${name}`;
+      parents[name] = path;
+      if (!parents[parent]) {
+        path = `${cat_name}.${name}`;
+        parents[parent] = `${cat_name}`;
+        parents[name] = path;
+      }
     }
-    path.reverse();
 
     // follow the path we must take so that we can add badges.
     /** @type {ParentCategories} */
     let data = this.display_categories;
-    path.forEach((node) => {
+    path.split('.').forEach((node) => {
       if (!data[node]) data[node] = { data: [] };
       data = data[node];
     });
@@ -380,8 +388,6 @@ class UI {
 
     // add badges.
     data.data = data.data.concat(badges);
-
-    // this.display_categories[parents[name]].data.concat(badges);
 
     // return itself for easy to continue usage.
     return {
@@ -400,8 +406,8 @@ class UI {
   * @param {string} cat_name of the category.
   */
   setCategory(cat_name) {
-    this.display_categories[cat_name] = {};
-    let parents = {};
+    this.display_categories[cat_name] = { parents: {} };
+    // let parents = {};
     return {
       addBadges:
         /**
@@ -409,7 +415,7 @@ class UI {
         * @param {string} name The sub*-category name.
         * @param {string} parent The parent they belong under.
         */
-        (badges, name, parent) => this.#addBadges(cat_name, parents, badges, name, parent)
+        (badges, name, parent) => this.#addBadges(cat_name, this.display_categories[cat_name].parents, badges, name, parent)
     }
   }
 
@@ -419,9 +425,15 @@ class UI {
   */
   load_category(category_name) {
     let data = this.display_categories[category_name];
-    let categoryCategories = Object.keys(data).flatMap((v) => v)
+    let categories = data.parents;
+    this.verbose.log(categories);
+
+    // sort out node visibility first.
+    let categoryCategories = Object.keys(categories).flatMap((v) => v)
     this.categories.forEach((value, key) => {
       value.hidden = !categoryCategories.includes(key);
     });
+
+    // now time for the badges.
   }
 }
