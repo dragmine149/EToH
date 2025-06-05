@@ -133,7 +133,8 @@ class UI {
     badgeCompleted.date = date;
     date = Math.min(badgeCompleted.date, date);
     badgeCompleted.innerHTML = date ? new dayjs(date).format('L LT') : '';
-    elm.classList[date ? "add" : "remove"]("completed", new_since ? "new" : undefined);
+    elm.classList[date ? "add" : "remove"]("completed");
+    if (date && new_since) elm.classList.add("new");
 
     date ? this.loaded.push(name) : this.loaded.filter((v) => v != name);
   }
