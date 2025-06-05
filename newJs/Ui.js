@@ -316,6 +316,7 @@ class UI {
     // set the title of the category.
     let title = clone.querySelector("[tag='title']");
     title.innerHTML = category;
+    title.title = category;
 
     this.categories.set(category, clone);
     if (parent_node == undefined) parent_node = this.root;
@@ -410,10 +411,18 @@ class UI {
     // now time for the badges.
     Object.entries(data.data).forEach(([key, value]) => {
       let node = this.categories.get(key);
+      let completed = 0;
       value.forEach((badge) => {
-        node.querySelector("[tag='badges']").appendChild(this.badges.get(badge))
+        let child = this.badges.get(badge);
+        completed += child.classList.contains("completed") ? 1 : 0;
+        node.querySelector("[tag='badges']").appendChild(child);
         badgeManager.name(badge)[0].search(this.search_data);
       });
+
+      let title = node.querySelector("[tag='title']");
+      title.innerHTML = `${title.title} (${completed}/${value.length})`;
+      title.style.setProperty("--count", completed);
+      title.style.setProperty("--total", value.length);
     });
 
     this.syncSize();
