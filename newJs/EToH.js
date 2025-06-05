@@ -118,6 +118,8 @@ class Tower extends Badge {
   /** @param {boolean} hover */
   get_information_field(hover) { return hover ? `${getDifficulty(this.difficulty)} (${this.difficulty})` : getDifficultyWord(this.difficulty); }
 
+  search(search_data) { search_data[this.shortName] = this.name; super.search(search_data); }
+
   /**
   * Makes a new tower badge.
   * @param {String} name FULL NAME of the tower.

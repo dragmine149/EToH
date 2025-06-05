@@ -45,6 +45,14 @@ class Badge {
   }
 
   /**
+  * How to reference this badge in the search data. key is potential references whilst value is itself.
+  * @param {{[filter: string]: string}} search_data An object of the data to search.
+  */
+  search(search_data) {
+    search_data[this.name] = this.name;
+  }
+
+  /**
   * Adds a new uneditable property to the object.
   * @param {String} name The name of this property.
   * @param {any} value The value to assign to this property.

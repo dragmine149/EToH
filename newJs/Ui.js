@@ -426,11 +426,15 @@ class UI {
     this.categories.forEach((value, key) => {
       value.hidden = !categoryCategories.includes(key);
     });
+    this.search_data = {};
 
     // now time for the badges.
     Object.entries(data.data).forEach(([key, value]) => {
       let node = this.categories.get(key);
-      value.forEach((badge) => node.appendChild(this.badges.get(badge)));
-    })
+      value.forEach((badge) => {
+        node.appendChild(this.badges.get(badge))
+        badgeManager.name(badge)[0].search(this.search_data);
+      });
+    });
   }
 }
