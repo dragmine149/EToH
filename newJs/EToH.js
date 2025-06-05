@@ -246,7 +246,7 @@ class EToHUser extends User {
     // TODO: implement said above check.
     await this.loadBadges(badgeManager.ids(), (json) => {
       etohUI.loadBadge(json.badgeId, json.date);
-    })
+    }, false)
     this.verbose.info("Completed loading all badges!");
   }
 
@@ -254,8 +254,10 @@ class EToHUser extends User {
   * Load request badges from the server and stores them.
   * @param {number[]} badges The badges to load.
   * @param {(badge: {badgeId: number, date: number}) => void} callback What to do upon receiving a badge. (other than storing it)
+  * @param {boolean} local_check To check if we already have that badge stored before updating it. Defaults to true.
   */
-  async loadBadges(badges, callback) {
+  async loadBadges(badges, callback, local_check) {
+    local_check = local_check !== undefined ? local_check : true;
     this.verbose.info(`Loading badges from server`);
     await network.requestStream(new Request(`${CLOUD_URL}/badges/${this.id}/all`, {
       method: 'POST',
@@ -269,7 +271,7 @@ class EToHUser extends User {
       /** @type {{badgeId: number, date: number}} */
       let info = JSON.parse(line);
       // skip "loading" it if we already have it.
-      if (this.completed.map(b => b.badgeId).includes(info.badgeId)) {
+      if (local_check && this.completed.map(b => b.badgeId).includes(info.badgeId)) {
         this.verbose.warn(`Received ${line} from server even though we already have that badgeId...`);
         return;
       }
