@@ -185,7 +185,7 @@ bold {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: calc(100vh - (62.5px + 94px));
+  height: calc(100vh - (62.5px + 62.5px));
 }
 
 #search {

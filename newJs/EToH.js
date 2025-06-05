@@ -228,11 +228,12 @@ class EToHUser extends User {
   }
 
   async loadUncompleted() {
+    etohUI.reseet_new();
     this.verbose.info("Attempting to update uncompleted badges");
     await this.loadBadges(badgeManager.uncompleted(this.completed.map(badge => badge.badgeId)),
       (json) => {
-        this.verbose.info(`Found new uncompleted badge: ${json.badgeId}`);
-        etohUI.loadBadge(json.badgeId, json.date);
+        this.verbose.info(`Found new uncompleted badge: ${json.badgeId} (${badgeManager.ids(json.badgeId)[0].name})`);
+        etohUI.loadBadge(json.badgeId, json.date, true);
       });
     this.verbose.info("Uncompleted badges updated!");
   }
@@ -381,6 +382,7 @@ class EToHUI extends UI {
   */
   loadUser(user) {
     this.unload_loaded();
+    this.reseet_new();
     this.show();
     document.getElementsByTagName("user")[0].innerText = user.ui_name;
     user.completed.forEach((completed) => this.loadBadge(completed.badgeId, completed.date));
@@ -390,14 +392,15 @@ class EToHUI extends UI {
   * Load a badge onto the UI.
   * @param {number} badge_id The id of the badge.
   * @param {number} completion The date/time of completion.
+  * @param {bool} new_since How the badge been claimed since we last loaded the data.
   */
-  loadBadge(badge_id, completion) {
+  loadBadge(badge_id, completion, new_since) {
     /** @type {Badge} */
     let badge = badgeManager.ids(badge_id)[0];
     /** @type {string[]} */
     let type = this.types[badge instanceof Tower ? badge.type : TOWER_TYPE.Other].achieved;
     if (!type.includes(badge.name) && badge.category != "temporary") type.push(badge.name);
-    this.update_badge(badge.name, completion);
+    this.update_badge(badge.name, completion, new_since);
     this.updateTowerCountUI();
   }
 

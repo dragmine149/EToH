@@ -102,18 +102,23 @@ class UI {
     this.hide();
   }
 
+  reseet_new() {
+    document.querySelectorAll(".completed.new").forEach((node) => node.classList.remove("new"));
+  }
+
   /**
   * Update a badge on the ui.
   * @param {string} name The name of the badge.
   * @param {number?} date The date of badge completion. Leave blank to reset completion.
+  * @param {bool} new_since How the badge been claimed since we last loaded the data.
   */
-  update_badge(name, date) {
+  update_badge(name, date, new_since) {
     let elm = this.badges.get(name);
     let badgeCompleted = elm.querySelector("[tag='completed']");
     badgeCompleted.date = date;
     date = Math.min(badgeCompleted.date, date);
     badgeCompleted.innerHTML = date ? new dayjs(date).format('L LT') : '';
-    elm.classList[date ? "add" : "remove"]("completed");
+    elm.classList[date ? "add" : "remove"]("completed", new_since ? "new" : undefined);
 
     date ? this.loaded.push(name) : this.loaded.filter((v) => v != name);
   }
