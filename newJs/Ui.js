@@ -92,7 +92,7 @@ class UI {
     // this.hide();
   }
 
-  reseet_new() {
+  reset_new() {
     document.querySelectorAll(".completed.new").forEach((node) => node.classList.remove("new"));
   }
 

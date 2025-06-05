@@ -1,4 +1,4 @@
-/*global tryCatch, badgeManager, Badge, User, network, UserManager, ui, etohDB, logs, TOWER_TYPE, DIFFICULTIES, SUB_LEVELS, areaManager, Area, CLOUD_URL, UI */
+/*global tryCatch, badgeManager, Badge, User, network, UserManager, ui, etohDB, logs, TOWER_TYPE, DIFFICULTIES, SUB_LEVELS, areaManager, Area, CLOUD_URL, UI, dayjs*/
 /*eslint no-undef: "error"*/
 /*exported Tower, Other, EToHUser, userManager, towerManager, miniSearch, endMiniSearch, TOWER_TYPE, DIFFICULTIES, SUB_LEVELS, pointsFromType */
 
@@ -178,6 +178,31 @@ class EToHUser extends User {
   /** @type {{badgeId: number, date: number, userId: number}[]} The users completed badges */
   completed = [];
 
+  #all_loaded;
+  /** @type {number} When the user can next load all badges, without developer access. */
+  set all_loaded(v) {
+    this.#all_loaded = v;
+    document.getElementById("update").querySelector("[tag='all']").disabled = new Date().getTime() < this.all_loaded;
+    userManager.storeUser(this.database);
+  }
+  get all_loaded() { return this.#all_loaded; }
+
+  constructor(user_data) {
+    super(user_data);
+    if (typeof user_data === 'object' && user_data !== null) this.all_loaded = user_data.all;
+  }
+
+  get database() {
+    return {
+      id: this.id,
+      name: this.name,
+      display: this.display,
+      past: this.past,
+      last: this.last,
+      all: this.all_loaded
+    }
+  }
+
   static async create(user_data, db) {
     // have to call the parent function.
     let result = await User.create(user_data, db);
@@ -230,7 +255,7 @@ class EToHUser extends User {
   }
 
   async loadUncompleted() {
-    etohUI.reseet_new();
+    etohUI.reset_new();
     this.verbose.info("Attempting to update uncompleted badges");
     await this.loadBadges(badgeManager.uncompleted(this.completed.map(badge => badge.badgeId)),
       (json) => {
@@ -240,10 +265,17 @@ class EToHUser extends User {
     this.verbose.info("Uncompleted badges updated!");
   }
   async loadAll() {
+    if (new Date().getTime() < this.all_loaded) {
+      this.verbose.info("All badges loaded recently... Failed to load");
+      return;
+    }
     this.verbose.info("Attempting to load all badges");
     // LOCAL (Yes local) check to see when was the last time we did this.
     // Yes, they could techniaclly bypass this / delete data / etc. But those users are "power" users who know how to use the API anyway.
-    // TODO: implement said above check.
+    let date = new dayjs();
+    date = date.date(date.date() + 7);
+    this.all_loaded = date.valueOf();
+
     await this.loadBadges(badgeManager.ids(), (json) => {
       etohUI.loadBadge(json.badgeId, json.date);
     }, false)
@@ -292,11 +324,13 @@ class EToHUser extends User {
         ...b
       }
     });
+    // this.verbose.log(completed);
+    // await etohDB.badges.bulkPut(completed, undefined, { allKeys: true })
     await etohDB.badges.bulkPut(completed)
-      .then(() => { this.verbose.info(`Finished storing all badges in database`); })
+      .then((v) => { this.verbose.info(`Finished storing all badges in database`); this.verbose.log(v) })
       .catch(e => {
         this.verbose.error(`Failed to add in ${completed.length - e.failures.length} badges`, e);
-      })
+      });
   }
 }
 
@@ -398,10 +432,14 @@ class EToHUI extends UI {
   */
   loadUser(user) {
     this.unload_loaded();
-    this.reseet_new();
+    this.reset_new();
     this.show();
     document.getElementsByTagName("user")[0].innerText = user.ui_name;
-    user.completed.forEach((completed) => this.loadBadge(completed.badgeId, completed.date));
+    user.completed
+      // bit of a harsh fix, but it works.
+      // TODO: Make new class UserBadge where we can store stuff like this?
+      .sort((a, b) => a.date < b.date)
+      .forEach((completed) => this.loadBadge(completed.badgeId, completed.date));
   }
 
   /**

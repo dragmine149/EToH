@@ -262,8 +262,9 @@ class UserManager extends GenericManager {
   /**
   * Saves the current user to the database for future quick reference.
   */
-  async storeUser() {
-    await this.db.users.put(this.current_user.database);
+  async storeUser(database) {
+    database = database !== undefined ? database : this.current_user.database;
+    await this.db.users.put(database);
   }
 
   /**
