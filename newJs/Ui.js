@@ -45,33 +45,7 @@ class UI {
       defaultCategory.addBadges(key, category, parent);
     });
 
-    this.load_category("default");
-
-    // then deal with setting the parent elements.
-    // this.badges.forEach((elm, key) => {
-    //   this.creator_verbose.log("Processing badge (callback): ", key);
-    //   let category = badge_callback(key);
-    //   let catElm = this.categories.get(category);
-    //   this.creator_verbose.log(`Desired category: ${category}`);
-    //   if (!catElm) throw new Error(`Trying to add badge to category '${category}' which was not created`);
-    //   catElm.querySelector("table").appendChild(elm);
-    // });
-
-    // this.categories.forEach((elm, key) => {
-    //   this.creator_verbose.log("Processing category (callback): ", key);
-    //   // ignore those categories, which have no badges.
-    //   if (elm.querySelectorAll("[tag='badge']").length <= 0) return;
-
-    //   let parent = category_callback(key);
-    //   if (parent == "root") return this.root.appendChild(elm);
-    //   // if (parent == key) return
-    //   let parentElm = this.categories.get(parent);
-    //   if (!parentElm) throw new Error(`Trying to add category '${key}' to an existing category '${parent}' which doesn't exist`);
-    //   parentElm.appendChild(elm);
-    // });
-
-    // this.syncSize();
-
+    // Stuff to do with the searching system.
     this.badgeSearch = document.getElementById("badge-search");
     this.badgeSearchInput = document.getElementById("badge-search-input");
     this.badgeSearchCount = document.getElementById("badge-search").querySelector("[tag='search_count']");
@@ -95,13 +69,14 @@ class UI {
         }
       });
     }
+    // separator comment as its hard to see.
   }
 
-  show() { this.root.hidden = false; }
+  show() { this.root.hidden = false; this.load_category("default"); }
   hide() { this.root.hidden = true; }
 
   syncSize() {
-    this.show();
+    // this.show();
     this.categories.forEach((elm) => elm.style = ``);
     this.badges.forEach((elm) => elm.dispatchEvent(new Event("mouseover")));
     let height = 0, width = 0;
@@ -114,7 +89,7 @@ class UI {
     this.categories.forEach((elm) => elm.style = `width: ${width}px;`);
 
     this.badges.forEach((elm) => elm.dispatchEvent(new Event("mouseleave")));
-    this.hide();
+    // this.hide();
   }
 
   reseet_new() {
@@ -330,6 +305,9 @@ class UI {
       this.creator_verbose.log("already exists");
       return this.categories.get(category);
     }
+    if (Object.keys(this.display_categories).includes(category)) {
+      return;
+    }
 
     /** @type {HTMLDivElement} */
     let clone = document.getElementById("category").cloneNode(true);
@@ -437,5 +415,7 @@ class UI {
         badgeManager.name(badge)[0].search(this.search_data);
       });
     });
+
+    this.syncSize();
   }
 }
