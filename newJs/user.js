@@ -205,10 +205,11 @@ class UserManager extends GenericManager {
     let nan = Number(identifier);
     if (!Number.isNaN(nan)) {
       json.id = nan;
-      json.name = undefined;
+      delete json.name;
     }
 
     this.verbose.info(`Attempting to load ${JSON.stringify(json)} from database`);
+    this.verbose.log(json);
     // and load the user. Even if it doesn't exist.
     let user = await this.db.users.get(json);
     this.verbose.info(`Found: `, user);
