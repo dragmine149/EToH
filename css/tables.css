@@ -23,6 +23,11 @@
   background: linear-gradient(to right, var(--completed) calc(var(--count) / var(--total) * 100%), #f0f0f0 calc(var(--count) / var(--total) * 100%));
 }
 
+.area [tag="title"]::after {
+  counter-reset: count var(--count) total var(--total);
+  content: " (" counter(count) "/" counter(total) ")";
+}
+
 .area [tag="badges"] {
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;

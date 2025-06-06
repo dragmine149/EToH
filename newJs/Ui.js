@@ -113,6 +113,19 @@ class UI {
     elm.classList[date ? "add" : "remove"]("completed");
     if (date && new_since) elm.classList.add("new");
 
+    if (!elm.counted) {
+      // this.verbose.log(elm.category);
+      let cat = this.categories.get(elm.category);
+      let title = cat.querySelector("[tag='title']");
+      let count = Number(title.style.getPropertyValue("--count"));
+      count += date ? 1 : 0;
+      title.style.setProperty("--count", count);
+
+      // elm.parentNode.style.setProperty("--count", elm.parentNode.style.getPropertyValue("--count") + date ? 1 : 0);
+      // this.verbose.log(title, title.style.getPropertyValue("--count"));
+      elm.counted = true;
+    }
+
     date ? this.loaded.push(name) : this.loaded.filter((v) => v != name);
   }
 
@@ -417,12 +430,14 @@ class UI {
       value.forEach((badge) => {
         let child = this.badges.get(badge);
         completed += child.classList.contains("completed") ? 1 : 0;
+        this.verbose.log(completed);
         node.querySelector("[tag='badges']").appendChild(child);
         badgeManager.name(badge)[0].search(this.search_data);
+        child.category = key;
       });
 
       let title = node.querySelector("[tag='title']");
-      title.innerHTML = `${title.title} (${completed}/${value.length})`;
+      // title.innerHTML = `${title.title} (${completed}/${value.length})`;
       title.style.setProperty("--count", completed);
       title.style.setProperty("--total", value.length);
     });
