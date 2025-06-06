@@ -116,14 +116,16 @@ class UI {
     if (!elm.counted) {
       // this.verbose.log(elm.category);
       let cat = this.categories.get(elm.category);
-      let title = cat.querySelector("[tag='title']");
-      let count = Number(title.style.getPropertyValue("--count"));
-      count += date ? 1 : 0;
-      title.style.setProperty("--count", count);
+      if (cat) {
+        let title = cat.querySelector("[tag='title']");
+        let count = Number(title.style.getPropertyValue("--count"));
+        count += date ? 1 : 0;
+        title.style.setProperty("--count", count);
 
-      // elm.parentNode.style.setProperty("--count", elm.parentNode.style.getPropertyValue("--count") + date ? 1 : 0);
-      // this.verbose.log(title, title.style.getPropertyValue("--count"));
-      elm.counted = true;
+        // elm.parentNode.style.setProperty("--count", elm.parentNode.style.getPropertyValue("--count") + date ? 1 : 0);
+        // this.verbose.log(title, title.style.getPropertyValue("--count"));
+        elm.counted = true;
+      }
     }
 
     date ? this.loaded.push(name) : this.loaded.filter((v) => v != name);
@@ -133,7 +135,10 @@ class UI {
   * Unloads a loaded UI, by hiding itself and setting all the badges to uncompleted.
   */
   unload_loaded() {
-    this.loaded.forEach((badge) => this.update_badge(badge, undefined));
+    this.badges.forEach((_, k) => { this.update_badge(k, undefined, undefined); _.counted = false });
+    this.categories.forEach((node) => {
+      node.querySelector("[tag='title']").style.setProperty("--count", 0);
+    });
     this.hide();
   }
 
