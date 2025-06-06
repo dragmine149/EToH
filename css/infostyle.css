@@ -1,0 +1,27 @@
+#body {
+  font-size: 1.5rem;
+  background-color: #bbb;
+  margin: .5%;
+  text-align: center;
+}
+
+#body>h1 {
+  font-size: inherit;
+}
+
+#qa {
+  background-color: #ddd;
+  color: black;
+}
+
+.qa {
+  background-color: #ccc;
+}
+
+#qa ul {
+  text-align: left;
+}
+
+.question {
+  border-bottom: 1px solid black;
+}

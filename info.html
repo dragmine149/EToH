@@ -2,6 +2,7 @@
   <head>
     <title>EToH Tower Tracker</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/infostyle.css">
   </head>
   <body>
     <div id="top_bar">
@@ -9,31 +10,124 @@
         <a href="..">Main site</a>
         <a href=".">Home</a>
         <a href="info.html">Information and FAQ</a>
+        <a href="https://github.com/dragmine149/eTOH/releases">Updates (github release notes)</a>
       </nav>
       <div id="title"><bold>EToH Tower Tracker</bold> <italics>by dragmine149</italics></div>
       <div id="viewing"></div>
     </div>
 
-    <noscript class="noscript">
-      For full functionality of this site it is necessary to enable <bold>JavaScript</bold>.<br>
-      Here are the <a href="https://www.enablejavascript.io/">
-        instructions how to enable JavaScript in your web browser
-      </a>.
-    </noscript>
-
-    <div id="main">
-      This site is a way to track tower progress for the roblox game <a href="https://www.roblox.com/games/8562822414/Eternal-Towers-of-Hell">Eternal Towers of Hell</a>
-      Made to surpass and improve upon https://jtoh.info/. A site for the same purpose.
-
-      This site works all in the browser with no external requests, other than to roblox to grap the badge data.
-
-      Although technically, you can view all this data in-game (with even more data!). This is an external view made to be accessible when not in-game for those short periods you need to check something.
-
-      <div id="features">
-        Some things you might not know / find out on your own about this website.
-        - Clicking the username in the top right will actually let you enter in a different user instead and load them without having to go home.
-        - The website uses the search parameters to load users from the url bar, hence saving time.
-        - All user data is stored locally (untiil the storage fills up). This allows for offline viewing (of last download) and quicker loading times.
+    <div id="body">
+      <h1>Welcome! To the information section.</h1>
+      And yes, this isn't the best page, i threw it together.
+      <div id="qa">
+        <ul class="qa">
+          <h4>Main Questions</h4>
+          <li>
+            <span class="question">What is this sub-site?</span><br>
+            <span class="answer">Mainlly, its a place to track tower progress for the game <a href="https://www.roblox.com/games/8562822414/Eternal-Towers-of-Hell">Eternal Towers of Hell</a>, outside of roblox. However we also track every other badge in the game.</span><br>
+          </li>
+          <li>
+            <span class="question">Why is it a sub-site and not it's own site?</span><br>
+            <span class="answer">Because i can't be bothered to pay for a domain, github is free and it works so yeah. I don't want to create another github pages for this either, so it comes under my site.</span><br>
+          </li>
+          <li>
+            <span class="question">Why does this site look so different from my main site?</span><br>
+            <span class="answer">Because this site is designed to be a bit more user friendly and follow the base site, <a href="https://jtoh.info">jtoh.info</a></span><br>
+          </li>
+          <li>
+            <span class="question">Why make such a thing?</span><br>
+            <span class="answer">This site is meant to improve upon <a href="jtoh.info">jtoh.info</a>, a site which is already pretty decent. That site however has not been updated for a while and data doesn't always load (which i can say for sure, our data loads more often)
+              This is also a project of mine, which i can show off.</span><br>
+          </li>
+          <li>
+            <span class="question">Are these questions pointless to the majority of users?</span><br>
+            <span class="answer">Probably, but eh. idctm.</span><br>
+          </li>
+        </ul>
+        <ul class="qa">
+          <h4>Usage Questions</h4>
+          <li>
+            <span class="question">How often does the data of a given user update?</span><br>
+            <span class="answer">Whenever you want. The site automatically updates users upon the user being loaded, after that however the site doesn't update them unless told to do so.</span><br>
+          </li>
+          <li>
+            <span class="question">Why can't i update all badges of a user?</span><br>
+            <span class="answer">It is very rare to need to update all badges for a given user, hence a 7 day cooldown is applied per update. (Hoer over the button to see how long left). However, if you clear site cache or know which variable to change, you can bypass this. It's just to prevent the majority from spamming</span><br>
+          </li>
+          <li>
+            <span class="question">What does it mean if some of the completed colours are of a brighter shade of green?</span><br>
+            <span class="answer">Those signify badges which have been completed since the data last got loaded.</span><br>
+          </li>
+          <li>
+            <span class="question">How do i load another user?</span><br>
+            <span class="answer">By either clicking the <code>Home</code> button in the top left, or by clicking the current visible user (top right). Either one will give you an option to load a new user</span><br>
+          </li>
+          <li>
+            <span class="question">Why can't i load a user by display name?</span><br>
+            <span class="answer">Because roblox doesn't have an API to do so, we would be shooting in the dark and might not even get the desired user.</span><br>
+          </li>
+          <li>
+            <span class="question">Why do users take longer to load the first time i load them?</span><br>
+            <span class="answer">Upon first load, we check against all the badges in game (including those of the old place). Afterwards, the data is loaded from the local storage and in the background, the uncompleted ones are requested.</span><br>
+          </li>
+          <li>
+            <span class="question">Whats the point of <code>?user={name}</code> in the URL?</span><br>
+            <span class="answer">It's a way to quick load the user, and to share this page for others.</span><br>
+          </li>
+          <li>
+            <span class="question">Does the site work on mobile?</span><br>
+            <span class="answer">In theory yes, i've done some testing for mobile and whilst it aint the best it does work. I might release a more mobile focused update at some point though.</span><br>
+          </li>
+          <li>
+            <span class="question">How do i access the browser search?</span><br>
+            <span class="answer">The browser search can be access by doing <code>ctrl/cmd + F</code> when focused on the search box. However i recommend you use the custom one as that can refine the search much better than the browser version</span><br>
+          </li>
+        </ul>
+        <ul class="qa">
+          <h4>Support / help</h4>
+          <li>
+            <span class="question">I found a bug / incorrect data, What do i do?</span><br>
+            <span class="answer">Open an issue on github, <a href="github.com/dragmine149/eTOH/issues">github.com/dragmine149/eTOH/issues</a>. I'll try and get round to fixing it asap. Alternatively, you could fix it yourself via a pull request.</span><br>
+          </li>
+          <li>
+            <span class="question">I have a suggest / feature request, What do i do?</span><br>
+            <span class="answer">Once again, open an issue on github. After you've checked for existing features requests.</span><br>
+          </li>
+          <li>
+            <span class="question">The website isn't loading due to my javascript blocker, what do i need to allow to get the website to load?</span><br>
+            <span class="answer">Most of the javascript is done on-site. However, we do rely on <code>Dexie</code> hence <code>unpkg.com</code> is also required. <code>cdn.jsdelivr.net</code> is required for the verbose (logging) class to work, which is not needed most of the time</span><br>
+          </li>
+          <li>
+            <span class="question">A badge is not included on the website, when is it going to be added?</span>
+            <span class="answer">When i get around to it, and when i get told of it. Every week (and update), github checks to see if we have used all the badges (via some rust code). If we haven't then i get an email to which i can add those badges.</span>
+          </li>
+        </ul>
+        <ul class="qa">
+          <h4>Technically Questions</h4>
+          <li>
+            <span class="question">How does the site work?</span><br>
+            <span class="answer">Check github. But if you want a shortened version... Upon entering in a user, the site sends a web request to my cloudflare worker which calls the roblox badge api to gather the data.
+              Cloudflare then returns said data, javascript then stores the data in the browser and processes it to display it in a nice format.</span>
+          </li>
+          <li>
+            <span class="question">What about scrapping the discord server for completion times?</span><br>
+            <span class="answer">Although this is technically possible, after talking about the idea with my friend, i've decided against it. The main problem being that the webhook can sometimes drop and the channels don't contain all the data (due to
+              the one period where discord blocked roblox for a while from sending webhooks). I would also need to somehow work out how to keep account creditinals refereshed and up to date without my involvement which is a lot of work.</span>
+          </li>
+          <li>
+            <span class="question">The cloudflare endpoint?</span><br>
+            <span class="answer">The cloudflare endpoint that i've made is: <a href="https://roblox-proxy.dragmine149.workers.dev/">https://roblox-proxy.dragmine149.workers.dev/</a>. Which can be used for anything other than this site. I recommend you check
+              it out if you are interested.</span>
+          </li>
+          <li>
+            <span class="question">How many users are stored locally?</span><br>
+            <span class="answer">A total of 250, or until the browser does some auto deletion stuff due to the space filling up (should be very rare unless you have tiny storage).</span><br>
+          </li>
+          <li>
+            <span class="question">Can i use the code in my own project?</span><br>
+            <span class="answer">Sure go ahead, I've tried to make a lot of generialised classes and have them interact with the EToH class very little. Just credit me in the code at least.</span>
+          </li>
+        </ul>
       </div>
     </div>
   </body>
