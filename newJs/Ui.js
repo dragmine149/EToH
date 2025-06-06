@@ -433,8 +433,10 @@ class UI {
     Object.entries(data.data).forEach(([key, value]) => {
       let node = this.categories.get(key);
       let completed = 0;
+      let hidden = 0;
       value.forEach((badge) => {
         let child = this.badges.get(badge);
+        hidden += child.classList.contains("locked") ? 1 : 0;
         completed += child.classList.contains("completed") ? 1 : 0;
         // this.verbose.log(completed);
         node.querySelector("[tag='badges']").appendChild(child);
@@ -445,6 +447,7 @@ class UI {
       let title = node.querySelector("[tag='title']");
       // title.innerHTML = `${title.title} (${completed}/${value.length})`;
       title.style.setProperty("--count", completed);
+      title.style.setProperty("--hidden", hidden);
       title.style.setProperty("--total", value.length);
       this.onCategoryLoad(key);
     });

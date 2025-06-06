@@ -24,8 +24,8 @@
 }
 
 .area [tag="title"]::after {
-  counter-reset: count var(--count) total var(--total);
-  content: " (" counter(count) "/" counter(total) ")";
+  counter-reset: count var(--count) total var(--total) hc calc(var(--total) - var(--hidden));
+  content: " (" counter(count) "/" counter(hc) ")";
 }
 
 .area [tag="badges"] {
