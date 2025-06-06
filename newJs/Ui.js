@@ -265,8 +265,6 @@ class UI {
     // this.verbose.log(badgeInformation.innerHTML);
   }
 
-  onFinishedCreate() { }
-
   #createBadges() {
     badgeManager.name().forEach((badge) => {
       this.creator_verbose.log("Processing Badge: ", badge);
@@ -293,7 +291,6 @@ class UI {
       this.search_data[badge] = badge;
       this.badges.set(badge, clone);
     });
-    this.onFinishedCreate();
   }
 
   /**

@@ -505,17 +505,6 @@ class EToHUI extends UI {
     points.querySelector("[count='towers']").innerText = `Towers: ${towers_completed}/${towers_total} (${towers_percent.toFixed(2)}%)`;
     points.querySelector("[count='points']").innerText = `Tower Points: ${tower_points} `;
   }
-
-  onFinishedCreate() {
-    badgeManager.name().forEach((badge_name) => {
-      /** @type {Badge} */
-      let badge = badgeManager.name(badge_name)[0];
-
-      if (badge instanceof Tower) {
-        this.search_data[badge.shortName] = badge_name;
-      }
-    })
-  }
 }
 
 async function loadTowersFromServer() {
