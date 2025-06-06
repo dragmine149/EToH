@@ -169,7 +169,10 @@ bold {
 
 #under_top_bar #categories {
   text-align: center;
-  width: 40%;
+  /* width: 40%; */
+  color: white;
+  padding-left: 10px;
+  background-color: #404047;
 }
 
 
@@ -195,7 +198,7 @@ bold {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: calc(100vh - (62.5px + 62.5px));
+  height: calc(100vh - (62.5px + 70px));
 }
 
 #search {

@@ -414,6 +414,9 @@ class EToHUI extends UI {
           .flatMap((b) => b.name),
         getDifficultyWord(diff)
       ));
+
+    let otherCategory = this.setCategory("other");
+    badgeManager.type(Other).forEach(/** @param {Other} badge */(badge) => otherCategory.addBadges(badge.name, badge.category));
   }
 
   unload_loaded() {
@@ -504,17 +507,6 @@ class EToHUI extends UI {
 
     points.querySelector("[count='towers']").innerText = `Towers: ${towers_completed}/${towers_total} (${towers_percent.toFixed(2)}%)`;
     points.querySelector("[count='points']").innerText = `Tower Points: ${tower_points} `;
-  }
-
-  onFinishedCreate() {
-    badgeManager.name().forEach((badge_name) => {
-      /** @type {Badge} */
-      let badge = badgeManager.name(badge_name)[0];
-
-      if (badge instanceof Tower) {
-        this.search_data[badge.shortName] = badge_name;
-      }
-    })
   }
 }
 
