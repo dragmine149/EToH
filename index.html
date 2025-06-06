@@ -61,6 +61,9 @@
         <button onclick="etohUI.load_category('difficulty')">Difficulty</button>
         <button onclick="etohUI.load_category('other')">Other</button>
       </div>
+      <div id="toggleables">
+        <button id="toggle-locked" onclick="etohUI.toggleLocked()">Hide Locked Towers</button>
+      </div>
       <div id="update">
         <div id="badge-search" hidden>
           <input type="text" id="badge-search-input" placeholder="Search for a Badge"
@@ -123,7 +126,7 @@
         <div id="category" hidden class="area">
           <span tag="title"></span>
           <table tag="badges">
-            <tr tag="badge" hidden>
+            <tr tag="badge" hidden style="display: none;">
               <td tag="name"></td>
               <td tag="information">
                 <span tag="info"></span><br>

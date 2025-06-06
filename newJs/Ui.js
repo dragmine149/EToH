@@ -292,6 +292,7 @@ class UI {
       // create a clone of the element.
       let clone = document.querySelector("[tag='badge']").cloneNode(true);
       clone.hidden = false;
+      clone.style = "";
 
       // by default, set the badge name to the name,
       /** @type {HTMLDivElement} */
@@ -409,6 +410,9 @@ class UI {
     }
   }
 
+  //eslint-disable-next-line no-unused-vars
+  onCategoryLoad(_) { }
+
   /**
   * Display a preset category.
   * @param {string} category_name
@@ -432,7 +436,7 @@ class UI {
       value.forEach((badge) => {
         let child = this.badges.get(badge);
         completed += child.classList.contains("completed") ? 1 : 0;
-        this.verbose.log(completed);
+        // this.verbose.log(completed);
         node.querySelector("[tag='badges']").appendChild(child);
         badgeManager.name(badge)[0].search(this.search_data);
         child.category = key;
@@ -442,6 +446,7 @@ class UI {
       // title.innerHTML = `${title.title} (${completed}/${value.length})`;
       title.style.setProperty("--count", completed);
       title.style.setProperty("--total", value.length);
+      this.onCategoryLoad(key);
     });
 
     this.syncSize();

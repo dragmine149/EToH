@@ -175,6 +175,9 @@ bold {
   background-color: #404047;
 }
 
+.locked {
+  display: none;
+}
 
 
 .qa {

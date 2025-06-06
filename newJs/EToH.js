@@ -99,6 +99,23 @@ function getTowerType(name, type) {
   return TOWER_TYPE.Other;
 }
 
+/**
+* Returns the amount of points that the type provided is worth.
+* @param {TOWER_TYPE} type The type of tower.
+*/
+function getTowerPoints(type) {
+  switch (type) {
+    case TOWER_TYPE.Obelisk: return 3;
+    case TOWER_TYPE.Citadel: return 2;
+    case TOWER_TYPE.Tower: return 1;
+    case TOWER_TYPE.Steeple: return 0.5;
+
+    default:
+    case TOWER_TYPE.Mini_Tower:
+    case TOWER_TYPE.Other: return 0;
+  }
+}
+
 class Tower extends Badge {
   /** @type {number} The difficulty of the tower. */
   difficulty;
@@ -507,6 +524,78 @@ class EToHUI extends UI {
 
     points.querySelector("[count='towers']").innerText = `Towers: ${towers_completed}/${towers_total} (${towers_percent.toFixed(2)}%)`;
     points.querySelector("[count='points']").innerText = `Tower Points: ${tower_points} `;
+  }
+
+  hiddenSearch = {}
+
+  hideLocked() {
+    let tower_points =
+      (this.types.Obelisk.achieved.length * 3) +
+      (this.types.Citadel.achieved.length * 2) +
+      (this.types.Tower.achieved.length * 1) +
+      (this.types.Steeple.achieved.length * 0.5);
+
+    /** @type {EToHUser} */
+    let user = userManager.current_user;
+    let diffs = {}
+    let accounted = [];
+    user.completed
+      .forEach((v) => {
+        /** @type {Badge} */
+        // prevent repeats and non towers.
+        let badge = badgeManager.ids(v.badgeId)[0];
+        if (!(badge instanceof Tower)) return;
+        if (accounted.includes(badge.name)) return;
+        accounted.push(badge.name);
+        // loop through all the difficulties as 1 tower in a higher difficulty is also 1 tower in every difficuty below that.
+        for (let i = badge.difficulty; i > 0; i--) {
+          let word = getDifficultyWord(i).toLowerCase();
+          diffs[word] = (diffs[word] || 0) + getTowerPoints(badge.type);
+        }
+
+        // getDifficultyWord(badgeManager.ids(v.badgeId)[0]?.difficulty).toLowerCase()
+      })
+
+    areaManager.name().forEach((area) => {
+      /** @type {Area} */
+      let data = areaManager.name(area)[0];
+      let point_required = tower_points >= data.requirements.points;
+      let diff_required = Object.entries(data.requirements.difficulties)
+        .every(([key, value]) => diffs[key] >= value);
+
+      let locked = !(point_required && diff_required);
+      let areaCate = this.categories.get(area);
+      if (locked) areaCate.classList.add("locked");
+      badgeManager.area(area).forEach((badge) => {
+        let badgeNode = this.badges.get(badge.name);
+        if (locked) badgeNode.classList.add("locked");
+
+        Object.entries(this.search_data).filter((v) => v[1] == badge.name).forEach((v) => {
+          this.hiddenSearch[v[0]] = v[1];
+          delete this.search_data[v[0]]
+        });
+      });
+    })
+  }
+
+  showLocked() {
+    document.querySelectorAll(".locked").forEach((node) => node.classList.remove("locked"));
+    Object.entries(this.hiddenSearch).forEach((v) => this.search_data[v[0]] = v[1]);
+  }
+
+  locked = false;
+  toggleLocked(value) {
+    if (value === undefined) value = !this.locked;
+    value ? this.hideLocked() : this.showLocked();
+    document.getElementById("toggle-locked").innerText = `${value ? 'Show' : 'Hide'} Locked Towers`;
+    this.locked = value;
+  }
+
+  onCategoryLoad(category_name) {
+    this.categories.get(category_name).querySelectorAll("[tag='badge']").forEach((node) => {
+      node.hidden = node.locked;
+    });
+    super.onCategoryLoad(category_name);
   }
 }
 
