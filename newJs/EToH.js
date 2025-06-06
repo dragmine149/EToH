@@ -195,19 +195,18 @@ class EToHUser extends User {
   /** @type {{badgeId: number, date: number, userId: number}[]} The users completed badges */
   completed = [];
 
-
-
   #all_loaded;
   /** @type {number} When the user can next load all badges, without developer access. */
   set all_loaded(v) {
+    this.verbose.log(`All loaded: ${v}`);
     this.#all_loaded = v;
-    document.getElementById("update").querySelector("[tag='all']").disabled = new Date().getTime() < this.all_loaded;
     userManager.storeUser(this.database);
   }
   get all_loaded() { return this.#all_loaded; }
 
   constructor(user_data) {
     super(user_data);
+    this.verbose.log("test");
     if (typeof user_data === 'object' && user_data !== null) this.all_loaded = user_data.all;
   }
 
@@ -260,6 +259,9 @@ class EToHUser extends User {
   */
   async postCreate() {
     super.postCreate();
+
+    document.getElementById("update").querySelector("[tag='all']").disabled = new Date().getTime() < this.all_loaded;
+    document.getElementById("update").querySelector("[tag='all']").title = new Date().getTime() < this.all_loaded ? "Updated within the last week, please wait." : "";
 
     this.verbose.info("Loading completed badges");
 
