@@ -30,6 +30,8 @@ fn process_badges(badge_list: &[u64], badges: Vec<Badge>) -> String {
         .iter()
         .filter(|badge| !badge_list.contains(&badge.id))
         .filter(|badge| badge.name != "Placeholder")
+        .filter(|badge| badge.name != "Beat The Tower Of ...")
+        .filter(|badge| badge.id != 2124560526) // The duplicate badge of Tower of Suffering Outside.
         .map(|badge| format!("{} - {}\n", badge.id, badge.name))
         .collect::<String>()
 }
@@ -72,10 +74,28 @@ fn main() {
         )
         .collect::<Vec<u64>>();
 
+    let dupes = badge_list
+        .iter()
+        .filter(|badge_id| {
+            badge_list
+                .iter()
+                .filter(|badge| badge == badge_id)
+                .collect::<Vec<&u64>>()
+                .len()
+                > 1
+        })
+        .collect::<Vec<&u64>>();
+
     // println!("{:?}", badge_list.collect::<Vec<u64>>());
 
     let unused = process_badges(&badge_list, badges);
     let old_unused = process_badges(&badge_list, old_badges);
+
+    if !dupes.is_empty() {
+        println!();
+        println!();
+        println!("Duplicate entries found:\n{:?}", dupes);
+    }
 
     if !old_unused.is_empty() {
         println!();
