@@ -3,6 +3,100 @@
   "areas": {
     "permanent": [
       {
+        "name": "Ring 0: Purgatorio",
+        "requirements": {
+          "difficulties": {},
+          "points": 0
+        },
+        "towers": [
+          {
+            "name": "Tower of Genesis",
+            "difficulty": 100,
+            "badges": [
+              2998040866283977
+            ]
+          },
+          {
+            "name": "Tower of Motion Evolution",
+            "difficulty": 100,
+            "badges": [
+              1180657673680675
+            ]
+          },
+          {
+            "name": "Tower of Buttons",
+            "difficulty": 100,
+            "badges": [
+              1792274219914148
+            ]
+          },
+          {
+            "name": "Tower of Various Pressures",
+            "difficulty": 100,
+            "badges": [
+              3194046165949700
+            ]
+          },
+          {
+            "name": "Tower of Critical Damage",
+            "difficulty": 100,
+            "badges": [
+              1985325594898930
+            ]
+          },
+          {
+            "name": "Tower of ???",
+            "difficulty": 100,
+            "badges": [
+              2424222337564254
+            ]
+          },
+          {
+            "name": "Tower of No Strings Attached",
+            "difficulty": 100,
+            "badges": [
+              1406264843938633
+            ]
+          },
+          {
+            "name": "Tower of Kinetic Potential",
+            "difficulty": 100,
+            "badges": [
+              3190118081857963
+            ]
+          },
+          {
+            "name": "Tower of Keys To Success",
+            "difficulty": 100,
+            "badges": [
+              2557966395367805
+            ]
+          },
+          {
+            "name": "Tower of Dancing All Night",
+            "difficulty": 100,
+            "badges": [
+              3557168381486575
+            ]
+          },
+          {
+            "name": "Citadel of Victory",
+            "difficulty": 100,
+            "badges": [
+              3615836876088083
+            ]
+          },
+          {
+            "name": "Tower Not Found",
+            "difficulty": 100,
+            "badges": [
+              2479940534323983
+            ],
+            "type": "Mini_Tower"
+          }
+        ]
+      },
+      {
         "name": "Ring 1: Limbo",
         "requirements": {
           "difficulties": {},
@@ -511,6 +605,13 @@
             "badges": [
               2125416780,
               2124924339
+            ]
+          },
+          {
+            "name": "Citadel of Biotech Genesis",
+            "difficulty": 100,
+            "badges": [
+              2836013584684212
             ]
           }
         ]
@@ -3336,6 +3437,143 @@
             ]
           }
         ]
+      },
+      {
+        "name": "Legacy Fortress",
+        "requirements": {
+          "difficulties": {},
+          "points": 0
+        },
+        "towers": [
+          {
+            "name": "Tower of Trouble",
+            "difficulty": 1.72,
+            "badges": [
+              2146809786
+            ]
+          },
+          {
+            "name": "Tower of Phone Snapping",
+            "difficulty": 2.78,
+            "badges": [
+              1995691337647275
+            ]
+          },
+          {
+            "name": "Tower of Infuriation",
+            "difficulty": 2.94,
+            "badges": [
+              1403295112580944
+            ]
+          },
+          {
+            "name": "Tower of Total Exhaustion",
+            "difficulty": 4.28,
+            "badges": [
+              911423792377504
+            ]
+          },
+          {
+            "name": "Tower of Unfortunate Possibilities",
+            "difficulty": 4.8,
+            "badges": [
+              4027595270597298
+            ]
+          },
+          {
+            "name": "Tower of Gloom",
+            "difficulty": 4.89,
+            "badges": [
+              4384684245569716
+            ]
+          },
+          {
+            "name": "Tower of Window Shattering",
+            "difficulty": 5.92,
+            "badges": [
+              2146809993
+            ]
+          },
+          {
+            "name": "Tower of Tearing Up",
+            "difficulty": 6.26,
+            "badges": [
+              3562298822644345
+            ]
+          },
+          {
+            "name": "Tower of Great Infamy",
+            "difficulty": 6.78,
+            "badges": [
+              305362396029583
+            ]
+          },
+          {
+            "name": "Tower of Mass Destruction",
+            "difficulty": 7.11,
+            "badges": [
+              2146810001
+            ]
+          },
+          {
+            "name": "Tower of Spicy Tourment",
+            "difficulty": 7.59,
+            "badges": [
+              3963772030857965
+            ]
+          },
+          {
+            "name": "Tower of Confusion",
+            "difficulty": 8.01,
+            "badges": [
+              2146811227
+            ]
+          },
+          {
+            "name": "Tower of Unending Bamboozles",
+            "difficulty": 8.95,
+            "badges": [
+              2984716480208851
+            ]
+          }
+        ]
+      },
+      {
+        "name": "100M",
+        "requirements": {
+          "difficulties": {},
+          "points": 0
+        },
+        "towers": [
+          {
+            "name": "100M Celebration",
+            "difficulty": 1.31,
+            "badges": [
+              419823019767141
+            ]
+          },
+          {
+            "name": "100M Trial",
+            "difficulty": 1.41,
+            "badges": [
+              3413489029205234
+            ]
+          },
+          {
+            "name": "100M Finale",
+            "difficulty": 6.52,
+            "badges": [
+              2119736938217503
+            ]
+          },
+          {
+            "name": "100M Revenge",
+            "difficulty": 9.92,
+            "badges": [
+              3750615969565924
+            ]
+          }
+        ]
       }
     ],
     "other": [
@@ -3353,6 +3591,57 @@
               2965533401798823
             ],
             "type": "Mini_Tower"
+          }
+        ]
+      },
+      {
+        "name": "Time-Lost Plain",
+        "requirements": {
+          "difficulties": {},
+          "points": 0
+        },
+        "towers": [
+          {
+            "name": "Is this a tower?",
+            "difficulty": 5.81,
+            "badges": [
+              2127908292
+            ],
+            "type": "Mini_Tower"
+          }
+        ]
+      },
+      {
+        "name": "Time-Lost Clockwork",
+        "requirements": {
+          "difficulties": {},
+          "points": 0
+        },
+        "towers": [
+          {
+            "name": "This Is A Tower",
+            "difficulty": 6.2,
+            "type": "Mini_Tower",
+            "badges": [
+              2149219726
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Time-Lost Sands",
+        "requirements": {
+          "difficulties": {},
+          "points": 0
+        },
+        "towers": [
+          {
+            "name": "Wow! It's A Tower!",
+            "difficulty": 7.72,
+            "type": "Mini_Tower",
+            "badges": [
+              2029674299479161
+            ]
           }
         ]
       }
