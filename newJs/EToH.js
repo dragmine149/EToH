@@ -528,7 +528,10 @@ class EToHUI extends UI {
     points.querySelector("[count='points']").innerText = `Tower Points: ${tower_points} `;
   }
 
-  hiddenSearch = {}
+  hiddenSearch = {
+    locked: {},
+    mini: {}
+  }
 
   hideLocked() {
     let tower_points =
@@ -573,8 +576,8 @@ class EToHUI extends UI {
         if (locked) badgeNode.classList.add("locked");
 
         Object.entries(this.search_data).filter((v) => v[1] == badge.name).forEach((v) => {
-          this.hiddenSearch[v[0]] = v[1];
-          delete this.search_data[v[0]]
+          this.hiddenSearch.locked[v[0]] = v[1];
+          delete this.search_data[v[0]];
         });
       });
     })
@@ -582,7 +585,32 @@ class EToHUI extends UI {
 
   showLocked() {
     document.querySelectorAll(".locked").forEach((node) => node.classList.remove("locked"));
-    Object.entries(this.hiddenSearch).forEach((v) => this.search_data[v[0]] = v[1]);
+    Object.entries(this.hiddenSearch.locked).forEach((v) => {
+      this.search_data[v[0]] = v[1]
+      delete this.hiddenSearch.locked[v[0]];
+    });
+  }
+
+  hideMini() {
+    badgeManager.type(Tower)
+      .filter(/** @param {Tower} badge */(badge) => badge.type == TOWER_TYPE.Mini_Tower)
+      .forEach(/** @param {Tower} badge */(badge) => {
+        let node = this.badges.get(badge.name);
+        node.classList.add("mini-hidden");
+
+        Object.entries(this.search_data).filter((v) => v[1] == badge.name).forEach((v) => {
+          this.hiddenSearch.mini[v[0]] = v[1];
+          delete this.search_data[v[0]];
+        });
+      });
+  }
+
+  showMini() {
+    document.querySelectorAll(".mini-hidden").forEach((node) => node.classList.remove("mini-hidden"));
+    Object.entries(this.hiddenSearch.mini).forEach((v) => {
+      this.search_data[v[0]] = v[1]
+      delete this.hiddenSearch.mini[v[0]];
+    });
   }
 
   locked = false;
@@ -591,6 +619,15 @@ class EToHUI extends UI {
     value ? this.hideLocked() : this.showLocked();
     document.getElementById("toggle-locked").innerText = `${value ? 'Show' : 'Hide'} Locked Towers`;
     this.locked = value;
+    this.load_category(this.current_category);
+  }
+
+  mini = false;
+  toggleMini(value) {
+    if (value === undefined) value = !this.mini;
+    value ? this.hideMini() : this.showMini();
+    document.getElementById("toggle-mini").innerText = `${value ? 'Show' : 'Hide'} Mini Towers`;
+    this.mini = value;
     this.load_category(this.current_category);
   }
 

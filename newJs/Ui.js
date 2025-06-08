@@ -449,7 +449,7 @@ class UI {
       let hidden = 0;
       value.forEach((badge) => {
         let child = this.badges.get(badge);
-        hidden += child.classList.contains("locked") ? 1 : 0;
+        hidden += child.classList.contains("locked") || child.classList.contains("mini-hidden") ? 1 : 0;
         completed += child.classList.contains("completed") ? 1 : 0;
         // this.verbose.log(hidden);
         node.querySelector("[tag='badges']").appendChild(child);

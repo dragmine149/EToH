@@ -174,7 +174,8 @@ bold {
   background-color: #404047;
 }
 
-.locked {
+.locked,
+.mini-hidden {
   display: none;
 }
 
