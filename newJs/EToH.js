@@ -65,7 +65,7 @@
 * @param {number} difficulty The difficuty of the tower.
 * @returns The word to describe it.
 */
-function getDifficultyWord(difficulty) { return DIFFICULTIES[Math.trunc(difficulty) - 1] ?? "Unknown"; }
+function getDifficultyWord(difficulty) { return DIFFICULTIES[Math.trunc(difficulty) - 1] ?? "Unknown_Difficulty"; }
 
 /**
 * Translates the number form into a more readable word form. Defaults to "Baseline Unknown" if it can't find anything.
@@ -76,7 +76,7 @@ function getDifficulty(difficulty) {
   let stage = Math.trunc(difficulty);
   let sub = difficulty % 1;
 
-  let stageWord = DIFFICULTIES[stage - 1] || "Unknown";
+  let stageWord = DIFFICULTIES[stage - 1] || "Unknown_Difficulty";
   let subWord = SUB_LEVELS.find(level => sub >= level.threshold)?.name || "Baseline";
 
   return `${subWord} ${stageWord}`;
