@@ -591,6 +591,7 @@ class EToHUI extends UI {
     value ? this.hideLocked() : this.showLocked();
     document.getElementById("toggle-locked").innerText = `${value ? 'Show' : 'Hide'} Locked Towers`;
     this.locked = value;
+    this.load_category(this.current_category);
   }
 
   onCategoryLoad(category_name) {

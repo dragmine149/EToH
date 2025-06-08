@@ -423,6 +423,8 @@ class UI {
   //eslint-disable-next-line no-unused-vars
   onCategoryLoad(_) { }
 
+
+  current_category = "default";
   /**
   * Display a preset category.
   * @param {string} category_name
@@ -431,6 +433,7 @@ class UI {
     let data = this.display_categories[category_name];
     let categories = data.parents;
     this.verbose.log(categories);
+    this.current_category = category_name;
 
     // sort out node visibility first.
     let categoryCategories = Object.keys(categories).flatMap((v) => v)
@@ -448,7 +451,7 @@ class UI {
         let child = this.badges.get(badge);
         hidden += child.classList.contains("locked") ? 1 : 0;
         completed += child.classList.contains("completed") ? 1 : 0;
-        // this.verbose.log(completed);
+        // this.verbose.log(hidden);
         node.querySelector("[tag='badges']").appendChild(child);
         badgeManager.name(badge)[0].search(this.search_data);
         child.category = key;
