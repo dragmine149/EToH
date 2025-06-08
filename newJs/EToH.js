@@ -430,6 +430,7 @@ class EToHUI extends UI {
         badgeManager
           .difficulty(diff)
           .sort((a, b) => a.difficulty > b.difficulty)
+          .filter((b) => b.category == "permanent")
           .flatMap((b) => b.name),
         getDifficultyWord(diff)
       ));
