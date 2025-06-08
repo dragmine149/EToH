@@ -241,6 +241,8 @@ class UI {
 
   previous_search() { this.searchIndex -= 1; }
 
+  hover = null;
+
   /**
   * Effects an element depending on whats happening.
   * @param {HTMLDivElement} elm The element to affect.
@@ -254,6 +256,14 @@ class UI {
     let badgeName = elm.querySelector("[tag='name']")
     /** @type {HTMLDivElement} */
     let badgeInformation = elm.querySelector("[tag='info']");
+
+    if (hover === true) {
+      if (this.hover == elm) return; // just don't update it if we are already hovering it.
+      this.hover = elm;
+    }
+    if (hover === false) {
+      this.hover = null;
+    }
 
     // check for hovering.
     elm.isHover = hover == undefined ? elm.isHover : hover;
