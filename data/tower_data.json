@@ -1633,112 +1633,112 @@
         "towers": [
           {
             "name": "Tower of Lethean Recollection",
-            "difficulty": 100,
+            "difficulty": 4.13,
             "badges": [
               1289207222729699
             ]
           },
           {
             "name": "Tower of You're Late For Work",
-            "difficulty": 100,
+            "difficulty": 4.73,
             "badges": [
               3753365954140761
             ]
           },
           {
             "name": "Tower of Pursuit Led Astray",
-            "difficulty": 100,
+            "difficulty": 4.96,
             "badges": [
               2766842373955971
             ]
           },
           {
             "name": "Steeple of Balloon Commune",
-            "difficulty": 100,
+            "difficulty": 5.63,
             "badges": [
               53740875259774
             ]
           },
           {
             "name": "Steeple of After-Life Detention",
-            "difficulty": 100,
+            "difficulty": 5.86,
             "badges": [
               2634745481559417
             ]
           },
           {
             "name": "Steeple of The Manufactured Monstrosity",
-            "difficulty": 100,
+            "difficulty": 5.89,
             "badges": [
               2763253159461072
             ]
           },
           {
-            "name": "Tower of The Umbrella, The User",
-            "difficulty": 100,
-            "badges": [
-              165330479439546
-            ]
-          },
-          {
             "name": "Steeple of Two Minute Noodles",
-            "difficulty": 100,
+            "difficulty": 6.10,
             "badges": [
               3730347966032771
             ]
           },
           {
-            "name": "Steeple of Itsy Bitsy",
-            "difficulty": 100,
+            "name": "Tower of The Umbrella, The User",
+            "difficulty": 6.32,
             "badges": [
-              391052562773885
+              165330479439546
             ]
           },
           {
             "name": "Tower of Infiltrated Ruins",
-            "difficulty": 100,
+            "difficulty": 6.36,
             "badges": [
               4465046116074335
             ]
           },
           {
+            "name": "Steeple of Itsy Bitsy",
+            "difficulty": 6.40,
+            "badges": [
+              391052562773885
+            ]
+          },
+          {
             "name": "Tower of A Disillusioned Existence",
-            "difficulty": 100,
+            "difficulty": 6.57,
             "badges": [
               491118547215153
             ]
           },
           {
             "name": "Tower of Warranted Retribution",
-            "difficulty": 100,
+            "difficulty": 6.75,
             "badges": [
               2122020127306477
             ]
           },
           {
             "name": "Tower of House Without Home",
-            "difficulty": 100,
+            "difficulty": 7.26,
             "badges": [
               4114801218397975
             ]
           },
           {
             "name": "Tower of Fleeing From Everything Ending",
-            "difficulty": 100,
+            "difficulty": 7.40,
             "badges": [
               2919301511601152
             ]
           },
           {
             "name": "Steeple of Cheesy Vengeance",
-            "difficulty": 100,
+            "difficulty": 7.59,
             "badges": [
               1358487401757254
             ]
           },
           {
             "name": "Steeple of Forlorn Blizzard",
-            "difficulty": 100,
+            "difficulty": 7.68,
             "badges": [
               1391896070846757
             ]
