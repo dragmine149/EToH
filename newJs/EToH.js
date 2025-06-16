@@ -160,7 +160,7 @@ class Tower extends Badge {
   #short(text) {
     // Tower codes are made up of:
     // each word
-    return text.split(' ')
+    return text.split(/[\s-]/gm)
       // lowered
       .map(word => word.toLowerCase())
       // for 'of' and 'and' to be lower, and the rest upper.
