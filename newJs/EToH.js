@@ -311,6 +311,10 @@ class EToHUser extends User {
   * @param {boolean} local_check To check if we already have that badge stored before updating it. Defaults to true.
   */
   async loadBadges(badges, callback, local_check) {
+    if (!local_check) {
+      this.completed = [];
+    }
+
     local_check = local_check !== undefined ? local_check : true;
     this.verbose.info(`Loading badges from server`);
     await network.requestStream(new Request(`${CLOUD_URL}/badges/${this.id}/all`, {
