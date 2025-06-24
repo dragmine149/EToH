@@ -42,7 +42,9 @@ jobs:
 
       - name: Install Playwright Browsers
         if: steps.cache-play.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps
+        run: |
+          npx playwright install --with-deps
+          playwright install
 
       - name: Start server
         run: python -m http.server 8080 &
