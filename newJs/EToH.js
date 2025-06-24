@@ -297,6 +297,7 @@ class EToHUser extends User {
     date += 604800000;
     this.all_loaded = date;
 
+    etohUI.reset_new();
     await this.loadBadges(badgeManager.ids(), (json) => {
       etohUI.loadBadge(json.badgeId, json.date);
     }, false)
