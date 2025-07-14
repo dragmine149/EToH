@@ -2488,23 +2488,6 @@
         ]
       },
       {
-        "name": "Pit of Misery",
-        "requirements": {
-          "difficulties": {},
-          "points": 0
-        },
-        "sub_area": "Zone 3: Sky",
-        "towers": [
-          {
-            "name": "Tower of Modernistic Design Choices",
-            "difficulty": 1.88,
-            "badges": [
-              2125612958
-            ]
-          }
-        ]
-      },
-      {
         "name": "Zone 4: Exosphere",
         "requirements": {
           "difficulties": {
@@ -3577,6 +3560,22 @@
       }
     ],
     "other": [
+      {
+        "name": "Pit of Misery",
+        "requirements": {
+          "difficulties": {},
+          "points": 0
+        },
+        "towers": [
+          {
+            "name": "Tower of Modernistic Design Choices",
+            "difficulty": 1.88,
+            "badges": [
+              2125612958
+            ]
+          }
+        ]
+      },
       {
         "name": "Time-Lost Tempest",
         "requirements": {
