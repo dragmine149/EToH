@@ -29,7 +29,7 @@ fn process_badges(badge_list: &[u64], badges: Vec<Badge>) -> String {
     badges
         .iter()
         .filter(|badge| !badge_list.contains(&badge.id))
-        .filter(|badge| badge.name != "Placeholder")
+        .filter(|badge| !badge.name.to_lowercase().contains("placeholder"))
         .filter(|badge| badge.name != "Beat The Tower Of ...")
         .filter(|badge| badge.id != 2124560526) // The duplicate badge of Tower of Suffering Outside.
         .map(|badge| format!("{} - {}\n", badge.id, badge.name))
