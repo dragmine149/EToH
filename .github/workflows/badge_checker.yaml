@@ -4,7 +4,7 @@ name: Badge Checker
 on:
   push:
   schedule:
-    - cron: "0 0 * * 0"
+    - cron: "38 9 * * 0"
 
 jobs:
   get-badges:
@@ -18,6 +18,9 @@ jobs:
             !data/Guy_sql
             BadgeChecker/
           sparse-checkout-cone-mode: false
+
+      - name: Cache and setup rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Test Badges
         run: |
