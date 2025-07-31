@@ -1,3 +1,4 @@
+mod cache;
 mod definitions;
 mod json;
 mod parse_wikitext;
@@ -40,9 +41,19 @@ fn scrap_wiki(client: &Client, badge_name: impl Into<String>) -> Option<WIkiTowe
     let url =
         Url::parse_with_params(&format!("{}/{}", WIKI_BASE, badge), &[("action", "raw")]).unwrap();
 
-    let response = client.get(url).send().ok()?;
-    // println!("{:?}", response);
-    parse_wikitext::parse_wiki_text(response.text().ok()?.as_str())
+    let wikicache = cache::read_cache(&url);
+    let wikitext = match wikicache {
+        Some(wikicache) => wikicache,
+        None => {
+            let data = client.get(url.to_owned()).send().ok()?.text().ok()?;
+            // println!("{data}");
+            cache::write_cache(&url, &data).ok()?;
+            println!("e");
+            data
+        }
+    };
+
+    parse_wikitext::parse_wiki_text(&wikitext)
 }
 
 fn process_badges(badge_list: &[u64], badges: Vec<Badge>) -> String {
