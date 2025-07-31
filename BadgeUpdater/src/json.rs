@@ -3,7 +3,7 @@ use std::{collections::HashMap, fs, path::PathBuf};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    definitions::{AreaInformation, AreaMap, AreaRequirements, Tower, TowerDifficulties},
+    definitions::{AreaInformation, AreaMap, Tower},
     parse_wikitext::WIkiTower,
 };
 
@@ -30,7 +30,7 @@ pub struct TowerJSON {
 impl TowerJSON {
     pub fn new() -> Self {
         let mut s = Self::default();
-        s.schema = "tower_data_schema.json".to_string();
+        s.schema = "tds.json".to_string();
         s
     }
 

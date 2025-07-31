@@ -60,6 +60,13 @@ fn clean_badge_name(badge: &String) -> String {
     badge.trim().replace("Beat The", "").trim().to_string()
 }
 
+fn compress_name(badge: &str) -> String {
+    badge
+        .replace("Tower of ", "")
+        .replace("Citadel of ", "")
+        .replace("Steeple of ", "")
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new();
 
@@ -89,7 +96,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             data.add_tower_badge(&badge.name, badge.id);
         }
 
-        data.insert_tower(wiki.unwrap(), &badge.name, badge.id, &map);
+        data.insert_tower(wiki.unwrap(), &compress_name(&badge.name), badge.id, &map);
     }
 
     data.write_to_file("../tower_data.json".into())

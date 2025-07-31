@@ -44,10 +44,13 @@ pub struct Data {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Tower {
+    #[serde(rename = "n")]
     pub name: String,
+    #[serde(rename = "d")]
     pub difficulty: f64,
+    #[serde(rename = "b")]
     pub badges: Vec<u64>,
-    #[serde(rename = "type")]
+    #[serde(rename = "t")]
     pub tower_type: Option<TowerType>,
 }
 
@@ -79,16 +82,21 @@ pub struct TowerDifficulties {
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub struct AreaRequirements {
+    #[serde(rename = "ds")]
     pub difficulties: TowerDifficulties,
+    #[serde(rename = "p")]
     pub points: u64,
 }
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub struct AreaInformation {
+    #[serde(rename = "n")]
     pub name: String,
+    #[serde(rename = "r")]
     pub requirements: AreaRequirements,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "s")]
     pub sub_area: Option<String>,
+    #[serde(rename = "t")]
     pub towers: Vec<Tower>,
 }
 
