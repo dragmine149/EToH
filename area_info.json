@@ -1,0 +1,124 @@
+{
+  "areas": {
+    "permanent": {
+      "Ring 0": [
+        "Ring 0"
+      ],
+      "Ring 1": [
+        "Ring 1"
+      ],
+      "Forgotten Ridge": [
+        "Forgotten Ridge"
+      ],
+      "Ring 2": [
+        "Ring 2"
+      ],
+      "Garden of Eeshöl": [
+        "Garden of Eeshöl"
+      ],
+      "Ring 3": [
+        "Ring 3"
+      ],
+      "Ring 4": [
+        "Ring 4"
+      ],
+      "Silent Abyss": [
+        "Silent Abyss"
+      ],
+      "Ring 5": [
+        "Ring 5"
+      ],
+      "Lost River": [
+        "Lost River"
+      ],
+      "Ring 6": [
+        "Ring 6"
+      ],
+      "Ashen Towerworks": [
+        "Ashen Towerworks"
+      ],
+      "Ring 7": [
+        "Ring 7"
+      ],
+      "Ring 8": [
+        "Ring 8"
+      ],
+      "The starlit Archives": [
+        "The starlit Archives"
+      ],
+      "Ring 9": [
+        "Ring 9"
+      ],
+      "Ring 10": [
+        "Ring 10"
+      ],
+      "Zone 1": [
+        "Zone 1"
+      ],
+      "Paradise Atoll": [
+        "Paradise Atoll"
+      ],
+      "Zone 2": [
+        "Zone 2"
+      ],
+      "Arcane Area": [
+        "Arcane Area"
+      ],
+      "Zone 3": [
+        "Zone 3"
+      ],
+      "Zone 4": [
+        "Zone 4"
+      ],
+      "Zone 5": [
+        "Zone 5"
+      ],
+      "Zone 6": [
+        "Zone 6"
+      ],
+      "Zone 7": [
+        "Zone 7"
+      ],
+      "Zone 8": [
+        "Zone 8"
+      ],
+      "Zone 9": [
+        "Zone 9"
+      ],
+      "Zone 10": [
+        "Zone 10"
+      ]
+    },
+    "temporary": {
+      "BIOUMS: April Fools 2025": [
+        "BIOUMS: April Fools 2025"
+      ],
+      "Glacial Outpost: Christmas 2024": [
+        "Glacial Outpost: Christmas 2024"
+      ],
+      "Legacy Fortress": [
+        "Legacy Fortress"
+      ],
+      "100M": [
+        "100M"
+      ]
+    },
+    "other": {
+      "Pit of Misery": [
+        "Pit of Misery"
+      ],
+      "Time-Lost Tempest": [
+        "Time-Lost Tempest"
+      ],
+      "Time-Lost Plain": [
+        "Time-Lost Plain"
+      ],
+      "Time-Lost Clockwork": [
+        "Time-Lost Clockwork"
+      ],
+      "Time-Lost Sands": [
+        "Time-Lost Sands"
+      ]
+    }
+  }
+}

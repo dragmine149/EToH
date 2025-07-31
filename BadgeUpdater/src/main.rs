@@ -2,10 +2,14 @@ mod definitions;
 mod json;
 mod parse_wikitext;
 
+use std::fs;
+
 use definitions::*;
 use parse_wikitext::WIkiTower;
 use reqwest::blocking::Client;
 use url::Url;
+
+use crate::json::TowerJSON;
 
 const WIKI_BASE: &str = "https://jtoh.fandom.com/wiki";
 
@@ -53,7 +57,7 @@ fn process_badges(badge_list: &[u64], badges: Vec<Badge>) -> String {
         .collect::<String>()
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new();
 
     let badges = get_badges(
@@ -62,11 +66,26 @@ fn main() {
     )
     .unwrap();
 
-    badges.iter().for_each(|badge| {
-        println!("Tower: {:?}", badge.name);
-        println!("{:#?}", scrap_wiki(&client, &badge.name))
-    });
+    let mut data = TowerJSON::default();
+    let map = serde_json::from_str::<AreaMap>(&fs::read_to_string("../area_info.json").unwrap())?;
+    data.make_areas(&map);
 
+    for badge in badges.iter() {
+        println!("Tower: {:?}", badge.name);
+        let wiki = scrap_wiki(&client, &badge.name);
+        println!("{:#?}", wiki);
+
+        if wiki.is_none() {
+            continue;
+        }
+        if data.has_tower(&badge.name) {
+            data.add_tower_badge(&badge.name, badge.id);
+        }
+
+        data.insert_tower(wiki.unwrap(), &badge.name, badge.id, &map);
+    }
+
+    data.write_to_file("../tower_data.json".into())
     // let old_badges = get_badges(
     //     &Client::new(),
     //     String::from("https://badges.roblox.com/v1/universes/1055653882/badges?limit=100"),

@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::{collections::HashMap, hash::Hash};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -42,7 +42,7 @@ pub struct Data {
     pub data: Vec<Badge>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Tower {
     pub name: String,
     pub difficulty: f64,
@@ -51,7 +51,7 @@ pub struct Tower {
     pub tower_type: Option<TowerType>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 pub struct TowerDifficulties {
     pub easy: Option<u64>,
     pub medium: Option<u64>,
@@ -66,13 +66,13 @@ pub struct TowerDifficulties {
     pub catastrophic: Option<u64>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 pub struct AreaRequirements {
     pub difficulties: TowerDifficulties,
     pub points: u64,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 pub struct AreaInformation {
     pub name: String,
     pub requirements: AreaRequirements,
@@ -97,7 +97,7 @@ pub struct OtherSchema {
     pub data: Vec<OtherBadge>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum TowerType {
     MiniTower,
     Tower,
@@ -144,5 +144,24 @@ impl From<u8> for TowerType {
             4 => Self::Obelisk,
             _ => Self::Invalid,
         }
+    }
+}
+
+#[derive(Serialize, Debug, Deserialize)]
+pub struct AreaMap {
+    pub areas: HashMap<String, HashMap<String, Vec<String>>>,
+}
+
+impl AreaMap {
+    pub fn get_area(&self, area: &String) -> (String, String) {
+        for main in self.areas.iter() {
+            for sub in main.1.iter() {
+                if sub.1.contains(area) {
+                    return (main.0.to_owned(), sub.0.to_owned());
+                }
+            }
+        }
+
+        (String::default(), String::default())
     }
 }
