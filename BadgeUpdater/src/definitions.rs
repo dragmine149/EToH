@@ -53,16 +53,27 @@ pub struct Tower {
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub struct TowerDifficulties {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub easy: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub medium: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub hard: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub difficult: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub challenging: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub intense: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub remorseless: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub insane: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub extreme: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub terrifying: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub catastrophic: Option<u64>,
 }
 
@@ -76,6 +87,7 @@ pub struct AreaRequirements {
 pub struct AreaInformation {
     pub name: String,
     pub requirements: AreaRequirements,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub sub_area: Option<String>,
     pub towers: Vec<Tower>,
 }
