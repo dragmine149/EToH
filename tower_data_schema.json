@@ -1,0 +1,178 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "tower": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The full name of the tower"
+        },
+        "difficulty": {
+          "type": "number",
+          "description": "The difficult of the tower, gotten from wiki/in-game",
+          "minimum": 1,
+          "maximum": 12,
+          "default": 1
+        },
+        "badges": {
+          "type": "array",
+          "description": "A list of badges for this tower (moved places). Sorted by newest first",
+          "minItems": 1
+        },
+        "type": {
+          "type": "number",
+          "description": "An override of the tower type if it can't be determined from its name.",
+          "default": 2,
+          "minimum": 0,
+          "maximum": 4,
+          "$comment": "0 = Mini, 1 = steeple, 2 = tower, 3 = citadel, 4 = obelisk"
+        }
+      },
+      "required": [
+        "name",
+        "difficulty",
+        "badges"
+      ]
+    },
+    "area_information": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the area. Also includes the word area number (e.g. Ring 1: Limbo)"
+        },
+        "sub_area": {
+          "type": "string",
+          "description": "Which area this area is a sub area of."
+        },
+        "requirements": {
+          "type": "object",
+          "description": "Requirements to access the area",
+          "properties": {
+            "points": {
+              "type": "number",
+              "description": "The number of tower points required to access this area",
+              "minimum": 0,
+              "default": 1
+            },
+            "difficulties": {
+              "type": "object",
+              "description": "The number of towers required of each difficulty level to access this area",
+              "properties": {
+                "easy": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
+                },
+                "medium": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
+                },
+                "hard": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
+                },
+                "difficult": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
+                },
+                "challenging": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
+                },
+                "intense": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
+                },
+                "remorseless": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
+                },
+                "insane": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
+                },
+                "extreme": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
+                },
+                "terrifying": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
+                },
+                "catastrophic": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "default": 1
+                }
+              }
+            }
+          },
+          "required": [
+            "points",
+            "difficulties"
+          ]
+        },
+        "towers": {
+          "type": "array",
+          "description": "A list of towers that can be found in this area",
+          "items": {
+            "$ref": "#/definitions/tower"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "requirements",
+        "towers"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "areas": {
+      "type": "object",
+      "properties": {
+        "permanent": {
+          "type": "array",
+          "description": "Information about towers that are perminately in the game.",
+          "items": {
+            "$ref": "#/definitions/area_information"
+          }
+        },
+        "temporary": {
+          "type": "array",
+          "description": "Information about towers that are temporary in the game for an event.",
+          "items": {
+            "$ref": "#/definitions/area_information"
+          }
+        },
+        "other": {
+          "type": "array",
+          "description": "Information about towers that are in the game and give a badgee yet don't count towards any progress",
+          "items": {
+            "$ref": "#/definitions/area_information"
+          }
+        }
+      },
+      "required": [
+        "permanent",
+        "temporary",
+        "other"
+      ]
+    }
+  },
+  "required": [
+    "areas"
+  ]
+}

@@ -93,11 +93,6 @@ pub struct AreaInformation {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct TowerSchema {
-    pub areas: HashMap<String, Vec<AreaInformation>>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
 pub struct OtherBadge {
     pub name: String,
     pub category: String,
@@ -109,7 +104,7 @@ pub struct OtherSchema {
     pub data: Vec<OtherBadge>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum TowerType {
     MiniTower,
     Tower,
@@ -117,6 +112,26 @@ pub enum TowerType {
     Obelisk,
     Steeple,
     Invalid,
+}
+
+impl Serialize for TowerType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let value: u8 = (*self).into();
+        serializer.serialize_u8(value)
+    }
+}
+
+impl<'de> Deserialize<'de> for TowerType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = u8::deserialize(deserializer)?;
+        Ok(TowerType::from(value))
+    }
 }
 
 impl ToString for TowerType {
@@ -159,21 +174,43 @@ impl From<u8> for TowerType {
     }
 }
 
+impl From<TowerType> for u8 {
+    fn from(value: TowerType) -> Self {
+        match value {
+            TowerType::MiniTower => 0,
+            TowerType::Tower => 1,
+            TowerType::Citadel => 2,
+            TowerType::Obelisk => 3,
+            TowerType::Steeple => 4,
+            TowerType::Invalid => 0b11110000,
+        }
+    }
+}
+
+// impl Serialize for TowerType {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: serde::Serializer,
+//     {
+//         let mut s = serializer.serialize_u8(self)
+//     }
+// }
+
 #[derive(Serialize, Debug, Deserialize)]
 pub struct AreaMap {
     pub areas: HashMap<String, HashMap<String, Vec<String>>>,
 }
 
 impl AreaMap {
-    pub fn get_area(&self, area: &String) -> (String, String) {
+    pub fn get_area(&self, area: &String) -> Option<(String, String)> {
         for main in self.areas.iter() {
             for sub in main.1.iter() {
                 if sub.1.contains(area) {
-                    return (main.0.to_owned(), sub.0.to_owned());
+                    return Some((main.0.to_owned(), sub.0.to_owned()));
                 }
             }
         }
 
-        (String::default(), String::default())
+        None
     }
 }

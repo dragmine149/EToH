@@ -36,10 +36,9 @@ fn get_badges(client: &Client, url: String) -> Result<Vec<Badge>, reqwest::Error
 
 fn scrap_wiki(client: &Client, badge_name: impl Into<String>) -> Option<WIkiTower> {
     let badge: String = badge_name.into();
-    let badge = badge.strip_prefix("Beat The ")?.replace(" ", "_");
 
     let url =
-        Url::parse_with_params(&format!("{}/{}", WIKI_BASE, badge), &[("action", "raw")]).ok()?;
+        Url::parse_with_params(&format!("{}/{}", WIKI_BASE, badge), &[("action", "raw")]).unwrap();
 
     let response = client.get(url).send().ok()?;
     // println!("{:?}", response);
@@ -57,18 +56,26 @@ fn process_badges(badge_list: &[u64], badges: Vec<Badge>) -> String {
         .collect::<String>()
 }
 
+fn clean_badge_name(badge: &String) -> String {
+    badge.trim().replace("Beat The", "").trim().to_string()
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new();
 
-    let badges = get_badges(
+    let mut badges = get_badges(
         &client,
         String::from("https://badges.roblox.com/v1/universes/3264581003/badges?limit=100"),
     )
     .unwrap();
 
-    let mut data = TowerJSON::default();
+    let mut data = TowerJSON::new();
     let map = serde_json::from_str::<AreaMap>(&fs::read_to_string("../area_info.json").unwrap())?;
     data.make_areas(&map);
+
+    badges
+        .iter_mut()
+        .for_each(|b| b.name = clean_badge_name(&b.name));
 
     for badge in badges.iter() {
         println!("Tower: {:?}", badge.name);
