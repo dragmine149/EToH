@@ -43,6 +43,9 @@ pub fn parse_wiki_text(wikitext: &str) -> Option<WIkiTower> {
                     .trim_end_matches("}}")
                     .trim_start_matches("[[")
                     .trim_end_matches("]]")
+                    .split("|")
+                    .last()
+                    .unwrap()
                     .into(),
             )
         }
