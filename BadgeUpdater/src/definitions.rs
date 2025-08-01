@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -142,16 +142,20 @@ impl<'de> Deserialize<'de> for TowerType {
     }
 }
 
-impl ToString for TowerType {
-    fn to_string(&self) -> String {
-        match self {
-            TowerType::MiniTower => "Mini Tower".to_string(),
-            TowerType::Tower => "Tower".to_string(),
-            TowerType::Citadel => "Citadel".to_string(),
-            TowerType::Obelisk => "Obelisk".to_string(),
-            TowerType::Steeple => "Steeple".to_string(),
-            TowerType::Invalid => "".to_string(),
-        }
+impl Display for TowerType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                TowerType::MiniTower => "Mini Tower".to_string(),
+                TowerType::Tower => "Tower".to_string(),
+                TowerType::Citadel => "Citadel".to_string(),
+                TowerType::Obelisk => "Obelisk".to_string(),
+                TowerType::Steeple => "Steeple".to_string(),
+                TowerType::Invalid => "".to_string(),
+            }
+        )
     }
 }
 

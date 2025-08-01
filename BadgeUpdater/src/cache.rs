@@ -12,9 +12,9 @@ fn make_path(url: &Url) -> PathBuf {
     path.push(url.path().replace("/", ""));
     // println!("{path:?}, {:?}", fs::exists(&path));
     let exists = fs::exists(&path);
-    if exists.is_err() || exists.unwrap() == false {
+    if exists.is_err() || !exists.unwrap() {
         // println!("No path, making one!");
-        fs::create_dir_all(&path.parent().unwrap()).unwrap();
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
     }
 
     path
@@ -48,8 +48,5 @@ pub fn read_cache(url: &Url) -> Option<std::string::String> {
     }
 
     // File is fresh, read and return contents
-    match fs::read_to_string(&path) {
-        Ok(contents) => Some(contents),
-        Err(_) => None,
-    }
+    fs::read_to_string(&path).ok()
 }

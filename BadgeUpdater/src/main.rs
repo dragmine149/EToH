@@ -54,8 +54,8 @@ fn scrap_wiki(client: &Client, badge_name: impl Into<String>) -> Option<WIkiTowe
     };
 
     let new_badge = follow_redirect(&wikitext);
-    if new_badge.is_some() {
-        return scrap_wiki(client, new_badge.unwrap());
+    if let Some(badge) = new_badge {
+        return scrap_wiki(client, badge);
     }
 
     let mut wiki = parse_wikitext::parse_wiki_text(&wikitext)?;
@@ -63,7 +63,7 @@ fn scrap_wiki(client: &Client, badge_name: impl Into<String>) -> Option<WIkiTowe
     Some(wiki)
 }
 
-fn follow_redirect(wikitext: &String) -> Option<String> {
+fn follow_redirect(wikitext: &str) -> Option<String> {
     match wikitext.starts_with("#REDIRECT") {
         true => {
             let tower_name = wikitext
@@ -89,7 +89,7 @@ fn process_badges(badge_list: &[u64], badges: Vec<Badge>) -> String {
         .collect::<String>()
 }
 
-fn clean_badge_name(badge: &String) -> String {
+fn clean_badge_name(badge: &str) -> String {
     badge.trim().replace("Beat The", "").trim().to_string()
 }
 

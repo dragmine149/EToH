@@ -29,16 +29,19 @@ pub struct TowerJSON {
 
 impl TowerJSON {
     pub fn new() -> Self {
-        let mut s = Self::default();
-        s.schema = "tds.json".to_string();
-        s
+        TowerJSON {
+            schema: "tds.json".to_string(),
+            ..Default::default()
+        }
     }
 
     pub fn make_areas(&mut self, map: &AreaMap) {
         for main in map.areas.iter() {
             for a in main.1 {
-                let mut area_info = AreaInformation::default();
-                area_info.name = a.0.to_owned();
+                let area_info = AreaInformation {
+                    name: a.0.to_owned(),
+                    ..Default::default()
+                };
                 if !self.areas.contains_key(main.0) {
                     self.areas.insert(main.0.to_owned(), vec![]);
                 }
