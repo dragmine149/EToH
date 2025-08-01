@@ -4,12 +4,19 @@ use std::{
     time::{Duration, SystemTime},
 };
 
+use reqwest::blocking::Client;
 use url::Url;
+
+use crate::definitions::Data;
 
 fn make_path(url: &Url) -> PathBuf {
     let mut path = PathBuf::new();
     path.push(".cache");
     path.push(url.path().replace("/", ""));
+    // println!("{:?}", url.query());
+    if let Some(query) = url.query() {
+        path.push(query.split_at_checked(100).unwrap_or(("0", "")).0);
+    }
     // println!("{path:?}, {:?}", fs::exists(&path));
     let exists = fs::exists(&path);
     if exists.is_err() || !exists.unwrap() {
@@ -17,6 +24,7 @@ fn make_path(url: &Url) -> PathBuf {
         fs::create_dir_all(path.parent().unwrap()).unwrap();
     }
 
+    // println!("{:?}", path);
     path
 }
 
@@ -49,4 +57,16 @@ pub fn read_cache(url: &Url) -> Option<std::string::String> {
 
     // File is fresh, read and return contents
     fs::read_to_string(&path).ok()
+}
+
+pub fn reqwest_with_cache(client: &Client, url: &Url) -> Result<Data, Box<dyn std::error::Error>> {
+    match read_cache(url) {
+        Some(data) => Ok(serde_json::from_str(&data)?),
+        None => {
+            let response = client.get(url.to_string()).send()?;
+            let data = response.text()?;
+            write_cache(url, &data)?;
+            Ok(serde_json::from_str(&data)?)
+        }
+    }
 }

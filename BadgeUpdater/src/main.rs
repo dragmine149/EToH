@@ -14,7 +14,7 @@ use crate::json::TowerJSON;
 
 const WIKI_BASE: &str = "https://jtoh.fandom.com/wiki";
 
-fn get_badges(client: &Client, url: String) -> Result<Vec<Badge>, reqwest::Error> {
+fn get_badges(client: &Client, url: String) -> Result<Vec<Badge>, Box<dyn std::error::Error>> {
     let mut badges: Vec<Badge> = vec![];
     let mut data: Data = Data {
         previous_page_cursor: None,
@@ -24,11 +24,12 @@ fn get_badges(client: &Client, url: String) -> Result<Vec<Badge>, reqwest::Error
 
     while let Some(next_page_cursor) = data.next_page_cursor {
         let request_url = format!("{}&cursor={}", url, next_page_cursor);
-        println!("Fetching badges from {}", request_url);
-        let response = client.get(&request_url).send()?;
-        println!("Response status: {}", response.status());
+        // println!("Fetching badges from {}", request_url);
+        data = cache::reqwest_with_cache(client, &Url::parse(&request_url)?)?;
+        // let response = client.get(&request_url).send()?;
+        // println!("Response status: {}", response.status());
 
-        data = response.json::<Data>()?;
+        // data = response.json::<Data>()?;
         badges.extend(data.data);
     }
 
@@ -111,7 +112,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut data = TowerJSON::new();
     let map = serde_json::from_str::<AreaMap>(&fs::read_to_string("../area_info.json").unwrap())?;
-    data.make_areas(&map);
+    // data.make_areas(&map);
 
     badges
         .iter_mut()
