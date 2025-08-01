@@ -1,7 +1,8 @@
 use crate::definitions::TowerType;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct WIkiTower {
+    pub tower_name: String,
     pub tower_type: Option<TowerType>,
     pub location: Option<String>,
     pub difficulty: Option<f64>,

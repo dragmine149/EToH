@@ -53,7 +53,29 @@ fn scrap_wiki(client: &Client, badge_name: impl Into<String>) -> Option<WIkiTowe
         }
     };
 
-    parse_wikitext::parse_wiki_text(&wikitext)
+    let new_badge = follow_redirect(&wikitext);
+    if new_badge.is_some() {
+        return scrap_wiki(client, new_badge.unwrap());
+    }
+
+    let mut wiki = parse_wikitext::parse_wiki_text(&wikitext)?;
+    wiki.tower_name = badge;
+    Some(wiki)
+}
+
+fn follow_redirect(wikitext: &String) -> Option<String> {
+    match wikitext.starts_with("#REDIRECT") {
+        true => {
+            let tower_name = wikitext
+                .split_once(" ")
+                .unwrap()
+                .1
+                .replace("[[", "")
+                .replace("]]", "");
+            Some(tower_name)
+        }
+        false => None,
+    }
 }
 
 fn process_badges(badge_list: &[u64], badges: Vec<Badge>) -> String {
@@ -106,8 +128,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if data.has_tower(&badge.name) {
             data.add_tower_badge(&badge.name, badge.id);
         }
+        let wiki = wiki.unwrap();
+        let name = wiki.tower_name.to_owned();
 
-        data.insert_tower(wiki.unwrap(), &compress_name(&badge.name), badge.id, &map);
+        data.insert_tower(wiki, &compress_name(&name), badge.id, &map);
     }
 
     data.write_to_file("../tower_data.json".into())
