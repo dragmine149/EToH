@@ -11,9 +11,9 @@ impl From<&WIkiTower> for Tower {
     fn from(value: &WIkiTower) -> Self {
         Self {
             name: String::default(),
-            difficulty: value.difficulty.unwrap(),
+            difficulty: value.difficulty,
             badges: vec![],
-            tower_type: value.tower_type,
+            tower_type: Some(value.tower_type),
         }
     }
 }
@@ -56,7 +56,7 @@ impl TowerJSON {
         json_tower.name = name.to_owned();
 
         self.towers.insert(name.to_owned(), json_tower.to_owned());
-        let area = map.get_area(&tower.location.unwrap());
+        let area = map.get_area(&tower.location);
         println!("Area: {:?}", area);
         if area.is_none() {
             return;

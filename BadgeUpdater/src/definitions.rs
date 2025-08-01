@@ -122,6 +122,12 @@ pub enum TowerType {
     Invalid,
 }
 
+impl Default for TowerType {
+    fn default() -> Self {
+        Self::Invalid
+    }
+}
+
 impl Serialize for TowerType {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -170,6 +176,11 @@ impl From<&str> for TowerType {
             "steeple" => Self::Steeple,
             _ => Self::Invalid,
         }
+    }
+}
+impl From<String> for TowerType {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
     }
 }
 

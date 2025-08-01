@@ -49,7 +49,7 @@ fn scrap_wiki(client: &Client, badge_name: impl Into<String>) -> Option<WIkiTowe
             let data = client.get(url.to_owned()).send().ok()?.text().ok()?;
             // println!("{data}");
             cache::write_cache(&url, &data).ok()?;
-            println!("e");
+            // println!("e");
             data
         }
     };
@@ -112,7 +112,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut data = TowerJSON::new();
     let map = serde_json::from_str::<AreaMap>(&fs::read_to_string("../area_info.json").unwrap())?;
-    // data.make_areas(&map);
+    data.make_areas(&map);
 
     badges
         .iter_mut()
