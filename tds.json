@@ -1,40 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
-    "tower": {
-      "type": "object",
-      "properties": {
-        "n": {
-          "type": "string",
-          "description": "The full name of the tower"
-        },
-        "d": {
-          "type": "number",
-          "description": "The difficult of the tower, gotten from wiki/in-game",
-          "minimum": 1,
-          "maximum": 12,
-          "default": 1
-        },
-        "b": {
-          "type": "array",
-          "description": "A list of badges for this tower (moved places). Sorted by newest first",
-          "minItems": 1
-        },
-        "t": {
-          "type": "number",
-          "description": "An override of the tower type if it can't be determined from its name.",
-          "default": 2,
-          "minimum": 0,
-          "maximum": 4,
-          "$comment": "0 = Mini, 1 = steeple, 2 = tower, 3 = citadel, 4 = obelisk"
-        }
-      },
-      "required": [
-        "n",
-        "d",
-        "b"
-      ]
-    },
     "area_information": {
       "type": "object",
       "properties": {
@@ -127,7 +93,7 @@
           "type": "array",
           "description": "A list of towers that can be found in this area",
           "items": {
-            "$ref": "#/definitions/tower"
+            "type": "string"
           }
         }
       },

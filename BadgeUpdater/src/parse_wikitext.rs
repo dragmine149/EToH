@@ -88,7 +88,7 @@ pub fn parse_wiki_text(wikitext: &str) -> Option<WIkiTower> {
             .getattr("value")?
             .extract::<String>()?
             .parse::<f64>()
-            .unwrap_or(f64::MAX);
+            .unwrap_or(0 as f64);
         println!("{:?}", tower_difficulty);
 
         let raw_location = item
