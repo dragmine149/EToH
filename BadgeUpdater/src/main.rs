@@ -121,7 +121,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for badge in badges.iter() {
         println!("Tower: {:?}", badge.name);
         let wiki = scrap_wiki(&client, &badge.name);
-        println!("{:#?}", wiki);
+        // println!("{:#?}", wiki);
 
         if wiki.is_none() {
             continue;

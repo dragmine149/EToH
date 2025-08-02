@@ -250,10 +250,10 @@ impl From<TowerType> for u8 {
     fn from(value: TowerType) -> Self {
         match value {
             TowerType::MiniTower => 0,
-            TowerType::Tower => 1,
-            TowerType::Citadel => 2,
-            TowerType::Obelisk => 3,
-            TowerType::Steeple => 4,
+            TowerType::Steeple => 1,
+            TowerType::Tower => 2,
+            TowerType::Citadel => 3,
+            TowerType::Obelisk => 4,
             TowerType::Invalid => 0b11110000,
         }
     }
