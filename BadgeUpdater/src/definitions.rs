@@ -105,27 +105,27 @@ impl<'de> Deserialize<'de> for Tower {
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub struct TowerDifficulties {
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "e")]
     pub easy: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "m")]
     pub medium: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "h")]
     pub hard: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "d")]
     pub difficult: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "c")]
     pub challenging: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "i")]
     pub intense: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "r")]
     pub remorseless: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "s")]
     pub insane: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "x")]
     pub extreme: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "t")]
     pub terrifying: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "a")]
     pub catastrophic: Option<u64>,
 }
 
@@ -147,6 +147,34 @@ impl TowerDifficulties {
                 println!("Not a valid difficulty! {:?}", inv);
             }
         }
+    }
+
+    pub fn types() -> impl Iterator<Item = String> {
+        vec![
+            String::from("easy"),
+            String::from("medium"),
+            String::from("hard"),
+            String::from("difficult"),
+            String::from("challenging"),
+            String::from("intense"),
+            String::from("remorseless"),
+            String::from("insane"),
+            String::from("extreme"),
+            String::from("terrifying"),
+            String::from("catastrophic"),
+        ]
+        .into_iter()
+    }
+    pub fn find_type(text: &str) -> Option<String> {
+        // get rid of "Difficulty" as this causes some issues.
+        let text = text.replace("Difficulty", "").replace("difficulty", "");
+        for diff in Self::types() {
+            if text.contains(&diff) {
+                return Some(diff.clone());
+            }
+        }
+
+        None
     }
 }
 

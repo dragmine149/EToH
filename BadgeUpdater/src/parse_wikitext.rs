@@ -1,6 +1,6 @@
 use std::f64;
 
-use crate::definitions::{AreaInformation, AreaRequirements, TowerType};
+use crate::definitions::{AreaInformation, AreaRequirements, TowerDifficulties, TowerType};
 use pyo3::{
     Bound, PyAny, PyResult, Python,
     ffi::c_str,
@@ -172,7 +172,8 @@ fn parse_area(
             .extract::<u8>()?
         {
             println!("i: {:?}", i);
-            let req = wtp.call_method1("parse", (items.get_item(i)?,))?;
+            let raw_item = items.get_item(i)?;
+            let req = wtp.call_method1("parse", (&raw_item,))?;
             let plain = req.call_method0("plain_text")?.extract::<String>()?;
             println!("{:?}", plain);
             if plain
@@ -183,26 +184,55 @@ fn parse_area(
             {
                 break;
             }
-            if !plain.starts_with("*") {
-                continue;
-            }
+            // if !plain.starts_with("*") {
+            //     continue;
+            // }
             if plain.to_lowercase().contains("tower points") {
                 let mut iter = plain.splitn(3, " ");
                 iter.next();
                 requirements.points = iter.next().unwrap().parse().unwrap();
+                println!("{:?}", requirements.points);
                 continue;
             }
 
-            let difficulty = plain
-                .replace("Beat", "")
-                .split_once("+")
+            // println!("{:?}", &req.extract::<String>());
+            // println!("{:?}", items.get_item(i)?);
+            let diff = TowerDifficulties::find_type(&raw_item.extract::<String>()?.to_lowercase())
+                .unwrap();
+            println!("{:?}", diff);
+            // println!(
+            //     "{:?}",
+            //     plain
+            //         .to_lowercase()
+            //         .split_once("beat")
+            //         .unwrap()
+            //         .1
+            //         .trim()
+            //         .split_once(" ")
+            //         .unwrap()
+            // );
+            let num = plain
+                .to_lowercase()
+                .split_once("beat")
+                .unwrap()
+                .1
+                .trim()
+                .split_once(" ")
                 .unwrap()
                 .0
-                .split_once(" ")
-                .map(|s| (s.0.to_string(), s.1.to_string()))
+                .parse::<u64>()
                 .unwrap();
-            let diff = difficulty.1;
-            let num = difficulty.0.parse::<u64>().unwrap();
+            println!("{:?}", num);
+
+            // let difficulty = plain
+            //     .replace("Beat", "")
+            //     .split_once("+")
+            //     .unwrap()
+            //     .0
+            //     .split_once(" ")
+            //     .map(|s| (s.0.to_string(), s.1.to_string()))
+            //     .unwrap();
+            // let num = difficulty.0.parse::<u64>().unwrap();
             requirements.difficulties.from_difficulty(&diff, num);
         }
     }
