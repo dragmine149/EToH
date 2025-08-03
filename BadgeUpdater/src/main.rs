@@ -167,7 +167,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let area = scrap_wiki_area(&client, &wiki.location);
             let mut area = area.unwrap();
             println!("data: {:?}", area);
-            area.name = wiki.location.to_owned();
+            area.name = wiki.location.trim().to_owned();
             data.add_area(area, &map);
         }
 

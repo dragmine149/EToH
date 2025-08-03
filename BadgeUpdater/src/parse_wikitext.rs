@@ -140,7 +140,9 @@ fn parse_area(
         Some(area) => Some(
             wtp.call_method1("parse", (area,))?
                 .call_method0("plain_text")?
-                .extract::<String>()?,
+                .extract::<String>()?
+                .trim()
+                .to_string(),
         ),
         None => None,
     };
