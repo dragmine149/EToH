@@ -104,16 +104,16 @@ fn follow_redirect(wikitext: &str) -> Option<String> {
     }
 }
 
-fn process_badges(badge_list: &[u64], badges: Vec<Badge>) -> String {
-    badges
-        .iter()
-        .filter(|badge| !badge_list.contains(&badge.id))
-        .filter(|badge| !badge.name.to_lowercase().contains("placeholder"))
-        .filter(|badge| badge.name != "Beat The Tower Of ...")
-        .filter(|badge| badge.id != 2124560526) // The duplicate badge of Tower of Suffering Outside.
-        .map(|badge| format!("{} - {}\n", badge.id, badge.name))
-        .collect::<String>()
-}
+// fn process_badges(badge_list: &[u64], badges: Vec<Badge>) -> String {
+//     badges
+//         .iter()
+//         .filter(|badge| !badge_list.contains(&badge.id))
+//         .filter(|badge| !badge.name.to_lowercase().contains("placeholder"))
+//         .filter(|badge| badge.name != "Beat The Tower Of ...")
+//         .filter(|badge| badge.id != 2124560526) // The duplicate badge of Tower of Suffering Outside.
+//         .map(|badge| format!("{} - {}\n", badge.id, badge.name))
+//         .collect::<String>()
+// }
 
 fn clean_badge_name(badge: &str) -> String {
     badge.trim().replace("Beat The", "").trim().to_string()
