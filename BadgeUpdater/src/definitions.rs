@@ -129,6 +129,27 @@ pub struct TowerDifficulties {
     pub catastrophic: Option<u64>,
 }
 
+impl TowerDifficulties {
+    pub fn from_difficulty(&mut self, difficulty: &str, count: u64) {
+        match difficulty.to_lowercase().trim() {
+            "easy" => self.easy = Some(count),
+            "medium" => self.medium = Some(count),
+            "hard" => self.hard = Some(count),
+            "difficult" => self.difficult = Some(count),
+            "challenging" => self.challenging = Some(count),
+            "intense" => self.intense = Some(count),
+            "remorseless" => self.remorseless = Some(count),
+            "insane" => self.insane = Some(count),
+            "extreme" => self.extreme = Some(count),
+            "terrifying" => self.terrifying = Some(count),
+            "catastrophic" => self.catastrophic = Some(count),
+            inv => {
+                println!("Not a valid difficulty! {:?}", inv);
+            }
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub struct AreaRequirements {
     #[serde(rename = "ds")]
@@ -161,7 +182,7 @@ pub struct OtherSchema {
     pub data: Vec<OtherBadge>,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TowerType {
     MiniTower,
     Tower,
@@ -270,19 +291,27 @@ impl From<TowerType> for u8 {
 
 #[derive(Serialize, Debug, Deserialize)]
 pub struct AreaMap {
-    pub areas: HashMap<String, HashMap<String, Vec<String>>>,
+    pub areas: HashMap<String, Vec<String>>,
 }
 
 impl AreaMap {
-    pub fn get_area(&self, area: &String) -> Option<(String, String)> {
+    pub fn get_area(&self, area: &String) -> String {
         for main in self.areas.iter() {
-            for sub in main.1.iter() {
-                if sub.1.contains(area) {
-                    return Some((main.0.to_owned(), sub.0.to_owned()));
-                }
+            println!("{:?}", main);
+            if main
+                .1
+                .iter()
+                .map(|v| v.trim().to_lowercase())
+                .any(|v| v == *area.trim().to_lowercase())
+            {
+                return main.0.to_string();
             }
         }
 
-        None
+        "Uncategorised".to_string()
+    }
+
+    pub fn key_loop(&self) -> std::collections::hash_map::Keys<'_, String, Vec<String>> {
+        self.areas.keys()
     }
 }

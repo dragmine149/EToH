@@ -63,6 +63,31 @@ fn scrap_wiki(client: &Client, badge_name: impl Into<String>) -> Option<WIkiTowe
     wiki.tower_name = badge;
     Some(wiki)
 }
+fn scrap_wiki_area(client: &Client, area_name: impl Into<String>) -> Option<AreaInformation> {
+    let area: String = area_name.into();
+
+    let url =
+        Url::parse_with_params(&format!("{}/{}", WIKI_BASE, area), &[("action", "raw")]).unwrap();
+
+    let wikicache = cache::read_cache(&url);
+    let wikitext = match wikicache {
+        Some(wikicache) => wikicache,
+        None => {
+            let data = client.get(url.to_owned()).send().ok()?.text().ok()?;
+            // println!("{data}");
+            cache::write_cache(&url, &data).ok()?;
+            // println!("e");
+            data
+        }
+    };
+
+    let new_area = follow_redirect(&wikitext);
+    if let Some(area) = new_area {
+        return scrap_wiki_area(client, area);
+    }
+
+    Some(parse_wikitext::parse_wiki_text_area(&wikitext)?)
+}
 
 fn follow_redirect(wikitext: &str) -> Option<String> {
     match wikitext.starts_with("#REDIRECT") {
@@ -112,7 +137,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut data = TowerJSON::new();
     let map = serde_json::from_str::<AreaMap>(&fs::read_to_string("../area_info.json").unwrap())?;
-    data.make_areas(&map);
+    // data.make_areas(&map);
+    data.load_map(&map);
 
     badges
         .iter_mut()
@@ -121,16 +147,29 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for badge in badges.iter() {
         println!("Tower: {:?}", badge.name);
         let wiki = scrap_wiki(&client, &badge.name);
-        // println!("{:#?}", wiki);
+        println!("{:#?}", wiki);
 
         if wiki.is_none() {
+            continue;
+        }
+        let mut wiki = wiki.unwrap();
+        wiki.location = wiki.location.replacen("*", "", 1).trim().to_owned();
+        if wiki.tower_type == TowerType::Invalid {
             continue;
         }
         if data.has_tower(&badge.name) {
             data.add_tower_badge(&badge.name, badge.id);
         }
-        let wiki = wiki.unwrap();
         let name = wiki.tower_name.to_owned();
+
+        println!("area: {:?}", wiki.location);
+        if !data.has_area(&wiki.location, &map) {
+            let area = scrap_wiki_area(&client, &wiki.location);
+            let mut area = area.unwrap();
+            println!("data: {:?}", area);
+            area.name = wiki.location.to_owned();
+            data.add_area(area, &map);
+        }
 
         data.insert_tower(wiki, &compress_name(&name), badge.id, &map);
     }
