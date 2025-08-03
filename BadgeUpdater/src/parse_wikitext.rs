@@ -1,4 +1,4 @@
-use std::{f64, u8};
+use std::f64;
 
 use crate::definitions::{AreaInformation, TowerType};
 use pyo3::{
@@ -31,9 +31,9 @@ fn generator(wikitext: &str) -> String {
 // Yes, two different parse functions because the wiki is annoying...
 
 fn parse_infobox(
-    templates: Bound<'_, PyAny>,
-    index: u8,
-    wtp: Bound<'_, PyModule>,
+    templates: &Bound<'_, PyAny>,
+    index: &u8,
+    wtp: &Bound<'_, PyModule>,
 ) -> Result<WIkiTower, Box<dyn std::error::Error>> {
     let item = templates.get_item(index)?;
     // println!("{:?}", item);
@@ -90,7 +90,130 @@ fn parse_infobox(
         ..Default::default()
     })
 }
-fn parse_infobox_2() {}
+
+fn parse_infobox_2(
+    templates: &Bound<'_, PyAny>,
+    index: &u8,
+    wtp: &Bound<'_, PyModule>,
+) -> Result<WIkiTower, Box<dyn std::error::Error>> {
+    let item = templates.get_item(index)?;
+
+    let raw_difficulty = item
+        .call_method1("get_arg", ("difficulty1",))?
+        .getattr("value")?
+        .extract::<String>()?;
+    // println!("{:?}", raw_difficulty);
+    let tower_difficulty = wtp
+        .call_method1("parse", (raw_difficulty,))?
+        .getattr("templates")?
+        .get_item(0)?
+        .getattr("arguments")?
+        .get_item(0)?
+        .getattr("value")?
+        .extract::<String>()?
+        .parse::<f64>()
+        .unwrap_or(0 as f64);
+    // println!("{:?}", tower_difficulty);
+
+    let raw_location = item
+        .call_method1("get_arg", ("found_in1",))?
+        .getattr("value")?
+        .extract::<String>()?;
+    // println!("{:?}", raw_location);
+    let tower_location = wtp
+        .call_method1("parse", (raw_location,))?
+        .call_method0("plain_text")?
+        .extract::<String>()?
+        .lines()
+        .next()
+        .unwrap()
+        .trim()
+        .to_string();
+    // println!("{:?}", tower_location);
+
+    let raw_type = item
+        .call_method1("get_arg", ("type_of_tower1",))?
+        .getattr("value")?
+        .extract::<String>()?;
+    // println!("{:?}", raw_type);
+    let tower_type = wtp
+        .call_method1("parse", (raw_type,))?
+        .call_method0("plain_text")?
+        .extract::<String>()?
+        .trim()
+        .to_string();
+    // println!("{:?}", tower_type);
+
+    Ok(WIkiTower {
+        difficulty: tower_difficulty,
+        location: tower_location,
+        tower_type: tower_type.into(),
+        ..Default::default()
+    })
+}
+
+fn parse_infobox_comments(
+    templates: &Bound<'_, PyAny>,
+    index: &u8,
+    wtp: &Bound<'_, PyModule>,
+) -> Result<WIkiTower, Box<dyn std::error::Error>> {
+    println!("Stupid comments");
+    let item = templates.get_item(index)?;
+    println!("{:?}", item);
+    let raw_difficulty = item
+        .call_method1("get_arg", ("difficulty<!--1-->",))?
+        .getattr("value")?
+        .extract::<String>()?;
+    println!("{:?}", raw_difficulty);
+    let tower_difficulty = wtp
+        .call_method1("parse", (raw_difficulty,))?
+        .getattr("templates")?
+        .get_item(0)?
+        .getattr("arguments")?
+        .get_item(0)?
+        .getattr("value")?
+        .extract::<String>()?
+        .parse::<f64>()
+        .unwrap_or(0 as f64);
+    println!("{:?}", tower_difficulty);
+
+    let raw_location = item
+        .call_method1("get_arg", ("found_in",))
+        .unwrap_or_else(|_| item.call_method1("get_arg", ("found_in<!--1-->",)).unwrap())
+        .getattr("value")?
+        .extract::<String>()?;
+    println!("{:?}", raw_location);
+    let tower_location = wtp
+        .call_method1("parse", (raw_location,))?
+        .call_method0("plain_text")?
+        .extract::<String>()?
+        .lines()
+        .next()
+        .unwrap()
+        .trim()
+        .to_string();
+    // println!("{:?}", tower_location);
+
+    let raw_type = item
+        .call_method1("get_arg", ("type_of_tower<!--1-->",))?
+        .getattr("value")?
+        .extract::<String>()?;
+    println!("{:?}", raw_type);
+    let tower_type = wtp
+        .call_method1("parse", (raw_type,))?
+        .call_method0("plain_text")?
+        .extract::<String>()?
+        .trim()
+        .to_string();
+    // println!("{:?}", tower_type);
+
+    Ok(WIkiTower {
+        difficulty: tower_difficulty,
+        location: tower_location,
+        tower_type: tower_type.into(),
+        ..Default::default()
+    })
+}
 
 pub fn parse_wiki_text(wikitext: &str) -> Option<WIkiTower> {
     let mut tower = WIkiTower::default();
@@ -116,26 +239,33 @@ pub fn parse_wiki_text(wikitext: &str) -> Option<WIkiTower> {
         }
 
         let mut index = u8::MAX;
+        let mut v2 = false;
         for template in 0..len {
-            if templates
+            let name = templates
                 .get_item(template)?
                 .getattr("name")?
-                .extract::<String>()?
-                .trim()
-                .to_lowercase()
-                == "towerinfobox"
-            {
+                .extract::<String>()?;
+            // println!("{:?}", name);
+            if name.trim().to_lowercase().starts_with("towerinfobox") {
                 index = template;
+                v2 = name.trim().to_lowercase() == "towerinfobox-2panels";
                 break;
             }
         }
 
         if index == u8::MAX {
-            eprintln!("WARNING: Skipping tower due to annoying wikitext!");
+            eprintln!("Somehow index not set!");
             return Ok(());
         }
 
-        tower = parse_infobox(templates, index, wtp).ok().unwrap();
+        println!("Version: {:?}", v2);
+        tower = match v2 {
+            true => parse_infobox_2(&templates, &index, &wtp),
+            false => parse_infobox(&templates, &index, &wtp),
+        }
+        .ok()
+        .or_else(|| parse_infobox_comments(&templates, &index, &wtp).ok())
+        .unwrap();
 
         // println!("{:?}", index);
 
