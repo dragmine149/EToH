@@ -99,6 +99,15 @@ function getTowerType(name, type) {
   return TOWER_TYPE.Other;
 }
 
+function addTowerType(name, type) {
+  switch (type) {
+    case TOWER_TYPE.Citadel: return `Citadel of ${name}`;
+    case TOWER_TYPE.Tower: return `Tower of ${name}`;
+    case TOWER_TYPE.Steeple: return `Steeple of ${name}`;
+    case TOWER_TYPE.Obelisk: return `Obelisk of ${name}`;
+  }
+  return name;
+}
 /**
 * Returns the amount of points that the type provided is worth.
 * @param {TOWER_TYPE} type The type of tower.
@@ -113,6 +122,17 @@ function getTowerPoints(type) {
     default:
     case TOWER_TYPE.Mini_Tower:
     case TOWER_TYPE.Other: return 0;
+  }
+}
+
+function numberToType(num) {
+  switch (num) {
+    case 0: return TOWER_TYPE.Mini_Tower;
+    case 1: return TOWER_TYPE.Steeple;
+    case 2: return TOWER_TYPE.Tower;
+    case 3: return TOWER_TYPE.Citadel;
+    case 4: return TOWER_TYPE.Obelisk;
+    default: return TOWER_TYPE.Other;
   }
 }
 
@@ -479,6 +499,7 @@ class EToHUI extends UI {
   * @param {bool} new_since How the badge been claimed since we last loaded the data.
   */
   loadBadge(badge_id, completion, new_since) {
+    console.log(badge_id);
     /** @type {Badge} */
     let badge = badgeManager.ids(badge_id)[0];
     /** @type {string[]} */
@@ -646,7 +667,8 @@ class EToHUI extends UI {
 }
 
 async function loadTowersFromServer() {
-  let server_tower = await fetch('data/tower_data.json');
+  // let server_tower = await fetch('https://raw.githubusercontent.com/dragmine149/EToH/refs/heads/Data/tower_data.json');
+  let server_tower = await fetch('http://localhost:8081/tower_data.json');
   if (!server_tower.ok) {
     ui.showError(`Failed to fetch tower_data.json: ${server_tower.status} ${server_tower.statusText}.`, true);
     return;
@@ -664,11 +686,49 @@ async function loadTowersFromServer() {
     * @param {[String, ServerAreas[]]} areas
     */
     (areas) => {
+      console.log(areas);
       areas[1].forEach((area) => {
-        area.towers.forEach((tower) => {
-          badgeManager.addBadge(new Tower(tower.name, tower.badges, tower.difficulty, area.name, tower.type, areas[0]));
+        area.t.forEach(/** @param {string} tower */(tower) => {
+          let tower_split = tower.split(',');
+          let type = numberToType(Number.parseInt(tower_split.pop()));
+          /** @type {string[]} */
+          let badges = [];
+          while (badges.length == 0 || !badges[badges.length - 1].startsWith("[")) {
+            badges.push(tower_split.pop());
+          }
+          console.log(badges);
+          badges = JSON.parse(badges.reverse().join(','));
+          let diff = Number.parseFloat(tower_split.pop());
+          let name = tower_split.join(',');
+          name = addTowerType(name, type);
+
+
+          // let type = numberToType(Number.parseInt(tower_split[3]));
+          // let name = addTowerType(tower_split[0], type);
+
+          let tower_badge = new Tower(name, badges, diff, area.n, type, areas[0]);
+          console.log(tower_badge);
+          badgeManager.addBadge(tower_badge);
         });
-        areaManager.addArea(new Area(area.name, area.sub_area, area.requirements));
+        area.requirements = {
+          difficulties: {},
+          points: 0,
+        }
+        area.requirements.points = area.r.p;
+        area.requirements.difficulties.easy = area.r.ds.e ? area.r.ds.e : 0;
+        area.requirements.difficulties.medium = area.r.ds.m ? area.r.ds.m : 0;
+        area.requirements.difficulties.hard = area.r.ds.h ? area.r.ds.h : 0;
+        area.requirements.difficulties.difficult = area.r.ds.d ? area.r.ds.d : 0;
+        area.requirements.difficulties.challenging = area.r.ds.c ? area.r.ds.c : 0;
+        area.requirements.difficulties.intense = area.r.ds.i ? area.r.ds.i : 0;
+        area.requirements.difficulties.remorseless = area.r.ds.r ? area.r.ds.r : 0;
+        area.requirements.difficulties.insane = area.r.ds.s ? area.r.ds.s : 0;
+        area.requirements.difficulties.extreme = area.r.ds.x ? area.r.ds.x : 0;
+        area.requirements.difficulties.terrifying = area.r.ds.t ? area.r.ds.t : 0;
+        area.requirements.difficulties.catastrophic = area.r.ds.a ? area.r.ds.a : 0;
+        console.log(area.requirements);
+
+        areaManager.addArea(new Area(area.n, area.s, area.requirements));
       })
     })
 }
