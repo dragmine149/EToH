@@ -116,7 +116,14 @@ fn follow_redirect(wikitext: &str) -> Option<String> {
 // }
 
 fn clean_badge_name(badge: &str) -> String {
-    badge.trim().replace("Beat The", "").trim().to_string()
+    badge
+        .trim()
+        .replace("Beat The", "")
+        .replace("Beat the", "")
+        .replace("beat The", "")
+        .replace("beat the", "")
+        .trim()
+        .to_string()
 }
 
 fn compress_name(badge: &str) -> String {
