@@ -2,9 +2,9 @@ use std::f64;
 
 use crate::definitions::{AreaInformation, AreaRequirements, TowerDifficulties, TowerType};
 use pyo3::{
-    Bound, PyAny, PyResult, Python,
     ffi::c_str,
     types::{PyAnyMethods, PyDict, PyModule},
+    Bound, PyAny, PyResult, Python,
 };
 use regex::Regex;
 
@@ -33,21 +33,21 @@ fn generator(wikitext: &str) -> String {
 fn get_raw<'a>(item: &'a Bound<'a, PyAny>, name: &'a str) -> Bound<'a, PyAny> {
     println!("Getting arg for {:?}", name);
     let result = item.call_method1("get_arg", (name,));
-    if let Some(arg) = result.ok() {
+    if let Ok(arg) = result {
         if !arg.is_none() {
             println!("Normal");
             return arg;
         }
     }
     let result = item.call_method1("get_arg", (name.to_owned() + "1",));
-    if let Some(arg) = result.ok() {
+    if let Ok(arg) = result {
         if !arg.is_none() {
             println!("+1");
             return arg;
         }
     }
     let result = item.call_method1("get_arg", (name.to_owned() + "<!--1-->",));
-    if let Some(arg) = result.ok() {
+    if let Ok(arg) = result {
         if !arg.is_none() {
             println!("+comment");
             return arg;
@@ -235,7 +235,7 @@ fn parse_area(
             //     .map(|s| (s.0.to_string(), s.1.to_string()))
             //     .unwrap();
             // let num = difficulty.0.parse::<u64>().unwrap();
-            requirements.difficulties.from_difficulty(&diff, num);
+            requirements.difficulties.parse_difficulty(&diff, num);
         }
     }
 
@@ -283,6 +283,7 @@ pub fn parse_wiki_text_area(wikitext: &str) -> Option<AreaInformation> {
 
         if index == u8::MAX {
             eprintln!("Somehow index not set! area edition");
+            println!("Somehow index not set! area edition");
             return Ok(());
         }
 
@@ -339,6 +340,7 @@ pub fn parse_wiki_text(wikitext: &str) -> Option<WIkiTower> {
         }
 
         if index == u8::MAX {
+            println!("Somehow index not set!");
             eprintln!("Somehow index not set!");
             return Ok(());
         }

@@ -86,7 +86,7 @@ fn scrap_wiki_area(client: &Client, area_name: impl Into<String>) -> Option<Area
         return scrap_wiki_area(client, area);
     }
 
-    Some(parse_wikitext::parse_wiki_text_area(&wikitext)?)
+    parse_wikitext::parse_wiki_text_area(&wikitext)
 }
 
 fn follow_redirect(wikitext: &str) -> Option<String> {
@@ -152,6 +152,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .for_each(|b| b.name = clean_badge_name(&b.name));
 
     for badge in badges.iter() {
+        println!("Badge: {:?}", badge.id);
         println!("Tower: {:?}", badge.name);
         let wiki = scrap_wiki(&client, &badge.name);
         println!("{:#?}", wiki);

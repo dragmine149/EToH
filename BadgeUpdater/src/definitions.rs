@@ -130,7 +130,7 @@ pub struct TowerDifficulties {
 }
 
 impl TowerDifficulties {
-    pub fn from_difficulty(&mut self, difficulty: &str, count: u64) {
+    pub fn parse_difficulty(&mut self, difficulty: &str, count: u64) {
         match difficulty.to_lowercase().trim() {
             "easy" => self.easy = Some(count),
             "medium" => self.medium = Some(count),
@@ -323,7 +323,7 @@ pub struct AreaMap {
 }
 
 impl AreaMap {
-    pub fn get_area(&self, area: &String) -> String {
+    pub fn get_area(&self, area: &str) -> String {
         for main in self.areas.iter() {
             println!("{:?}", main);
             if main

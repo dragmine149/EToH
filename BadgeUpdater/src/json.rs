@@ -79,8 +79,7 @@ impl TowerJSON {
             .get(&map.get_area(area))
             .unwrap()
             .iter()
-            .find(|v| v.name == *area)
-            .is_some()
+            .any(|v| v.name == *area)
     }
     pub fn add_area(&mut self, area: AreaInformation, map: &AreaMap) {
         self.areas
