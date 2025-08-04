@@ -213,10 +213,10 @@ pub struct OtherSchema {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TowerType {
     MiniTower,
+    Steeple,
     Tower,
     Citadel,
     Obelisk,
-    Steeple,
     Invalid,
 }
 
@@ -231,8 +231,7 @@ impl Serialize for TowerType {
     where
         S: serde::Serializer,
     {
-        let value: u8 = (*self).into();
-        serializer.serialize_u8(value)
+        serializer.serialize_u8(u8::from(*self))
     }
 }
 
