@@ -88,16 +88,37 @@ fn parse_infobox(
     let raw_difficulty = raw_difficulty.getattr("value")?.extract::<String>()?;
     println!("{:?}", raw_difficulty);
     let tower_difficulty = wtp
-        .call_method1("parse", (raw_difficulty,))?
+        .call_method1("parse", (&raw_difficulty,))?
         .getattr("templates")?
         .get_item(0)?
         .getattr("arguments")?
         .get_item(0)?
         .getattr("value")?
         .extract::<String>()?
-        .parse::<f64>()
-        .unwrap_or(0 as f64);
-    // println!("{:?}", tower_difficulty);
+        .parse::<f64>();
+    // .unwrap_or(0 as f64);
+
+    let tower_difficulty = if let Ok(diff) = tower_difficulty {
+        diff
+    } else {
+        let regex = Regex::new(r"\([\d.]*\)").unwrap();
+        eprintln!("{:?}", raw_difficulty);
+        if let Some(capture) = regex.captures(&raw_difficulty) {
+            println!("{:?}", capture);
+            let cap = capture
+                .get(0)
+                .unwrap()
+                .as_str()
+                .replace(&['(', ')'][..], "");
+            println!("{:?}", cap);
+            cap.parse::<f64>().unwrap_or(0 as f64)
+        } else {
+            println!("Backup!");
+            0 as f64
+        }
+    };
+
+    println!("{:?}", tower_difficulty);
 
     let raw_location;
     if let Some(raw) = get_raw(&item, "found_in") {
