@@ -670,8 +670,8 @@ class EToHUI extends UI {
 }
 
 async function loadTowersFromServer() {
-  // let server_tower = await fetch('https://raw.githubusercontent.com/dragmine149/EToH/refs/heads/Data/tower_data.json');
-  let server_tower = await fetch('http://localhost:8081/tower_data.json');
+  let server_tower = await fetch('https://raw.githubusercontent.com/dragmine149/EToH/refs/heads/Data/tower_data.json');
+  // let server_tower = await fetch('http://localhost:8081/tower_data.json');
   if (!server_tower.ok) {
     ui.showError(`Failed to fetch tower_data.json: ${server_tower.status} ${server_tower.statusText}.`, true);
     return;
