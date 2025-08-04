@@ -143,14 +143,21 @@ fn parse_badge(badge: &mut Badge, data: &mut TowerJSON, map: &AreaMap, client: &
         return;
     }
     let mut wiki = wiki.unwrap();
+    wiki.tower_name = compress_name(&wiki.tower_name);
     wiki.location = wiki.location.replacen("*", "", 1).trim().to_owned();
     if wiki.tower_type == TowerType::Invalid {
         return;
     }
-    if data.has_tower(&badge.name) {
-        data.add_tower_badge(&badge.name, badge.id);
-    }
-    let name = wiki.tower_name.to_owned();
+    // if data.has_tower(&badge.name) {
+    //     data.add_tower_badge(
+    //         &badge.name,
+    //         badge.id,
+    //         &map.get_area(&wiki.location),
+    //         &wiki.location,
+    //     );
+    //     return;
+    // }
+    // let name = wiki.tower_name.to_owned();
 
     println!("area: {:?}", wiki.location);
     if !data.has_area(&wiki.location, &map) {
@@ -161,7 +168,9 @@ fn parse_badge(badge: &mut Badge, data: &mut TowerJSON, map: &AreaMap, client: &
         data.add_area(area, &map);
     }
 
-    data.insert_tower(wiki, &compress_name(&name), badge.id, &map);
+    data.add_tower(wiki, badge.id, map);
+
+    // data.insert_tower(wiki, &compress_name(&name), badge.id, &map);
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -172,6 +181,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         String::from("https://badges.roblox.com/v1/universes/3264581003/badges?limit=100"),
     )
     .unwrap();
+    let mut other = get_badges(
+        &client,
+        String::from("https://badges.roblox.com/v1/universes/1055653882/badges?limit=100"),
+    )
+    .unwrap();
+    badges.append(&mut other);
+    drop(other);
 
     let mut data = TowerJSON::new();
     let map = serde_json::from_str::<AreaMap>(&fs::read_to_string("../area_info.json").unwrap())?;

@@ -10,7 +10,7 @@ use crate::{
 impl From<&WIkiTower> for Tower {
     fn from(value: &WIkiTower) -> Self {
         Self {
-            name: String::default(),
+            name: value.tower_name.clone(),
             difficulty: value.difficulty,
             badges: vec![],
             tower_type: Some(value.tower_type),
@@ -23,8 +23,6 @@ pub struct TowerJSON {
     #[serde(rename = "$schema")]
     pub schema: String,
     pub areas: HashMap<String, Vec<AreaInformation>>,
-    #[serde(skip)]
-    towers: HashMap<String, Tower>,
 }
 
 impl TowerJSON {
@@ -38,7 +36,7 @@ impl TowerJSON {
         map.key_loop().for_each(|k| {
             self.areas.insert(k.to_string(), vec![]);
         });
-        self.areas.insert("Uncategorised".to_string(), vec![]);
+        self.areas.insert("other".to_string(), vec![]);
     }
 
     // pub fn make_areas(&mut self, map: &AreaMap) {
@@ -56,23 +54,52 @@ impl TowerJSON {
     //     }
     // }
 
-    pub fn insert_tower(&mut self, tower: WIkiTower, name: &str, badge: u64, map: &AreaMap) {
-        let mut json_tower = Tower::from(&tower);
-        json_tower.badges.push(badge);
-        json_tower.name = name.to_owned();
-
-        self.towers.insert(name.to_owned(), json_tower.to_owned());
+    pub fn add_tower(&mut self, tower: WIkiTower, badge: u64, map: &AreaMap) {
         let area = map.get_area(&tower.location);
-        println!("Area: {:?}", area);
-        self.areas
+        let tower_list: &mut Vec<Tower> = self
+            .areas
             .get_mut(&area)
             .unwrap()
             .iter_mut()
             .find(|v| v.name == tower.location)
             .unwrap()
             .towers
-            .push(json_tower);
+            .as_mut();
+        if let Some(stored) = tower_list.iter_mut().find(|v| v.name == tower.tower_name) {
+            stored.badges.push(badge);
+            return;
+        }
+
+        let mut json_tower = Tower::from(&tower);
+        json_tower.badges.push(badge);
+        tower_list.push(json_tower);
     }
+
+    // pub fn insert_tower(&mut self, tower: WIkiTower, name: &str, badge: u64, map: &AreaMap) {
+    //     let mut json_tower = Tower::from(&tower);
+    //     json_tower.badges.push(badge);
+    //     json_tower.name = name.to_owned();
+
+    //     let area = map.get_area(&tower.location);
+    //     println!("Area: {:?}", area);
+    //     let towers: &mut Vec<Tower> = self
+    //         .areas
+    //         .get_mut(&area)
+    //         .unwrap()
+    //         .iter_mut()
+    //         .find(|v| v.name == tower.location)
+    //         .unwrap()
+    //         .towers
+    //         .as_mut();
+    //     if let Some(stored_tower) = towers
+    //         .iter_mut()
+    //         .find(|v| v.name.trim().to_lowercase() == tower.tower_name.trim().to_lowercase())
+    //     {
+    //         stored_tower.badges.push(badge);
+    //     } else {
+    //         towers.push(json_tower);
+    //     }
+    // }
 
     pub fn has_area(&self, area: &String, map: &AreaMap) -> bool {
         self.areas
@@ -88,15 +115,28 @@ impl TowerJSON {
             .push(area);
     }
 
-    pub fn add_tower_badge(&mut self, name: &str, badge: u64) {
-        self.towers.get_mut(name).unwrap().badges.push(badge)
-    }
+    // pub fn add_tower_badge(&mut self, name: &str, badge: u64, main_area: &str, tower_area: &str) {
+    //     // self.towers.get_mut(name).unwrap().badges.push(badge);
+    //     self.areas
+    //         .get_mut(main_area)
+    //         .unwrap()
+    //         .iter_mut()
+    //         .find(|v| v.name == tower_area)
+    //         .unwrap()
+    //         .towers
+    //         .iter_mut()
+    //         .find(|v| v.name == name)
+    //         .unwrap()
+    //         .badges
+    //         .push(badge);
+    // }
 
-    pub fn has_tower(&self, name: &str) -> bool {
-        self.towers.contains_key(name)
-    }
+    pub fn write_to_file(&mut self, path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+        // no point including it as its basically just temp dead weight.
+        // if self.areas.get("other").unwrap_or(&vec![]).len() == 0 {
+        //     self.areas.remove("other");
+        // }
 
-    pub fn write_to_file(&self, path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
         let data = serde_json::to_string(&self)?;
         Ok(fs::write(path, data)?)
     }

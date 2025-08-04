@@ -1,5 +1,8 @@
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fmt::Display};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt::Display,
+};
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
@@ -186,7 +189,7 @@ pub struct AreaRequirements {
     pub points: u64,
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct AreaInformation {
     #[serde(rename = "n")]
     pub name: String,
@@ -196,6 +199,17 @@ pub struct AreaInformation {
     pub sub_area: Option<String>,
     #[serde(rename = "t")]
     pub towers: Vec<Tower>,
+}
+
+impl Default for AreaInformation {
+    fn default() -> Self {
+        Self {
+            name: "Unknown area".to_string(),
+            requirements: AreaRequirements::default(),
+            sub_area: None,
+            towers: vec![],
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -335,7 +349,7 @@ impl AreaMap {
             }
         }
 
-        "Uncategorised".to_string()
+        "other".to_string()
     }
 
     pub fn key_loop(&self) -> std::collections::hash_map::Keys<'_, String, Vec<String>> {
@@ -349,7 +363,7 @@ pub struct BadgeMap {
     #[serde(skip)]
     badge_map: HashMap<u64, String>,
     #[serde(skip)]
-    unused: Vec<u64>,
+    unused: HashSet<u64>,
 }
 
 impl BadgeMap {
@@ -357,20 +371,27 @@ impl BadgeMap {
         self.badges.iter().for_each(|b| {
             b.1.iter().for_each(|id| {
                 self.badge_map.insert(*id, b.0.to_owned());
-                self.unused.push(*id);
+                self.unused.insert(*id);
             });
         });
     }
 
-    pub fn get_badge(&self, id: &u64) -> Option<&String> {
+    pub fn get_badge(&mut self, id: &u64) -> Option<&String> {
+        self.unused.remove(id);
         self.badge_map.get(id)
     }
 
-    pub fn use_unused(&self) -> impl Iterator<Item = Badge> {
-        self.unused.iter().map(|b| Badge {
-            id: *b,
-            name: self.get_badge(b).unwrap().to_owned(),
+    pub fn use_unused(&mut self) -> impl Iterator<Item = Badge> {
+        self.unused.clone().into_iter().map(|b| Badge {
+            id: b,
+            name: self.badge_map.get(&b).unwrap().to_owned(),
             ..Default::default()
         })
+
+        // self.unused.iter().clone().map(|b| Badge {
+        //     id: *b,
+        //     name: self.get_badge(b).unwrap().to_owned(),
+        //     ..Default::default()
+        // })
     }
 }

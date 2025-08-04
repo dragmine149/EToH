@@ -2,18 +2,29 @@ use std::f64;
 
 use crate::definitions::{AreaInformation, AreaRequirements, TowerDifficulties, TowerType};
 use pyo3::{
+    Bound, PyAny, PyResult, Python,
     ffi::c_str,
     types::{PyAnyMethods, PyDict, PyModule},
-    Bound, PyAny, PyResult, Python,
 };
 use regex::Regex;
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 pub struct WIkiTower {
     pub tower_name: String,
     pub tower_type: TowerType,
     pub location: String,
     pub difficulty: f64,
+}
+
+impl Default for WIkiTower {
+    fn default() -> Self {
+        Self {
+            tower_name: String::default(),
+            tower_type: TowerType::default(),
+            location: "Unknown area".to_string(),
+            difficulty: f64::default(),
+        }
+    }
 }
 
 // impl WIkiTower {
@@ -28,34 +39,34 @@ fn generator(wikitext: &str) -> String {
     cleaned.to_string()
 }
 
-// Yes, two different parse functions because the wiki is annoying...
-
-fn get_raw<'a>(item: &'a Bound<'a, PyAny>, name: &'a str) -> Bound<'a, PyAny> {
+fn get_raw<'a>(item: &'a Bound<'a, PyAny>, name: &'a str) -> Option<Bound<'a, PyAny>> {
     println!("Getting arg for {:?}", name);
+    println!("{:?}", item);
     let result = item.call_method1("get_arg", (name,));
     if let Ok(arg) = result {
         if !arg.is_none() {
             println!("Normal");
-            return arg;
+            return Some(arg);
         }
     }
     let result = item.call_method1("get_arg", (name.to_owned() + "1",));
     if let Ok(arg) = result {
         if !arg.is_none() {
             println!("+1");
-            return arg;
+            return Some(arg);
         }
     }
     let result = item.call_method1("get_arg", (name.to_owned() + "<!--1-->",));
     if let Ok(arg) = result {
         if !arg.is_none() {
             println!("+comment");
-            return arg;
+            return Some(arg);
         }
     }
 
     println!("Uncaught case!");
-    panic!("An uncaught case somehow");
+    // panic!("An uncaught case somehow");
+    None
 }
 
 fn parse_infobox(
@@ -64,10 +75,17 @@ fn parse_infobox(
     wtp: &Bound<'_, PyModule>,
 ) -> Result<WIkiTower, Box<dyn std::error::Error>> {
     let item = templates.get_item(index)?;
+
+    let raw_difficulty;
+    if let Some(raw) = get_raw(&item, "difficulty") {
+        raw_difficulty = raw;
+    } else {
+        return Ok(WIkiTower::default());
+    }
+
     // println!("{:?}", item);
-    let raw_difficulty = get_raw(&item, "difficulty")
-        .getattr("value")?
-        .extract::<String>()?;
+    // let raw_difficulty = get_raw(&item, "difficulty")
+    let raw_difficulty = raw_difficulty.getattr("value")?.extract::<String>()?;
     println!("{:?}", raw_difficulty);
     let tower_difficulty = wtp
         .call_method1("parse", (raw_difficulty,))?
@@ -81,11 +99,16 @@ fn parse_infobox(
         .unwrap_or(0 as f64);
     // println!("{:?}", tower_difficulty);
 
-    let raw_location = get_raw(&item, "found_in")
-        .getattr("value")?
-        .extract::<String>()?;
+    let raw_location;
+    if let Some(raw) = get_raw(&item, "found_in") {
+        raw_location = raw;
+    } else {
+        return Ok(WIkiTower::default());
+    }
+
+    let raw_location = raw_location.getattr("value")?.extract::<String>()?;
     // println!("{:?}", raw_location);
-    let tower_location = wtp
+    let mut tower_location = wtp
         .call_method1("parse", (raw_location,))?
         .call_method0("plain_text")?
         .extract::<String>()?
@@ -94,11 +117,20 @@ fn parse_infobox(
         .unwrap()
         .trim()
         .to_string();
+    if tower_location.is_empty() {
+        tower_location = "Unknown area".to_string();
+    }
+
     // println!("{:?}", tower_location);
 
-    let raw_type = get_raw(&item, "type_of_tower")
-        .getattr("value")?
-        .extract::<String>()?;
+    let raw_type;
+    if let Some(raw) = get_raw(&item, "type_of_tower") {
+        raw_type = raw;
+    } else {
+        return Ok(WIkiTower::default());
+    }
+
+    let raw_type = raw_type.getattr("value")?.extract::<String>()?;
     // println!("{:?}", raw_type);
     let tower_type = wtp
         .call_method1("parse", (raw_type,))?
