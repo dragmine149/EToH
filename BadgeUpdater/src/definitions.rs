@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fmt::Display};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct BadgeUniverse {
     pub id: u64,
@@ -9,7 +9,7 @@ pub struct BadgeUniverse {
     pub root_place_id: u64,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct BadgeStatistics {
     pub past_day_awarded_count: u64,
@@ -17,7 +17,7 @@ pub struct BadgeStatistics {
     pub win_rate_percentage: f64,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Badge {
     pub id: u64,
@@ -348,6 +348,8 @@ pub struct BadgeMap {
     pub badges: HashMap<String, Vec<u64>>,
     #[serde(skip)]
     badge_map: HashMap<u64, String>,
+    #[serde(skip)]
+    unused: Vec<u64>,
 }
 
 impl BadgeMap {
@@ -355,11 +357,20 @@ impl BadgeMap {
         self.badges.iter().for_each(|b| {
             b.1.iter().for_each(|id| {
                 self.badge_map.insert(*id, b.0.to_owned());
+                self.unused.push(*id);
             });
         });
     }
 
     pub fn get_badge(&self, id: &u64) -> Option<&String> {
         self.badge_map.get(id)
+    }
+
+    pub fn use_unused(&self) -> impl Iterator<Item = Badge> {
+        self.unused.iter().map(|b| Badge {
+            id: *b,
+            name: self.get_badge(b).unwrap().to_owned(),
+            ..Default::default()
+        })
     }
 }

@@ -133,6 +133,37 @@ fn compress_name(badge: &str) -> String {
         .replace("Steeple of ", "")
 }
 
+fn parse_badge(badge: &mut Badge, data: &mut TowerJSON, map: &AreaMap, client: &Client) {
+    println!("Badge: {:?}", badge.id);
+    println!("Tower: {:?}", badge.name);
+    let wiki = scrap_wiki(&client, &badge.name);
+    println!("{:#?}", wiki);
+
+    if wiki.is_none() {
+        return;
+    }
+    let mut wiki = wiki.unwrap();
+    wiki.location = wiki.location.replacen("*", "", 1).trim().to_owned();
+    if wiki.tower_type == TowerType::Invalid {
+        return;
+    }
+    if data.has_tower(&badge.name) {
+        data.add_tower_badge(&badge.name, badge.id);
+    }
+    let name = wiki.tower_name.to_owned();
+
+    println!("area: {:?}", wiki.location);
+    if !data.has_area(&wiki.location, &map) {
+        let area = scrap_wiki_area(&client, &wiki.location);
+        let mut area = area.unwrap();
+        println!("data: {:?}", area);
+        area.name = wiki.location.trim().to_owned();
+        data.add_area(area, &map);
+    }
+
+    data.insert_tower(wiki, &compress_name(&name), badge.id, &map);
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new();
 
@@ -158,35 +189,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if let Some(name) = badge_map.get_badge(&badge.id) {
             badge.name = name.to_owned();
         }
-
-        println!("Badge: {:?}", badge.id);
-        println!("Tower: {:?}", badge.name);
-        let wiki = scrap_wiki(&client, &badge.name);
-        println!("{:#?}", wiki);
-
-        if wiki.is_none() {
-            continue;
-        }
-        let mut wiki = wiki.unwrap();
-        wiki.location = wiki.location.replacen("*", "", 1).trim().to_owned();
-        if wiki.tower_type == TowerType::Invalid {
-            continue;
-        }
-        if data.has_tower(&badge.name) {
-            data.add_tower_badge(&badge.name, badge.id);
-        }
-        let name = wiki.tower_name.to_owned();
-
-        println!("area: {:?}", wiki.location);
-        if !data.has_area(&wiki.location, &map) {
-            let area = scrap_wiki_area(&client, &wiki.location);
-            let mut area = area.unwrap();
-            println!("data: {:?}", area);
-            area.name = wiki.location.trim().to_owned();
-            data.add_area(area, &map);
-        }
-
-        data.insert_tower(wiki, &compress_name(&name), badge.id, &map);
+        parse_badge(badge, &mut data, &map, &client);
+    }
+    for mut badge in badge_map.use_unused() {
+        parse_badge(&mut badge, &mut data, &map, &client);
     }
 
     data.write_to_file("../tower_data.json".into())
