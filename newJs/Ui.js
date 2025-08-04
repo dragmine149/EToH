@@ -80,7 +80,7 @@ class UI {
     this.categories.forEach((elm) => elm.style = ``);
     this.badges.forEach((elm) => elm.dispatchEvent(new Event("mouseover")));
     let height = 0, width = 0;
-    function set_size(h, w) { height = Math.max(height, h); width = Math.max(width, w); }
+    function set_size(h, w) { height = Math.max(height, h); width = Math.max(width, w); console.log(width); }
 
     this.categories.forEach((elm) => {
       set_size(elm.clientHeight, elm.clientWidth);

@@ -6,7 +6,6 @@ Visit the product here: https://dragmine149.github.io/ETOH
 
 ## Planned features
 - Switch over to [Cypress](https://docs.cypress.io/app/end-to-end-testing/writing-your-first-end-to-end-test) for testing and add more tests.
-- "Scrape" the ETOH fandom so that we can get more accurate and up to date data quicker.
 - Compare data between users. (Only after users have been downloaded)
 - Graphs showing data (like difficulty jumps or similar)
 - Rework of major components to use web components?
@@ -15,3 +14,5 @@ Visit the product here: https://dragmine149.github.io/ETOH
 - Default / saved settings
 - "me" user (just a quick button to load our data)
 - Better way of showing which badges are obtainable and which are not.
+- Have towers sorted (locally) instead of relying on the server.
+- Fully functional offline mode

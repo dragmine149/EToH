@@ -416,7 +416,10 @@ class EToHUI extends UI {
 
       /** @type {Area[]} */
       let area = areaManager.name(category);
-      if (area.length > 0) return area[0].parent ?? "root";
+      if (area.length > 0) {
+        // NOTE: This already catches the undefined check.
+        return area[0].parent ?? "root";
+      }
       /** @type {Other[]} */
       // let other = badgeManager.category(category);
       // if (other.length > 0) return "root";
@@ -696,7 +699,7 @@ async function loadTowersFromServer() {
           while (badges.length == 0 || !badges[badges.length - 1].startsWith("[")) {
             badges.push(tower_split.pop());
           }
-          console.log(badges);
+          // console.log(badges);
           badges = JSON.parse(badges.reverse().join(','));
           let diff = Number.parseFloat(tower_split.pop());
           let name = tower_split.join(',');
@@ -706,8 +709,9 @@ async function loadTowersFromServer() {
           // let type = numberToType(Number.parseInt(tower_split[3]));
           // let name = addTowerType(tower_split[0], type);
 
+          // console.warn(areas[0]);
           let tower_badge = new Tower(name, badges, diff, area.n, type, areas[0]);
-          console.log(tower_badge);
+          // console.log(tower_badge);
           badgeManager.addBadge(tower_badge);
         });
         area.requirements = {
@@ -726,6 +730,7 @@ async function loadTowersFromServer() {
         area.requirements.difficulties.extreme = area.r.ds.x ? area.r.ds.x : 0;
         area.requirements.difficulties.terrifying = area.r.ds.t ? area.r.ds.t : 0;
         area.requirements.difficulties.catastrophic = area.r.ds.a ? area.r.ds.a : 0;
+        area.s = area.s == "Windswept Peak" ? "" : area.s;
         console.log(area.requirements);
 
         areaManager.addArea(new Area(area.n, area.s, area.requirements));
