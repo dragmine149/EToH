@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::{
+    cmp::Ordering,
     collections::{HashMap, HashSet},
     fmt::Display,
 };
@@ -209,6 +210,18 @@ impl Default for AreaInformation {
             sub_area: None,
             towers: vec![],
         }
+    }
+}
+
+impl AreaInformation {
+    pub fn sort(&mut self) {
+        self.towers.sort_by(|a, b| {
+            if a.difficulty >= b.difficulty {
+                Ordering::Greater
+            } else {
+                Ordering::Less
+            }
+        });
     }
 }
 

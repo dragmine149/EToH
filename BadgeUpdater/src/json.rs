@@ -136,6 +136,9 @@ impl TowerJSON {
         // if self.areas.get("other").unwrap_or(&vec![]).len() == 0 {
         //     self.areas.remove("other");
         // }
+        self.areas
+            .iter_mut()
+            .for_each(|a| a.1.iter_mut().for_each(|s| s.sort()));
 
         let data = serde_json::to_string(&self)?;
         Ok(fs::write(path, data)?)
