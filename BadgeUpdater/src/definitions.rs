@@ -343,3 +343,24 @@ impl AreaMap {
         self.areas.keys()
     }
 }
+
+#[derive(Serialize, Debug, Deserialize)]
+pub struct BadgeMap {
+    pub badges: HashMap<String, Vec<u64>>,
+    #[serde(skip)]
+    badge_map: HashMap<u64, String>,
+}
+
+impl BadgeMap {
+    pub fn parse(&mut self) {
+        self.badges.iter().for_each(|b| {
+            b.1.iter().for_each(|id| {
+                self.badge_map.insert(*id, b.0.to_owned());
+            });
+        });
+    }
+
+    pub fn get_badge(&self, id: &u64) -> Option<&String> {
+        self.badge_map.get(id)
+    }
+}

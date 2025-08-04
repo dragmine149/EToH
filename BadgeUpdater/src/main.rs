@@ -146,12 +146,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let map = serde_json::from_str::<AreaMap>(&fs::read_to_string("../area_info.json").unwrap())?;
     // data.make_areas(&map);
     data.load_map(&map);
+    let mut badge_map =
+        serde_json::from_str::<BadgeMap>(&fs::read_to_string("../badge_map.json").unwrap())?;
+    badge_map.parse();
 
     badges
         .iter_mut()
         .for_each(|b| b.name = clean_badge_name(&b.name));
 
-    for badge in badges.iter() {
+    for badge in badges.iter_mut() {
+        if let Some(name) = badge_map.get_badge(&badge.id) {
+            badge.name = name.to_owned();
+        }
+
         println!("Badge: {:?}", badge.id);
         println!("Tower: {:?}", badge.name);
         let wiki = scrap_wiki(&client, &badge.name);
