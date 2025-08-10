@@ -8,15 +8,16 @@
     <meta charset="UTF-8">
     <meta name="description" content="Track badge progress for the roblox game Eternals Towers of Hell. Works with every badge in game (including unobtainable ones), offline, and can even filter completed areas or badge categories.">
 
-    <script src="https://cdn.jsdelivr.net/npm/compress-json@3/bundle.min.js"></script>
-    <script src="https://dragmine149.github.io/Scripts/storage.js"></script>
-    <script src="https://dragmine149.github.io/Scripts/verbose.js"></script>
+    <script src="newJs/setup.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/compress-json@3/bundle.min.js"></script> -->
+    <!-- <script src="https://dragmine149.github.io/external/storage.js" type="module"></script>
+    <script src="https://dragmine149.github.io/Scripts/verbose.mjs" type="module"></script> -->
     <script src="https://dragmine149.github.io/Scripts/verbose.css"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
 
     <script src="newJs/constants.js"></script>
     <script src="newJs/main.js"></script>
-    <script src="newJs/network.js"></script>
+    <script defer src="newJs/network.js"></script>
 
     <script src="newJs/DataManager.js"></script>
     <script src="newJs/BadgeManager.js"></script>
@@ -24,7 +25,7 @@
     <script src="newJs/user.js"></script>
 
     <script src="newJs/Ui.js"></script>
-    <script src="newJs/EToH.js"></script>
+    <script defer src="newJs/EToH.js"></script>
   </head>
   <body>
     <div id="top_bar">
