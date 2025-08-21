@@ -1,0 +1,78 @@
+#logs {
+  overflow: scroll;
+  writing-mode: inherit;
+  /* background-color: white; */
+  width: 15%;
+  height: 90%;
+  inset: 5% 0.25rem auto auto;
+  position: fixed;
+  z-index: 1000;
+  color: white;
+}
+
+#logs {
+  .serveriety.LOG {
+    background-color: gray;
+  }
+
+  .serveriety.WARN {
+    background-color: orange;
+  }
+
+  .serveriety.ERROR {
+    background-color: red;
+  }
+
+  .serveriety.INFO {
+    background-color: green;
+  }
+
+  .serveriety.DEBUG {
+    background-color: aqua;
+  }
+
+  .serveriety.TRACE {
+    background-color: cadetblue;
+  }
+
+  .serveriety.DIR {
+    background-color: gray;
+  }
+
+  .serveriety.TABLE {
+    background-color: gray;
+  }
+}
+
+#logs>div:not([hidden]) {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "icon category time"
+    "message message message";
+  gap: 5px;
+  padding: 10px;
+  /* Just for visual structure */
+  border: 1px solid #ccc;
+
+  [tag="icon"] {
+    grid-area: icon;
+    font-size: 1.5em;
+  }
+
+  [tag="category"] {
+    grid-area: category;
+    text-align: left;
+  }
+
+  [tag="time"] {
+    grid-area: time;
+    text-align: right;
+  }
+
+  [tag="message"] {
+    grid-area: message;
+    text-align: left;
+  }
+}
