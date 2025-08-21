@@ -112,4 +112,3 @@ class BadgeManager extends GenericManager {
 
 
 let badgeManager = new BadgeManager();
-badgeManager.help;

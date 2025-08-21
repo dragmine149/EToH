@@ -505,6 +505,9 @@ class EToHUI extends UI {
     console.log(badge_id);
     /** @type {Badge} */
     let badge = badgeManager.ids(badge_id)[0];
+    if (badge == undefined) return; /// bit of a hacky solution.
+
+    console.log(badge, badge_id);
     /** @type {string[]} */
     let type = this.types[badge instanceof Tower ? badge.type : TOWER_TYPE.Other].achieved;
     if (!type.includes(badge.name) && badge.category != "temporary") type.push(badge.name);
