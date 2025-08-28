@@ -4,6 +4,11 @@
   "description": "Tower tracker for the roblox game: Eternal-Towers-of-Hell (https://www.roblox.com/games/8562822414/Eternal-Towers-of-Hell)",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "type-check": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -13,10 +18,12 @@
     "@eslint/js": "^9.26.0",
     "eslint": "^9.26.0",
     "globals": "^16.1.0",
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.41.0"
   },
   "private": true,
-  "peerDependencies": {
-    "typescript": "^5.9.2"
+  "dependencies": {
+    "dexie": "^4.2.0"
   }
 }

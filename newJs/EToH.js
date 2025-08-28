@@ -52,7 +52,7 @@
 
 @typedef {import('./BadgeManager')}
 @typedef {import('./user')}
-@typedef {import('./network')}
+@typedef {import('../Scripts/network')}
 @typedef {import('./main')}
 @typedef {import('./AreaManager')}
 @typedef {import('./Ui')}

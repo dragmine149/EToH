@@ -8,6 +8,10 @@
 * @typedef {import('./network')}
 */
 
+import { Verbose } from "../Scripts/verbose.mjs";
+import { tryCatch } from "../Scripts";
+import { GenericManager } from "../Scripts/GenericManager";
+
 class User {
   /** @type {number} */
   id;

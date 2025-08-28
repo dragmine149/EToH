@@ -1,45 +1,45 @@
-/*global badgeManager, Verbose */
-/*eslint no-undef: "error"*/
-/*exported UI */
-
-/**
-* @typedef {import('./BadgeManager')}
-*/
+import { badgeManager } from "./BadgeManager";
+import { Verbose } from "../Scripts/verbose.mjs";
 
 class UI {
-  /** @type {Map<string, HTMLDivElement>} A map of badges and the elements that they control */
-  badges;
-  /** @type {Map<string, HTMLDivElement>} A map of categories and the elements they control */
-  categories;
-  /** @type {string[]} A list of badges that have been loaded. */
-  loaded;
+  /** @type A map of badges and the elements that they control */
+  badges: Map<string, HTMLDivElement>;
+  /** @type A map of categories and the elements they control */
+  categories: Map<string, HTMLDivElement>;
+  /** @type A list of badges that have been loaded. */
+  loaded: string[];
+
+  #verbose: Verbose;
+  #creator_verbose: Verbose;
+
+  root: HTMLDivElement;
 
   /**
   * Create a new UI whilst doing a lot of js setup for it.
-  * @param {string[]} categories A list of categories to make.
-  * @param {(badge_name: string) => string} badge_callback What category a specific badge should be added to.
-  * @param {(category_name: string) => string} category_callback What category should be the parent of this category.
+  * @param categories A list of categories to make.
+  * @param badge_callback What category a specific badge should be added to.
+  * @param category_callback What category should be the parent of this category.
   */
-  constructor(categories, badge_callback, category_callback) {
+  constructor(categories: string[], badge_callback: (badge_name: string) => string, category_callback: (category_name: string) => string) {
     this.badges = new Map();
     this.categories = new Map();
     this.loaded = [];
-    this.verbose = new Verbose("ETOHUI", '#34A853');
-    this.creator_verbose = new Verbose("ETOHUI_Creator", '#34A853');
+    this.#verbose = new Verbose("ETOHUI", '#34A853');
+    this.#creator_verbose = new Verbose("ETOHUI_Creator", '#34A853');
 
-    this.creator_verbose.log("Creating the elements", categories);
+    this.#creator_verbose.log("Creating the elements", categories);
     // create the ui elements.
     this.#createBadges();
     // this.#createCategories(categories);
 
     // the root element of all evil.
     // Ignore the above comment, the AI snuck in.
-    this.root = document.getElementById("badges");
+    this.root = document.getElementById("badges") as HTMLDivElement;
 
-    this.creator_verbose.log("Adding elements to the correct categories.");
-    let defaultCategory = this.setCategory("default");
+    this.#creator_verbose.log("Adding elements to the correct categories.");
+    const defaultCategory = this.setCategory("default");
     Array.from(this.badges.keys()).forEach((key) => {
-      let category = badge_callback(key);
+      const category = badge_callback(key);
       let parent = category_callback(category);
       if (parent == "root") parent = "default";
       defaultCategory.addBadges(key, category, parent);
@@ -295,8 +295,8 @@ class UI {
 
   #createBadges() {
     badgeManager.name().forEach((badge) => {
-      this.creator_verbose.log("Processing Badge: ", badge);
-      if (this.badges.has(badge)) return this.creator_verbose.log("already exists");
+      this.#creator_verbose.log("Processing Badge: ", badge);
+      if (this.badges.has(badge)) return this.#creator_verbose.log("already exists");
 
       /** @type {HTMLDivElement} */
       // create a clone of the element.
@@ -328,9 +328,9 @@ class UI {
   * @param {HTMLDivElement} parent_node The parent node that this category goes under.
   */
   #createCategory(category, parent_node) {
-    this.creator_verbose.log("Processing Category: ", category);
+    this.#creator_verbose.log("Processing Category: ", category);
     if (this.categories.has(category)) {
-      this.creator_verbose.log("already exists");
+      this.#creator_verbose.log("already exists");
       return this.categories.get(category);
     }
     if (Object.keys(this.display_categories).includes(category)) {
@@ -365,7 +365,7 @@ class UI {
   * @param {string} parent The parent they belong under.
   */
   #addBadges(cat_name, parents, badges, name, parent) {
-    this.creator_verbose.log(`Adding: `, badges, `to ${name}, ${parent}`);
+    this.#creator_verbose.log(`Adding: `, badges, `to ${name}, ${parent}`);
     // defaults set up so user provides less.
     if (!Array.isArray(badges)) badges = [badges]; // single badge support
     if (name === undefined || name == null || name == '') name = cat_name; // default to root
@@ -420,7 +420,7 @@ class UI {
     }
   }
 
-  //eslint-disable-next-line no-unused-vars
+
   onCategoryLoad(_) { }
 
 
@@ -432,7 +432,7 @@ class UI {
   load_category(category_name) {
     let data = this.display_categories[category_name];
     let categories = data.parents;
-    this.verbose.log(categories);
+    this.#verbose.log(categories);
     this.current_category = category_name;
 
     // sort out node visibility first.
@@ -468,3 +468,5 @@ class UI {
     this.syncSize();
   }
 }
+
+export { UI };

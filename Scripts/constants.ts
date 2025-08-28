@@ -1,7 +1,9 @@
 /*eslint no-undef: "error" */
-/*exported DIFFICULTIES, SUB_LEVELS, TOWER_TYPE, pointsFromType */
 
-const DIFFICULTIES = Object.freeze(["Easy", "Medium", "Hard", "Difficult", "Challenging", "Intense", "Remorseless", "Insane", "Extreme", "Terrifying", "Catastrophic"]);
+enum DIFFICULTIES {
+  Easy, Medium, Hard, Difficult, Challenging, Insane, Remorseless, Intense, Extreme, Terrifying, Catastrophic
+}
+
 const SUB_LEVELS = Object.freeze([
   { threshold: 0.89, name: "Peak" },
   { threshold: 0.78, name: "High-Peak" },
@@ -14,20 +16,16 @@ const SUB_LEVELS = Object.freeze([
   { threshold: 0.01, name: "Bottom" },
   { threshold: 0.00, name: "Baseline" }
 ]);
-const TOWER_TYPE = Object.freeze({
-  Steeple: "Steeple",
-  Tower: "Tower",
-  Citadel: "Citadel",
-  Obelisk: "Obelisk",
-  Mini_Tower: "Mini_Tower",
-  Other: "Other"
-});
+
+enum TOWER_TYPE {
+  Steeple = "Steeple", Tower = "Tower", Citadel = "Citadel", Obelisk = "Obelisk", Mini_Tower = "Mini_Tower", Other = "Other"
+}
 
 /**
 * Gets how many points that type of tower is worth.
-* @param {TOWER_TYPE} type The type of tower.
+* @param type The type of tower.
 */
-function pointsFromType(type) {
+function pointsFromType(type: TOWER_TYPE) {
   switch (type) {
     case TOWER_TYPE.Steeple: return 0.5;
     case TOWER_TYPE.Tower: return 1;
@@ -36,3 +34,5 @@ function pointsFromType(type) {
     default: return 0;
   }
 }
+
+export { DIFFICULTIES, SUB_LEVELS, TOWER_TYPE, pointsFromType }

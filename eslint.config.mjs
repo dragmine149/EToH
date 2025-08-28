@@ -1,19 +1,59 @@
 import js from "@eslint/js";
 import globals from "globals";
-import css from "@eslint/css";
-import { defineConfig } from "eslint/config";
+import tseslint from 'typescript-eslint';
 
-
-export default defineConfig([
-  { files: ["**/*.{js,mjs,cjs}"], plugins: { js }, extends: ["js/recommended"] },
-  { files: ["**/*.js"], languageOptions: { sourceType: "script" } },
-  { files: ["**/*.{js,mjs,cjs}"], languageOptions: { globals: globals.browser } },
-  { files: ["**/*.css"], plugins: { css }, language: "css/css", extends: ["css/recommended"] },
+export default tseslint.config(
   {
+    ignores: [
+      "node_modules/",
+      "dist/",
+      "build/",
+      "coverage/",
+      "tmp/",
+      "temp/",
+      "*.log",
+      ".vscode/",
+      ".idea/",
+      "*.swp",
+      "*.swo",
+      ".DS_Store",
+      "Thumbs.db",
+    ]
+  },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  ...tseslint.configs.strict,
+  ...tseslint.configs.stylistic,
+  {
+    files: ["**/*.{js,ts,tsx,mjs,cjs}"],
     languageOptions: {
       globals: {
+        ...globals.browser,
         Dexie: "readonly"
-      }
+      },
+      ecmaVersion: 2022,
+      sourceType: "module"
+    },
+    linterOptions: {
+      noWarnIgnored: true
+    },
+    rules: {
+      'no-undef': 'error', // TypeScript handles this
+      '@typescript-eslint/no-unused-vars': ['error', {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_'
+      }],
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-var-requires': 'off',
+      '@eslint/no-unused-vars': 'off'
+    }
+  },
+  {
+    files: ["**/*.js", "**/*.mjs", "**/*.cjs"],
+    rules: {
+      '@typescript-eslint/no-var-requires': 'off'
     }
   }
-]);
+);

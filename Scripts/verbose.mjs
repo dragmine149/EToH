@@ -151,7 +151,7 @@ class log {
   __limit = 1000;
   set limit(v) {
     if (Number.isNaN(v)) {
-      return false;
+      return;
     }
     this.__limit = Math.max(0, Math.min(1000, v));
   }
@@ -313,3 +313,5 @@ class log {
 }
 
 let logs = new log();
+
+export { logs, Verbose }
