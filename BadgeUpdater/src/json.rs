@@ -136,11 +136,47 @@ impl TowerJSON {
         // if self.areas.get("other").unwrap_or(&vec![]).len() == 0 {
         //     self.areas.remove("other");
         // }
+        // Sort each area's list
         self.areas
             .iter_mut()
             .for_each(|a| a.1.iter_mut().for_each(|s| s.sort()));
 
-        let data = serde_json::to_string(&self)?;
+        // Build an ordered "areas" object with keys in the desired order:
+        // ("permanent", "temporary", "other"), followed by any remaining keys
+        // in alphabetical order.
+        let mut areas_map = serde_json::Map::new();
+
+        let preferred_order = ["permanent", "temporary", "other"];
+        for &k in preferred_order.iter() {
+            if let Some(v) = self.areas.get(k) {
+                let value = serde_json::to_value(v)?;
+                areas_map.insert(k.to_string(), value);
+            }
+        }
+
+        // Insert remaining keys sorted alphabetically
+        let mut remaining_keys: Vec<&String> = self
+            .areas
+            .keys()
+            .filter(|k| !preferred_order.contains(&k.as_str()))
+            .collect();
+        remaining_keys.sort();
+        for k in remaining_keys {
+            if let Some(v) = self.areas.get(k) {
+                let value = serde_json::to_value(v)?;
+                areas_map.insert(k.to_string(), value);
+            }
+        }
+
+        // Build the final root object with the schema and ordered areas
+        let mut root = serde_json::Map::new();
+        root.insert(
+            "$schema".to_string(),
+            serde_json::Value::String(self.schema.clone()),
+        );
+        root.insert("areas".to_string(), serde_json::Value::Object(areas_map));
+
+        let data = serde_json::to_string(&serde_json::Value::Object(root))?;
         Ok(fs::write(path, data)?)
     }
 }
