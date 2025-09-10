@@ -41,6 +41,7 @@ class CategoryInformation<K extends string> extends HTMLElement {
   #table?: HTMLTableElement;
   #header?: HTMLSpanElement;
   #badges?: HTMLTableRowElement[];
+  #style?: HTMLLinkElement;
 
   constructor() { super(); }
   // This is empty because we don't want to recreate a ton of stuff.
@@ -50,11 +51,16 @@ class CategoryInformation<K extends string> extends HTMLElement {
     this.#shadow = this.attachShadow({ mode: "open" });
     this.#table = document.createElement("table");
     this.#header = document.createElement("span");
+    this.#style = document.createElement("link");
     this.#badges = [];
 
-    this.classList.add("area");
+    this.#shadow.appendChild(this.#style);
     this.#shadow.appendChild(this.#header);
     this.#shadow.appendChild(this.#table);
+
+    this.classList.add("area");
+    this.#style.href = "css/shadow_tables.css";
+    this.#style.rel = "stylesheet";
 
     this.#updateTable();
   }

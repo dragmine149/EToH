@@ -24,6 +24,8 @@
   },
   "private": true,
   "dependencies": {
-    "dexie": "^4.2.0"
+    "dexie": "^4.2.0",
+    "tailwind": "^4.0.0",
+    "tailwindcss": "^4.1.13"
   }
 }

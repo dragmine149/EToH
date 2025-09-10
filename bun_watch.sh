@@ -1,4 +1,4 @@
 #!/bin/sh
-# bun build --watch --outdir=./ETOH/dist --minify --sourcemap=linked --splitting ./ETOH/Scripts/index.ts ./ETOH/Scripts/debug.ts
+# bun build --watch --outdir=./dist --minify --sourcemap=linked --splitting ./Scripts/index.ts ./Scripts/debug.ts
 # bun build --watch --outdir=./external ./Scripts/storage.ts
-bun build --watch --outdir=./ETOH/dist --minify --sourcemap=linked --splitting ./ETOH/Scripts/ui.ts
+bun build --watch --outdir=./dist --minify --sourcemap=linked --splitting ./Scripts/ui.ts

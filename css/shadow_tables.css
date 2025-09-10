@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+* {
+  background: #fff;
+  width: 100%;
+}
+
+*~span {
+  display: block;
+  text-align: center;
+}
