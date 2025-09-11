@@ -20,6 +20,10 @@ interface CategoryData<K extends Badge> {
   badges: UIBadgeData<K>[],
 }
 
+enum Count {
+  None, Numbers, Percent
+}
+
 /**
  * Custom HTMLElement for making a table. Uses shadowDOM for cleaner HTML files.
  * Custom functions allows for easy use. Requires type `K` as a custom user defined element. As an extension
@@ -35,9 +39,11 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   get data() { return this.#data; }
 
   /** Whether to display the count of completed vs total in the header or not. */
-  set count(v) { this.#count = v; this.#table?.classList[v ? 'add' : 'remove']('count'); }
+  set count(v) { this.#count = v; }
   get count() { return this.#count; }
-  #count: boolean = false;
+  #count: Count = Count.Numbers;
+  #totalElements: number;
+  #completedElements: number;
 
   #shadow?: ShadowRoot;
   #table?: HTMLTableElement;
@@ -64,6 +70,9 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     this.#style.href = "css/shadow_tables.css";
     this.#style.rel = "stylesheet";
 
+    this.#totalElements = 0;
+    this.#completedElements = 0;
+
     this.#updateTable();
   }
 
@@ -71,6 +80,24 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     // console.log("Hovered row element!");
     name_data.innerText = badge.name(hover);
     info_span.innerText = badge.information(hover);
+  }
+
+  #updateCount() {
+    if (this.#header == undefined) return;
+    let count_data = ``;
+    switch (this.count) {
+      case Count.None:
+        count_data = ``;
+        break;
+      case Count.Numbers:
+        count_data = ` (${this.#completedElements}/${this.#totalElements})`;
+        break;
+      case Count.Percent:
+        count_data = ` (${((this.#completedElements / this.#totalElements) * 100).toFixed(2)}%)`;
+        break;
+    }
+
+    this.#header.innerText = `${this.#data?.name}${count_data}`;
   }
 
   #updateTable() {
@@ -108,82 +135,16 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
 
       this.#table?.appendChild(row);
       this.#badges?.push(row);
+
+      this.#totalElements += 1;
+      this.#completedElements += badge.completed > 0 ? 1 : 0;
     });
+
+    this.#updateCount();
   }
 }
 
-
-
-
-
-// class CategoryInformation extends HTMLElement {
-//   #data: TestData;
-//   set data(v: TestData) {
-//     this.#data = v;
-
-//     if (this.#table == undefined) return;
-//     v.towers.forEach((t) => {
-//       this.addBadge(t.name, t.information, t.completed);
-//     })
-//   }
-//   get data() { return this.#data; }
-//   #shadow?: ShadowRoot;
-//   #table?: HTMLTableElement;
-
-//   constructor() {
-//     super();
-//   }
-
-//   connectedCallback() {
-//     console.log(`Made new custom html table!`);
-
-//     this.#shadow = this.attachShadow({ mode: "open" });
-//     this.#table = document.createElement("table");
-//     const header = document.createElement("th");
-//     header.innerText = this.data.name;
-//     const row = document.createElement("tr");
-//     this.#table.appendChild(row);
-//     row.appendChild(header);
-//     this.#shadow.appendChild(this.#table);
-
-//     this.data.towers.forEach((t) => {
-//       this.addBadge(t.name, t.information, t.completed);
-//     });
-//   }
-
-//   addBadge(name: string, information: string | URL, completed: number) {
-//     const row = document.createElement("tr");
-//     const name_data = document.createElement("td");
-//     const info_data = document.createElement("td");
-//     const info_span = document.createElement("span");
-//     const info_br = document.createElement("br");
-//     const info_date = document.createElement("span");
-
-//     name_data.innerText = name;
-//     info_span.innerHTML = typeof information == 'string' ? information : `<a href=${information.toString()}></a>`;
-//     info_date.innerText = completed > 0 ? new Date(completed).toLocaleString(undefined, {
-//       year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: false,
-//     }) : '';
-
-//     row.appendChild(name_data);
-//     row.appendChild(info_data);
-//     info_data.appendChild(info_span);
-//     info_data.appendChild(info_br);
-//     info_data.appendChild(info_date);
-
-//     this.#table?.appendChild(row);
-//   }
-// }
-
 customElements.define("category-information", CategoryInformation);
-
-
-// interface TestData {
-//   name: string;
-//   towers: Badge[];
-//   difficulty: number;
-//   area: string;
-// }
 
 /**
  * A function which generates random testing data.
@@ -198,7 +159,7 @@ function random_data(): CategoryData<Badge> {
     .slice(0, Math.floor(Math.random() * 4) + 1)
     .map(towerName => ({
       name: (hover: boolean) => towerName + (hover ? " (Hovered)" : ""),
-      information: (hover: boolean) => `Information about ${towerName}` + (hover ? " (Hovered)" : ""),
+      information: (hover: boolean) => `Information about ${towerName} ` + (hover ? " (Hovered)" : ""),
       url: `https://example.com/${towerName.toLowerCase()}`,
       completed: Math.floor(Math.random() < 0.3 ? -1 : Date.now() - Math.floor(Math.random() * 365 * 24 * 60 * 60 * 1000)),
     }));
@@ -209,20 +170,19 @@ function random_data(): CategoryData<Badge> {
   };
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById("e")?.addEventListener('click', () => {
-    console.log('creating new element');
-    const ci = document.createElement('category-information') as CategoryInformation;
-    ci.data = random_data();
+const createCI = () => {
+  console.log('creating new element');
+  const ci = document.createElement('category-information') as CategoryInformation<Badge>;
+  ci.data = random_data();
+  ci.count = Math.random() >
+    0.33 ? Count.None : (Math.random() > 0.66 ? Count.Numbers : Count.Percent);
+  document.body.appendChild(ci);
+}
 
-    document.body.appendChild(ci);
-  });
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById("e")?.addEventListener('click', createCI);
 });
 
 for (let i = 0; i < 2; i++) {
-  console.log('creating new element');
-  const ci = document.createElement('category-information') as CategoryInformation;
-  ci.data = random_data();
-
-  document.body.appendChild(ci);
+  createCI();
 }
