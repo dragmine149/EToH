@@ -29,3 +29,12 @@ table tr:last-child td:last-child {
 table badge-info {
   display: block;
 }
+
+
+.highlight {
+  background-color: skyblue;
+}
+
+.highlight.selected {
+  background-color: aqua;
+}

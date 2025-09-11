@@ -1,4 +1,5 @@
 import { Badge } from "./BadgeManager";
+import { shortTowerName } from "./Etoh";
 
 interface UIBadgeData<K extends Badge> {
   /** Function to call to show information in the name field of the ui. */
@@ -22,6 +23,19 @@ interface CategoryData {
 
 enum Count {
   None, Numbers, Percent
+}
+
+/**
+ * Highlights a span by creating span children. Uses `innerText` to avoid having to reget the text or do weird stuff.
+ * @param span The span to affect.
+ * @param text The text to highlight.
+ * @param selected To include the optional class for selectedness.
+ */
+function highlight_span(span: HTMLSpanElement, text: string, selected: boolean) {
+  let regex = new RegExp(`[${text}]`, `gi`);
+  span.innerHTML = span.innerText.replaceAll(regex, (match) => {
+    return `<span class="highlight ${selected ? "selected" : ""}" style="margin: 0;">${match}</span>`;
+  })
 }
 
 /**
@@ -74,6 +88,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     this.#header.title = this.#data?.name || "";
     this.#header.innerText = this.#data?.name || "";
 
+    // process those waiting, if we have any waiting.
     if (this.#badgeToProcess) this.addBadges(...this.#badgeToProcess);
   }
 
@@ -164,6 +179,18 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     const data = this.#badgeToProcess;
     this.#badgeToProcess = [];
     return data;
+  }
+
+  /**
+   * Searches all the badges and highlights certain stuff depending on stuff.
+   * @param data The data to search for.
+   * @param is_acro Is the data an acrynoim
+   */
+  search(data: string, is_acro: boolean) {
+    // this.badges?.forEach((b) => b.search(data, is_acro));
+
+    if (!this.#header) return;
+    highlight_span(this.#header, data, false);
   }
 }
 
@@ -265,11 +292,29 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
     if (!this.#data) return false;
     return this.#data?.completed > 0;
   }
+
+  search(data: string, is_acro: string);
 }
 
 
 customElements.define("category-info", CategoryInformation);
 customElements.define("badge-info", BadgeInformation);
+
+
+// NOTE: Proof of concept.
+function search(data: string) {
+  let is_acro = data.startsWith("To") || data.startsWith("Co");
+  let thirdLetter = data.charAt(2);
+  is_acro == is_acro &&
+    thirdLetter === thirdLetter.toUpperCase() && thirdLetter !== thirdLetter.toLowerCase();
+
+  elms.forEach((elm) => elm.search(data, is_acro));
+}
+globalThis.search = search;
+
+
+
+
 /**
  * A function which generates random testing data.
  */
@@ -298,6 +343,8 @@ function random_data(): CategoryData {
   };
 }
 
+let elms: CategoryInformation<Badge>[] = [];
+
 const createCI = () => {
   console.log('creating new element');
   const ci = document.createElement('category-info') as CategoryInformation<Badge>;
@@ -309,9 +356,14 @@ const createCI = () => {
   const badgeCount = Math.floor(Math.random() * 5) + 1;
   const badges = Array.from({ length: badgeCount }, () => {
     const id = Math.floor(Math.random() * 1000);
+    const words = Array.from({ length: Math.floor(Math.random() * 3) + 1 }, () => {
+      const wordList = ["Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa"];
+      return wordList[Math.floor(Math.random() * wordList.length)];
+    }).join(" ");
+
     return {
-      name: (hover: boolean) => `Badge ${id}` + (hover ? " (Hovered)" : ""),
-      information: (hover: boolean) => `Information about badge ${id}` + (hover ? " (Hovered)" : ""),
+      name: (hover: boolean) => hover ? `Tower of ${words}` : shortTowerName(`Tower of ${words}`),
+      information: (hover: boolean) => `Information about Tower of ${words}` + (hover ? " (Hovered)" : ""),
       url: `https://example.com/badge/${id}`,
       id: id,
       completed: Math.random() < 0.7 ? Date.now() - Math.floor(Math.random() * 365 * 24 * 60 * 60 * 1000) : 0,
@@ -322,6 +374,7 @@ const createCI = () => {
 
   ci.addBadges(...badges);
   document.body.appendChild(ci);
+  elms.push(ci);
 }
 
 document.addEventListener('DOMContentLoaded', () => {

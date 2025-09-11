@@ -65,9 +65,9 @@ class EToHUser extends User {
     }));
 
     await etohDB.badges.bulkPut(badgeArray)
-      .then((v) => { this.#verbose.info(`Finished storing all badges in database`); this.#verbose.log(v) })
+      .then((v) => { console.info(`Finished storing all badges in database`); console.log(v) })
       .catch(e => {
-        this.#verbose.error(`Failed to add in ${badgeArray.length - e.failures.length} badges`, e);
+        console.error(`Failed to add in ${badgeArray.length - e.failures.length} badges`, e);
       });
   }
 }
@@ -128,4 +128,4 @@ class Tower extends Badge {
 
 const userManager = new UserManager(etohDB.users, EToHUser);
 
-export { userManager };
+export { userManager, shortTowerName };
