@@ -15,11 +15,9 @@ interface UIBadgeData<K extends Badge> {
   completed: number,
 }
 
-interface CategoryData<K extends Badge> {
+interface CategoryData {
   /** Name of category */
   name: string,
-  /** List of badges that come under this category. */
-  badges: UIBadgeData<K>[],
 }
 
 enum Count {
@@ -28,26 +26,18 @@ enum Count {
 
 /**
  * Custom HTMLElement for making a table. Uses shadowDOM for cleaner HTML files.
- * Custom functions allows for easy use. Requires type `K` as a custom user defined element. As an extension
- * to a normal string.
+ * Designed specifically to hold multiple badges which are dynamically added and removed.
  */
 class CategoryInformation<K extends Badge> extends HTMLElement {
-  #data?: CategoryData<K>;
+  #data?: CategoryData;
   /** Data stored about the element. */
-  set data(data: CategoryData<K> | undefined) {
-    this.#data = Object.freeze(data);
-    this.#updateTable();
-  }
+  set data(data: CategoryData | undefined) { this.#data = Object.freeze(data); }
   get data() { return this.#data; }
 
   /** Whether to display the count of completed vs total in the header or not. */
   set count(v) { this.#count = v; }
   get count() { return this.#count; }
   #count: Count = Count.Numbers;
-  /** Total number of elements we're looking after */
-  #totalElements: number;
-  /** Number of elements where badge.completed > 0 */
-  #completedElements: number;
 
   /// Contains quick references to different children for global use.
   #shadow?: ShadowRoot;
@@ -78,12 +68,9 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     this.#style.href = "css/shadow_tables.css";
     this.#style.rel = "stylesheet";
 
-    // reset counters
-    this.#totalElements = 0;
-    this.#completedElements = 0;
-
-    // and update stuff.
-    this.#updateTable();
+    // set header
+    this.#header.title = this.#data?.name || "";
+    this.#header.innerText = this.#data?.name || "";
   }
 
   /**
@@ -106,41 +93,49 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
    * Updates the count display.
    */
   #updateCount() {
-    if (!this.#header || !this.#data) return;
+    if (!this.#header || !this.#data || !this.badges) return;
 
-    const count_data = this.#countString(this.#completedElements, this.#totalElements);
+    const completed_count = Array.from(this.badges.values()).filter(x => x.isCompleted()).length;
+    const count_data = this.#countString(completed_count, this.badges?.size);
     this.#header.innerText = `${this.#data.name}${count_data}`;
   }
 
   /**
-   * Update the table with all the badges.
+   * Add a badge for this element to take care of.
+   * Can take raw badge data or modified information data.
+   * @param badges Information about badges to add. Can take an array or just one.
    */
-  #updateTable() {
-    // Can't do anything without these two important nodes.
-    if (!this.#data || !this.#shadow || !this.#table || !this.#header || !this.badges) return;
+  addBadges(...badges: (UIBadgeData<K> | BadgeInformation<K>)[]) {
+    badges.forEach((badge) => {
+      let row: BadgeInformation<K>;
 
-    // set header as this is easy and can get out of the way.
-    this.#header.title = this.#data.name;
-    this.#header.innerText = this.#data.name;
-
-    // for every badge.
-    this.#data.badges.forEach((badge) => {
-      if (this.badges!.has(badge.id)) return;
-
-      const row = document.createElement("badge-info") as BadgeInformation<K>;
-      row.data = badge;
+      if ((badge as BadgeInformation<K>).data) {
+        row = badge as BadgeInformation<K>;
+      } else {
+        row = document.createElement("badge-info") as BadgeInformation<K>;
+        row.data = badge as UIBadgeData<K>;
+      }
 
       // add to main table and storage.
       this.#table!.appendChild(row);
-      this.badges!.set(badge.id, row);
-
-      // increment counters.
-      this.#totalElements += 1;
-      this.#completedElements += badge.completed > 0 ? 1 : 0;
+      this.badges!.set((row.data as UIBadgeData<K>).id, row);
     });
 
-    // update the ui.
     this.#updateCount();
+  }
+
+  /**
+   * Removes a badge this element is taking care of.
+   * @param badgeId The badge to remove.
+   * @returns The raw data for that badge or `undefined` if this element isn't taking care of that badge.
+   */
+  removeBadge(badgeId: number) {
+    const entry = this.badges?.get(badgeId);
+    if (this.badges?.delete(badgeId)) {
+      // If we have deleted it succesffully, then we know that we can remove it.
+      this.#table?.removeChild(entry!);
+    };
+    return entry;
   }
 }
 
@@ -205,18 +200,6 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   }
 
   /**
-   * Public function to update the completed date of this badge.
-   * @param completed Optional completed unix timestamp (`new Date().getTime()`)
-   */
-  updatedCompleted(completed?: number) {
-    if (!this.#info_comp) return;
-
-    this.#info_comp.innerText = completed && completed > 0 ? new Date(completed).toLocaleString(undefined, {
-      year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: false,
-    }) : '';
-  }
-
-  /**
    * Update row information of the badge. (and a lot of related stuff)
    */
   #updateRow() {
@@ -232,6 +215,27 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
     // sort out external events.
     this.#row.onmouseover = this.#effectElement.bind(this, true);
     this.#row.onmouseleave = this.#effectElement.bind(this, false);
+  }
+
+  /**
+   * Public function to update the completed date of this badge.
+   * @param completed Optional completed unix timestamp (`new Date().getTime()`)
+   */
+  updatedCompleted(completed?: number) {
+    if (!this.#info_comp) return;
+
+    this.#info_comp.innerText = completed && completed > 0 ? new Date(completed).toLocaleString(undefined, {
+      year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: false,
+    }) : '';
+  }
+
+  /**
+   * Returns if a badge is completed or not.
+   * @returns Is the badge completed. Or false if no data.
+   */
+  isCompleted() {
+    if (!this.#data) return false;
+    return this.#data?.completed > 0;
   }
 }
 
