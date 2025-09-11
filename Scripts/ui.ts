@@ -46,6 +46,8 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   badges?: Map<number, BadgeInformation<K>>;
   #style?: HTMLLinkElement;
 
+  #badgeToProcess?: (UIBadgeData<K> | BadgeInformation<K>)[];
+
   constructor() { super(); }
   // This is empty because we don't want to recreate a ton of stuff.
   connectedMoveCallback() { }
@@ -71,6 +73,8 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     // set header
     this.#header.title = this.#data?.name || "";
     this.#header.innerText = this.#data?.name || "";
+
+    if (this.#badgeToProcess) this.addBadges(...this.#badgeToProcess);
   }
 
   /**
@@ -101,11 +105,18 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   }
 
   /**
-   * Add a badge for this element to take care of.
-   * Can take raw badge data or modified information data.
+   * Add a badge for this element to take care of. Can take raw badge data or modified information data.
+   *
+   * Note: Badges can be pre-loaded, we just wait for the main element to add to the document before doing stuff with them though...
    * @param badges Information about badges to add. Can take an array or just one.
    */
   addBadges(...badges: (UIBadgeData<K> | BadgeInformation<K>)[]) {
+    if (!this.#table) {
+      // store badges for processing later once we get around to adding the element.
+      this.#badgeToProcess = badges;
+      return;
+    }
+
     badges.forEach((badge) => {
       let row: BadgeInformation<K>;
 
@@ -143,6 +154,16 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     });
 
     return badges;
+  }
+
+  /**
+   * Removes all the data ready for pre-loading.
+   * @returns The data stored by doing `addBadges` when `Table` is undefined.
+   */
+  removePreLoaded() {
+    const data = this.#badgeToProcess;
+    this.#badgeToProcess = [];
+    return data;
   }
 }
 
@@ -249,38 +270,57 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
 
 customElements.define("category-info", CategoryInformation);
 customElements.define("badge-info", BadgeInformation);
-
 /**
  * A function which generates random testing data.
  */
-function random_data(): CategoryData<Badge> {
+function random_data(): CategoryData {
   const names = ["Forest Path", "Desert Storm", "Mountain Peak", "Ocean Waves", "City Center"];
   const towerTypes = ["Archer", "Cannon", "Magic", "Ice", "Fire", "Lightning", "Earth"];
 
   const randomName = names[Math.floor(Math.random() * names.length)];
-  const randomBadges = towerTypes
-    .sort(() => 0.5 - Math.random())
-    .slice(0, Math.floor(Math.random() * 4) + 1)
-    .map(towerName => ({
+  const badgeCount = Math.floor(Math.random() * 5) + 1; // Random number of badges between 1 and 5
+  const randomBadges = Array.from({ length: badgeCount }, () => {
+    const towerName = towerTypes[Math.floor(Math.random() * towerTypes.length)];
+    const id = Math.floor(Math.random() * 1000);
+    const completed = Math.random() < 0.7 ? Date.now() - Math.floor(Math.random() * 365 * 24 * 60 * 60 * 1000) : 0;
+
+    return {
       name: (hover: boolean) => towerName + (hover ? " (Hovered)" : ""),
       information: (hover: boolean) => `Information about ${towerName} ` + (hover ? " (Hovered)" : ""),
       url: `https://example.com/${towerName.toLowerCase()}`,
-      completed: Math.floor(Math.random() < 0.3 ? -1 : Date.now() - Math.floor(Math.random() * 365 * 24 * 60 * 60 * 1000)),
-      id: Math.floor(Math.random() * 1000),
-    }));
+      id: id,
+      completed: completed,
+    };
+  });
 
   return {
     name: randomName,
-    badges: randomBadges,
   };
 }
 
 const createCI = () => {
   console.log('creating new element');
   const ci = document.createElement('category-info') as CategoryInformation<Badge>;
-  ci.data = random_data();
+  const data = random_data();
+  ci.data = data;
   ci.count = Math.random() >
     0.33 ? Count.None : (Math.random() > 0.66 ? Count.Numbers : Count.Percent);
+
+  const badgeCount = Math.floor(Math.random() * 5) + 1;
+  const badges = Array.from({ length: badgeCount }, () => {
+    const id = Math.floor(Math.random() * 1000);
+    return {
+      name: (hover: boolean) => `Badge ${id}` + (hover ? " (Hovered)" : ""),
+      information: (hover: boolean) => `Information about badge ${id}` + (hover ? " (Hovered)" : ""),
+      url: `https://example.com/badge/${id}`,
+      id: id,
+      completed: Math.random() < 0.7 ? Date.now() - Math.floor(Math.random() * 365 * 24 * 60 * 60 * 1000) : 0,
+    };
+  });
+
+  // ci.connectedCallback(); // Manually call connectedCallback
+
+  ci.addBadges(...badges);
   document.body.appendChild(ci);
 }
 
