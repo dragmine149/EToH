@@ -7,6 +7,8 @@ interface UIBadgeData<K extends Badge> {
   information: K['get_information_field'],
   /** Link to the badge on roblox itself. */
   url: K['link'],
+  /** Badge ID */
+  id: K['id'],
   /** Link to a wiki page about said badge. */
   wiki?: URL,
   /** Completed date in utc time (via `new Date().getTime()`) */
@@ -51,7 +53,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   #shadow?: ShadowRoot;
   #table?: HTMLTableElement;
   #header?: HTMLSpanElement;
-  #badges?: HTMLTableRowElement[];
+  badges?: Map<number, BadgeInformation<K>>;
   #style?: HTMLLinkElement;
 
   constructor() { super(); }
@@ -64,7 +66,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     this.#table = document.createElement("table");
     this.#header = document.createElement("span");
     this.#style = document.createElement("link");
-    this.#badges = [];
+    this.badges = new Map();
 
     // sort out shadow children
     this.#shadow.appendChild(this.#style);
@@ -85,19 +87,6 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   }
 
   /**
-   * Update elements (and over stuff eventually) when we hover.
-   * @param name_data Elm to update.
-   * @param info_span Elm to update.
-   * @param hover Is user hover?
-   * @param badge Badge data of said elm.
-   */
-  #effectElement(name_data: HTMLTableCellElement, info_span: HTMLSpanElement, hover: boolean, badge: UIBadgeData<K>) {
-    // console.log("Hovered row element!");
-    name_data.innerText = badge.name(hover);
-    info_span.innerText = badge.information(hover);
-  }
-
-  /**
    * Formats a string to display counted data.
    * @param completed The completed element count.
    * @param total The total element count.
@@ -106,7 +95,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   #countString(completed: number, total: number) {
     if (this.count == Count.Numbers) return ` (${completed}/${total})`;
     if (this.count == Count.Percent) {
-      const percentage = (this.#totalElements === 0) ? 0 : ((this.#completedElements / this.#totalElements) * 100);
+      const percentage = (total === 0) ? 0 : ((completed / total) * 100);
       return ` (${percentage.toFixed(2)}%)`;
     }
     // Also accounts for Count.None
@@ -128,45 +117,22 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
    */
   #updateTable() {
     // Can't do anything without these two important nodes.
-    if (!this.#data || !this.#shadow || !this.#table || !this.#header) return;
+    if (!this.#data || !this.#shadow || !this.#table || !this.#header || !this.badges) return;
 
     // set header as this is easy and can get out of the way.
     this.#header.title = this.#data.name;
     this.#header.innerText = this.#data.name;
 
     // for every badge.
-    //
-    // TODO: Load from storage instead of creating a new element all the time.
     this.#data.badges.forEach((badge) => {
-      // create the basic structor of said badge.
-      const row = document.createElement("tr");
-      const name_data = document.createElement("td");
-      const info_data = document.createElement("td");
-      const info_span = document.createElement("span");
-      const info_br = document.createElement("br");
-      const info_date = document.createElement("span");
+      if (this.badges!.has(badge.id)) return;
 
-      // set the fields default values so something exists.
-      name_data.innerText = badge.name(false);
-      info_span.innerHTML = badge.information();
-      info_date.innerText = badge.completed > 0 ? new Date(badge.completed).toLocaleString(undefined, {
-        year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: false,
-      }) : '';
-
-      // add children in the correct order.
-      row.appendChild(name_data);
-      row.appendChild(info_data);
-      info_data.appendChild(info_span);
-      info_data.appendChild(info_br);
-      info_data.appendChild(info_date);
-
-      // sort out external events.
-      row.onmouseover = this.#effectElement.bind(this, name_data, info_span, true, badge);
-      row.onmouseleave = this.#effectElement.bind(this, name_data, info_span, false, badge);
+      const row = document.createElement("badge-info") as BadgeInformation<K>;
+      row.data = badge;
 
       // add to main table and storage.
-      this.#table?.appendChild(row);
-      this.#badges?.push(row);
+      this.#table!.appendChild(row);
+      this.badges!.set(badge.id, row);
 
       // increment counters.
       this.#totalElements += 1;
@@ -178,7 +144,100 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   }
 }
 
-customElements.define("category-information", CategoryInformation);
+class BadgeInformation<K extends Badge> extends HTMLElement {
+  #data?: UIBadgeData<K>;
+  /** Data stored about the element. */
+  set data(data: UIBadgeData<K> | undefined) {
+    this.#data = Object.freeze(data);
+    this.#updateRow();
+  }
+  get data() { return this.#data; }
+
+  /// Contains quick references to different children for global use.
+  #shadow?: ShadowRoot;
+  #row?: HTMLTableRowElement;
+  #name_field?: HTMLTableCellElement;
+  #info_field?: HTMLTableCellElement;
+  #info_data?: HTMLSpanElement;
+  #info_br?: HTMLBRElement;
+  #info_comp?: HTMLSpanElement;
+  #style?: HTMLLinkElement;
+
+  constructor() { super(); }
+  // This is empty because we don't want to recreate a ton of stuff.
+  connectedMoveCallback() { }
+
+  connectedCallback() {
+    this.#shadow = this.attachShadow({ mode: "open" });
+    this.#row = document.createElement("tr");
+    this.#name_field = document.createElement("td");
+    this.#info_field = document.createElement("td");
+    this.#info_data = document.createElement("span");
+    this.#info_br = document.createElement("br");
+    this.#info_comp = document.createElement("span");
+    this.#style = document.createElement("link");
+
+    // sort out shadow children
+    this.#shadow.appendChild(this.#style);
+    this.#shadow.appendChild(this.#row);
+
+    // sort out normal children.
+    this.#row.appendChild(this.#name_field);
+    this.#row.appendChild(this.#info_field);
+    this.#info_field.appendChild(this.#info_data);
+    this.#info_field.appendChild(this.#info_br);
+    this.#info_field.appendChild(this.#info_comp);
+
+    // sort out styles.
+    // this.#style.href = "css/shadow_tables.css";
+    this.#style.rel = "stylesheet";
+
+    this.#updateRow();
+  }
+
+  /**
+   * Update element (and over stuff eventually) when we hover.
+   * @param hover Is user hover?
+   */
+  #effectElement(hover: boolean) {
+    this.#name_field!.innerText = this.#data!.name(hover);
+    this.#info_data!.innerText = this.#data!.information(hover);
+  }
+
+  /**
+   * Public function to update the completed date of this badge.
+   * @param completed Optional completed unix timestamp (`new Date().getTime()`)
+   */
+  updatedCompleted(completed?: number) {
+    if (!this.#info_comp) return;
+
+    this.#info_comp.innerText = completed && completed > 0 ? new Date(completed).toLocaleString(undefined, {
+      year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: false,
+    }) : '';
+  }
+
+  /**
+   * Update row information of the badge. (and a lot of related stuff)
+   */
+  #updateRow() {
+    if (!this.#row || !this.#name_field || !this.#info_field || !this.#info_data || !this.#info_br || !this.#info_comp || !this.#data) return;
+
+    // set the fields default values so something exists.
+    this.#name_field.innerText = this.#data.name(false);
+    this.#info_data.innerHTML = this.#data.information();
+    this.#info_comp.innerText = this.#data.completed > 0 ? new Date(this.#data.completed).toLocaleString(undefined, {
+      year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: false,
+    }) : '';
+
+    // sort out external events.
+    this.#row.onmouseover = this.#effectElement.bind(this, true);
+    this.#row.onmouseleave = this.#effectElement.bind(this, false);
+  }
+}
+
+
+customElements.define("category-info", CategoryInformation);
+customElements.define("badge-info", BadgeInformation);
 
 /**
  * A function which generates random testing data.
@@ -196,6 +255,7 @@ function random_data(): CategoryData<Badge> {
       information: (hover: boolean) => `Information about ${towerName} ` + (hover ? " (Hovered)" : ""),
       url: `https://example.com/${towerName.toLowerCase()}`,
       completed: Math.floor(Math.random() < 0.3 ? -1 : Date.now() - Math.floor(Math.random() * 365 * 24 * 60 * 60 * 1000)),
+      id: Math.floor(Math.random() * 1000),
     }));
 
   return {
@@ -206,7 +266,7 @@ function random_data(): CategoryData<Badge> {
 
 const createCI = () => {
   console.log('creating new element');
-  const ci = document.createElement('category-information') as CategoryInformation<Badge>;
+  const ci = document.createElement('category-info') as CategoryInformation<Badge>;
   ci.data = random_data();
   ci.count = Math.random() >
     0.33 ? Count.None : (Math.random() > 0.66 ? Count.Numbers : Count.Percent);

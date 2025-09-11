@@ -10,19 +10,27 @@ class Badge {
   #ids: number[];
   #wiki?: URL;
 
+  /** A readonly list of ids relating to this badge. */
   get ids() { return this.#ids; }
   set ids(_v) { return; }
+  /** A readonly name associated with this badge. */
   get name() { return this.#name; }
   set name(_v) { return; }
+  /** A readonly wiki link associated with this badge. */
   get wiki() { return this.#wiki; }
   set wiki(_v) { return; }
+
+  /** Returns the primary id of this badge. */
+  get id() {
+    return this.ids[0];
+  }
 
   /**
    * Get the link to the badge. Returns the newest badge id as we assume thats the newest game location.
    * @returns URL to the badge page
    */
   get link() {
-    return `https://www.roblox.com/badges/${this.ids[0]}`;
+    return `https://www.roblox.com/badges/${this.id}`;
   }
 
   /**
