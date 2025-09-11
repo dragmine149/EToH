@@ -42,9 +42,12 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   set count(v) { this.#count = v; }
   get count() { return this.#count; }
   #count: Count = Count.Numbers;
+  /** Total number of elements we're looking after */
   #totalElements: number;
+  /** Number of elements where badge.completed > 0 */
   #completedElements: number;
 
+  /// Contains quick references to different children for global use.
   #shadow?: ShadowRoot;
   #table?: HTMLTableElement;
   #header?: HTMLSpanElement;
@@ -56,61 +59,86 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   connectedMoveCallback() { }
 
   connectedCallback() {
+    // make the base required data.
     this.#shadow = this.attachShadow({ mode: "open" });
     this.#table = document.createElement("table");
     this.#header = document.createElement("span");
     this.#style = document.createElement("link");
     this.#badges = [];
 
+    // sort out shadow children
     this.#shadow.appendChild(this.#style);
     this.#shadow.appendChild(this.#header);
     this.#shadow.appendChild(this.#table);
 
+    // sort out styles
     this.classList.add("area");
     this.#style.href = "css/shadow_tables.css";
     this.#style.rel = "stylesheet";
 
+    // reset counters
     this.#totalElements = 0;
     this.#completedElements = 0;
 
+    // and update stuff.
     this.#updateTable();
   }
 
+  /**
+   * Update elements (and over stuff eventually) when we hover.
+   * @param name_data Elm to update.
+   * @param info_span Elm to update.
+   * @param hover Is user hover?
+   * @param badge Badge data of said elm.
+   */
   #effectElement(name_data: HTMLTableCellElement, info_span: HTMLSpanElement, hover: boolean, badge: UIBadgeData<K>) {
     // console.log("Hovered row element!");
     name_data.innerText = badge.name(hover);
     info_span.innerText = badge.information(hover);
   }
 
-  #updateCount() {
-    if (this.#header == undefined) return;
-    let count_data = ``;
-    switch (this.count) {
-      case Count.None:
-        count_data = ``;
-        break;
-      case Count.Numbers:
-        count_data = ` (${this.#completedElements}/${this.#totalElements})`;
-        break;
-      case Count.Percent:
-        count_data = ` (${((this.#completedElements / this.#totalElements) * 100).toFixed(2)}%)`;
-        break;
+  /**
+   * Formats a string to display counted data.
+   * @param completed The completed element count.
+   * @param total The total element count.
+   * @returns A formatted string based off Count enum.
+   */
+  #countString(completed: number, total: number) {
+    if (this.count == Count.Numbers) return ` (${completed}/${total})`;
+    if (this.count == Count.Percent) {
+      const percentage = (this.#totalElements === 0) ? 0 : ((this.#completedElements / this.#totalElements) * 100);
+      return ` (${percentage.toFixed(2)}%)`;
     }
-
-    this.#header.innerText = `${this.#data?.name}${count_data}`;
+    // Also accounts for Count.None
+    return ``;
   }
 
+  /**
+   * Updates the count display.
+   */
+  #updateCount() {
+    if (!this.#header || !this.#data) return;
+
+    const count_data = this.#countString(this.#completedElements, this.#totalElements);
+    this.#header.innerText = `${this.#data.name}${count_data}`;
+  }
+
+  /**
+   * Update the table with all the badges.
+   */
   #updateTable() {
     // Can't do anything without these two important nodes.
-    if (this.#data == undefined) return;
-    if (this.#shadow == undefined) return;
-    if (this.#table == undefined) return;
-    if (this.#header == undefined) return;
+    if (!this.#data || !this.#shadow || !this.#table || !this.#header) return;
 
+    // set header as this is easy and can get out of the way.
     this.#header.title = this.#data.name;
     this.#header.innerText = this.#data.name;
 
+    // for every badge.
+    //
+    // TODO: Load from storage instead of creating a new element all the time.
     this.#data.badges.forEach((badge) => {
+      // create the basic structor of said badge.
       const row = document.createElement("tr");
       const name_data = document.createElement("td");
       const info_data = document.createElement("td");
@@ -118,28 +146,34 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
       const info_br = document.createElement("br");
       const info_date = document.createElement("span");
 
+      // set the fields default values so something exists.
       name_data.innerText = badge.name(false);
       info_span.innerHTML = badge.information();
       info_date.innerText = badge.completed > 0 ? new Date(badge.completed).toLocaleString(undefined, {
         year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: false,
       }) : '';
 
+      // add children in the correct order.
       row.appendChild(name_data);
       row.appendChild(info_data);
       info_data.appendChild(info_span);
       info_data.appendChild(info_br);
       info_data.appendChild(info_date);
 
+      // sort out external events.
       row.onmouseover = this.#effectElement.bind(this, name_data, info_span, true, badge);
       row.onmouseleave = this.#effectElement.bind(this, name_data, info_span, false, badge);
 
+      // add to main table and storage.
       this.#table?.appendChild(row);
       this.#badges?.push(row);
 
+      // increment counters.
       this.#totalElements += 1;
       this.#completedElements += badge.completed > 0 ? 1 : 0;
     });
 
+    // update the ui.
     this.#updateCount();
   }
 }
