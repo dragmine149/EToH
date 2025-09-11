@@ -8,11 +8,14 @@ import { GenericManager } from "../Scripts/GenericManager";
 class Badge {
   #name: string;
   #ids: number[];
+  #wiki?: URL;
 
   get ids() { return this.#ids; }
   set ids(_v) { return; }
   get name() { return this.#name; }
   set name(_v) { return; }
+  get wiki() { return this.#wiki; }
+  set wiki(_v) { return; }
 
   /**
    * Get the link to the badge. Returns the newest badge id as we assume thats the newest game location.
@@ -30,21 +33,21 @@ class Badge {
     return this.ids.map(v => `https://www.roblox.com/badges/${v}`);
   }
 
-  // /**
-  // * Data to show in the name field.
-  // * @param hover Is this element being hovered.
-  // */
-  // get_name_field(_hover: boolean) {
-  //   return this.name;
-  // }
+  /**
+  * Data to show in the name field.
+  * @param hover Is this element being hovered.
+  */
+  get_name_field(hover?: boolean) {
+    return hover && this.wiki ? this.name : `<a href="${this.wiki}">${this.name}</a>`;
+  }
 
-  // /**
-  // * Data to show in the information field.
-  // * @param hover Is this element being hovered.
-  // */
-  // get_information_field(_hover: boolean) {
-  //   return `<a href="${this.link}">Badge Link</a>`;
-  // }
+  /**
+  * Data to show in the information field.
+  * @param hover Is this element being hovered.
+  */
+  get_information_field(_hover?: boolean) {
+    return `<a href="${this.link}">Badge Link</a>`;
+  }
 
   // /**
   // * How to reference this badge in the search data. key is potential references whilst value is itself.
@@ -58,8 +61,9 @@ class Badge {
   * Create a new badge.
   * @param name The name of the badge.
   * @param ids IDs associated with this badge.
+  * @param wiki The link to the wiki page if one exists.
   */
-  constructor(name: string, ids: number | number[]) {
+  constructor(name: string, ids: number | number[], wiki?: URL) {
     // this.#addProperty('name', name);
     // this.#addProperty('ids', [].concat(ids));
 
@@ -70,6 +74,7 @@ class Badge {
       return;
     }
     this.#ids = [ids];
+    this.#wiki = wiki;
   }
 }
 

@@ -1,21 +1,23 @@
-interface Badge<K> {
-  /** Name of the badge */
-  name: string,
-  /** information of the badge, or custom user defined type. */
-  information: string | K,
-  /** link to the badge. */
-  url: URL,
+import { Badge } from "./BadgeManager";
+
+interface UIBadgeData<K extends Badge> {
+  /** Function to call to show information in the name field of the ui. */
+  name: K['get_name_field'],
+  /** Function to call to show information in the info field of the ui. */
+  information: K['get_information_field'],
+  /** Link to the badge on roblox itself. */
+  url: K['link'],
   /** Link to a wiki page about said badge. */
   wiki?: URL,
   /** Completed date in utc time (via `new Date().getTime()`) */
   completed: number,
 }
 
-interface CategoryData<K> {
+interface CategoryData<K extends Badge> {
   /** Name of category */
   name: string,
   /** List of badges that come under this category. */
-  badges: Badge<K>[],
+  badges: UIBadgeData<K>[],
 }
 
 /**
@@ -23,7 +25,7 @@ interface CategoryData<K> {
  * Custom functions allows for easy use. Requires type `K` as a custom user defined element. As an extension
  * to a normal string.
  */
-class CategoryInformation<K extends string> extends HTMLElement {
+class CategoryInformation<K extends Badge> extends HTMLElement {
   #data?: CategoryData<K>;
   /** Data stored about the element. */
   set data(data: CategoryData<K> | undefined) {
@@ -65,6 +67,12 @@ class CategoryInformation<K extends string> extends HTMLElement {
     this.#updateTable();
   }
 
+  #effectElement(name_data: HTMLTableCellElement, info_span: HTMLSpanElement, hover: boolean, badge: UIBadgeData<K>) {
+    // console.log("Hovered row element!");
+    name_data.innerText = badge.name(hover);
+    info_span.innerText = badge.information(hover);
+  }
+
   #updateTable() {
     // Can't do anything without these two important nodes.
     if (this.#data == undefined) return;
@@ -83,8 +91,8 @@ class CategoryInformation<K extends string> extends HTMLElement {
       const info_br = document.createElement("br");
       const info_date = document.createElement("span");
 
-      name_data.innerText = badge.name;
-      info_span.innerHTML = badge.information;
+      name_data.innerText = badge.name(false);
+      info_span.innerHTML = badge.information();
       info_date.innerText = badge.completed > 0 ? new Date(badge.completed).toLocaleString(undefined, {
         year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: false,
       }) : '';
@@ -95,9 +103,12 @@ class CategoryInformation<K extends string> extends HTMLElement {
       info_data.appendChild(info_br);
       info_data.appendChild(info_date);
 
+      row.onmouseover = this.#effectElement.bind(this, name_data, info_span, true, badge);
+      row.onmouseleave = this.#effectElement.bind(this, name_data, info_span, false, badge);
+
       this.#table?.appendChild(row);
       this.#badges?.push(row);
-    })
+    });
   }
 }
 
@@ -177,7 +188,7 @@ customElements.define("category-information", CategoryInformation);
 /**
  * A function which generates random testing data.
  */
-function random_data(): CategoryData<string> {
+function random_data(): CategoryData<Badge> {
   const names = ["Forest Path", "Desert Storm", "Mountain Peak", "Ocean Waves", "City Center"];
   const towerTypes = ["Archer", "Cannon", "Magic", "Ice", "Fire", "Lightning", "Earth"];
 
@@ -186,9 +197,9 @@ function random_data(): CategoryData<string> {
     .sort(() => 0.5 - Math.random())
     .slice(0, Math.floor(Math.random() * 4) + 1)
     .map(towerName => ({
-      name: towerName,
-      information: `Information about ${towerName}`,
-      url: new URL(`https://example.com/${towerName.toLowerCase()}`),
+      name: (hover: boolean) => towerName + (hover ? " (Hovered)" : ""),
+      information: (hover: boolean) => `Information about ${towerName}` + (hover ? " (Hovered)" : ""),
+      url: `https://example.com/${towerName.toLowerCase()}`,
       completed: Math.floor(Math.random() < 0.3 ? -1 : Date.now() - Math.floor(Math.random() * 365 * 24 * 60 * 60 * 1000)),
     }));
 
@@ -207,3 +218,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(ci);
   });
 });
+
+for (let i = 0; i < 2; i++) {
+  console.log('creating new element');
+  const ci = document.createElement('category-information') as CategoryInformation;
+  ci.data = random_data();
+
+  document.body.appendChild(ci);
+}

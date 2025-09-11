@@ -1,11 +1,27 @@
-@import "tailwindcss";
-
 * {
-  background: #fff;
+  background: var(--background, #fff);
   width: 100%;
+  margin: 2.5px 10px;
 }
 
-*~span {
+span:not(*>span) {
   display: block;
   text-align: center;
+  font-weight: bold;
+}
+
+span:not(*>span):not(*:last-child) {
+  border-top-left-radius: 9999px;
+  border-top-right-radius: 9999px;
+}
+
+table * {
+  background: initial;
+}
+
+table,
+table tr:last-child td:first-child,
+table tr:last-child td:last-child {
+  border-bottom-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
 }

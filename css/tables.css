@@ -4,7 +4,8 @@
 
 :root {
   --completed: #89cf93;
-  --new: #86ff64
+  --new: #86ff64;
+  --background: #aaa;
 }
 
 .area {
