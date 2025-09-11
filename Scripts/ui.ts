@@ -129,13 +129,20 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
    * @param badgeId The badge to remove.
    * @returns The raw data for that badge or `undefined` if this element isn't taking care of that badge.
    */
-  removeBadge(badgeId: number) {
-    const entry = this.badges?.get(badgeId);
-    if (this.badges?.delete(badgeId)) {
-      // If we have deleted it succesffully, then we know that we can remove it.
+  removeBadges(...badgeIds: number[]) {
+    let badges: BadgeInformation<K>[] = [];
+
+    badgeIds.forEach((badgeId) => {
+      // attempts to get the badge and delete it.
+      const entry = this.badges?.get(badgeId);
+      if (!this.badges?.delete(badgeId)) return;
+
+      // If we have deleted it succesffully, then we know that we can remove it. and return it.
       this.#table?.removeChild(entry!);
-    };
-    return entry;
+      badges.push(entry!);
+    });
+
+    return badges;
   }
 }
 
