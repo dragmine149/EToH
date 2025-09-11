@@ -67,7 +67,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
 
     // sort out styles
     this.classList.add("area");
-    this.#style.href = "css/shadow_tables.css";
+    this.#style.href = "css/tables/table.css";
     this.#style.rel = "stylesheet";
 
     // set header
@@ -212,7 +212,7 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
     this.#info_field.appendChild(this.#info_comp);
 
     // sort out styles.
-    // this.#style.href = "css/shadow_tables.css";
+    this.#style.href = "css/tables/row.css";
     this.#style.rel = "stylesheet";
 
     this.#updateRow();
