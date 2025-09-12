@@ -368,18 +368,20 @@ function random_Category(): CategoryData {
  * A function which generates random badge data.
  */
 function random_badges(): UIBadgeData<Badge>[] {
-  const towerTypes = ["Archer", "Cannon", "Magic", "Ice", "Fire", "Lightning", "Earth"];
+  const wordList = ["Forest", "Desert", "Mountain", "Ocean", "City", "Ancient", "Lost", "Forgotten", "Shadow", "Crystal", "Iron", "Steel", "Stone", "Fire", "Ice", "Wind", "Water", "Earth", "Sky", "Void", "and"];
   const badgeCount = Math.floor(Math.random() * 5) + 1; // Random number of badges between 1 and 5
 
   return Array.from({ length: badgeCount }, () => {
-    const towerName = towerTypes[Math.floor(Math.random() * towerTypes.length)];
+    const wordCount = Math.floor(Math.random() * 4) + 1; // Random number of words between 1 and 4
+    const towerNameWords = Array.from({ length: wordCount }, () => wordList[Math.floor(Math.random() * wordList.length)]);
+    const towerName = towerNameWords.join(" ");
     const id = Math.floor(Math.random() * 1000);
     const completed = Math.random() < 0.7 ? Date.now() - Math.floor(Math.random() * 365 * 24 * 60 * 60 * 1000) : 0;
 
     return {
-      name: (hover: boolean) => towerName + (hover ? " (Hovered)" : ""),
-      information: (hover: boolean) => `Information about ${towerName} ` + (hover ? " (Hovered)" : ""),
-      url: `https://example.com/${towerName.toLowerCase()}`,
+      name: (hover: boolean) => hover ? `Tower of ${towerName}` : shortTowerName(`Tower of ${towerName}`),
+      information: (hover: boolean) => `Information about Tower of ${towerName} ` + (hover ? " (Hovered)" : ""),
+      url: `https://example.com/${towerName.toLowerCase().replace(" ", "_")}`,
       id: id,
       completed: completed,
     };
