@@ -50,7 +50,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   get data() { return this.#data; }
 
   /** Whether to display the count of completed vs total in the header or not. */
-  set count(v) { this.#count = v; }
+  set count(v) { this.#count = v; this.#updateCount(); }
   get count() { return this.#count; }
   #count: Count = Count.Numbers;
 
@@ -58,8 +58,13 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   #shadow?: ShadowRoot;
   #table?: HTMLTableElement;
   #header?: HTMLSpanElement;
-  // badges?: Map<number, BadgeInformation<K>>;
 
+  /**
+   * A list of badges this category is in control of. Returns data depending on it's children instead of storing stuff
+   * locally.
+   *
+   * This does mean, every call to this getter will have to check every single child.
+   */
   get badges(): Map<number, BadgeInformation<K>> {
     if (this.#table == undefined) return new Map();
 
