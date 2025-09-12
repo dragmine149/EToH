@@ -1,5 +1,6 @@
 import { Badge } from "./BadgeManager";
 import { shortTowerName } from "./Etoh";
+import { noSyncTryCatch } from ".";
 
 interface UIBadgeData<K extends Badge> {
   /** Function to call to show information in the name field of the ui. */
@@ -57,7 +58,24 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   #shadow?: ShadowRoot;
   #table?: HTMLTableElement;
   #header?: HTMLSpanElement;
-  badges?: Map<number, BadgeInformation<K>>;
+  // badges?: Map<number, BadgeInformation<K>>;
+
+  get badges(): Map<number, BadgeInformation<K>> {
+    if (this.#table == undefined) return new Map();
+
+    let map = new Map<number, BadgeInformation<K>>();
+    for (let i = 0; i < this.#table.children.length; i++) {
+      const element = this.#table.children[i];
+      if (!(element instanceof BadgeInformation)) continue;
+
+      const badge = element as BadgeInformation<K>;
+      if (!badge.data) continue;
+
+      map.set(badge.data.id, badge);
+    }
+    return map;
+  }
+
   #style?: HTMLLinkElement;
 
   #badgeToProcess?: (UIBadgeData<K> | BadgeInformation<K>)[];
@@ -72,7 +90,6 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     this.#table = document.createElement("table");
     this.#header = document.createElement("span");
     this.#style = document.createElement("link");
-    this.badges = new Map();
 
     // sort out shadow children
     this.#shadow.appendChild(this.#style);
@@ -120,6 +137,17 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   }
 
   /**
+   * Automatically hide this element if there is no data in the table.
+   */
+  #autoHide() {
+    if (this.#table == undefined) {
+      this.hidden = true;
+      return;
+    }
+    this.hidden = this.#table?.children.length <= 0;
+  }
+
+  /**
    * Add a badge for this element to take care of. Can take raw badge data or modified information data.
    *
    * Note: Badges can be pre-loaded, we just wait for the main element to add to the document before doing stuff with them though...
@@ -144,9 +172,9 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
 
       // add to main table and storage.
       this.#table!.appendChild(row);
-      this.badges!.set((row.data as UIBadgeData<K>).id, row);
     });
 
+    this.#autoHide();
     this.#updateCount();
   }
 
@@ -157,17 +185,20 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
    */
   removeBadges(...badgeIds: number[]) {
     let badges: BadgeInformation<K>[] = [];
+    let stored_badges = this.badges;
 
     badgeIds.forEach((badgeId) => {
       // attempts to get the badge and delete it.
-      const entry = this.badges?.get(badgeId);
-      if (!this.badges?.delete(badgeId)) return;
+      const entry = stored_badges.get(badgeId);
+      if (entry == undefined) return;
 
       // If we have deleted it succesffully, then we know that we can remove it. and return it.
-      this.#table?.removeChild(entry!);
+      const result = noSyncTryCatch(() => this.#table?.removeChild(entry));
+      if (result.error) return;
       badges.push(entry!);
     });
 
+    this.#autoHide();
     return badges;
   }
 
@@ -213,11 +244,9 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   #info_comp?: HTMLSpanElement;
   #style?: HTMLLinkElement;
 
-  constructor() { super(); }
-  // This is empty because we don't want to recreate a ton of stuff.
-  connectedMoveCallback() { }
+  constructor() {
+    super();
 
-  connectedCallback() {
     this.#shadow = this.attachShadow({ mode: "open" });
     this.#row = document.createElement("tr");
     this.#name_field = document.createElement("td");
@@ -241,7 +270,11 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
     // sort out styles.
     this.#style.href = "css/tables/row.css";
     this.#style.rel = "stylesheet";
+  }
+  // This is empty because we don't want to recreate a ton of stuff.
+  connectedMoveCallback() { }
 
+  connectedCallback() {
     this.#updateRow();
   }
 
@@ -293,7 +326,7 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
     return this.#data?.completed > 0;
   }
 
-  search(data: string, is_acro: string);
+  // search(data: string, is_acro: string);
 }
 
 
@@ -314,17 +347,26 @@ globalThis.search = search;
 
 
 
+/**
+ * A function which generates random category data.
+ */
+function random_Category(): CategoryData {
+  const names = ["Forest Path", "Desert Storm", "Mountain Peak", "Ocean Waves", "City Center"];
+  const randomName = names[Math.floor(Math.random() * names.length)];
+
+  return {
+    name: randomName,
+  };
+}
 
 /**
- * A function which generates random testing data.
+ * A function which generates random badge data.
  */
-function random_data(): CategoryData {
-  const names = ["Forest Path", "Desert Storm", "Mountain Peak", "Ocean Waves", "City Center"];
+function random_badges(): UIBadgeData<Badge>[] {
   const towerTypes = ["Archer", "Cannon", "Magic", "Ice", "Fire", "Lightning", "Earth"];
-
-  const randomName = names[Math.floor(Math.random() * names.length)];
   const badgeCount = Math.floor(Math.random() * 5) + 1; // Random number of badges between 1 and 5
-  const randomBadges = Array.from({ length: badgeCount }, () => {
+
+  return Array.from({ length: badgeCount }, () => {
     const towerName = towerTypes[Math.floor(Math.random() * towerTypes.length)];
     const id = Math.floor(Math.random() * 1000);
     const completed = Math.random() < 0.7 ? Date.now() - Math.floor(Math.random() * 365 * 24 * 60 * 60 * 1000) : 0;
@@ -337,10 +379,6 @@ function random_data(): CategoryData {
       completed: completed,
     };
   });
-
-  return {
-    name: randomName,
-  };
 }
 
 let elms: CategoryInformation<Badge>[] = [];
@@ -348,31 +386,12 @@ let elms: CategoryInformation<Badge>[] = [];
 const createCI = () => {
   console.log('creating new element');
   const ci = document.createElement('category-info') as CategoryInformation<Badge>;
-  const data = random_data();
+  const data = random_Category();
   ci.data = data;
   ci.count = Math.random() >
     0.33 ? Count.None : (Math.random() > 0.66 ? Count.Numbers : Count.Percent);
 
-  const badgeCount = Math.floor(Math.random() * 5) + 1;
-  const badges = Array.from({ length: badgeCount }, () => {
-    const id = Math.floor(Math.random() * 1000);
-    const words = Array.from({ length: Math.floor(Math.random() * 3) + 1 }, () => {
-      const wordList = ["Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa"];
-      return wordList[Math.floor(Math.random() * wordList.length)];
-    }).join(" ");
-
-    return {
-      name: (hover: boolean) => hover ? `Tower of ${words}` : shortTowerName(`Tower of ${words}`),
-      information: (hover: boolean) => `Information about Tower of ${words}` + (hover ? " (Hovered)" : ""),
-      url: `https://example.com/badge/${id}`,
-      id: id,
-      completed: Math.random() < 0.7 ? Date.now() - Math.floor(Math.random() * 365 * 24 * 60 * 60 * 1000) : 0,
-    };
-  });
-
-  // ci.connectedCallback(); // Manually call connectedCallback
-
-  ci.addBadges(...badges);
+  ci.addBadges(...random_badges());
   document.body.appendChild(ci);
   elms.push(ci);
 }
