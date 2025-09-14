@@ -271,17 +271,29 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     highlight_span(this.#header, data, false);
   }
 
+  /**
+   * Update the size of this element according to the children element sizes.
+   *
+   * Allows for all children to be the same size so we have no weirdness with jumping.
+   */
   updateSize() {
     let max = 0;
+
+    // for each child.
     this.badges.forEach((b) => {
+      // "get" the width and max it.
       let new_width = b.setWidth();
-      // console.log(new_width);
       max = Math.max(new_width, max);
     });
+
+    // Then only if it's bigger than our current width. Do we set the children width. `+4` is for the table offset.
     if (max > this.clientWidth) this.style.width = `${max + 4}px`;
   }
 }
 
+/**
+ * UI Element for each individual badge displayed. Aka CategoryInformation for Badges.
+ */
 class BadgeInformation<K extends Badge> extends HTMLElement {
   #data?: UIBadgeData<K>;
   /** Data stored about the element. */
@@ -301,6 +313,9 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
 
   constructor() {
     super();
+    // To prevent duplicate children. The main nodes are only created once, in here.
+    // This is extremely important as we do "remove" and "add" these elements a lot.
+
     this.#row = document.createElement("tr");
     this.#name_field = document.createElement("td");
     this.#info_field = document.createElement("td");
@@ -319,11 +334,18 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   connectedMoveCallback() { }
 
   connectedCallback() {
-    // sort out shadow children
+    // On update stuff to keep everything in check.
     this.appendChild(this.#row);
     this.#updateRow();
   }
 
+  /**
+   * Expands this element out to it's full form (upon hovering), set the width, collapse and return.
+   *
+   * This allows the parent CategoryInformation to update accordingly. Expanded is need as hover is normally longer than
+   * no hover.
+   * @returns The new width set.
+   */
   setWidth() {
     this.#effectElement(true);
     // console.log(this.clientWidth);
