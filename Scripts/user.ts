@@ -1,5 +1,6 @@
 import { Verbose } from "./verbose.mjs";
-import { tryCatch, type UserTable } from ".";
+import { tryCatch } from "./utils";
+import { type UserTable } from ".";
 import { GenericManager } from "./GenericManager";
 import { CLOUD_URL, network } from "./network";
 import type { EntityTable, Dexie } from "dexie";

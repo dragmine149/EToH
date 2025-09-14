@@ -1,6 +1,5 @@
 import { Badge } from "./BadgeManager";
-import { shortTowerName } from "./Etoh";
-import { noSyncTryCatch } from ".";
+import { noSyncTryCatch } from "./utils";
 
 interface UIBadgeData<K extends Badge> {
   /** Function to call to show information in the name field of the ui. */
@@ -42,6 +41,9 @@ function highlight_span(span: HTMLSpanElement, text: string, selected: boolean) 
 /**
  * Custom HTMLElement for making a table. Uses shadowDOM for cleaner HTML files.
  * Designed specifically to hold multiple badges which are dynamically added and removed.
+ *
+ * Notes:
+ * - The style sheet also needs to be loaded in order for updateSize to work properly.
  */
 class CategoryInformation<K extends Badge> extends HTMLElement {
   #data?: CategoryData;
@@ -57,7 +59,9 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   /// Contains quick references to different children for global use.
   #shadow?: ShadowRoot;
   #table?: HTMLTableElement;
+  #gap: HTMLTableRowElement;
   #header?: HTMLSpanElement;
+  #style?: HTMLLinkElement;
 
   /**
    * A list of badges this category is in control of. Returns data depending on it's children instead of storing stuff
@@ -81,18 +85,18 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     return map;
   }
 
-  #style?: HTMLLinkElement;
-
   #badgeToProcess?: (UIBadgeData<K> | BadgeInformation<K>)[];
 
   constructor() { super(); }
   // This is empty because we don't want to recreate a ton of stuff.
-  connectedMoveCallback() { }
+  connectedMoveCallback() { console.log('e'); }
 
   connectedCallback() {
+    // console.log(this.clientWidth);
     // make the base required data.
     this.#shadow = this.attachShadow({ mode: "open" });
     this.#table = document.createElement("table");
+    this.#gap = document.createElement("tr");
     this.#header = document.createElement("span");
     this.#style = document.createElement("link");
 
@@ -100,6 +104,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     this.#shadow.appendChild(this.#style);
     this.#shadow.appendChild(this.#header);
     this.#shadow.appendChild(this.#table);
+    this.#table.appendChild(this.#gap); // random span for gap reason.
 
     // sort out styles
     this.classList.add("area");
@@ -107,11 +112,12 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     this.#style.rel = "stylesheet";
 
     // set header
-    this.#header.title = this.#data?.name || "";
-    this.#header.innerText = this.#data?.name || "";
+    if (this.#header) this.#header.title = this.#data?.name || "";
+    if (this.#header) this.#header.innerText = this.#data?.name || "";
 
     // process those waiting, if we have any waiting.
     if (this.#badgeToProcess) this.addBadges(...this.#badgeToProcess);
+    this.#autoHide();
   }
 
   /**
@@ -145,11 +151,14 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
    * Automatically hide this element if there is no data in the table.
    */
   #autoHide() {
+    this.updateSize();
+
     if (this.#table == undefined) {
       this.hidden = true;
       return;
     }
-    this.hidden = this.#table?.children.length <= 0;
+    // Use <= 1 due to the invisible `gap` 1px row.
+    this.hidden = this.#table?.children.length <= 1;
   }
 
   /**
@@ -228,6 +237,16 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     if (!this.#header) return;
     highlight_span(this.#header, data, false);
   }
+
+  updateSize() {
+    let max = 0;
+    this.badges.forEach((b) => {
+      let new_width = b.setWidth();
+      // console.log(new_width);
+      max = Math.max(new_width, max);
+    });
+    if (max > this.clientWidth) this.style.width = `${max + 4}px`;
+  }
 }
 
 class BadgeInformation<K extends Badge> extends HTMLElement {
@@ -247,23 +266,15 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   #info_data?: HTMLSpanElement;
   #info_br?: HTMLBRElement;
   #info_comp?: HTMLSpanElement;
-  #style?: HTMLLinkElement;
 
   constructor() {
     super();
-
-    this.#shadow = this.attachShadow({ mode: "open" });
     this.#row = document.createElement("tr");
     this.#name_field = document.createElement("td");
     this.#info_field = document.createElement("td");
     this.#info_data = document.createElement("span");
     this.#info_br = document.createElement("br");
     this.#info_comp = document.createElement("span");
-    this.#style = document.createElement("link");
-
-    // sort out shadow children
-    this.#shadow.appendChild(this.#style);
-    this.#shadow.appendChild(this.#row);
 
     // sort out normal children.
     this.#row.appendChild(this.#name_field);
@@ -271,16 +282,24 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
     this.#info_field.appendChild(this.#info_data);
     this.#info_field.appendChild(this.#info_br);
     this.#info_field.appendChild(this.#info_comp);
-
-    // sort out styles.
-    this.#style.href = "css/tables/row.css";
-    this.#style.rel = "stylesheet";
   }
   // This is empty because we don't want to recreate a ton of stuff.
   connectedMoveCallback() { }
 
   connectedCallback() {
+    if (this.#row == undefined) return;
+    // sort out shadow children
+    this.appendChild(this.#row);
     this.#updateRow();
+  }
+
+  setWidth() {
+    this.#effectElement(true);
+    // console.log(this.clientWidth);
+    let width = this.clientWidth;
+    if (this.clientWidth > 0) this.style.width = `${width}px`;
+    this.#effectElement(false);
+    return width;
   }
 
   /**
@@ -351,6 +370,25 @@ function search(data: string) {
 globalThis.search = search;
 
 
+///// EVERYTHING BELOW THIS POINT IS TEST DATA TO BE DELETED AT SOME POINT.
+
+
+/**
+* Returns the shortened version of the text, in accordance to tower format.
+* @param text The text to shorten.
+*/
+function shortTowerName(tower_name: string) {
+  // Tower codes are made up of:
+  // each word
+  return tower_name.split(/[\s-]/gm)
+    // lowered
+    .map(word => word.toLowerCase())
+    // for 'of' and 'and' to be lower, and the rest upper.
+    .map(word => (word == 'of' || word == 'and') ? word[0] : word[0].toUpperCase())
+    // and combined.
+    .join('');
+}
+
 
 /**
  * A function which generates random category data.
@@ -369,7 +407,7 @@ function random_Category(): CategoryData {
  */
 function random_badges(): UIBadgeData<Badge>[] {
   const wordList = ["Forest", "Desert", "Mountain", "Ocean", "City", "Ancient", "Lost", "Forgotten", "Shadow", "Crystal", "Iron", "Steel", "Stone", "Fire", "Ice", "Wind", "Water", "Earth", "Sky", "Void", "and"];
-  const badgeCount = Math.floor(Math.random() * 5) + 1; // Random number of badges between 1 and 5
+  const badgeCount = Math.floor(Math.random() * 10) + 3; // Random number of badges between 1 and 5
 
   return Array.from({ length: badgeCount }, () => {
     const wordCount = Math.floor(Math.random() * 4) + 1; // Random number of words between 1 and 4
@@ -380,7 +418,7 @@ function random_badges(): UIBadgeData<Badge>[] {
 
     return {
       name: (hover: boolean) => hover ? `Tower of ${towerName}` : shortTowerName(`Tower of ${towerName}`),
-      information: (hover: boolean) => `Information about Tower of ${towerName} ` + (hover ? " (Hovered)" : ""),
+      information: (hover: boolean) => `Information about Tower of` + (hover ? ` ${towerName} (Hovered)` : ` ${shortTowerName(towerName)}`),
       url: `https://example.com/${towerName.toLowerCase().replace(" ", "_")}`,
       id: id,
       completed: completed,
@@ -405,8 +443,8 @@ const createCI = () => {
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById("e")?.addEventListener('click', createCI);
+  for (let i = 0; i < 2; i++) {
+    // setTimeout(() => { createCI(); }, 300 * i);
+    createCI();
+  }
 });
-
-for (let i = 0; i < 2; i++) {
-  createCI();
-}

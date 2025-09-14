@@ -1,4 +1,4 @@
-import { tryCatch } from ".";
+import { tryCatch } from "./utils";
 import { logs } from "./logs";
 import { Verbose } from "./verbose.mjs";
 const CLOUD_URL = 'https://roblox-proxy.dragmine149.workers.dev';

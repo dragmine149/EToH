@@ -1,6 +1,9 @@
 * {
   background: var(--background, #fff);
   width: 100%;
+}
+
+*:not(**) {
   margin: 2.5px 10px;
 }
 
@@ -19,6 +22,27 @@ table * {
   background: initial;
 }
 
+tr {
+  width: 100%;
+  display: table;
+  border-top: 1px solid black;
+}
+
+table>tr {
+  height: 1px;
+  display: block;
+  border: none;
+}
+
+td {
+  width: 50%;
+  text-wrap: nowrap;
+}
+
+tr td:first-child {
+  vertical-align: middle;
+}
+
 table,
 table tr:last-child td:first-child,
 table tr:last-child td:last-child {
@@ -27,7 +51,7 @@ table tr:last-child td:last-child {
 }
 
 table badge-info {
-  display: block;
+  display: table-row;
 }
 
 
