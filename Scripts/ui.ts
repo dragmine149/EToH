@@ -260,13 +260,12 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   get data() { return this.#data; }
 
   /// Contains quick references to different children for global use.
-  #shadow?: ShadowRoot;
-  #row?: HTMLTableRowElement;
-  #name_field?: HTMLTableCellElement;
-  #info_field?: HTMLTableCellElement;
-  #info_data?: HTMLSpanElement;
-  #info_br?: HTMLBRElement;
-  #info_comp?: HTMLSpanElement;
+  #row: HTMLTableRowElement;
+  #name_field: HTMLTableCellElement;
+  #info_field: HTMLTableCellElement;
+  #info_data: HTMLSpanElement;
+  #info_br: HTMLBRElement;
+  #info_comp: HTMLSpanElement;
 
   constructor() {
     super();
@@ -288,7 +287,6 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   connectedMoveCallback() { }
 
   connectedCallback() {
-    if (this.#row == undefined) return;
     // sort out shadow children
     this.appendChild(this.#row);
     this.#updateRow();
@@ -308,15 +306,15 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
    * @param hover Is user hover?
    */
   #effectElement(hover: boolean) {
-    this.#name_field!.innerText = this.#data!.name(hover);
-    this.#info_data!.innerText = this.#data!.information(hover);
+    this.#name_field.innerText = this.#data!.name(hover);
+    this.#info_data.innerText = this.#data!.information(hover);
   }
 
   /**
    * Update row information of the badge. (and a lot of related stuff)
    */
   #updateRow() {
-    if (!this.#row || !this.#name_field || !this.#info_field || !this.#info_data || !this.#info_br || !this.#info_comp || !this.#data) return;
+    if (!this.#data) return;
 
     // set the fields default values so something exists.
     this.#name_field.innerText = this.#data.name(false);
@@ -335,8 +333,6 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
    * @param completed Optional completed unix timestamp (`new Date().getTime()`)
    */
   updatedCompleted(completed?: number) {
-    if (!this.#info_comp) return;
-
     this.#info_comp.innerText = completed && completed > 0 ? new Date(completed).toLocaleString(undefined, {
       year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: false,
     }) : '';
@@ -348,7 +344,7 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
    */
   isCompleted() {
     if (!this.#data) return false;
-    return this.#data?.completed > 0;
+    return this.#data.completed > 0;
   }
 
   // search(data: string, is_acro: string);
