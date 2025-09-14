@@ -1,4 +1,4 @@
-import { Badge } from "./BadgeManager";
+import { Badge, Lock } from "./BadgeManager";
 import { noSyncTryCatch } from "./utils";
 
 interface UIBadgeData<K extends Badge> {
@@ -14,11 +14,19 @@ interface UIBadgeData<K extends Badge> {
   wiki?: URL,
   /** Completed date in utc time (via `new Date().getTime()`) */
   completed: number,
+  /** Overview of why this is locked */
+  lock_type: K['lock_type'],
+  /** Indept reason as to why this is locked */
+  lock_reason: K['lock_reason'],
 }
 
 interface CategoryData {
   /** Name of category */
   name: string,
+  /** Overview of why this is locked */
+  lock_type: Lock,
+  /** Indept reason as to why this is locked */
+  lock_reason?: string,
 }
 
 enum Count {
@@ -316,6 +324,18 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   #updateRow() {
     if (!this.#data) return;
 
+    switch (this.#data.lock_type) {
+      case Lock.Another:
+        this.classList.add("locked_another");
+        this.title = `Requires ${this.#data.lock_reason} to get this badge`;
+        break;
+      case Lock.Temporary:
+        this.classList.add("locked_temporary");
+        this.title = `This badge was part of the temporary event ${this.#data.lock_reason} and is no longer obtainable.`;
+        break;
+      default: break;
+    }
+
     // set the fields default values so something exists.
     this.#name_field.innerText = this.#data.name(false);
     this.#info_data.innerHTML = this.#data.information();
@@ -393,9 +413,12 @@ function shortTowerName(tower_name: string) {
 function random_Category(): CategoryData {
   const names = ["Forest Path", "Desert Storm", "Mountain Peak", "Ocean Waves", "City Center"];
   const randomName = names[Math.floor(Math.random() * names.length)];
+  const locks: Lock[] = [Lock.Unlocked, Lock.Temporary, Lock.Another];
+  const randomLock = locks[Math.floor(Math.random() * locks.length)];
 
   return {
     name: randomName,
+    lock_type: randomLock,
   };
 }
 
@@ -405,6 +428,7 @@ function random_Category(): CategoryData {
 function random_badges(): UIBadgeData<Badge>[] {
   const wordList = ["Forest", "Desert", "Mountain", "Ocean", "City", "Ancient", "Lost", "Forgotten", "Shadow", "Crystal", "Iron", "Steel", "Stone", "Fire", "Ice", "Wind", "Water", "Earth", "Sky", "Void", "and"];
   const badgeCount = Math.floor(Math.random() * 10) + 3; // Random number of badges between 1 and 5
+  const locks: Lock[] = [Lock.Unlocked, Lock.Temporary, Lock.Another];
 
   return Array.from({ length: badgeCount }, () => {
     const wordCount = Math.floor(Math.random() * 4) + 1; // Random number of words between 1 and 4
@@ -412,6 +436,7 @@ function random_badges(): UIBadgeData<Badge>[] {
     const towerName = towerNameWords.join(" ");
     const id = Math.floor(Math.random() * 1000);
     const completed = Math.random() < 0.7 ? Date.now() - Math.floor(Math.random() * 365 * 24 * 60 * 60 * 1000) : 0;
+    const lock_type = locks[Math.floor(Math.random() * locks.length)];
 
     return {
       name: (hover: boolean) => hover ? `Tower of ${towerName}` : shortTowerName(`Tower of ${towerName}`),
@@ -419,6 +444,8 @@ function random_badges(): UIBadgeData<Badge>[] {
       url: `https://example.com/${towerName.toLowerCase().replace(" ", "_")}`,
       id: id,
       completed: completed,
+      lock_type: lock_type,
+      lock_reason: `Locked because reasons.`,
     };
   });
 }

@@ -62,3 +62,11 @@ table badge-info {
 .highlight.selected {
   background-color: aqua;
 }
+
+.locked_another {
+  background-color: #777;
+}
+
+.locked_temporary {
+  background-color: #555;
+}

@@ -2,6 +2,16 @@
 
 import { GenericManager } from "../Scripts/GenericManager";
 
+// The reason why this badge / category can not be claimed.
+enum Lock {
+  // The badge is unlocked for the taking. (aka you can get it at anytime pretty much)
+  Unlocked,
+  // The badge / category was only available for a limited time.
+  Temporary,
+  // The badge / category requires another badge / category to be unlocked first.
+  Another
+}
+
 // NOTE: by design the badge doesn't store the completed date. The user stores this.
 //
 // This allows badges to be unique and loaded once, we never really have to touch them again when switching users.
@@ -9,6 +19,8 @@ class Badge {
   #name: string;
   #ids: number[];
   #wiki?: URL;
+  #lock_type: Lock;
+  #lock_reason?: string;
 
   /** A readonly list of ids relating to this badge. */
   get ids() { return this.#ids; }
@@ -19,6 +31,14 @@ class Badge {
   /** A readonly wiki link associated with this badge. */
   get wiki() { return this.#wiki; }
   set wiki(_v) { return; }
+
+  /** The overlying type of why this badge is unobtainable. */
+  get lock_type() { return this.#lock_type; }
+  set lock_type(_v) { return; }
+
+  /** The reason to why this badge is unobtainable. More in depth than lock_type. */
+  get lock_reason() { return this.#lock_reason; }
+  set lock_reason(_v) { return; }
 
   /** Returns the primary id of this badge. */
   get id() {
@@ -71,24 +91,27 @@ class Badge {
   * @param ids IDs associated with this badge.
   * @param wiki The link to the wiki page if one exists.
   */
-  constructor(name: string, ids: number | number[], wiki?: URL) {
+  constructor(name: string, ids: number | number[], lock_type: Lock, wiki?: URL, lock_reason?: string) {
     // this.#addProperty('name', name);
     // this.#addProperty('ids', [].concat(ids));
 
     this.#name = name;
+    this.lock_type = lock_type;
+    this.#wiki = wiki;
+    this.lock_reason = lock_reason;
 
     if (Array.isArray(ids)) {
       this.#ids = ids;
       return;
     }
     this.#ids = [ids];
-    this.#wiki = wiki;
   }
 }
 
-class BadgeManager extends GenericManager<Badge, string | number[]> {
+class BadgeManager extends GenericManager<Badge, string | number[] | Lock> {
   ids!: (item?: number) => number[] | Badge[];
   name!: (item?: string) => string[] | Badge[];
+  lock!: (item?: Lock) => Lock[] | Badge[];
 
   /**
    * Add a Badge to the manager.
@@ -117,9 +140,10 @@ class BadgeManager extends GenericManager<Badge, string | number[]> {
     super();
     this.addFilter('name', badge => badge.name);
     this.addFilter('ids', badge => badge.ids);
+    this.addFilter('lock', badge => badge.lock_type);
   }
 }
 
 const badgeManager = new BadgeManager();
 
-export { badgeManager, Badge };
+export { badgeManager, Badge, Lock };
