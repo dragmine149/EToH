@@ -41,9 +41,6 @@ function highlight_span(span: HTMLSpanElement, text: string, selected: boolean) 
 /**
  * Custom HTMLElement for making a table. Uses shadowDOM for cleaner HTML files.
  * Designed specifically to hold multiple badges which are dynamically added and removed.
- *
- * Notes:
- * - The style sheet also needs to be loaded in order for updateSize to work properly.
  */
 class CategoryInformation<K extends Badge> extends HTMLElement {
   #data?: CategoryData;
@@ -117,7 +114,11 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
 
     // process those waiting, if we have any waiting.
     if (this.#badgeToProcess) this.addBadges(...this.#badgeToProcess);
+
+    // Sorts out table, then sort it out again once we have style.
+    // This gets around the network issue causing all those before the style has loaded once to break.
     this.#autoHide();
+    if (!this.#style.sheet) this.#style.onload = this.#autoHide.bind(this);
   }
 
   /**
@@ -444,7 +445,6 @@ const createCI = () => {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById("e")?.addEventListener('click', createCI);
   for (let i = 0; i < 2; i++) {
-    // setTimeout(() => { createCI(); }, 300 * i);
     createCI();
   }
 });
