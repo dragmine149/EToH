@@ -225,6 +225,30 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     return badges;
   }
 
+  /** @param badgeIds The badges to show. */
+  showBadges = (...badgeIds: number[]) => this.toggleBadgesVisibility(true, ...badgeIds);
+  /** @param badgeIds The badges to hide. */
+  hideBadges = (...badgeIds: number[]) => this.toggleBadgesVisibility(false, ...badgeIds);
+
+  /**
+   * Makes a set of badges visible / hidden. This is different to `add/remove Badges` as we keep the ownership of said badge.
+   *
+   * No dedicated function to a certain category as we don't know much about what to hide / not to hide.
+   * @param visible To make them visible or hidden.
+   * @param badgeIds The badges to affect.
+   */
+  toggleBadgesVisibility(visible: boolean, ...badgeIds: number[]) {
+    let stored_badges = this.badges;
+    badgeIds.forEach((badgeId) => {
+      const entry = stored_badges.get(badgeId);
+      if (entry == undefined) return;
+
+      entry.hidden = !visible;
+    });
+
+    this.#autoHide();
+  }
+
   /**
    * Removes all the data ready for pre-loading.
    * @returns The data stored by doing `addBadges` when `Table` is undefined.
@@ -324,6 +348,7 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   #updateRow() {
     if (!this.#data) return;
 
+    // Set the class and title for why this badge has been locked.
     switch (this.#data.lock_type) {
       case Lock.Another:
         this.classList.add("locked_another");

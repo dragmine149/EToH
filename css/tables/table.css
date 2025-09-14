@@ -50,10 +50,13 @@ table tr:last-child td:last-child {
   border-bottom-right-radius: 1rem;
 }
 
-table badge-info {
+table badge-info:not([hidden]) {
   display: table-row;
 }
 
+table badge-info[hidden] {
+  display: none;
+}
 
 .highlight {
   background-color: skyblue;
