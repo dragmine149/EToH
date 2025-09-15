@@ -203,7 +203,12 @@ bold {
   height: calc(100vh - (62.5px + 70px));
 }
 
-#search {
+#main[hidden] {
+  display: none;
+}
+
+#search,
+noscript {
   /* Offset to compensate for top bars */
   margin-top: -62.5px;
   background: #495057;

@@ -12,10 +12,10 @@
     <!-- <script src="https://dragmine149.github.io/external/storage.js" type="module"></script>
     <script src="https://dragmine149.github.io/Scripts/verbose.mjs" type="module"></script> -->
     <!-- <script src="https://dragmine149.github.io/Scripts/verbose.css"></script> -->
-    <link rel="stylesheet" href="Scripts/verbose.css">
+    <!--<link rel="stylesheet" href="Scripts/verbose.css">
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
 
-    <script src="dist/index.js"></script>
+    <script src="dist/index.js"></script>-->
 
     <!--<script src="Scripts/storage.js"></script>
     <script src="Scripts/verbose.js"></script>-->
@@ -37,8 +37,8 @@
       <nav class="links">
         <a href="..">Main site</a>
         <a onclick="userManager.unloadUser()">Home</a>
-        <a href="info.html">Information and FAQ</a>
-        <a href="https://github.com/dragmine149/eTOH/releases">Updates (github release notes)</a>
+        <a href="info.html">Information</a>
+        <a href="https://github.com/dragmine149/eTOH/releases">Updates (github releases)</a>
       </nav>
       <div id="title">
         <bold>EToH Tower Tracker</bold> <italics>by dragmine149</italics>
@@ -80,7 +80,7 @@
           >
           <span tag="search_count"></span>
         </div>
-        <button onclick="userManager.current_user.loadUncompleted()">Update all not completed</button>
+        <button onclick="userManager.current_user.loadUncompleted()">Update Badges</button>
       </div>
     </div>
 
@@ -93,13 +93,6 @@
       <span count="Obelisk">Obelisk: </span>
     </div>
 
-    <noscript class="noscript">
-      For full functionality of this site it is necessary to enable <bold>JavaScript</bold>.<br>
-      Here are the <a href="https://www.enablejavascript.io/">
-        instructions how to enable JavaScript in your web browser
-      </a>.
-    </noscript>
-
     <div id="errors" hidden onclick="this.hidden = true;">
       <span id="error_message"></span>
       <br>
@@ -107,17 +100,16 @@
       <span id="error_hint">Click me to hide!</span>
     </div>
 
-    <div id="logs" hidden>
-      <div id="template" hidden>
-        <div tag="icon"></div>
-        <span tag="category"></span><span tag="time"></span><br>
-        <span tag="message"></span><br>
-      </div>
-    </div>
-
     <datalist id="user_list"></datalist>
     <div id="main">
-      <div id="search">
+      <noscript class="noscript">
+        For full functionality of this sub-site site it is necessary to enable <bold>JavaScript</bold>.<br>
+        Here are the <a href="https://www.enablejavascript.io/">
+          instructions on How to enable JavaScript in your web browser
+        </a>.
+      </noscript>
+
+      <div id="search" hidden>
         <div class="title">Load EToH Status</div>
         <div class="subtitle">Enter a Roblox username, user ID, or profile link to load their EToH status.</div>
         <input type="text" id="search_input" list="user_list" placeholder="Load towers via roblox username, user id or profile link"
@@ -125,60 +117,11 @@
           onkeydown="if(event.key === 'Enter') userManager.findUser(this.value)">
         <button id="search_button" onclick="userManager.findUser(this.parentNode.querySelector('[id=\'search_input\']').value)">Search</button>
         <div id="progress">
-          <span>Please note, first time load will take a bit longer than normal</span><br>
+          <span>Please note, first time load of a user will take a bit longer due to being a full load instead of a partial load.</span><br>
           <!-- <br> -->
         </div>
       </div>
       <div id="badges" hidden>
-        <div id="category" hidden class="area">
-          <span tag="title"></span>
-          <table tag="badges">
-            <tr tag="badge" hidden style="display: none;">
-              <td tag="name"></td>
-              <td tag="information">
-                <span tag="info"></span><br>
-                <span tag="completed"></span>
-              </td>
-            </tr>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <div id="bottom_bar">
-      <input type="checkbox" id="bottom_bar_checkbox" hidden>
-      <label for="bottom_bar_checkbox" class="cog">
-        <img width="75" height="75" src="https://img.icons8.com/ios/75/settings--v1.png" alt="Settings Icon">
-      </label>
-      <div id="settings" class="settings">
-        <div class="title">Settings</div>
-        <div class="content">
-          <div>
-            <h4>Verbose</h4>
-            <ul>
-              <li>
-                <label for="verbose_Network">Network</label>
-                <input type="checkbox" id="verbose-Network" onchange="localStorage.setItem(`setting-Debug-${this.id}`, this.checked);">
-              </li>
-              <li>
-                <label for="verbose_UserManager">User Manager</label>
-                <input type="checkbox" id="verbose_UserManager" onchange="localStorage.setItem(`setting-Debug-${this.id}`, this.checked);">
-              </li>
-              <li>
-                <label for="verbose_user">User</label>
-                <input type="checkbox" id="verbose_user" onchange="localStorage.setItem(`setting-Debug-${this.id}`, this.checked);">
-              </li>
-              <li>
-                <label for="verbose_ETOHUI">UI Manager</label>
-                <input type="checkbox" id="verbose_ETOHUI" onchange="localStorage.setItem(`setting-Debug-${this.id}`, this.checked);">
-              </li>
-              <li>
-                <label for="verbose_ETOHUI_Creator">UI Manager Creator</label>
-                <input type="checkbox" id="verbose_ETOHUI_Creator" onchange="localStorage.setItem(`setting-Debug-${this.id}`, this.checked);">
-              </li>
-            </ul>
-          </div>
-        </div>
       </div>
     </div>
   </body>

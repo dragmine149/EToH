@@ -91,6 +91,9 @@ async function loadOthersFromServer() {
 
 
 document.addEventListener('DOMContentLoaded', () => {
+  // should exist as we are in DOMContentLoaded
+  document.getElementById("search")!.hidden = false;
+
   const url = new URL(location.toString());
   const user = url.searchParams.get("user");
   if (user) userManager.find_user(Number.isNaN(user) ? user : Number(user));

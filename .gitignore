@@ -1,5 +1,6 @@
 BadgeUpdater/
 node_modules/
+*.temp*
 
 # TypeScript build artifacts
 dist/
