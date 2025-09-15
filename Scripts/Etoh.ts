@@ -1,5 +1,6 @@
 import { etohDB } from ".";
-import { Badge } from "./BadgeManager";
+import { Badge, Lock } from "./BadgeManager";
+import { DIFFICULTIES, SUB_LEVELS } from "./constants";
 import { logs } from "./logs";
 import { CLOUD_URL, network, RawBadge } from "./network";
 import { User, UserManager } from "./user";
@@ -95,6 +96,89 @@ function shortTowerName(tower_name: string) {
     .join('');
 }
 
+
+/**
+* Returns the word that describes the number.
+* @param difficulty The difficuty of the tower.
+* @returns The word to describe it.
+*/
+function getDifficultyWord(difficulty: number) { return DIFFICULTIES[Math.trunc(difficulty) - 1] ?? "Unknown_Difficulty"; }
+
+/**
+* Translates the number form into a more readable word form. Defaults to "Baseline Unknown" if it can't find anything.
+* @param difficulty The difficulty of the tower
+* @returns The word form of the difficulty
+*/
+function getDifficulty(difficulty: number) {
+  let stage = Math.trunc(difficulty);
+  let sub = difficulty % 1;
+
+  let stageWord = DIFFICULTIES[stage - 1] || "Unknown_Difficulty";
+  let subWord = SUB_LEVELS.find(level => sub >= level.threshold)?.name || "Baseline";
+
+  return `${subWord} ${stageWord}`;
+}
+
+/**
+* Returns what type the tower is from its name. (Please don't make this too confusing EToH Devs...)
+* @param name The name of the tower.
+* @param type The type to use when we can't determine from name or from badge.
+* @returns The type of tower.
+*/
+function getTowerType(name: string, type: string) {
+  if (name.startsWith("Steeple")) return TowerType.Steeple;
+  if (name.startsWith('Tower of') || name == 'Thanos Tower') return TowerType.Tower;
+  if (name.startsWith('Citadel of')) return TowerType.Citadel;
+  if (name.startsWith('Obeisk of')) return TowerType.Obelisk;
+  let badge = badgeManager.name(name)[0];
+  if (badge instanceof Tower) return badge.type;
+  return type;
+}
+
+/**
+ * Adds back the `xxx of` stripped in the rust program to save space.
+ * @param name The name of the tower.
+ * @param type The type of the tower.
+ * @returns The full name.
+ */
+function addTowerType(name: string, type: TowerType) {
+  switch (type) {
+    case TowerType.Citadel: return `Citadel of ${name}`;
+    case TowerType.Tower: return `Tower of ${name}`;
+    case TowerType.Steeple: return `Steeple of ${name}`;
+    case TowerType.Obelisk: return `Obelisk of ${name}`;
+  }
+  return name;
+}
+/**
+* Returns the amount of points that the type provided is worth.
+* @param {TowerType} type The type of tower.
+*/
+function getTowerPoints(type: TowerType) {
+  switch (type) {
+    case TowerType.Obelisk: return 3;
+    case TowerType.Citadel: return 2;
+    case TowerType.Tower: return 1;
+    case TowerType.Steeple: return 0.5;
+
+    default:
+    case TowerType.MiniTower:
+    case TowerType.Other: return 0;
+  }
+}
+
+function numberToType(num: number) {
+  switch (num) {
+    case 0: return TowerType.MiniTower;
+    case 1: return TowerType.Steeple;
+    case 2: return TowerType.Tower;
+    case 3: return TowerType.Citadel;
+    case 4: return TowerType.Obelisk;
+    default: return TowerType.Other;
+  }
+}
+
+
 class Tower extends Badge {
   #difficulty: number;
   get difficulty() { return this.#difficulty; }
@@ -103,7 +187,7 @@ class Tower extends Badge {
   #type: TowerType;
   get type() { return this.#type; }
   #category: Category;
-  get category() { return this.category; }
+  get category() { return this.#category; }
 
   get shortName() { return shortTowerName(this.name); }
 
@@ -115,8 +199,8 @@ class Tower extends Badge {
   // }
 
 
-  constructor(name: string, ids: number[], difficulty: number, area: string, type: TowerType, category: Category) {
-    super(name, ids);
+  constructor(name: string, ids: number[], lock_type: Lock, difficulty: number, area: string, type: TowerType, category: Category, lock_reason?: string, wiki?: URL) {
+    super(name, ids, lock_type, wiki, lock_reason);
     this.#difficulty = difficulty;
     this.#area = area;
     this.#type = type;
