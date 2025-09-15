@@ -30,7 +30,7 @@ class User {
   last = -1;
 
   get ui_name() {
-    return `${this.display} ${this.display != this.name ? `(@${this.name})}` : ``}`;
+    return `${this.display} ${this.display != this.name ? `(@${this.name})` : ``}`;
   }
 
   get link() {

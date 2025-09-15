@@ -1,7 +1,7 @@
 <html>
   <head>
     <title>EToH Tower Tracker</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="dist/tailwind.css">
     <link rel="stylesheet" href="css/difficulties.css">
     <link rel="stylesheet" href="css/tables.css">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -32,20 +32,20 @@
     <script src="newJs/Ui.js"></script>
     <script src="newJs/EToH.js"></script>-->
   </head>
-  <body>
-    <div id="top_bar">
-      <nav class="links">
+  <body class="bg-gray-600 p-1.5 font-[Noto_Serif]">
+    <div id="top_bar" class="relative bg-stone-800 flex items-center justify-between p-1.5 text-white rounded-t-sm">
+      <nav class="flex gap-1 z-10">
         <a href="..">Main site</a>
         <a onclick="userManager.unloadUser()">Home</a>
         <a href="info.html">Information</a>
         <a href="https://github.com/dragmine149/eTOH/releases">Updates (github releases)</a>
       </nav>
-      <div id="title">
-        <bold>EToH Tower Tracker</bold> <italics>by dragmine149</italics>
+      <div id="title" class="absolute inset-x-0 flex justify-center pointer-events-none">
+        <span class="font-bold">EToH Tower Tracker&nbsp;</span><span class="italic">by dragmine149</span>
         <br>
         <span tag="status"></span>
       </div>
-      <div id="viewing">
+      <div id="viewing" class="z-10">
         Currently viewing user: <user onclick="miniSearch()">No-one!</user>
         <input type="text" id="mini-search" placeholder="Search..." hidden
           list="user_list"
@@ -56,7 +56,7 @@
           onfocus="this.select();">
       </div>
     </div>
-    <div id="under_top_bar">
+    <div id="under_top_bar" class="relative bg-neutral-700 flex items-center justify-between p-0 text-white rounded-b-sm">
       <div id="points">
         <span count="towers">Towers: </span>
         <span count="points">Tower points: </span>
@@ -108,6 +108,9 @@
           instructions on How to enable JavaScript in your web browser
         </a>.
       </noscript>
+      <div id="load_error" hidden>
+
+      </div>
 
       <div id="search" hidden>
         <div class="title">Load EToH Status</div>

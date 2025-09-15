@@ -1,0 +1,26 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-gray-550: #6c757d;
+  --color-gray-750: #495057;
+  --color-gray-red-700: #703030;
+}
+
+button,
+a {
+  padding: 0.5rem 1rem;
+  margin: 4px;
+  background-color: var(--color-gray-750);
+  color: white;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  transition: background-color 0.2s;
+  border: 0px;
+  font-size: 16px;
+  text-wrap: nowrap;
+}
+
+button:hover:not(:disabled),
+a:hover:not(:disabled) {
+  background-color: var(--color-gray-red-700);
+}

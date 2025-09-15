@@ -208,6 +208,7 @@ bold {
 }
 
 #search,
+#load_error,
 noscript {
   /* Offset to compensate for top bars */
   margin-top: -62.5px;
