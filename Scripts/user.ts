@@ -26,6 +26,10 @@ class User {
     return `https://www.roblox.com/users/${this.id}/profile`;
   }
 
+  get profile() {
+    return `https://roblox-proxy.dragmine149.workers.dev/users/${this.id}/avatar_headshot.webp?size=48&direct&circular`;
+  }
+
   set name(new_name: string) { this.update_name(new_name); }
   get name() { return this.#name; }
 
