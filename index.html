@@ -56,13 +56,13 @@
           onfocus="this.select();">
       </div>
     </div>
-    <div id="under_top_bar" class="relative bg-neutral-700 flex items-center justify-between p-0 text-white rounded-b-sm">
-      <div id="points">
+    <div id="under_top_bar" class="bg-neutral-700 flex p-0 text-white rounded-b-sm">
+      <div id="points" class="grid grid-rows-2 grid-cols-2">
         <span count="towers">Towers: </span>
         <span count="points">Tower points: </span>
-        <span count="info">Permanent, Non mini-towers above. Hover to see all badges.</span>
+        <span count="info" class="col-span-2">Permanent, Non mini-towers above. Hover to see all badges.</span>
       </div>
-      <div id="categories">
+      <div id="categories" class="pl-5">
         View:
         <button onclick="etohUI.load_category('default')">Default</button>
         <button onclick="etohUI.load_category('difficulty')">Difficulty</button>
@@ -72,8 +72,8 @@
         <button id="toggle-locked" onclick="etohUI.toggleLocked()">Hide Locked Towers</button>
         <button id="toggle-mini" onclick="etohUI.toggleMini()">Hide Mini Towers</button>
       </div>
-      <div id="update">
-        <div id="badge-search" hidden>
+      <div id="other" class="flex ml-auto">
+        <div id="badge_search" hidden>
           <input type="text" id="badge-search-input" placeholder="Search for a Badge"
             oninput="etohUI.search(this.value)"
             onkeydown="if (event.key === 'Enter') { if (event.shiftKey) { return etohUI.previous_search(); } return etohUI.next_search() }"
