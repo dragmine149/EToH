@@ -225,17 +225,17 @@ impl AreaInformation {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct OtherBadge {
-    pub name: String,
-    pub category: String,
-    pub badges: Vec<u64>,
-}
+// #[derive(Serialize, Deserialize, Debug)]
+// pub struct OtherBadge {
+//     pub name: String,
+//     pub category: String,
+//     pub badges: Vec<u64>,
+// }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct OtherSchema {
-    pub data: Vec<OtherBadge>,
-}
+// #[derive(Serialize, Deserialize, Debug)]
+// pub struct OtherSchema {
+//     pub data: Vec<OtherBadge>,
+// }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TowerType {
