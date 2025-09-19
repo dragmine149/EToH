@@ -7,6 +7,11 @@
 
   --color-etoh-purple: #302030;
   --color-etoh-pink: #604060;
+
+  /* 1.5 each size for a total of 3 */
+  --size-full-1\.5: calc(100% - (var(--spacing) * 3));
+  --width-full-1\.5: calc(100% - (var(--spacing) * 3));
+  --height-full-1\.5: calc(100% - (var(--spacing) * 3));
 }
 
 #badge_search,
@@ -27,4 +32,11 @@ a {
 button:hover:not(:disabled),
 a:hover:not(:disabled) {
   background-color: var(--color-gray-red-700);
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
 }

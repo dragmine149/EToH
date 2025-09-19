@@ -32,8 +32,8 @@
     <script src="newJs/Ui.js"></script>
     <script src="newJs/EToH.js"></script>-->
   </head>
-  <body class="bg-zinc-600 p-1.5 font-[Noto_Serif]">
-    <div id="top_bar" class="relative bg-neutral-900 flex items-center justify-between p-1.5 text-white rounded-t-sm">
+  <body class="bg-zinc-600 font-[Noto_Serif] p-1.5">
+    <div id="top_bar" class="absolute w-full-1.5 z-8 bg-neutral-900 flex items-center justify-between p-1.5 text-white rounded-t-sm">
       <nav class="flex gap-1 z-10">
         <a href="..">Main site</a>
         <a onclick="userManager.unloadUser()">Home</a>
@@ -45,8 +45,12 @@
         <br>
         <span tag="status"></span>
       </div>
-      <div id="viewing" class="z-10">
-        Currently viewing user: <user onclick="miniSearch()">No-one!</user>
+      <div id="viewing" class="z-10 flex justify-center items-center">
+        Currently viewing user:&nbsp;
+          <user onclick="miniSearch()">No-one!</user>
+          <!--<user onclick="miniSearch()">dragmine149</user>-->
+        <img id="user-icon" src="https://roblox-proxy.dragmine149.workers.dev/users/unknown/avatar_headshot.png?size=50&direct&circular">
+
         <input type="text" id="mini-search" placeholder="Search..." hidden
           list="user_list"
           onsubmit="userManager.findUser(this.value); endMiniSearch();"
@@ -56,7 +60,7 @@
           onfocus="this.select();">
       </div>
     </div>
-    <div id="under_top_bar" class="bg-neutral-800/25 flex p-0.5 text-white rounded-b-sm">
+    <div hidden id="under_top_bar" class="bg-neutral-800/40 flex p-0.5 text-white rounded-b-sm z-2">
       <div id="points" class="grid grid-rows-2 grid-cols-2">
         <span count="towers">Towers: </span>
         <span count="points">Tower points: </span>
@@ -101,31 +105,41 @@
     </div>
 
     <datalist id="user_list"></datalist>
-    <div id="main">
+
+    <div id="badges" hidden></div>
+    <div id="search" class="bg-neutral-800/80 box-border size-full items-center justify-center flex z-5">
+      <div id="search" class="bg-gray-900/70 text-white text-center rounded-md p-3 flex items-center justify-between flex-col h-30/100 w-4/10">
+        <div class="text-3xl">Load EToH User Status</div>
+        <!--<div class="subtitle">Enter a Roblox username, user ID, or profile link to load their EToH status.</div>-->
+        <div class="w-full">
+        <div class="w-full flex pb-2">
+          <input type="text" id="search_input" list="user_list" placeholder="Please enter a roblox username, userId, or a link to the roblox profile"
+            onsubmit="userManager.findUser(this.value)"
+            onkeydown="if(event.key === 'Enter') userManager.findUser(this.value)"
+            class=" bg-teal-500/10 rounded-md w-full text-center">
+          <button id="search_button" onclick="userManager.findUser(this.parentNode.querySelector('[id=\'search_input\']').value)">Search</button>
+        </div>
+          <span>Please note, first time load of a user will take a bit longer</span><br>
+        </div>
+        <div id="progress">
+          <span id="load_errors" class="text-red-700">A network error has occurred, please try again.</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!--<div id="main" class="flex flex-col items-center justify-center h-(--height-almost-full)">
       <noscript class="noscript">
         For full functionality of this sub-site site it is necessary to enable <bold>JavaScript</bold>.<br>
         Here are the <a href="https://www.enablejavascript.io/">
           instructions on How to enable JavaScript in your web browser
         </a>.
       </noscript>
-      <div id="load_error" hidden>
 
-      </div>
-
-      <div id="search" hidden>
-        <div class="title">Load EToH Status</div>
-        <div class="subtitle">Enter a Roblox username, user ID, or profile link to load their EToH status.</div>
-        <input type="text" id="search_input" list="user_list" placeholder="Load towers via roblox username, user id or profile link"
-          onsubmit="userManager.findUser(this.value)"
-          onkeydown="if(event.key === 'Enter') userManager.findUser(this.value)">
-        <button id="search_button" onclick="userManager.findUser(this.parentNode.querySelector('[id=\'search_input\']').value)">Search</button>
-        <div id="progress">
-          <span>Please note, first time load of a user will take a bit longer due to being a full load instead of a partial load.</span><br>
-          <!-- <br> -->
-        </div>
-      </div>
       <div id="badges" hidden>
       </div>
-    </div>
+
+
+    </div>-->
   </body>
 </html>
