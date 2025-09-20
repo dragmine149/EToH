@@ -96,9 +96,9 @@ class Badge {
     // this.#addProperty('ids', [].concat(ids));
 
     this.#name = name;
-    this.lock_type = lock_type;
+    this.#lock_type = lock_type;
     this.#wiki = wiki;
-    this.lock_reason = lock_reason;
+    this.#lock_reason = lock_reason;
 
     if (Array.isArray(ids)) {
       this.#ids = ids;

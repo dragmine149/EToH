@@ -1,5 +1,4 @@
 /*eslint no-undef: "error" */
-
 enum DIFFICULTIES {
   Easy, Medium, Hard, Difficult, Challenging, Insane, Remorseless, Intense, Extreme, Terrifying, Catastrophic
 }
@@ -35,4 +34,90 @@ function pointsFromType(type: TOWER_TYPE) {
   }
 }
 
+function typeFromNumber(num: number) {
+  switch (num) {
+    case 0: return TOWER_TYPE.Mini_Tower;
+    case 1: return TOWER_TYPE.Steeple;
+    case 2: return TOWER_TYPE.Tower;
+    case 3: return TOWER_TYPE.Citadel;
+    case 4: return TOWER_TYPE.Obelisk;
+    default: return TOWER_TYPE.Other;
+  }
+}
+
+
+type ServerTower = {
+  name: string;
+  difficulty: number;
+  badges: number[];
+  type?: string;
+};
+
+type Difficulties = {
+  easy?: number;
+  medium?: number;
+  hard?: number;
+  difficult?: number;
+  challenging?: number;
+  intense?: number;
+  remorseless?: number;
+  insane?: number;
+  extreme?: number;
+  terrifying?: number;
+  catastrophic?: number;
+};
+
+
+interface AreaRequirements {
+  difficulties: Difficulties;
+  points: number;
+};
+
+
+type ServerDifficulties = {
+  e?: number;
+  m?: number;
+  h?: number;
+  d?: number;
+  c?: number;
+  i?: number;
+  r?: number;
+  s?: number;
+  x?: number;
+  t?: number;
+  a?: number;
+};
+
+
+interface ServerAreaRequirements {
+  ds: ServerDifficulties;
+  p: number;
+};
+
+type ServerAreas = {
+  /** Name of the area. */
+  n: string;
+  r: ServerAreaRequirements
+  /** If this area is a sub area, and if so. The name of the parent area. */
+  s?: string;
+  /** The towers in this area. */
+  t: string[];
+};
+type ServerTowers = {
+  areas: {
+    temporary: ServerAreas[];
+    permanent: ServerAreas[];
+    other: ServerAreas[];
+  };
+};
+type ServerOther = {
+  name: string;
+  category: string;
+  badges: number[];
+};
+type ServerOtherParent = {
+  data: ServerOther[];
+};
+
 export { DIFFICULTIES, SUB_LEVELS, TOWER_TYPE, pointsFromType }
+export type { ServerAreas, ServerDifficulties, ServerOther, ServerOtherParent, ServerTower, ServerTowers, AreaRequirements };

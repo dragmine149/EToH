@@ -13,24 +13,12 @@
     <script src="https://dragmine149.github.io/Scripts/verbose.mjs" type="module"></script> -->
     <!-- <script src="https://dragmine149.github.io/Scripts/verbose.css"></script> -->
     <!--<link rel="stylesheet" href="Scripts/verbose.css">
-    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>-->
 
-    <script src="dist/index.js"></script>-->
+    <script src="dist/initial.js" type="module"></script>
 
     <!--<script src="Scripts/storage.js"></script>
     <script src="Scripts/verbose.js"></script>-->
-
-    <!--<script src="newJs/constants.js"></script>
-    <script src="newJs/main.js"></script>
-    <script src="newJs/network.js"></script>
-
-    <script src="newJs/DataManager.js"></script>
-    <script src="newJs/BadgeManager.js"></script>
-    <script src="newJs/AreaManager.js"></script>
-    <script src="newJs/user.js"></script>
-
-    <script src="newJs/Ui.js"></script>
-    <script src="newJs/EToH.js"></script>-->
   </head>
   <body class="bg-zinc-600 font-[Noto_Serif] p-1.5">
     <div id="top_bar" class="absolute w-full-1.5 z-8 bg-neutral-900 flex items-center justify-between p-1.5 text-white rounded-t-sm">
@@ -107,7 +95,7 @@
     <datalist id="user_list"></datalist>
 
     <div id="badges" hidden></div>
-    <div id="search" class="bg-neutral-800/80 box-border size-full items-center justify-center flex z-5">
+    <div hidden class="bg-neutral-800/80 box-border size-full items-center justify-center flex z-5">
       <div id="search" class="bg-gray-900/70 text-white text-center rounded-md p-3 flex items-center justify-between flex-col h-30/100 w-4/10">
         <div class="text-3xl">Load EToH User Status</div>
         <!--<div class="subtitle">Enter a Roblox username, user ID, or profile link to load their EToH status.</div>-->
@@ -124,6 +112,14 @@
         <div id="progress">
           <span id="load_errors" class="text-red-700">A network error has occurred, please try again.</span>
         </div>
+      </div>
+    </div>
+
+    <div id="pre-load" class="bg-neutral-800/80 box-border size-full items-center justify-center flex z-5">
+      <div id="pre-load-info" class="bg-gray-900/70 text-white text-center rounded-md p-3 flex items-center justify-between flex-col h-30/100 w-4/10">
+        Please wait whilst we load required assets.
+        <span></span>
+        <button>Retry loading required asssets (or refresh)</button>
       </div>
     </div>
 

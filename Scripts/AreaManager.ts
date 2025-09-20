@@ -1,10 +1,5 @@
 import { GenericManager } from "../Scripts/GenericManager";
-import { DIFFICULTIES } from "../Scripts/constants";
-
-interface AreaRequirements {
-  difficulties: ServerDifficulties;
-  points: number;
-};
+import { DIFFICULTIES, AreaRequirements } from "../Scripts/constants";
 
 class Area {
   /** @type The name of this area */
@@ -15,7 +10,7 @@ class Area {
   /** @type The requirements to access that area */
   requirements: AreaRequirements;
 
-  constructor(name: string, parent: string, requirements: AreaRequirements) {
+  constructor(name: string, parent: string | undefined, requirements: AreaRequirements) {
     this.name = name;
     this.parent = parent;
     this.requirements = requirements;
@@ -44,7 +39,7 @@ class AreaManager extends GenericManager<Area, string> {
     this.addFilter("name", area => area.name);
 
     Object.entries(DIFFICULTIES).forEach((diff) => {
-      this.addFilter(diff[0], area => area.requirements.difficulties[diff[0].toLowerCase()])
+      this.addFilter(diff[0], area => area.requirements.difficulties[diff[0].toLowerCase()] || 0)
     })
   }
 }

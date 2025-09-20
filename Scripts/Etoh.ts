@@ -208,8 +208,17 @@ class Tower extends Badge {
   }
 }
 
+class Other extends Badge {
+  #category: string;
+  get category() { return this.#category; }
+
+  constructor(name: string, ids: number[], lock_type: Lock, category: string, lock_reason?: string) {
+    super(name, ids, lock_type, undefined, lock_reason);
+    this.#category = category;
+  }
+}
 
 
 const userManager = new UserManager(etohDB.users, EToHUser);
 
-export { userManager, shortTowerName };
+export { userManager, shortTowerName, Tower, Category, Other, numberToType };
