@@ -3,7 +3,6 @@ import { tryCatch } from "./utils";
 import { type UserTable } from ".";
 import { GenericManager } from "./GenericManager";
 import { CLOUD_URL, network } from "./network";
-import type { EntityTable, Dexie } from "dexie";
 import { logs } from "./logs";
 
 class User {
@@ -32,16 +31,6 @@ class User {
 
   set name(new_name: string) { this.update_name(new_name); }
   get name() { return this.#name; }
-
-  get database() {
-    return {
-      id: this.id,
-      name: this.#name,
-      display: this.display,
-      past: this.past_names,
-      last: this.last_viewed
-    }
-  }
 
   constructor(id: number, name: string, display: string, past: string[]) {
     this.id = id;
@@ -103,7 +92,7 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
 
   constructor(database: UserTable, userClass: UserConstructor<K>) {
     super();
-    this.addFilter('name', user => [user.name, ...user.past_names]);
+    this.addFilter('name', user => [user.name, ...user.past_names].filter((n) => n != undefined));
     this.addFilter('id', user => user.id);
 
     this.#db = database;
@@ -119,6 +108,7 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
     (await this.#db.toArray()).forEach((user) => {
       const obj = new this.#userClass(user.id, user.name, user.display, user.past);
       this.#users.push(obj);
+      // console.log(obj);
       this.addItem(obj);
     })
   }

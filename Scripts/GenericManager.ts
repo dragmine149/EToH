@@ -37,6 +37,7 @@ class GenericManager<K, T> {
       // got to have a valid key before it can be inserted.
       if (k == undefined || k == null || Number.isNaN(k)) {
         console.warn(`Invalid key ${k} whilst trying to add to map!`);
+        console.debug(`Map:`, map, `value: `, value);
         // console.info(this.#filters);
         return;
       }
