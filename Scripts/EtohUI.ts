@@ -1,5 +1,7 @@
+import { userManager } from "./Etoh";
 import { load_required_data } from "./initial";
 import { BadgeInformation, CategoryInformation } from "./ui";
+import { UserManager } from "./user";
 
 enum PreloadState {
   TowerData,
@@ -37,11 +39,12 @@ function preload_status(state: PreloadState) {
 */
 class UI {
   // Stuff related to loading the data at initial load.
+  #preload_parent: HTMLDivElement;
   #preload: HTMLDivElement;
   #preload_span: HTMLSpanElement;
   #preload_button: HTMLButtonElement;
   #loaded: boolean;
-  set loaded(v) { this.#loaded = v; this.#preload.hidden = v; this.#search_main.hidden = !v; }
+  set loaded(v) { this.#loaded = v; this.#preload_parent.hidden = v; this.#search_main.hidden = !v; }
   get loaded() { return this.#loaded; }
   // How many times to retry before we have to say. Sorry, but it's not going to load.
   #retry_count: 0 | 1 | 2 = 0;
@@ -50,9 +53,19 @@ class UI {
   #search_main: HTMLDivElement;
   #user_list: HTMLDataListElement;
 
+  // Stuff relatied to the displaying of users.
+  #user: HTMLDivElement;
+  #user_profile: HTMLAnchorElement;
+  #user_img: HTMLImageElement;
+  #user_search: HTMLInputElement;
+  #user_search_button: HTMLButtonElement;
+  #user_load_error: HTMLSpanElement;
+  #user_search_back: HTMLButtonElement;
+
   constructor() {
     // set this straight away to show it and ignore the noscript element popup. The parent object is more important.
-    document.getElementById("pre-load")!.hidden = false;
+    this.#preload_parent = document.getElementById("pre-load") as HTMLDivElement;
+    this.#preload_parent.hidden = false;
 
     this.#preload = document.getElementById("pre-load-info") as HTMLDivElement;
     this.#preload_span = this.#preload.children[2] as HTMLSpanElement;
@@ -77,6 +90,27 @@ class UI {
 
     this.#search_main = document.getElementById("search-main") as HTMLDivElement;
     this.#user_list = document.getElementById("user_list") as HTMLDataListElement;
+
+    this.#user = document.getElementsByTagName("user").item(0) as HTMLDivElement;
+    this.#user_profile = document.getElementById("user-profile") as HTMLAnchorElement;
+    this.#user_img = this.#user_profile.firstElementChild as HTMLImageElement;
+    this.#user_search = document.getElementById("search_input") as HTMLInputElement;
+    this.#user_search_button = document.getElementById("search_button") as HTMLButtonElement;
+    this.#user_search_back = document.getElementById("search_back") as HTMLButtonElement;
+    this.#user_load_error = document.getElementById("load_errors") as HTMLSpanElement;
+
+    this.#user_search.onsubmit = () => this.load_user(this.#user_search.value);
+    this.#user_search.onkeydown = (ev) => {
+      if (ev.key === 'Enter') this.load_user(this.#user_search.value);
+    }
+
+    this.#user_search.oninput = () => {
+      // console.log(this.#user_search.value.length);
+      this.#user_search_button.disabled = this.#user_search.value.length <= 0;
+    }
+    this.#user_search_button.onmousedown = () => this.load_user(this.#user_search.value);
+    this.#user_search_button.disabled = this.#user_search.value.length <= 0;
+    this.#user_search_back.disabled = true;
   }
 
   /**
@@ -107,6 +141,24 @@ class UI {
       this.#user_list.appendChild(option);
     })
   }
+
+  /**
+   * Loads a user via userManager. Updates the UI accordingly etc.
+   *
+   * There is no "unload" event as loading a new user will unload the old user.
+   * @param user_input The user the user inputted.
+   */
+  async load_user(user_input: string) {
+    let user = await userManager.find_user(user_input);
+    if (user == undefined) { return; }
+
+    this.#user.textContent = user.ui_name;
+    this.#user_profile.href = user.link;
+    this.#user_img.src = user.profile;
+
+    this.#user_search_back.disabled = false;
+  }
+
 }
 
 const ui = new UI();

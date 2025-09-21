@@ -17,7 +17,7 @@ class User {
   past_names: string[];
 
   get ui_name() {
-    return `${this.display} ${this.display != this.name ? `(@${this.name})}` : ``}`;
+    return `${this.display} ${this.display != this.name ? `(@${this.name})` : ``}`;
   }
 
   get link() {
@@ -45,7 +45,7 @@ class User {
   }
 
   is_user(identifier: string | number) {
-    this.#name == identifier || this.id == identifier;
+    return this.#name == identifier || this.id == identifier;
   }
 
   load() {
@@ -65,6 +65,9 @@ type MinimumUserData = {
   display: string,
 }
 
+/**
+ * An extension of GenericManager to store user bassed details.
+ */
 class UserManager<K extends User> extends GenericManager<K, string | number> {
   name!: (item?: string) => string[] | K[];
   id!: (item?: number) => number[] | K[];
@@ -75,6 +78,7 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
   #users: K[];
 
   #current_user?: K;
+  /** The current loaded user. Used as a way to automatically load/unload when changing. */
   get current_user() { return this.#current_user; }
   set current_user(user: K | undefined) {
     if (user == undefined) {
@@ -99,6 +103,10 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
     this.load_database();
   }
 
+  /**
+   * Load user data from the database into memory. This is designed to be done once on startup, however can survive multiple calls.
+   * Dispatches the event `user_manager_loaded` once completed. (Can't be bothered to add custom event listener here)
+   */
   async load_database() {
     console.info("Loading users from local database");
     let data = await this.#db.toArray()
@@ -114,11 +122,19 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
     // console.info(`Database loaded`);
   }
 
-  load_user(user?: K) {
+  /**
+   * Checks to see if we already have the user loaded in memory (#users)
+   * @param user The user to check.
+   * @returns If the user exists and it's the only one in memory.
+   */
+  #load_user(user?: K) {
     if (!user) return false;
 
     // pot length should never be > 1 unless roblox did a massive oopsie.
+    // "pot" is just the amount of users returned by the user filter.
+    // console.log(user);
     const pot = this.#users.filter((u) => u.is_user(user.id ?? user.name));
+    // console.log(pot);
     if (pot.length == 1) {
       this.current_user = pot[0];
       return true;
@@ -128,16 +144,10 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
     return false;
   }
 
-  load_network_user(user: MinimumUserData) {
-    const obj = new this.#userClass(user.id, user.name, user.display, []);
-    this.#users.push(obj);
-    this.current_user = obj;
-  }
-
   /**
    * Attempts to find the user after going through various checks.
    * @param identifier Minimal Information about the user.
-   * @returns A user
+   * @returns The user, or undefined if failed to load.
    */
   async find_user(identifier: string | number) {
     logs.log(`Loading data for ${identifier}`, `user_manager/load`, 0);
@@ -153,9 +163,9 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
       logs.log(`Attempting to search for user by id in database`, `user_manager/load`, 5);
       const id_load = this.id(identifier) as K[];
       const user = id_load[0];
-      if (this.load_user(user)) {
+      if (this.#load_user(user)) {
         logs.log(`User loaded via id`, `user_manager/load`, 100);
-        return;
+        return this.current_user;
       }
     }
 
@@ -163,16 +173,16 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
       logs.log(`Attempting to search for user by name in database`, `user_manager/load`, 5);
       const id_load = this.name(identifier) as K[];
       const user = id_load[0];
-      if (this.load_user(user)) {
+      if (this.#load_user(user)) {
         logs.log(`User loaded via name`, `user_manager/load`, 100);
-        return;
+        return this.current_user;
       }
     }
 
     logs.log(`Attempting to load user via roblox-proxy`, `user_manager/load`, 10);
 
     let networkUserRequest = await tryCatch(network.retryTilResult(new Request(
-      `${CLOUD_URL}/users/${(this.id ?? this.name)}`
+      `${CLOUD_URL}/users/${identifier}`
     )));
 
     if (networkUserRequest.error) {
@@ -187,8 +197,12 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
     }
 
     logs.log(`Got user data via roblox-proxy`, `user_manager/load`, 50);
-    this.load_network_user(userRequest.data);
+    let user = userRequest.data;
+    const obj = new this.#userClass(user.id, user.name, user.display, []);
+    this.#users.push(obj);
+    this.current_user = obj;
     logs.log(`Finish finding user.`, `user_manager/load`, 100);
+    return this.current_user;
   }
 }
 

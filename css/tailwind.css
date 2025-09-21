@@ -3,6 +3,7 @@
 @theme {
   --color-gray-550: #6c757d;
   --color-gray-750: #495057;
+  --color-gray-760: #384046;
   --color-gray-red-700: #703030;
 
   --color-etoh-purple: #302030;
@@ -32,6 +33,13 @@ button {
 .fake-button:hover:not(:disabled),
 button:hover:not(:disabled) {
   background-color: var(--color-gray-red-700);
+}
+
+.fake-button:disabled,
+#badge_search:disabled,
+button:disabled {
+  background-color: var(--color-gray-760);
+  color: var(--color-neutral-300);
 }
 
 html,

@@ -41,8 +41,8 @@
         <user onclick="miniSearch()">No-one!</user>
         <!--<user onclick="miniSearch()">dragmine149</user>-->
         &nbsp;
-        <a href="https://roblox.com/users/unknown">
-          <img id="user-icon" src="https://roblox-proxy.dragmine149.workers.dev/users/unknown/avatar_headshot.png?size=75&direct&circular" class="size-12.5">
+        <a id="user-profile" href="https://roblox.com/users/unknown">
+          <img src="https://roblox-proxy.dragmine149.workers.dev/users/unknown/avatar_headshot.png?size=75&direct&circular" class="size-12.5">
         </a>
 
         <input type="text" id="mini-search" placeholder="Search..." hidden
@@ -97,18 +97,18 @@
     <div id="search-main" hidden class="bg-neutral-800/80 box-border size-full items-center justify-center flex z-5">
       <div id="search" class="bg-gray-900/70 text-white text-center rounded-md p-3 flex items-center flex-col
         justify-between box-border
-        h-30/100 w-full lg:w-4/10">
+        h-5/10 lg:h-3/10 w-full lg:w-4/10">
         <div class="text-3xl">Load EToH User Stats</div>
         <div class="w-full text-lg">
-          <span class="subtitle">Please enter a roblox username, userId, or a link to the roblox profile</span><br>
-          <div class="w-full flex pb-2">
-            <input type="text" id="search_input" list="user_list" placeholder="dragmine149 | 605215929 | https://www.roblox.com/users/605215929/profile"
-              onsubmit="userManager.findUser(this.value)"
-              onkeydown="if(event.key === 'Enter') userManager.findUser(this.value)"
-              class=" bg-teal-500/10 rounded-md w-full text-center">
-            <button id="search_button" onclick="userManager.findUser(this.parentNode.querySelector('[id=\'search_input\']').value)">Search</button>
+          <span class="pb-2">Please enter a roblox username, userId, or a link to the roblox profile</span>
+          <!--URL length is ~46 + 4 just for roundness sake. Username is limited at 20, hence that fine. -->
+          <input type="text" id="search_input" list="user_list" placeholder="dragmine149 | 605215929 | https://www.roblox.com/users/605215929/profile"
+            class=" bg-teal-500/10 rounded-md w-full text-center"
+            maxlength="50">
+          <div class="w-full flex">
+            <button disabled class="w-full" id="search_back">Back to current user</button>
+            <button disabled class="w-full" id="search_button">Load User</button>
           </div>
-          <span>User load times will vary depending on how many badges the user has and if the user is in browser storage or not.</span><br>
         </div>
         <div id="progress" class="text-3xl">
           <span id="load_errors" class="text-red-700" hidden>A network error has occurred, please try again.</span>
@@ -119,7 +119,7 @@
     <div hidden id="pre-load" class="bg-neutral-800/80 box-border size-full items-center justify-center flex z-5">
       <div id="pre-load-info" class="bg-gray-900/70 text-white text-center rounded-md p-3 flex items-center flex-col
         justify-between box-border
-        h-30/100 w-full lg:w-4/10">
+        h-5/10 lg:h-3/10 w-full lg:w-4/10">
         <span class="text-4xl">Please wait whilst we load required assets.</span>
         <br>
         <span class="text-2xl"></span>
@@ -131,7 +131,7 @@
     <noscript class="bg-neutral-800/80 box-border size-full items-center justify-center flex z-5">
       <div class="bg-gray-900/70 text-white text-center rounded-md p-3 flex items-center flex-col
         justify-between box-border
-        h-30/100 w-full lg:w-4/10">
+        h-5/10 lg:h-3/10 w-full lg:w-4/10">
         <span class="text-4xl">NoScript here!</span>
         <span class="text-2xl">Welcome to <a class="visited:text-blue-500 text-blue-400 underline" href="https://www.roblox.com/games/8562822414/Eternal-Towers-of-Hell">Eternal Towers of Hell</a> Tower Tracker made by dragmine149.</span>
         <span>Due to this site being mostly client-based instead of server-based. Javascript is required for this site to work. I apologise for the inconevience.</span>

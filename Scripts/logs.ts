@@ -1,5 +1,4 @@
 import { Listeners } from "./listeners";
-import { Verbose } from "./verbose.mjs";
 
 class Logs {
   #tree = {};
@@ -10,7 +9,7 @@ class Logs {
   }
 
   log(message: string, category?: string, progress?: number) {
-
+    console.log(`Received log: ${message} for ${category} at progress ${progress}`);
   }
 }
 

@@ -113,7 +113,7 @@ addEventListener('user_manager_loaded', () => {
   // console.log(userManager);
   // console.log(userManager.name());
   ui.update_local_user_list(userManager.name() as string[]);
-})
+});
 
 async function load_required_data() {
   await loadTowersFromServer();
@@ -123,5 +123,7 @@ async function load_required_data() {
 }
 
 load_required_data();
+
+globalThis.import_debug = async () => await import('./debug');
 
 export { load_required_data };
