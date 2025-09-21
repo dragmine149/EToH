@@ -43,6 +43,7 @@ class UI {
   #loaded: boolean;
   set loaded(v) { this.#loaded = v; this.#preload.hidden = v; this.#search_main.hidden = !v; }
   get loaded() { return this.#loaded; }
+  // How many times to retry before we have to say. Sorry, but it's not going to load.
   #retry_count: 0 | 1 | 2 = 0;
 
   // Stuff related to loading user data.
@@ -50,9 +51,15 @@ class UI {
   #user_list: HTMLDataListElement;
 
   constructor() {
-    this.#preload = document.getElementById("pre-load") as HTMLDivElement;
-    this.#preload_span = this.#preload.firstElementChild as HTMLSpanElement;
+    // set this straight away to show it and ignore the noscript element popup. The parent object is more important.
+    document.getElementById("pre-load")!.hidden = false;
+
+    this.#preload = document.getElementById("pre-load-info") as HTMLDivElement;
+    this.#preload_span = this.#preload.children[2] as HTMLSpanElement;
     this.#preload_button = this.#preload.lastElementChild as HTMLButtonElement;
+    // console.log(this.#preload);
+    // console.log(this.#preload_span);
+    // console.log(this.#preload_button);
 
     // In the rare case data is not loaded, some prevention for it.
     this.#preload_button.addEventListener('click', () => {

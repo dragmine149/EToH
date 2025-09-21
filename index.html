@@ -21,22 +21,26 @@
     <script src="Scripts/verbose.js"></script>-->
   </head>
   <body class="bg-zinc-600 font-[Noto_Serif] p-1.5">
-    <div id="top_bar" class="absolute w-full-1.5 z-8 bg-neutral-900 flex items-center justify-between p-1.5 text-white rounded-t-sm">
-      <nav class="flex gap-1 z-10">
-        <a href="..">Main site</a>
-        <a onclick="userManager.unloadUser()">Home</a>
-        <a href="info.html">Information</a>
-        <a href="https://github.com/dragmine149/eTOH/releases">Updates (github releases)</a>
+    <div id="top_bar" class="absolute w-full-1.5 z-8 bg-neutral-900 flex items-center justify-between p-1.5 text-white rounded-t-sm text-lg">
+      <input type="checkbox" hidden id="nav-hide" class="peer">
+      <label for="nav-hide" class="fake-button peer-checked:hidden">Show navigation</label>
+      <nav class="peer-checked:flex hidden gap-1 z-10 lg:flex-row flex-col">
+        <label for="nav-hide" class="fake-button">Hide navigation</label>
+        <a class="fake-button" href="..">Parent site</a>
+        <a class="fake-button" onclick="userManager.unloadUser()">Load User</a>
+        <a class="fake-button" href="info.html">Information</a>
+        <a class="fake-button" href="https://github.com/dragmine149/eTOH/releases">Updates (github releases)</a>
       </nav>
-      <div id="title" class="absolute inset-x-0 flex justify-center pointer-events-none">
+      <div id="title" class="lg:absolute inset-x-0 justify-center pointer-events-none flex">
         <span class="font-bold">EToH Tower Tracker&nbsp;</span><span class="italic">by dragmine149</span>
         <br>
         <span tag="status"></span>
       </div>
       <div id="viewing" class="z-10 flex justify-center items-center">
         Currently viewing user:&nbsp;
-          <user onclick="miniSearch()">No-one!</user>
-          <!--<user onclick="miniSearch()">dragmine149</user>-->
+        <user onclick="miniSearch()">No-one!</user>
+        <!--<user onclick="miniSearch()">dragmine149</user>-->
+        &nbsp;
         <a href="https://roblox.com/users/unknown">
           <img id="user-icon" src="https://roblox-proxy.dragmine149.workers.dev/users/unknown/avatar_headshot.png?size=75&direct&circular" class="size-12.5">
         </a>
@@ -91,32 +95,49 @@
 
     <div id="badges" hidden></div>
     <div id="search-main" hidden class="bg-neutral-800/80 box-border size-full items-center justify-center flex z-5">
-      <div id="search" class="bg-gray-900/70 text-white text-center rounded-md p-3 flex items-center justify-between flex-col h-30/100 w-4/10">
-        <div class="text-3xl">Load EToH User Status</div>
-        <!--<div class="subtitle">Enter a Roblox username, user ID, or profile link to load their EToH status.</div>-->
-        <div class="w-full">
-        <div class="w-full flex pb-2">
-          <input type="text" id="search_input" list="user_list" placeholder="Please enter a roblox username, userId, or a link to the roblox profile"
-            onsubmit="userManager.findUser(this.value)"
-            onkeydown="if(event.key === 'Enter') userManager.findUser(this.value)"
-            class=" bg-teal-500/10 rounded-md w-full text-center">
-          <button id="search_button" onclick="userManager.findUser(this.parentNode.querySelector('[id=\'search_input\']').value)">Search</button>
+      <div id="search" class="bg-gray-900/70 text-white text-center rounded-md p-3 flex items-center flex-col
+        justify-between box-border
+        h-30/100 w-full lg:w-4/10">
+        <div class="text-3xl">Load EToH User Stats</div>
+        <div class="w-full text-lg">
+          <span class="subtitle">Please enter a roblox username, userId, or a link to the roblox profile</span><br>
+          <div class="w-full flex pb-2">
+            <input type="text" id="search_input" list="user_list" placeholder="dragmine149 | 605215929 | https://www.roblox.com/users/605215929/profile"
+              onsubmit="userManager.findUser(this.value)"
+              onkeydown="if(event.key === 'Enter') userManager.findUser(this.value)"
+              class=" bg-teal-500/10 rounded-md w-full text-center">
+            <button id="search_button" onclick="userManager.findUser(this.parentNode.querySelector('[id=\'search_input\']').value)">Search</button>
+          </div>
+          <span>User load times will vary depending on how many badges the user has and if the user is in browser storage or not.</span><br>
         </div>
-          <span>Please note, first time load of a user will take a bit longer</span><br>
-        </div>
-        <div id="progress">
-          <span id="load_errors" class="text-red-700">A network error has occurred, please try again.</span>
+        <div id="progress" class="text-3xl">
+          <span id="load_errors" class="text-red-700" hidden>A network error has occurred, please try again.</span>
         </div>
       </div>
     </div>
 
-    <div id="pre-load" class="bg-neutral-800/80 box-border size-full items-center justify-center flex z-5">
-      <div id="pre-load-info" class="bg-gray-900/70 text-white text-center rounded-md p-3 flex items-center justify-between flex-col h-30/100 w-4/10">
-        Please wait whilst we load required assets.
-        <span></span>
-        <button>Retry loading required asssets (or refresh)</button>
+    <div hidden id="pre-load" class="bg-neutral-800/80 box-border size-full items-center justify-center flex z-5">
+      <div id="pre-load-info" class="bg-gray-900/70 text-white text-center rounded-md p-3 flex items-center flex-col
+        justify-between box-border
+        h-30/100 w-full lg:w-4/10">
+        <span class="text-4xl">Please wait whilst we load required assets.</span>
+        <br>
+        <span class="text-2xl"></span>
+        <br>
+        <button class="text-3xl">Retry loading required asssets (or refresh)</button>
       </div>
     </div>
+
+    <noscript class="bg-neutral-800/80 box-border size-full items-center justify-center flex z-5">
+      <div class="bg-gray-900/70 text-white text-center rounded-md p-3 flex items-center flex-col
+        justify-between box-border
+        h-30/100 w-full lg:w-4/10">
+        <span class="text-4xl">NoScript here!</span>
+        <span class="text-2xl">Welcome to <a class="visited:text-blue-500 text-blue-400 underline" href="https://www.roblox.com/games/8562822414/Eternal-Towers-of-Hell">Eternal Towers of Hell</a> Tower Tracker made by dragmine149.</span>
+        <span>Due to this site being mostly client-based instead of server-based. Javascript is required for this site to work. I apologise for the inconevience.</span>
+        <span class="text-xl">If you need help enabling javascript, please visit: <a class="visited:text-blue-500 text-blue-400 underline" href="https://www.enablejavascript.io/">https://www.enablejavascript.io/</a></span>
+      </div>
+    </noscript>
 
 
     <!--<div id="main" class="flex flex-col items-center justify-center h-(--height-almost-full)">

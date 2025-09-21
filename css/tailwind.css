@@ -14,9 +14,9 @@
   --height-full-1\.5: calc(100% - (var(--spacing) * 3));
 }
 
+.fake-button,
 #badge_search,
-button,
-a:not(:has(img)) {
+button {
   padding: 0.5rem 1rem;
   margin: 4px;
   background-color: var(--color-gray-750);
@@ -29,8 +29,8 @@ a:not(:has(img)) {
   text-wrap: nowrap;
 }
 
-button:hover:not(:disabled),
-a:hover:not(:disabled) {
+.fake-button:hover:not(:disabled),
+button:hover:not(:disabled) {
   background-color: var(--color-gray-red-700);
 }
 
