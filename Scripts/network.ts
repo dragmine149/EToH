@@ -1,6 +1,5 @@
 import { tryCatch } from "./utils";
 import { logs } from "./logs";
-import { Verbose } from "./verbose.mjs";
 const CLOUD_URL = 'https://roblox-proxy.dragmine149.workers.dev';
 
 type EarlierBadge = {
@@ -14,12 +13,6 @@ type RawBadge = {
 }
 
 class Network {
-  #verbose: Verbose;
-
-  constructor() {
-    this.#verbose = new Verbose("Network", "#aa8323");
-  }
-
   /**
   * Lets the server process the two badges and return the earliest.
   * @param user_id The userid to get the data for

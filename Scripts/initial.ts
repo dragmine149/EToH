@@ -99,13 +99,21 @@ async function loadOthersFromServer() {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-  // should exist as we are in DOMContentLoaded
-  // document.getElementById("search")!.hidden = false;
+});
 
+// custom event just to make it rely on something else.
+// Doesn't need to have any connection with `preload` as this can be loaded in the background at any time. And isn't technically required to be able to
+// use this project.
+addEventListener('user_manager_loaded', () => {
+  // console.log('received load event');
   const url = new URL(location.toString());
   const user = url.searchParams.get("user");
   if (user) userManager.find_user(Number.isNaN(user) ? user : Number(user));
-});
+
+  // console.log(userManager);
+  // console.log(userManager.name());
+  ui.update_local_user_list(userManager.name() as string[]);
+})
 
 async function load_required_data() {
   await loadTowersFromServer();

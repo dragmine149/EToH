@@ -1,4 +1,3 @@
-import { Verbose } from "./verbose.mjs";
 import { tryCatch } from "./utils";
 import { type UserTable } from ".";
 import { GenericManager } from "./GenericManager";
@@ -67,8 +66,8 @@ type MinimumUserData = {
 }
 
 class UserManager<K extends User> extends GenericManager<K, string | number> {
-  name!: (item: string) => string[] | K[];
-  id!: (item: number) => number[] | K[];
+  name!: (item?: string) => string[] | K[];
+  id!: (item?: number) => number[] | K[];
 
   // The database, kinda important for a lot of things.
   #db: UserTable;
@@ -88,8 +87,6 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
     this.#current_user.load();
   }
 
-  #verbose: Verbose;
-
   constructor(database: UserTable, userClass: UserConstructor<K>) {
     super();
     this.addFilter('name', user => [user.name, ...user.past_names].filter((n) => n != undefined));
@@ -97,20 +94,24 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
 
     this.#db = database;
     this.#userClass = userClass;
-    this.#verbose = new Verbose("UserManager", '#afe9ca');
     this.#users = [];
 
     this.load_database();
   }
 
   async load_database() {
-    this.#verbose.info("Loading users from local database");
-    (await this.#db.toArray()).forEach((user) => {
+    console.info("Loading users from local database");
+    let data = await this.#db.toArray()
+    data.forEach((user) => {
       const obj = new this.#userClass(user.id, user.name, user.display, user.past);
       this.#users.push(obj);
       // console.log(obj);
       this.addItem(obj);
-    })
+    });
+
+    dispatchEvent(new Event("user_manager_loaded"));
+
+    // console.info(`Database loaded`);
   }
 
   load_user(user?: K) {
@@ -175,13 +176,13 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
     )));
 
     if (networkUserRequest.error) {
-      this.#verbose.error('Failed to get data from server. Please check your internet and try again. If the issue presits please open an issue on github.');
+      console.error('Failed to get data from server. Please check your internet and try again. If the issue presits please open an issue on github.');
       return;
     }
 
     let userRequest = await tryCatch(networkUserRequest.data.json() as Promise<MinimumUserData>);
     if (userRequest.error) {
-      this.#verbose.error('Failed to parse user data from server. Please try again. If the issue presits please open an issue on github.');
+      console.error('Failed to parse user data from server. Please try again. If the issue presits please open an issue on github.');
       return;
     }
 

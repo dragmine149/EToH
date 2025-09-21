@@ -30,21 +30,24 @@ function preload_status(state: PreloadState) {
   }
 }
 
+/**
+* Higher level TS class, built upon the modules of everything else.
+*
+* Designed to keep everything to do with navigation around the UI in one place.
+*/
 class UI {
-  /**
-   * Higher level TS class, built upon the modules of everything else.
-   *
-   * Designed to keep everything to do with navigation around the UI in one place.
-   */
-
-  /** Stuff related to loading the data at initial load. */
+  // Stuff related to loading the data at initial load.
   #preload: HTMLDivElement;
   #preload_span: HTMLSpanElement;
   #preload_button: HTMLButtonElement;
   #loaded: boolean;
-  set loaded(v) { this.#loaded = v; this.#preload.hidden = v }
+  set loaded(v) { this.#loaded = v; this.#preload.hidden = v; this.#search_main.hidden = !v; }
   get loaded() { return this.#loaded; }
   #retry_count: 0 | 1 | 2 = 0;
+
+  // Stuff related to loading user data.
+  #search_main: HTMLDivElement;
+  #user_list: HTMLDataListElement;
 
   constructor() {
     this.#preload = document.getElementById("pre-load") as HTMLDivElement;
@@ -64,6 +67,9 @@ class UI {
       this.#preload_button.hidden = true;
       load_required_data();
     })
+
+    this.#search_main = document.getElementById("search-main") as HTMLDivElement;
+    this.#user_list = document.getElementById("user_list") as HTMLDataListElement;
   }
 
   /**
@@ -81,6 +87,18 @@ class UI {
       this.#preload_button.hidden = false;
       this.#preload.classList.add("errored");
     }
+  }
+
+  update_local_user_list(list: string[]) {
+    let children = this.#user_list.children;
+    list.filter((user) => children.namedItem(user) == null).forEach((user) => {
+      console.log(`Adding ${user} to the user-list`);
+      let option = document.createElement("option");
+      option.textContent = user;
+      option.value = user;
+      option.setAttribute("name", user);
+      this.#user_list.appendChild(option);
+    })
   }
 }
 

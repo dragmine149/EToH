@@ -16,7 +16,7 @@
 
 #badge_search,
 button,
-a {
+a:not(:has(img)) {
   padding: 0.5rem 1rem;
   margin: 4px;
   background-color: var(--color-gray-750);

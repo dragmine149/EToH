@@ -37,7 +37,9 @@
         Currently viewing user:&nbsp;
           <user onclick="miniSearch()">No-one!</user>
           <!--<user onclick="miniSearch()">dragmine149</user>-->
-        <img id="user-icon" src="https://roblox-proxy.dragmine149.workers.dev/users/unknown/avatar_headshot.png?size=50&direct&circular">
+        <a href="https://roblox.com/users/unknown">
+          <img id="user-icon" src="https://roblox-proxy.dragmine149.workers.dev/users/unknown/avatar_headshot.png?size=75&direct&circular" class="size-12.5">
+        </a>
 
         <input type="text" id="mini-search" placeholder="Search..." hidden
           list="user_list"
@@ -85,17 +87,10 @@
       <span count="Obelisk">Obelisk: </span>
     </div>
 
-    <div id="errors" hidden onclick="this.hidden = true;">
-      <span id="error_message"></span>
-      <br>
-      <span id="error_details">Please reload and try again. If the issue persists, please open an <a href="https://github.com/dragmine149/ETOH/issues">issue</a></span>
-      <span id="error_hint">Click me to hide!</span>
-    </div>
-
     <datalist id="user_list"></datalist>
 
     <div id="badges" hidden></div>
-    <div hidden class="bg-neutral-800/80 box-border size-full items-center justify-center flex z-5">
+    <div id="search-main" hidden class="bg-neutral-800/80 box-border size-full items-center justify-center flex z-5">
       <div id="search" class="bg-gray-900/70 text-white text-center rounded-md p-3 flex items-center justify-between flex-col h-30/100 w-4/10">
         <div class="text-3xl">Load EToH User Status</div>
         <!--<div class="subtitle">Enter a Roblox username, user ID, or profile link to load their EToH status.</div>-->
