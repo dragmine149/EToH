@@ -3,7 +3,6 @@ import { type UserTable } from ".";
 import { GenericManager } from "./GenericManager";
 import { CLOUD_URL, network } from "./network";
 import { logs } from "./logs";
-import { console } from "./console";
 
 class User {
   // The id of the user. Use this where possible

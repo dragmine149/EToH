@@ -40,18 +40,21 @@
         </div>
       </div>
       <div id="viewing" class="z-10 flex justify-center items-center">
-        Currently viewing:&nbsp;<user>No-one!</user>&nbsp;
+        <span>Currently viewing</span>:&nbsp;<user>No-one!</user>&nbsp;
         <div id="mini-search" hidden>
-          <input type="text" placeholder="Search..."
+          <input type="text" placeholder="User name/id/profile"
+            maxlength="50"
             list="user_list"
-            onkeydown="if(event.key === 'Enter') { userManager.findUser(this.value); endMiniSearch(); }"
             class="w-full pr-10 pl-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
           >
+          <!--0.3rem whilst no pfp. 3.4rem whilst pfp. It would be nice for an alternative way but this is what we have to do for now.-->
           <button
             type="submit"
             aria-label="Submit search"
-            class="absolute top-[0.7rem] right-[3.4rem]
-                    place-items-center text-gray-500">
+            class="absolute top-[0.7rem]
+                    place-items-center text-gray-500"
+            style="right: 0.3rem;"
+          >
             <svg viewBox="0 0 24 24" width="16" height="16"
               class="fill-current" aria-hidden="true" focusable="false">
               <path
@@ -62,7 +65,7 @@
             </svg>
           </button>
         </div>
-        <a id="user-profile" href="https://roblox.com/users/unknown">
+        <a id="user-profile" href="https://roblox.com/users/unknown" target="_blank" rel="noopener noreferrer">
           <img src="https://roblox-proxy.dragmine149.workers.dev/users/unknown/avatar_headshot.png?size=75&direct&circular" class="size-12.5">
         </a>
       </div>

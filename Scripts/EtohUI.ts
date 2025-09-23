@@ -1,8 +1,7 @@
 import { userManager } from "./Etoh";
-import { load_required_data } from "./initial";
+import { isMobile, load_required_data } from "./initial";
 import { BadgeInformation, CategoryInformation } from "./ui";
 import { UserManager } from "./user";
-import { console } from "./console";
 
 enum PreloadState {
   TowerData,
@@ -64,6 +63,8 @@ class UI {
   #user_search_button: HTMLButtonElement;
   #user_load_error: HTMLSpanElement;
   #user_search_back: HTMLButtonElement;
+  #user_mini_button: HTMLButtonElement;
+  #user_mini_viewing: HTMLSpanElement;
 
   constructor() {
     // set this straight away to show it and ignore the noscript element popup. The parent object is more important.
@@ -91,9 +92,11 @@ class UI {
       load_required_data();
     })
 
+    // basic search
     this.#search_main = document.getElementById("search-main") as HTMLDivElement;
     this.#user_list = document.getElementById("user_list") as HTMLDataListElement;
 
+    // advanced search and user profile
     this.#user = document.getElementsByTagName("user").item(0) as HTMLDivElement;
     this.#user_profile = document.getElementById("user-profile") as HTMLAnchorElement;
     this.#user_img = this.#user_profile.firstElementChild as HTMLImageElement;
@@ -103,24 +106,42 @@ class UI {
     this.#user_load_error = document.getElementById("load_errors") as HTMLSpanElement;
     this.#user_mini_search = document.getElementById("mini-search") as HTMLDivElement;
     this.#user_mini_input = this.#user_mini_search.firstElementChild as HTMLInputElement;
+    this.#user_mini_button = this.#user_mini_search.lastElementChild as HTMLButtonElement;
+    this.#user_mini_viewing = (document.getElementById("viewing") as HTMLDivElement).firstElementChild as HTMLSpanElement;
 
+    // initial settings, bindings, etc that need to be made for everything to work.
+    this.#user_profile.hidden = true;
     this.#user_search.onkeydown = this.#submitUserSearch.bind(this);
-
-    this.#user_search.oninput = () => {
-      // console.log(this.#user_search.value.length);
-      this.#user_search_button.disabled = this.#user_search.value.length <= 0;
-    }
+    this.#user_search.oninput = this.#syncUserSearch.bind(this);
+    this.#user_mini_input.oninput = this.#syncUserSearch.bind(this);
+    this.#user_search.value = "";
+    this.#user_mini_input.value = "";
     this.#user_search_button.onmousedown = this.#submitUserSearch.bind(this);
+    this.#user_mini_button.onmousedown = this.#submitUserSearch.bind(this);
     this.#user_search_button.disabled = this.#user_search.value.length <= 0;
     this.#user_search_back.disabled = true;
-
     this.#user.onclick = () => this.#miniSearch(true);
+    this.#user_mini_input.onclick = () => this.#miniSearch(true);
     this.#user_mini_input.onblur = () => this.#miniSearch(false);
     this.#user_mini_input.onfocus = () => this.#user_mini_input.select();
-    this.#user_mini_input.onmousedown = this.#submitUserSearch.bind(this);
     this.#user_mini_input.onkeydown = this.#submitUserSearch.bind(this);
   }
 
+  /**
+   * Syncs the main search with the mini search and vis-versa.
+   * @param ev The event. Used to get the value as we have no idea which to overwrite otherwise.
+   */
+  #syncUserSearch(ev: InputEvent) {
+    let target = ev.target as HTMLInputElement;
+    this.#user_mini_input.value = target.value;
+    this.#user_search.value = target.value;
+    this.#user_search_button.disabled = this.#user_search.value.length <= 0;
+  }
+
+  /**
+   * User submits a search, we have to process and do stuff now.
+   * @param ev The event to check for `ENTER`. Has to take other types just to make ts happy.
+   */
   #submitUserSearch(ev: KeyboardEvent | MouseEvent | SubmitEvent) {
     if (ev instanceof KeyboardEvent) {
       if (ev.key !== 'Enter') return;
@@ -129,9 +150,16 @@ class UI {
     this.load_user(this.#user_search.value);
   }
 
+  /**
+   * Enables / Disables the minisearch. Mobile is disabled no matter what.
+   * @param enabled Should the minisearch be enablled or not.
+   */
   #miniSearch(enabled: boolean) {
+    if (isMobile()) return;
+
     this.#user.hidden = enabled;
     this.#user_mini_search.hidden = !enabled;
+    this.#user_mini_viewing.textContent = enabled ? "Load user" : "Currently viewing"
     if (enabled) this.#user_mini_input.focus();
   }
 
@@ -142,7 +170,6 @@ class UI {
    */
   preload(message: string, state: PreloadState) {
     // console.log(message, state);
-
     this.loaded = state == PreloadState.Finished;
 
     this.#preload_span.textContent = `${preload_status(state)}: ${message}`;
@@ -152,7 +179,11 @@ class UI {
     }
   }
 
-  update_local_user_list(list: string[]) {
+  /**
+   * Adds a new user to the datalist object used for the search input fields. Also prevents users from being added twice.
+   * @param list The list of users.
+   */
+  datalist_add_user(...list: string[]) {
     let children = this.#user_list.children;
     list.filter((user) => children.namedItem(user) == null).forEach((user) => {
       console.log(`Adding ${user} to the user-list`);
@@ -174,12 +205,13 @@ class UI {
     let user = await userManager.find_user(user_input);
     if (user == undefined) { return; }
 
-    this.#user_mini_input.value = user.name;
     this.#user.textContent = user.ui_name;
     this.#user_profile.href = user.link;
     this.#user_img.src = user.profile;
 
+    this.#user_profile.hidden = false;
     this.#user_search_back.disabled = false;
+    this.#user_mini_button.style.right = "3.4rem";
   }
 
 }

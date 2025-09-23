@@ -112,7 +112,7 @@ addEventListener('user_manager_loaded', () => {
 
   // console.log(userManager);
   // console.log(userManager.name());
-  ui.update_local_user_list(userManager.name() as string[]);
+  ui.datalist_add_user(...userManager.name() as string[]);
 });
 
 async function load_required_data() {
@@ -120,6 +120,38 @@ async function load_required_data() {
   await loadOthersFromServer();
 
   ui.preload(`Completed loading of required assets.`, PreloadState.Finished);
+}
+
+/**
+ * Tests to see if the user is on a mobile device by looking at certain parameters.
+ * @returns An estimate to if the user is on a mobile device or not.
+ */
+export const isMobile = (): boolean => {
+  // guard: non-browser environment (SSR)
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+    return false
+  }
+
+  const ua = navigator.userAgent || (window as any).opera || ''
+  const uaLower = ua.toLowerCase()
+
+  // common mobile user-agent hints
+  const mobileUA =
+    /iphone|ipad|ipod|android|blackberry|bb10|opera mini|iemobile|wpdesktop|mobile/i
+
+  // touch capability hint
+  const hasTouch =
+    'ontouchstart' in window ||
+    // modern browsers
+    (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) ||
+    // legacy
+    (navigator as any).msMaxTouchPoints > 0
+
+  // narrow screens often indicate mobile
+  const smallScreen = Math.min(window.screen.width, window.screen.height) <= 820
+
+  const result = mobileUA.test(uaLower) || (hasTouch && smallScreen)
+  return result
 }
 
 load_required_data();
