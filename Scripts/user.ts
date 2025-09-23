@@ -3,6 +3,7 @@ import { type UserTable } from ".";
 import { GenericManager } from "./GenericManager";
 import { CLOUD_URL, network } from "./network";
 import { logs } from "./logs";
+import { console } from "./console";
 
 class User {
   // The id of the user. Use this where possible
@@ -181,7 +182,7 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
 
     logs.log(`Attempting to load user via roblox-proxy`, `user_manager/load`, 10);
 
-    let networkUserRequest = await tryCatch(network.retryTilResult(new Request(
+    let networkUserRequest = await tryCatch(fetch(new Request(
       `${CLOUD_URL}/users/${identifier}`
     )));
 
@@ -189,6 +190,12 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
       console.error('Failed to get data from server. Please check your internet and try again. If the issue presits please open an issue on github.');
       return;
     }
+
+    if (!networkUserRequest.data.ok) {
+      console.error("Failed to get user data from server. Please check the userID and try again");
+      return;
+    }
+
 
     let userRequest = await tryCatch(networkUserRequest.data.json() as Promise<MinimumUserData>);
     if (userRequest.error) {

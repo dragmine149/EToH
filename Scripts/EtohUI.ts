@@ -2,6 +2,7 @@ import { userManager } from "./Etoh";
 import { load_required_data } from "./initial";
 import { BadgeInformation, CategoryInformation } from "./ui";
 import { UserManager } from "./user";
+import { console } from "./console";
 
 enum PreloadState {
   TowerData,
@@ -57,6 +58,8 @@ class UI {
   #user: HTMLDivElement;
   #user_profile: HTMLAnchorElement;
   #user_img: HTMLImageElement;
+  #user_mini_search: HTMLDivElement;
+  #user_mini_input: HTMLInputElement;
   #user_search: HTMLInputElement;
   #user_search_button: HTMLButtonElement;
   #user_load_error: HTMLSpanElement;
@@ -98,19 +101,38 @@ class UI {
     this.#user_search_button = document.getElementById("search_button") as HTMLButtonElement;
     this.#user_search_back = document.getElementById("search_back") as HTMLButtonElement;
     this.#user_load_error = document.getElementById("load_errors") as HTMLSpanElement;
+    this.#user_mini_search = document.getElementById("mini-search") as HTMLDivElement;
+    this.#user_mini_input = this.#user_mini_search.firstElementChild as HTMLInputElement;
 
-    this.#user_search.onsubmit = () => this.load_user(this.#user_search.value);
-    this.#user_search.onkeydown = (ev) => {
-      if (ev.key === 'Enter') this.load_user(this.#user_search.value);
-    }
+    this.#user_search.onkeydown = this.#submitUserSearch.bind(this);
 
     this.#user_search.oninput = () => {
       // console.log(this.#user_search.value.length);
       this.#user_search_button.disabled = this.#user_search.value.length <= 0;
     }
-    this.#user_search_button.onmousedown = () => this.load_user(this.#user_search.value);
+    this.#user_search_button.onmousedown = this.#submitUserSearch.bind(this);
     this.#user_search_button.disabled = this.#user_search.value.length <= 0;
     this.#user_search_back.disabled = true;
+
+    this.#user.onclick = () => this.#miniSearch(true);
+    this.#user_mini_input.onblur = () => this.#miniSearch(false);
+    this.#user_mini_input.onfocus = () => this.#user_mini_input.select();
+    this.#user_mini_input.onmousedown = this.#submitUserSearch.bind(this);
+    this.#user_mini_input.onkeydown = this.#submitUserSearch.bind(this);
+  }
+
+  #submitUserSearch(ev: KeyboardEvent | MouseEvent | SubmitEvent) {
+    if (ev instanceof KeyboardEvent) {
+      if (ev.key !== 'Enter') return;
+    }
+    this.#miniSearch(false);
+    this.load_user(this.#user_search.value);
+  }
+
+  #miniSearch(enabled: boolean) {
+    this.#user.hidden = enabled;
+    this.#user_mini_search.hidden = !enabled;
+    if (enabled) this.#user_mini_input.focus();
   }
 
   /**
@@ -152,6 +174,7 @@ class UI {
     let user = await userManager.find_user(user_input);
     if (user == undefined) { return; }
 
+    this.#user_mini_input.value = user.name;
     this.#user.textContent = user.ui_name;
     this.#user_profile.href = user.link;
     this.#user_img.src = user.profile;
