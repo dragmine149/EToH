@@ -1,4 +1,5 @@
-import { userManager } from "./Etoh";
+import { Area, areaManager } from "./AreaManager";
+import { Category, userManager } from "./Etoh";
 import { isMobile, load_required_data } from "./initial";
 import { BadgeInformation, CategoryInformation } from "./ui";
 import { UserManager } from "./user";
@@ -212,6 +213,13 @@ class UI {
     this.#user_profile.hidden = false;
     this.#user_search_back.disabled = false;
     this.#user_mini_button.style.right = "3.4rem";
+  }
+
+  show_required_data() {
+    (areaManager.category(Category.Permanent) as Area[]).forEach((area: Area) => {
+      let category = document.createElement("category-information") as CategoryInformation<Area>;
+      category
+    })
   }
 
 }

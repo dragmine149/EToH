@@ -1,26 +1,30 @@
 import { GenericManager } from "../Scripts/GenericManager";
 import { DIFFICULTIES, AreaRequirements } from "../Scripts/constants";
+import { Category } from "./Etoh";
 
 class Area {
-  /** @type The name of this area */
+  /** The name of this area */
   name: string;
-  /** @type The parent area. */
+  /** The parent area. */
   parent?: string;
-
-  /** @type The requirements to access that area */
+  /** The requirements to access that area */
   requirements: AreaRequirements;
+  /** The type of area that this is */
+  category: Category;
 
-  constructor(name: string, parent: string | undefined, requirements: AreaRequirements) {
+  constructor(name: string, parent: string | undefined, requirements: AreaRequirements, category: Category) {
     this.name = name;
     this.parent = parent;
     this.requirements = requirements;
+    this.category = category;
   }
 }
 
-class AreaManager extends GenericManager<Area, string> {
-  parent!: (item: string) => string[] | Area[];
-  name!: (item: string) => string[] | Area[];
-  difficulties!: (item: string) => string[] | Area[];
+class AreaManager extends GenericManager<Area, string | Category> {
+  parent!: (item?: string) => string[] | Area[];
+  name!: (item?: string) => string[] | Area[];
+  difficulties!: (item?: string) => string[] | Area[];
+  category!: (item?: Category) => Category[] | Area[];
 
   /**
    * Add an Area to the manager.
@@ -37,6 +41,7 @@ class AreaManager extends GenericManager<Area, string> {
     super();
     this.addFilter("parent", area => area.parent || "");
     this.addFilter("name", area => area.name);
+    this.addFilter("category", area => area.category);
 
     Object.entries(DIFFICULTIES).forEach((diff) => {
       this.addFilter(diff[0], area => area.requirements.difficulties[diff[0].toLowerCase()] || 0)

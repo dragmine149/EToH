@@ -51,7 +51,7 @@ function load_area(category: Category, area: ServerAreas) {
     points: area.r.p,
   }
 
-  let area_data = new Area(area.n, area.s == "Windswept Peak" ? "" : area.s, requirements);
+  let area_data = new Area(area.n, area.s == "Windswept Peak" ? "" : area.s, requirements, category);
   areaManager.addArea(area_data);
   ui.preload(`Finish loading area ${area.n} of ${category}`, PreloadState.TowerData);
 }
@@ -120,6 +120,7 @@ async function load_required_data() {
   await loadOthersFromServer();
 
   ui.preload(`Completed loading of required assets.`, PreloadState.Finished);
+  ui.show_required_data();
 }
 
 /**
