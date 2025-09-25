@@ -5,18 +5,26 @@ import { ServerAreas, ServerTowers } from "./constants";
 import { tryCatch } from "./utils";
 import { areaManager, Area } from "./AreaManager";
 
+/**Custom regex is formatted as such to handle `"{name},{difficult},[{badges},{more badges}],{type}"`
+ * @see https://regex101.com/r/Y1GLyf/1 for examples
+ */
 const regex = /([^,]+),(\d?\d.?\d?\d?),(\[.*\]),(\d)/gm;
 
+/**
+ * Helper function to load areas from the server as there is a lot to do.
+ * @param category The main type this area comes under.
+ * @param area Information about the area from the server.
+ */
 function load_area(category: Category, area: ServerAreas) {
   ui.preload(`Loading area ${area.n} of ${category}`, PreloadState.TowerData);
   area.t.forEach((tower) => {
     ui.preload(`Loading tower ${tower} of ${area.n} of ${category}`, PreloadState.TowerData);
-    // Custom format parser of `name,diff,[id1,id2,...],type`
 
-    regex.lastIndex = 0;
+    regex.lastIndex = 0; // due to global regex.
     let tower_data = regex.exec(tower);
     if (tower_data == null || tower_data.length < 5) {
-      console.log(tower_data, tower);
+      // we should be worried if this happens, but to the user we don't want to worry them too much.
+      console.warn(`Failed to load tower data as the regex didn't full parse it. Please try again tomorrow and/or report an issue on github. Data in question: `, tower_data, tower);
       ui.preload(`Tower data: \`${tower}\` doesn't contain enough info. Skipping`, PreloadState.TowerWarning);
       return;
     }
@@ -34,6 +42,7 @@ function load_area(category: Category, area: ServerAreas) {
     badgeManager.addBadge(tower_badge);
   });
 
+  // this is just converting the "database" format into a format easier to work with.
   let requirements = {
     difficulties: {
       easy: area.r.ds.e,
@@ -56,6 +65,9 @@ function load_area(category: Category, area: ServerAreas) {
   ui.preload(`Finish loading area ${area.n} of ${category}`, PreloadState.TowerData);
 }
 
+/**
+ * Sends a network request to get all the towers and starts loading them into memory for immedite and future use.
+ */
 async function loadTowersFromServer() {
   ui.preload("Load towers from server", PreloadState.TowerData);
   let server_tower = await fetch('https://raw.githubusercontent.com/dragmine149/EToH/refs/heads/Data/tower_data.json');
@@ -72,11 +84,15 @@ async function loadTowersFromServer() {
     return;
   }
 
+  // This is done in order of priority.
   data.data.areas.permanent.forEach((area) => load_area(Category.Permanent, area));
   data.data.areas.temporary.forEach((area) => load_area(Category.Temporary, area));
   data.data.areas.other.forEach((area) => load_area(Category.Other, area));
 }
 
+/**
+ * Of cause, towers aren't everything. So load all the other badges and process them slightly differently.
+ */
 async function loadOthersFromServer() {
   ui.preload(`Attempting to load other data`, PreloadState.OtherData);
   let server_other = await fetch('data/other_data.json');
@@ -98,9 +114,6 @@ async function loadOthersFromServer() {
 }
 
 
-document.addEventListener('DOMContentLoaded', () => {
-});
-
 // custom event just to make it rely on something else.
 // Doesn't need to have any connection with `preload` as this can be loaded in the background at any time. And isn't technically required to be able to
 // use this project.
@@ -114,6 +127,10 @@ addEventListener('user_manager_loaded', () => {
 
 addEventListener('popstate', load_user_from_url.bind(this, "pop"))
 
+/**
+ * Helper function to load user based on the URL.
+ * @param orig The place this got used from. Used for debugging purposes.
+ */
 function load_user_from_url(orig: string) {
   const url = new URL(location.toString());
   const user = url.searchParams.get("user");
@@ -121,6 +138,10 @@ function load_user_from_url(orig: string) {
   if (user) ui.load_user(user, true);
 }
 
+/**
+ * Global function to load data and keep track of it.
+ * Can also be used run again if the data failed to load, hence the export.
+ */
 async function load_required_data() {
   await loadTowersFromServer();
   await loadOthersFromServer();
@@ -132,6 +153,7 @@ async function load_required_data() {
 /**
  * Tests to see if the user is on a mobile device by looking at certain parameters.
  * @returns An estimate to if the user is on a mobile device or not.
+ * @author T3 Chat (GPT-5 mini)
  */
 export const isMobile = (): boolean => {
   // guard: non-browser environment (SSR)
@@ -161,8 +183,9 @@ export const isMobile = (): boolean => {
   return result
 }
 
+// some simple, auto run functions.
 load_required_data();
-
+// Console only function for debugging purposes. Separated out to reduce overhead + whatever.
 globalThis.import_debug = async () => await import('./debug');
 
 export { load_required_data };

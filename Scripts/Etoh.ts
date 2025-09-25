@@ -8,6 +8,11 @@ import { User, UserManager } from "./user";
 type BadgeId = number;
 type CompletedDate = number;
 
+/**
+ * An extension of type User. Allows for more control over things that couldn't have been done in base user class.
+
+ * Note: This is not saved to storage directly, instead it is kinda saved in 2 parts in a way.
+ */
 class EToHUser extends User {
   completed: Map<BadgeId, CompletedDate>;
 
@@ -167,6 +172,11 @@ function getTowerPoints(type: TowerType) {
   }
 }
 
+/**
+ * Converts a number from the server to use as a more readable type.
+ * @param num The server provided type of this tower.
+ * @returns The local conversion of this tower.
+ */
 function numberToType(num: number) {
   switch (num) {
     case 0: return TowerType.MiniTower;
@@ -178,7 +188,9 @@ function numberToType(num: number) {
   }
 }
 
-
+/**
+ * An extension of Badge containing specific information for the tower.
+ */
 class Tower extends Badge {
   #difficulty: number;
   get difficulty() { return this.#difficulty; }
@@ -218,7 +230,7 @@ class Other extends Badge {
   }
 }
 
-
+// defined here to allow for access to said database and userclass.
 const userManager = new UserManager(etohDB.users, EToHUser);
 
 export { userManager, shortTowerName, Tower, Category, Other, numberToType };

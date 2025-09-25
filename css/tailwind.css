@@ -15,6 +15,7 @@
   --height-full-1\.5: calc(100% - (var(--spacing) * 3));
 }
 
+/* This would just be a pain to define for everything in class format, so we do it here. */
 .fake-button,
 #badge_search,
 button {
