@@ -69,8 +69,10 @@ type MinimumUserData = {
  * An extension of GenericManager to store user bassed details.
  */
 class UserManager<K extends User> extends GenericManager<K, string | number> {
-  name!: (item?: string) => string[] | K[];
-  id!: (item?: number) => number[] | K[];
+  /** Given a name, returns a list of users with that name. Given nothing, returns a list of usernames. */
+  name!: { (): string[]; (item: string): K[]; };
+  /** Given an id, returns a list of users with that id. Given nothing, returns a list of ids. */
+  id!: { (): number[], (item: number): K[] };
 
   // The database, kinda important for a lot of things.
   #db: UserTable;

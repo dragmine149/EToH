@@ -21,10 +21,12 @@ class Area {
 }
 
 class AreaManager extends GenericManager<Area, string | Category> {
-  parent!: (item?: string) => string[] | Area[];
-  name!: (item?: string) => string[] | Area[];
-  difficulties!: (item?: string) => string[] | Area[];
-  category!: (item?: Category) => Category[] | Area[];
+  /** Given a parent, returns a list of areas with that parent. Given nothing, returns a list of parents. */
+  parent!: { (): string[], (item: string): Area[] };
+  /** Given a name, returns a list of areas with that name. Given nothing, returns a list of area names. */
+  name!: { (): string[], (item?: string): Area[] };
+  /** Given a category, returns a list of areas with that category. Given nothing, returns a list of categories. */
+  category!: { (): Category[], (item?: Category): Area[] };
 
   /**
    * Add an Area to the manager.

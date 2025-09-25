@@ -109,9 +109,12 @@ class Badge {
 }
 
 class BadgeManager extends GenericManager<Badge, string | number[] | Lock> {
-  ids!: (item?: number) => number[] | Badge[];
-  name!: (item?: string) => string[] | Badge[];
-  lock!: (item?: Lock) => Lock[] | Badge[];
+  /** Given an id, returns a list of badges with that id. Given nothing, returns a list of ids. */
+  ids!: { (): number[], (item?: number): Badge[] };
+  /** Given a name, returns a list of badges with that name. Given nothing, returns a list of badge names. */
+  name!: { (): string[], (item?: string): Badge[] };
+  /** Given a lock, returns a list of badges with that lock. Given nothing, returns a list of lock. */
+  lock!: { (): Lock[], (item?: Lock): Badge[] };
 
   /**
    * Add a Badge to the manager.

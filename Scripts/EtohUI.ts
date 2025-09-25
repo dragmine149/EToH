@@ -221,7 +221,7 @@ class UI {
   }
 
   show_required_data() {
-    (areaManager.category(Category.Permanent) as Area[]).forEach((area: Area) => {
+    (areaManager.category(Category.Permanent)).forEach((area) => {
       let category = document.createElement("category-information") as CategoryInformation<Area>;
       category
     })

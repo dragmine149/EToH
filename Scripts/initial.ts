@@ -109,7 +109,7 @@ addEventListener('user_manager_loaded', () => {
 
   // console.log(userManager);
   // console.log(userManager.name());
-  ui.datalist_add_user(...userManager.name() as string[]);
+  ui.datalist_add_user(...userManager.name());
 });
 
 addEventListener('popstate', load_user_from_url.bind(this, "pop"))
