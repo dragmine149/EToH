@@ -105,15 +105,21 @@ document.addEventListener('DOMContentLoaded', () => {
 // Doesn't need to have any connection with `preload` as this can be loaded in the background at any time. And isn't technically required to be able to
 // use this project.
 addEventListener('user_manager_loaded', () => {
-  // console.log('received load event');
-  const url = new URL(location.toString());
-  const user = url.searchParams.get("user");
-  if (user) userManager.find_user(Number.isNaN(user) ? user : Number(user));
+  load_user_from_url("initial");
 
   // console.log(userManager);
   // console.log(userManager.name());
   ui.datalist_add_user(...userManager.name() as string[]);
 });
+
+addEventListener('popstate', load_user_from_url.bind(this, "pop"))
+
+function load_user_from_url(orig: string) {
+  const url = new URL(location.toString());
+  const user = url.searchParams.get("user");
+  console.log(`attempting to load ${user} from ${orig}`);
+  if (user) ui.load_user(user, true);
+}
 
 async function load_required_data() {
   await loadTowersFromServer();

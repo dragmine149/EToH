@@ -201,8 +201,9 @@ class UI {
    *
    * There is no "unload" event as loading a new user will unload the old user.
    * @param user_input The user the user inputted.
+   * @param popped Has this user been requested to load from a `popstate` event? (If so, we don't do `pushState`)
    */
-  async load_user(user_input: string) {
+  async load_user(user_input: string, popped?: boolean) {
     let user = await userManager.find_user(user_input);
     if (user == undefined) { return; }
 
@@ -213,6 +214,10 @@ class UI {
     this.#user_profile.hidden = false;
     this.#user_search_back.disabled = false;
     this.#user_mini_button.style.right = "3.4rem";
+
+    let url = new URL(location.toString());
+    url.searchParams.set("user", user.name);
+    if (popped == undefined || popped == false) history.pushState(undefined, "", url);
   }
 
   show_required_data() {
