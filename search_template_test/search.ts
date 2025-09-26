@@ -1,22 +1,45 @@
-// Code written by T3 Chat (AI assistant)
-// JS: searchTowers updated to collect all reasons and apply min-score filtering
+import { highlight_span } from "./usage";
 
-function shortTowerName(tower_name) {
+// Code written by T3 Chat (AI assistant)
+// File: tower-search.ts
+// Purpose: custom tower search + highlight integration
+// Notes:
+// - Uses the user-provided `highlight_span(span, text, selected)` function
+// - Keeps the supplied `isAcronymQuery` behaviour
+// - Returns results with a numeric score and an array of reasons
+// - Avoids `else` statements where possible (per user preference)
+
+/**
+ * Search result shape.
+ */
+export type SearchResult = {
+  name: string;
+  score: number;
+  reasons: string[]; // all reasons that contributed (explanatory)
+};
+
+/**
+ * Shortens a tower name into the tower code (user function).
+ * Example: "Citadel of Wacky Strategy" => "CoWS"
+ */
+export function shortTowerName(tower_name: string): string {
   return tower_name
     .split(/[\s-]/gm)
-    .map(function (word) {
-      return word.toLowerCase();
-    })
-    .map(function (word) {
-      return word == "of" || word == "and" ? word[0] : word[0].toUpperCase();
-    })
+    .map((word) => word.toLowerCase())
+    .map((word) => (word == "of" || word == "and" ? word[0] : word[0].toUpperCase()))
     .join("");
 }
 
-// your modified acronym detector (kept as provided)
-function isAcronymQuery(q) {
+/**
+ * Custom acronym detector (keeps the user's modified behaviour).
+ * NOTE: This function intentionally uses the provided logic. Change
+ * if you want a more general acronym detection.
+ */
+export function isAcronymQuery(q: string): boolean {
   let is_acro = q.startsWith("To") || q.startsWith("Co");
   let thirdLetter = q.charAt(2);
+  // the original line was probably intended to assert something;
+  // keep it as a no-op expression to preserve behaviour that was supplied.
   is_acro ==
     is_acro &&
     thirdLetter === thirdLetter.toUpperCase() &&
@@ -24,9 +47,12 @@ function isAcronymQuery(q) {
   return is_acro;
 }
 
-function isSubsequence(sub, full) {
-  var i = 0;
-  var j = 0;
+/**
+ * Check whether `sub` is a (case-insensitive) subsequence of `full`.
+ */
+export function isSubsequence(sub: string, full: string): boolean {
+  let i = 0;
+  let j = 0;
   for (; i < sub.length && j < full.length; j++) {
     if (sub[i].toLowerCase() === full[j].toLowerCase()) {
       i++;
@@ -35,57 +61,74 @@ function isSubsequence(sub, full) {
   return i === sub.length;
 }
 
-function levenshtein(a, b) {
-  var A = a.toLowerCase();
-  var B = b.toLowerCase();
-  var m = A.length;
-  var n = B.length;
-  var dp = new Array(m + 1);
-  for (var i = 0; i <= m; i++) {
-    dp[i] = new Array(n + 1).fill(0);
-  }
-  for (var ii = 0; ii <= m; ii++) dp[ii][0] = ii;
-  for (var jj = 0; jj <= n; jj++) dp[0][jj] = jj;
-  for (var i1 = 1; i1 <= m; i1++) {
-    for (var j1 = 1; j1 <= n; j1++) {
-      var cost = A[i1 - 1] === B[j1 - 1] ? 0 : 1;
-      dp[i1][j1] = Math.min(
-        dp[i1 - 1][j1] + 1,
-        dp[i1][j1 - 1] + 1,
-        dp[i1 - 1][j1 - 1] + cost
+/**
+ * Levenshtein distance (case-insensitive).
+ */
+export function levenshtein(a: string, b: string): number {
+  const A = a.toLowerCase();
+  const B = b.toLowerCase();
+  const m = A.length;
+  const n = B.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      const cost = A[i - 1] === B[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + cost
       );
     }
   }
   return dp[m][n];
 }
 
-function fuzzyScore(a, b) {
-  var distance = levenshtein(a, b);
-  var maxLen = Math.max(a.length, b.length, 1);
+/**
+ * Fuzzy score between 0 and 100 based on normalized Levenshtein.
+ */
+export function fuzzyScore(a: string, b: string): number {
+  const distance = levenshtein(a, b);
+  const maxLen = Math.max(a.length, b.length, 1);
   return Math.max(0, Math.round((1 - distance / maxLen) * 100));
 }
 
 /**
- * searchTowers(query, data, opts)
- * opts:
- *  - minScore: number (default 30) minimum score to include result
+ * Options for searchTowers.
  */
-function searchTowers(query, data, opts) {
+export type SearchOptions = {
+  minScore?: number; // default 30
+};
+
+/**
+ * Main search function.
+ *
+ * Behaviour:
+ * - If `isAcronymQuery(query)` is true, scoring compares against the
+ *   tower short codes produced by `shortTowerName`.
+ * - Otherwise, scoring is performed against the full tower name.
+ * - All matching "reasons" are collected in the `reasons` array for
+ *   transparency/debugging.
+ *
+ * Returns results filtered by the configured minScore (default 30),
+ * sorted by descending score and alphabetically as a tiebreaker.
+ */
+export function searchTowers(query: string, data: string[], opts?: SearchOptions): SearchResult[] {
   opts = opts || {};
-  var MIN_SCORE = typeof opts.minScore === "number" ? opts.minScore : 30;
-  var q = query.trim();
-  var isAcr = isAcronymQuery(q);
-  var shortNames = data.map(function (d) {
-    return { name: d, short: shortTowerName(d) };
-  });
-  var scored = shortNames.map(function (item) {
-    var name = item.name;
-    var short = item.short;
-    var score = 0;
-    var reasons = []; // collect all reasons
+  const MIN_SCORE = typeof opts.minScore === "number" ? opts.minScore : 30;
+  const q = query.trim();
+  const isAcr = isAcronymQuery(q);
+
+  const shortNames = data.map((d) => ({ name: d, short: shortTowerName(d) }));
+
+  const scored = shortNames.map(({ name, short }) => {
+    let score = 0;
+    const reasons: string[] = [];
+
     if (isAcr) {
-      var qUpper = q;
-      var shortUpper = short;
+      const qUpper = q;
+      const shortUpper = short;
       if (qUpper === shortUpper) {
         score = Math.max(score, 100);
         reasons.push("exact acronym");
@@ -98,14 +141,15 @@ function searchTowers(query, data, opts) {
         score = Math.max(score, 60);
         reasons.push("acronym subsequence");
       }
-      var fs = fuzzyScore(qUpper, shortUpper);
-      var fsScore = Math.round(fs * 0.6);
+      const fs = fuzzyScore(qUpper, shortUpper);
+      const fsScore = Math.round(fs * 0.6); // downweight fuzzy for acronyms
       score = Math.max(score, fsScore);
-      reasons.push("acronym fuzzy:" + fs);
+      reasons.push(`acronym fuzzy:${fs}`);
     }
+
     if (!isAcr) {
-      var lowerName = name.toLowerCase();
-      var ql = q.toLowerCase();
+      const lowerName = name.toLowerCase();
+      const ql = q.toLowerCase();
       if (lowerName === ql) {
         score = Math.max(score, 100);
         reasons.push("exact name");
@@ -118,41 +162,71 @@ function searchTowers(query, data, opts) {
         score = Math.max(score, 50);
         reasons.push("name includes");
       }
-      var fs2 = fuzzyScore(ql, lowerName);
+      const fs2 = fuzzyScore(ql, lowerName);
       score = Math.max(score, fs2);
-      reasons.push("name fuzzy:" + fs2);
+      reasons.push(`name fuzzy:${fs2}`);
     }
-    return { name: name, score: score, reasons: reasons };
+
+    return { name, score, reasons };
   });
+
   return scored
-    .filter(function (r) {
-      return r.score >= MIN_SCORE;
-    })
-    .sort(function (a, b) {
-      return b.score - a.score || a.name.localeCompare(b.name);
+    .filter((r) => r.score >= MIN_SCORE)
+    .sort((a, b) => {
+      const byScore = b.score - a.score;
+      return byScore !== 0 ? byScore : a.name.localeCompare(b.name);
     });
 }
 
-function renderResultSpan(result, query) {
-  var span = document.createElement("span");
-  span.innerText = result.name;
-  var textToHighlight = isAcronymQuery(query) ? query : query.trim();
+/**
+ * Render helper.
+ *
+ * Creates a span element with the tower name as text and calls the
+ * provided `highlight_span` (global) with `selected = false`.
+ *
+ * The highlight text is:
+ * - the raw query when searching full names
+ * - the query (acronym) when searching acronyms
+ *
+ * Note: `highlight_span` must be available on `window` and follow the
+ * signature: highlight_span(span: HTMLSpanElement, text: string, selected: boolean)
+ */
+export function renderResultSpan(result: SearchResult, query: string): HTMLSpanElement {
+  const span = document.createElement("span");
+  // span.innerText = `${result.score} | ${result.name} | ${JSON.stringify(result.reasons)}`;
+
+  const score = document.createElement("span");
+  score.innerText = result.score.toString();
+  const name = document.createElement("span");
+  name.innerText = result.name;
+  const reason = document.createElement("span");
+  reason.innerText = result.reasons.join(", ");
+
+  span.appendChild(score);
+  span.appendChild(name);
+  span.appendChild(reason);
+
+  const textToHighlight = isAcronymQuery(query) ? query : query.trim();
   if (textToHighlight.length === 0) {
     return span;
   }
   try {
-    window.highlight_span(span, textToHighlight, false);
+    highlight_span(name, textToHighlight, false);
   } catch (e) {
-    console.warn("highlight_span not found or threw an error:", e);
+    console.warn("highlight_span threw an error:", e);
   }
   return span;
 }
 
-/* Test data and quick demo */
-// Code written by T3 Chat (AI assistant)
-// Placeholder tower list (ETOH/JTOH-style) for testing search behaviour
+/* --- Test/demo data (exported for convenience) --- */
 
-var data = [
+export const demoData = [
+  "Citadel of Laptop Splitting",
+  "Tower of Winning Every Run",
+  "Tower of Up Is Down",
+  "Citadel of Wacky Strategy",
+];
+export const data = [
   "Tower of Overcoming Hatred",
   "Tower of Inner and Outer Scaling",
   "This Is A Tower",
@@ -557,6 +631,3 @@ var data = [
   "Tower of Sparkling Rainbow Water",
   "Tower of One Equals Zero",
 ];
-console.log("search CoWS:", searchTowers("CoWS", data)); // default minScore 30
-console.log("search Co (low threshold):", searchTowers("Co", data, { minScore: 10 }));
-console.log("search 'Winning':", searchTowers("Winning", data));
