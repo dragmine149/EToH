@@ -61,7 +61,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   get count() { return this.#count; }
   #count: Count = Count.Numbers;
 
-  #subCategories: CategoryInformation<K>;
+  get shadow() { return this.#shadow; }
 
   /// Contains quick references to different children for global use.
   #shadow?: ShadowRoot;
@@ -92,7 +92,13 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     return map;
   }
 
+  get categories(): CategoryInformation<K>[] {
+    if (this.#shadow == undefined) return [];
+    return Array.prototype.filter((child) => child instanceof CategoryInformation, this.#shadow.children);
+  }
+
   #badgeToProcess?: (UIBadgeData<K> | BadgeInformation<K>)[];
+  #categoriesToProcess?: (CategoryInformation<K>)[];
 
   constructor() { super(); }
   // This is empty because we don't want to recreate a ton of stuff.
@@ -119,16 +125,23 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     this.#style.rel = "stylesheet";
 
     // set header
-    if (this.#header) this.#header.title = this.#data?.name || "";
-    if (this.#header) this.#header.innerText = this.#data?.name || "";
+    this.#header.title = this.#data?.name || "";
+    this.#header.innerText = this.#data?.name || "";
 
     // process those waiting, if we have any waiting.
     if (this.#badgeToProcess) this.addBadges(...this.#badgeToProcess);
+    console.log('update', this.#categoriesToProcess);
+    if (this.#categoriesToProcess) {
+      console.log('update');
+      console.log(this.#categoriesToProcess);
+      this.#categoriesToProcess.forEach(this.addCategory.bind(this));
+    }
 
     // Sorts out table, then sort it out again once we have style.
     // This gets around the network issue causing all those before the style has loaded once to break.
     this.#autoHide();
     if (!this.#style.sheet) this.#style.onload = this.#autoHide.bind(this);
+
   }
 
   /**
@@ -181,7 +194,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   addBadges(...badges: (UIBadgeData<K> | BadgeInformation<K>)[]) {
     if (!this.#table) {
       // store badges for processing later once we get around to adding the element.
-      this.#badgeToProcess = badges;
+      this.#badgeToProcess = [...(this.#badgeToProcess || []), ...badges];
       return;
     }
 
@@ -204,7 +217,18 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   }
 
   addCategory(category: CategoryInformation<K>) {
+    console.log('e');
+    console.log(this.#shadow);
+    console.log(this.data?.name);
+    if (!this.#shadow) {
+      console.log('no shadow');
+      this.#categoriesToProcess = [...(this.#categoriesToProcess || []), category];
+      console.log(this.#categoriesToProcess);
+      return;
+    }
 
+    console.log(`Adding category`);
+    this.#shadow?.appendChild(category);
   }
 
   /**
@@ -259,11 +283,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
    * Removes all the data ready for pre-loading.
    * @returns The data stored by doing `addBadges` when `Table` is undefined.
    */
-  removePreLoaded() {
-    const data = this.#badgeToProcess;
-    this.#badgeToProcess = [];
-    return data;
-  }
+  removePreLoaded() { return this.#badgeToProcess?.splice(0); }
 
   /**
    * Searches all the badges and highlights certain stuff depending on stuff.
@@ -427,102 +447,4 @@ customElements.define("category-info", CategoryInformation);
 customElements.define("badge-info", BadgeInformation);
 
 
-export { BadgeInformation, CategoryInformation };
-
-
-// NOTE: Proof of concept.
-function search(data: string) {
-  let is_acro = data.startsWith("To") || data.startsWith("Co");
-  let thirdLetter = data.charAt(2);
-  is_acro == is_acro &&
-    thirdLetter === thirdLetter.toUpperCase() && thirdLetter !== thirdLetter.toLowerCase();
-
-  elms.forEach((elm) => elm.search(data, is_acro));
-}
-globalThis.search = search;
-
-
-///// EVERYTHING BELOW THIS POINT IS TEST DATA TO BE DELETED AT SOME POINT.
-
-
-/**
-* Returns the shortened version of the text, in accordance to tower format.
-* @param text The text to shorten.
-*/
-function shortTowerName(tower_name: string) {
-  // Tower codes are made up of:
-  // each word
-  return tower_name.split(/[\s-]/gm)
-    // lowered
-    .map(word => word.toLowerCase())
-    // for 'of' and 'and' to be lower, and the rest upper.
-    .map(word => (word == 'of' || word == 'and') ? word[0] : word[0].toUpperCase())
-    // and combined.
-    .join('');
-}
-
-
-/**
- * A function which generates random category data.
- */
-function random_Category(): CategoryData {
-  const names = ["Forest Path", "Desert Storm", "Mountain Peak", "Ocean Waves", "City Center"];
-  const randomName = names[Math.floor(Math.random() * names.length)];
-  const locks: Lock[] = [Lock.Unlocked, Lock.Temporary, Lock.Another];
-  const randomLock = locks[Math.floor(Math.random() * locks.length)];
-
-  return {
-    name: randomName,
-    lock_type: randomLock,
-  };
-}
-
-/**
- * A function which generates random badge data.
- */
-function random_badges(): UIBadgeData<Badge>[] {
-  const wordList = ["Forest", "Desert", "Mountain", "Ocean", "City", "Ancient", "Lost", "Forgotten", "Shadow", "Crystal", "Iron", "Steel", "Stone", "Fire", "Ice", "Wind", "Water", "Earth", "Sky", "Void", "and"];
-  const badgeCount = Math.floor(Math.random() * 10) + 3; // Random number of badges between 1 and 5
-  const locks: Lock[] = [Lock.Unlocked, Lock.Temporary, Lock.Another];
-
-  return Array.from({ length: badgeCount }, () => {
-    const wordCount = Math.floor(Math.random() * 4) + 1; // Random number of words between 1 and 4
-    const towerNameWords = Array.from({ length: wordCount }, () => wordList[Math.floor(Math.random() * wordList.length)]);
-    const towerName = towerNameWords.join(" ");
-    const id = Math.floor(Math.random() * 1000);
-    const completed = Math.random() < 0.7 ? Date.now() - Math.floor(Math.random() * 365 * 24 * 60 * 60 * 1000) : 0;
-    const lock_type = locks[Math.floor(Math.random() * locks.length)];
-
-    return {
-      name: (hover: boolean) => hover ? `Tower of ${towerName}` : shortTowerName(`Tower of ${towerName}`),
-      information: (hover: boolean) => `Information about Tower of` + (hover ? ` ${towerName} (Hovered)` : ` ${shortTowerName(towerName)}`),
-      url: `https://example.com/${towerName.toLowerCase().replace(" ", "_")}`,
-      id: id,
-      completed: completed,
-      lock_type: lock_type,
-      lock_reason: `Locked because reasons.`,
-    };
-  });
-}
-
-let elms: CategoryInformation<Badge>[] = [];
-
-const createCI = () => {
-  console.log('creating new element');
-  const ci = document.createElement('category-info') as CategoryInformation<Badge>;
-  const data = random_Category();
-  ci.data = data;
-  ci.count = Math.random() >
-    0.33 ? Count.None : (Math.random() > 0.66 ? Count.Numbers : Count.Percent);
-
-  ci.addBadges(...random_badges());
-  document.body.appendChild(ci);
-  elms.push(ci);
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById("e")?.addEventListener('click', createCI);
-  for (let i = 0; i < 2; i++) {
-    createCI();
-  }
-});
+export { BadgeInformation, CategoryInformation, UIBadgeData, CategoryData, Count };
