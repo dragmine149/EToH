@@ -44,13 +44,21 @@ tr td:first-child {
 }
 
 table,
+table tr:last-child,
 table tr:last-child td:first-child,
 table tr:last-child td:last-child {
   border-bottom-left-radius: 1rem;
   border-bottom-right-radius: 1rem;
 }
 
-table badge-info:not([hidden]) {
+table badge-info:last-child {
+  display: table;
+  width: inherit !important;
+  border-bottom-right-radius: 1rem;
+  border-bottom-left-radius: 1rem;
+}
+
+table badge-info:not([hidden]):not(:last-child) {
   display: table-row;
 }
 
@@ -68,8 +76,10 @@ table badge-info[hidden] {
 
 .locked_another {
   background-color: #777;
+  color: #000;
 }
 
 .locked_temporary {
   background-color: #555;
+  color: white;
 }

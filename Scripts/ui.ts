@@ -61,6 +61,8 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   get count() { return this.#count; }
   #count: Count = Count.Numbers;
 
+  #subCategories: CategoryInformation<K>;
+
   /// Contains quick references to different children for global use.
   #shadow?: ShadowRoot;
   #table?: HTMLTableElement;
@@ -199,6 +201,10 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
 
     this.#autoHide();
     this.#updateCount();
+  }
+
+  addCategory(category: CategoryInformation<K>) {
+
   }
 
   /**
