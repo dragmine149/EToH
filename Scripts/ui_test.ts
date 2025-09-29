@@ -90,7 +90,7 @@ const createCI = (recursive?: boolean) => {
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById("e")?.addEventListener('click', createCI.bind(this, undefined));
-  for (let i = 0; i < 1; i++) {
+  for (let i = 0; i < 2; i++) {
     createCI(true);
   }
 });

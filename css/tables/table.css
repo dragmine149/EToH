@@ -3,8 +3,9 @@
   width: 100%;
 }
 
-*:not(**) {
-  margin: 2.5px 10px;
+table:not(:last-child),
+category-info:not(:last-child) {
+  margin-bottom: 0.5rem;
 }
 
 span:not(*>span) {
