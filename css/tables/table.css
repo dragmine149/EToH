@@ -25,6 +25,13 @@ table * {
 tr {
   width: 100%;
   display: table;
+  /*border-top: 1px solid black;*/
+}
+
+/*tr +*/
+
+tr+badge-info:not([class])>tr,
+badge-info:not([class])+badge-info:not([class])>tr {
   border-top: 1px solid black;
 }
 
@@ -44,7 +51,7 @@ tr td:first-child {
 }
 
 table,
-table tr:last-child,
+/*table tr:last-child,*/
 table tr:last-child td:first-child,
 table tr:last-child td:last-child {
   border-bottom-left-radius: 1rem;
