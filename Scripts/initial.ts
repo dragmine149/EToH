@@ -1,4 +1,4 @@
-import { userManager, Tower, Category, Other, numberToType, badgeManager } from "./Etoh";
+import { userManager, Tower, Category, Other, numberToType, badgeManager, addTowerType } from "./Etoh";
 import { ui, PreloadState } from "./EtohUI";
 import { Lock } from "./BadgeManager";
 import { ServerAreas, ServerOtherParent, ServerTowers } from "./constants";
@@ -28,16 +28,18 @@ function load_area(category: Category, area: ServerAreas) {
       ui.preload(`Tower data: \`${tower}\` doesn't contain enough info. Skipping`, PreloadState.TowerWarning);
       return;
     }
+    const tower_type = numberToType(Number.parseInt(tower_data[4]));
 
     const tower_badge = new Tower(
-      tower_data[1],
-      JSON.parse(tower_data[2]),
+      addTowerType(tower_data[1], tower_type),
+      JSON.parse(tower_data[3]),
       Lock.Unlocked,
-      Number.parseInt(tower_data[1]),
+      Number.parseInt(tower_data[2]),
       area.n,
-      numberToType(Number.parseInt(tower_data[3])),
+      tower_type,
       category
     );
+    console.log(tower_data, tower_badge);
 
     badgeManager.addBadge(tower_badge);
   });

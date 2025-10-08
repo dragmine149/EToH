@@ -72,7 +72,7 @@ class Badge {
   * @param hover Is this element being hovered.
   */
   get_name_field(hover?: boolean) {
-    return hover && this.wiki ? this.name : `<a href="${this.wiki}">${this.name}</a>`;
+    return hover && this.wiki ? `<a href="${this.wiki}">${this.name}</a>` : this.name;
   }
 
   /**

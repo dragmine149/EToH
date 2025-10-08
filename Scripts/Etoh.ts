@@ -232,11 +232,18 @@ class Other extends Badge {
 
 class EtohBadgeManager extends BadgeManager<Tower | Other, Category> {
   category!: { (): Category[], (item?: Category): (Tower | Other)[] };
+  area!: { (): string[], (item: string): Tower[] };
 
   constructor() {
     super();
 
     this.addFilter("category", badge => badge.category);
+    this.addFilter("area", badge => {
+      if (badge instanceof Tower) {
+        return badge.area;
+      }
+      return "";
+    });
   }
 }
 
@@ -244,4 +251,4 @@ class EtohBadgeManager extends BadgeManager<Tower | Other, Category> {
 const userManager = new UserManager(etohDB.users, EToHUser);
 const badgeManager = new EtohBadgeManager();
 
-export { userManager, badgeManager, shortTowerName, Tower, Category, Other, numberToType };
+export { userManager, badgeManager, shortTowerName, Tower, Category, Other, numberToType, addTowerType };

@@ -452,9 +452,9 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
     }
 
     // set the fields default values so something exists.
-    this.#name_field.innerText = this.#data.name(false);
+    this.#name_field.innerHTML = this.#data.name(false);
     this.#info_data.innerHTML = this.#data.information();
-    this.#info_comp.innerText = this.#data.completed > 0 ? new Date(this.#data.completed).toLocaleString(undefined, {
+    this.#info_comp.innerHTML = this.#data.completed > 0 ? new Date(this.#data.completed).toLocaleString(undefined, {
       year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: false,
     }) : '';
 
@@ -468,7 +468,7 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
    * @param completed Optional completed unix timestamp (`new Date().getTime()`)
    */
   updatedCompleted(completed?: number) {
-    this.#info_comp.innerText = completed && completed > 0 ? new Date(completed).toLocaleString(undefined, {
+    this.#info_comp.innerHTML = completed && completed > 0 ? new Date(completed).toLocaleString(undefined, {
       year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: false,
     }) : '';
   }

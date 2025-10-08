@@ -2,7 +2,7 @@ import { Area, areaManager } from "./AreaManager";
 import { Badge } from "./BadgeManager";
 import { Category, Tower, userManager, badgeManager } from "./Etoh";
 import { isMobile, load_required_data } from "./initial";
-import { BadgeInformation, CategoryInformation, UIBadgeData } from "./ui";
+import { CategoryInformation, UIBadgeData } from "./ui";
 
 enum PreloadState {
   TowerData,
@@ -301,10 +301,10 @@ function categoryFromArea<T extends Badge>(area: Area, badges: T[]) {
     return {
       completed: -1,
       id: badge.id,
-      information: badge.get_information_field,
+      information: badge.get_information_field.bind(badge),
       lock_reason: badge.lock_reason,
       lock_type: badge.lock_type,
-      name: badge.get_name_field,
+      name: badge.get_name_field.bind(badge),
       url: badge.link,
       wiki: badge.wiki
     } as UIBadgeData<T>;

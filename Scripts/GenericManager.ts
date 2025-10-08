@@ -38,7 +38,7 @@ class GenericManager<K, T> {
       // got to have a valid key before it can be inserted.
       if (k == undefined || k == null || Number.isNaN(k)) {
         console.warn(`Invalid key ${k} whilst trying to add to map!`);
-        console.debug(`Map:`, map, `value: `, value);
+        console.trace(`Map:`, map, `value: `, value);
         // console.info(this.#filters);
         return;
       }
@@ -94,6 +94,7 @@ class GenericManager<K, T> {
 
     this.#filters[filter_name] = callback;
     this.#maps[filter_name] = new Map();
+    this.#items.forEach((item, index) => this.#processFilter(filter_name, item, index));
 
     const getFunc = this.#mapGetter.bind(this, this.#maps[filter_name]);
     Object.defineProperty(this, filter_name, {
