@@ -115,11 +115,11 @@ function getDifficultyWord(difficulty: number) { return DIFFICULTIES[Math.trunc(
 * @returns The word form of the difficulty
 */
 function getDifficulty(difficulty: number) {
-  let stage = Math.trunc(difficulty);
-  let sub = difficulty % 1;
+  const stage = Math.trunc(difficulty);
+  const sub = difficulty % 1;
 
-  let stageWord = DIFFICULTIES[stage - 1] || "Unknown_Difficulty";
-  let subWord = SUB_LEVELS.find(level => sub >= level.threshold)?.name || "Baseline";
+  const stageWord = DIFFICULTIES[stage - 1] || "Unknown_Difficulty";
+  const subWord = SUB_LEVELS.find(level => sub >= level.threshold)?.name || "Baseline";
 
   return `${subWord} ${stageWord}`;
 }
@@ -135,7 +135,7 @@ function getTowerType(name: string, type: string) {
   if (name.startsWith('Tower of') || name == 'Thanos Tower') return TowerType.Tower;
   if (name.startsWith('Citadel of')) return TowerType.Citadel;
   if (name.startsWith('Obeisk of')) return TowerType.Obelisk;
-  let badge = badgeManager.name(name)[0];
+  const badge = badgeManager.name(name)[0];
   if (badge instanceof Tower) return badge.type;
   return type;
 }

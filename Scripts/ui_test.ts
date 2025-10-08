@@ -61,7 +61,7 @@ function random_badges(): UIBadgeData<Badge>[] {
   });
 }
 
-let elms: CategoryInformation<Badge>[] = [];
+const elms: CategoryInformation<Badge>[] = [];
 
 const createCI = (recursive?: boolean) => {
   console.log('creating new element');
@@ -76,7 +76,7 @@ const createCI = (recursive?: boolean) => {
   ci.addBadges(...random_badges());
   if (recursive === true) {
     console.group("cat sub gen");
-    let group = createCI(false);
+    const group = createCI(false);
     console.groupEnd();
     console.log(group);
     ci.addCategory(group);

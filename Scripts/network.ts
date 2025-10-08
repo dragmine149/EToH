@@ -2,12 +2,12 @@ import { tryCatch } from "./utils";
 import { logs } from "./logs";
 const CLOUD_URL = 'https://roblox-proxy.dragmine149.workers.dev';
 
-type EarlierBadge = {
+interface EarlierBadge {
   earliest: number,
   data: [RawBadge?, RawBadge?]
 }
 
-type RawBadge = {
+interface RawBadge {
   badgeId: number,
   date: number,
 }

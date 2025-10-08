@@ -21,7 +21,7 @@ function load_area(category: Category, area: ServerAreas) {
     ui.preload(`Loading tower ${tower} of ${area.n} of ${category}`, PreloadState.TowerData);
 
     regex.lastIndex = 0; // due to global regex.
-    let tower_data = regex.exec(tower);
+    const tower_data = regex.exec(tower);
     if (tower_data == null || tower_data.length < 5) {
       // we should be worried if this happens, but to the user we don't want to worry them too much.
       console.warn(`Failed to load tower data as the regex didn't full parse it. Please try again tomorrow and/or report an issue on github. Data in question: `, tower_data, tower);
@@ -29,7 +29,7 @@ function load_area(category: Category, area: ServerAreas) {
       return;
     }
 
-    let tower_badge = new Tower(
+    const tower_badge = new Tower(
       tower_data[1],
       JSON.parse(tower_data[2]),
       Lock.Unlocked,
@@ -43,7 +43,7 @@ function load_area(category: Category, area: ServerAreas) {
   });
 
   // this is just converting the "database" format into a format easier to work with.
-  let requirements = {
+  const requirements = {
     difficulties: {
       easy: area.r.ds.e,
       medium: area.r.ds.m,
@@ -60,7 +60,7 @@ function load_area(category: Category, area: ServerAreas) {
     points: area.r.p,
   }
 
-  let area_data = new Area(area.n, area.s == "Windswept Peak" ? "" : area.s, requirements, category);
+  const area_data = new Area(area.n, area.s == "Windswept Peak" ? "" : area.s, requirements, category);
   areaManager.addArea(area_data);
   ui.preload(`Finish loading area ${area.n} of ${category}`, PreloadState.TowerData);
 }
@@ -70,14 +70,14 @@ function load_area(category: Category, area: ServerAreas) {
  */
 async function loadTowersFromServer() {
   ui.preload("Load towers from server", PreloadState.TowerData);
-  let server_tower = await fetch('https://raw.githubusercontent.com/dragmine149/EToH/refs/heads/Data/tower_data.json');
+  const server_tower = await fetch('https://raw.githubusercontent.com/dragmine149/EToH/refs/heads/Data/tower_data.json');
 
   if (!server_tower.ok) {
     ui.preload(`Failed to fetch due to ${server_tower.statusText}`, PreloadState.Errored);
     return;
   }
 
-  let data = await tryCatch<ServerTowers>(server_tower.json());
+  const data = await tryCatch<ServerTowers>(server_tower.json());
 
   if (data.error) {
     ui.preload(`Failed to parse tower data: ${data.error.message}`, PreloadState.Errored);
@@ -95,13 +95,13 @@ async function loadTowersFromServer() {
  */
 async function loadOthersFromServer() {
   ui.preload(`Attempting to load other data`, PreloadState.OtherData);
-  let server_other = await fetch('data/other_data.json');
+  const server_other = await fetch('data/other_data.json');
   if (!server_other.ok) {
     ui.preload(`Failed to get other data:${server_other.statusText}`, PreloadState.Errored);
     return;
   }
 
-  let data = await tryCatch<ServerOtherParent>(server_other.json());
+  const data = await tryCatch<ServerOtherParent>(server_other.json());
 
   if (data.error) {
     ui.preload(`Failed to parse other data: ${data.error.message}`, PreloadState.Errored);

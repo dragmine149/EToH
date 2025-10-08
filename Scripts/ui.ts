@@ -40,7 +40,7 @@ enum Count {
  * @param selected To include the optional class for selectedness.
  */
 function highlight_span(span: HTMLSpanElement, text: string, selected: boolean) {
-  let regex = new RegExp(`[${text}]`, `gi`);
+  const regex = new RegExp(`[${text}]`, `gi`);
   span.innerHTML = span.innerText.replaceAll(regex, (match) => {
     return `<span class="highlight ${selected ? "selected" : ""}" style="margin: 0;">${match}</span>`;
   })
@@ -72,7 +72,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
    * Every call to this getter checks all the top-level children in the table.
    */
   get badges(): Map<number, BadgeInformation<K>> {
-    let map = new Map<number, BadgeInformation<K>>();
+    const map = new Map<number, BadgeInformation<K>>();
     if (this.#table == undefined) return map;
 
     for (let i = 0; i < this.#table.children.length; i++) {
@@ -118,7 +118,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   #style: HTMLLinkElement;
 
   /** Internal state of the sub categories. Are they visible or not. */
-  #subCategoryState: boolean = true;
+  #subCategoryState = true;
 
   // ====================================================================================================
   // The code to run on element creation / add to DOM.
@@ -255,7 +255,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
       }
 
       // but we might have to translate
-      let row = document.createElement("badge-info") as BadgeInformation<K>;
+      const row = document.createElement("badge-info") as BadgeInformation<K>;
       row.data = badge as UIBadgeData<K>;
       this.#table.appendChild(row);
     });
@@ -286,8 +286,8 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
    * @returns The raw data for that badge or `undefined` if this element isn't taking care of that badge.
    */
   removeBadges(...badgeIds: number[]) {
-    let badges: BadgeInformation<K>[] = [];
-    let stored_badges = this.badges;
+    const badges: BadgeInformation<K>[] = [];
+    const stored_badges = this.badges;
 
     badgeIds.forEach((badgeId) => {
       // attempts to get the badge and delete it.
@@ -310,7 +310,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
    * @returns The CategoryInformation for that index. (or nothing if index out of range)
    */
   removeCategory(...indexes: number[]) {
-    let elms = this.categories.filter((v, i) => i in indexes);
+    const elms = this.categories.filter((v, i) => i in indexes);
     elms.forEach((elm) => this.#shadow?.removeChild(elm));
     return elms;
   }
@@ -332,7 +332,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
    * @param badgeIds The badges to affect.
    */
   toggleBadgesVisibility(visible: boolean, ...badgeIds: number[]) {
-    let stored_badges = this.badges;
+    const stored_badges = this.badges;
     badgeIds.forEach((badgeId) => {
       const entry = stored_badges.get(badgeId);
       if (entry == undefined) return;
@@ -417,7 +417,7 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   setWidth() {
     this.#effectElement(true);
     // console.log(this.clientWidth);
-    let width = this.clientWidth;
+    const width = this.clientWidth;
     if (this.clientWidth > 0) this.style.width = `${width}px`;
     this.#effectElement(false);
     return width;

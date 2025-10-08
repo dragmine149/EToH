@@ -11,7 +11,7 @@ class Listeners<Key, Function> {
    * @param callback The function to call upon this listener.
    */
   add_listener(key: Key, callback: Function) {
-    let array = this.#listeners.get(key) ?? [];
+    const array = this.#listeners.get(key) ?? [];
     array.push(callback);
     this.#listeners.set(key, array);
   }

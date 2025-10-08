@@ -24,7 +24,7 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   ...tseslint.configs.strict,
   ...tseslint.configs.stylistic,
-  ...tseslint.configs.eslintRecommended,
+  tseslint.configs.eslintRecommended,
   {
     files: ["**/*.{js,ts,tsx,mjs,cjs}"],
     languageOptions: {
@@ -35,9 +35,9 @@ export default tseslint.config(
       ecmaVersion: 2022,
       sourceType: "module"
     },
-    linterOptions: {
-      noWarnIgnored: true
-    },
+    // linterOptions: {
+    //   noWarnIgnored: true
+    // },
     rules: {
       'no-undef': 'error', // TypeScript handles this
       '@typescript-eslint/no-unused-vars': ['error', {

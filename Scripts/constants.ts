@@ -46,14 +46,14 @@ function typeFromNumber(num: number) {
 }
 
 
-type ServerTower = {
+interface ServerTower {
   name: string;
   difficulty: number;
   badges: number[];
   type?: string;
-};
+}
 
-type Difficulties = {
+interface Difficulties {
   easy?: number;
   medium?: number;
   hard?: number;
@@ -65,7 +65,7 @@ type Difficulties = {
   extreme?: number;
   terrifying?: number;
   catastrophic?: number;
-};
+}
 
 
 interface AreaRequirements {
@@ -74,7 +74,7 @@ interface AreaRequirements {
 };
 
 
-type ServerDifficulties = {
+interface ServerDifficulties {
   e?: number;
   m?: number;
   h?: number;
@@ -86,7 +86,7 @@ type ServerDifficulties = {
   x?: number;
   t?: number;
   a?: number;
-};
+}
 
 
 interface ServerAreaRequirements {
@@ -94,7 +94,7 @@ interface ServerAreaRequirements {
   p: number;
 };
 
-type ServerAreas = {
+interface ServerAreas {
   /** Name of the area. */
   n: string;
   r: ServerAreaRequirements
@@ -102,22 +102,22 @@ type ServerAreas = {
   s?: string;
   /** The towers in this area. */
   t: string[];
-};
-type ServerTowers = {
+}
+interface ServerTowers {
   areas: {
     temporary: ServerAreas[];
     permanent: ServerAreas[];
     other: ServerAreas[];
   };
-};
-type ServerOther = {
+}
+interface ServerOther {
   name: string;
   category: string;
   badges: number[];
-};
-type ServerOtherParent = {
+}
+interface ServerOtherParent {
   data: ServerOther[];
-};
+}
 
 export { DIFFICULTIES, SUB_LEVELS, TOWER_TYPE, pointsFromType }
 export type { ServerAreas, ServerDifficulties, ServerOther, ServerOtherParent, ServerTower, ServerTowers, AreaRequirements };

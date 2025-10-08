@@ -67,16 +67,16 @@ class User {
   * @returns {Promise<User|number|null>} User = valid. Number = in database under different user. Null = server/internal error.
   */
   static async create(user_data, db) {
-    let user = new User(user_data);
+    const user = new User(user_data);
     if (user.id) return user;
 
     user.name = user_data;
-    let nan = Number(user_data);
+    const nan = Number(user_data);
     if (!Number.isNaN(nan)) {
       user.id = nan;
       user.name = undefined;
     }
-    let result = await user.updateDetails(db);
+    const result = await user.updateDetails(db);
     user.verbose.info(`Received: ${result} from request server data.`);
     if (!Number.isNaN(result) && result !== true) {
       user.verbose.debug(`Is number!`);
@@ -98,7 +98,7 @@ class User {
 
     // if we call this function, although we might already have the user details. Update them anyway, in case of display/user name changes.
 
-    let networkUserRequest = await tryCatch(network.retryTilResult(new Request(
+    const networkUserRequest = await tryCatch(network.retryTilResult(new Request(
       `${CLOUD_URL}/users/${(this.id ?? this.name)}`
     )));
 
@@ -107,18 +107,18 @@ class User {
       return;
     }
 
-    let userRequest = await tryCatch(networkUserRequest.data.json());
+    const userRequest = await tryCatch(networkUserRequest.data.json());
     if (userRequest.error) {
       this.verbose.error('Failed to parse user data from server. Please try again. If the issue presits please open an issue on github.');
       return;
     }
 
     /** @type {{id: number, name: String, display: String}} */
-    let userData = userRequest.data;
+    const userData = userRequest.data;
 
     if (!this.id && db) {
       this.verbose.info(`Checking database to see if we already have ${userData.id} in the database`);
-      let potential = await db.users.get({ id: userData.id });
+      const potential = await db.users.get({ id: userData.id });
       if (potential) {
         this.verbose.info(`Found user id, returning to use that user instead.`);
         return userData.id;
@@ -145,7 +145,7 @@ class User {
 
   async postCreate() {
     this.verbose.info("Attempting to update URL");
-    let new_url = new URL(location);
+    const new_url = new URL(location);
     // although we could do id, name is just easier for the client. And we support loading from name...
     new_url.searchParams.set("user", this.name);
     if (history.state != null && history.state.id == this.id) return;
@@ -186,7 +186,7 @@ class UserManager extends GenericManager {
 
     // try to find it in our filters first.
     /** @type {number[]} */
-    let id = this.id(identifier);
+    const id = this.id(identifier);
     this.verbose.info(`Loaded id?: ${id}`);
     if (id.length > 0) {
       this.current_user = id[0];
@@ -195,7 +195,7 @@ class UserManager extends GenericManager {
       return;
     }
     /** @type {string[]} */
-    let name = this.names(identifier);
+    const name = this.names(identifier);
     this.verbose.info(`Loaded name?: ${id}`);
     if (name.length > 0) {
       this.current_user = name[0];
@@ -205,8 +205,8 @@ class UserManager extends GenericManager {
     }
 
     // generate the json to get the user.
-    let json = { name: identifier };
-    let nan = Number(identifier);
+    const json = { name: identifier };
+    const nan = Number(identifier);
     if (!Number.isNaN(nan)) {
       json.id = nan;
       delete json.name;
@@ -250,15 +250,15 @@ class UserManager extends GenericManager {
   }
 
   async loadURL() {
-    let url = new URL(location);
-    let user = url.searchParams.get("user");
+    const url = new URL(location);
+    const user = url.searchParams.get("user");
     if (!user) return;
     return await this.findUser(user);
   }
 
   unloadUser() {
     this.current_user = null;
-    let new_url = new URL(location);
+    const new_url = new URL(location);
     new_url.searchParams.delete("user");
     history.pushState({}, null, new_url);
     this.unload_callback();
@@ -282,7 +282,7 @@ class UserManager extends GenericManager {
 
   async load_database() {
     /** @type {User[]} */
-    let users = await this.db.users
+    const users = await this.db.users
       .toArray();
     users.forEach((user) => this.addItem(new this.userClass(user)));
   }
@@ -293,7 +293,7 @@ class UserManager extends GenericManager {
   async deleteOldest() {
     this.verbose.info("Deletting oldest users");
     /** @type {User[]} */
-    let users = await this.db.users
+    const users = await this.db.users
       .orderBy("last")
       .reverse()
       .offset(this.limit)

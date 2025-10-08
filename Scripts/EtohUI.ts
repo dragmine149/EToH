@@ -139,7 +139,7 @@ class UI {
    * @param ev The event. Used to get the value as we have no idea which to overwrite otherwise.
    */
   #syncUserSearch(ev: InputEvent) {
-    let target = ev.target as HTMLInputElement;
+    const target = ev.target as HTMLInputElement;
     this.#user_mini_input.value = target.value;
     this.#user_search.value = target.value;
     this.#user_search_button.disabled = this.#user_search.value.length <= 0;
@@ -191,10 +191,10 @@ class UI {
    * @param list The list of users.
    */
   datalist_add_user(...list: string[]) {
-    let children = this.#user_list.children;
+    const children = this.#user_list.children;
     list.filter((user) => children.namedItem(user) == null).forEach((user) => {
       console.log(`Adding ${user} to the user-list`);
-      let option = document.createElement("option");
+      const option = document.createElement("option");
       option.textContent = user;
       option.value = user;
       option.setAttribute("name", user);
@@ -210,7 +210,7 @@ class UI {
    * @param popped Has this user been requested to load from a `popstate` event? (If so, we don't do `pushState`)
    */
   async load_user(user_input: string, popped?: boolean) {
-    let user = await userManager.find_user(user_input);
+    const user = await userManager.find_user(user_input);
     if (user == undefined) { return; }
 
     this.#user.textContent = user.ui_name;
@@ -221,7 +221,7 @@ class UI {
     this.#user_search_back.disabled = false;
     this.#user_mini_button.style.right = "3.4rem";
 
-    let url = new URL(location.toString());
+    const url = new URL(location.toString());
     url.searchParams.set("user", user.name);
     if (popped == undefined || popped == false) history.pushState(undefined, "", url);
   }
@@ -236,7 +236,7 @@ class UI {
 
   show_required_data() {
     (areaManager.category(Category.Permanent)).forEach((area) => {
-      let category = document.createElement("category-information") as CategoryInformation<Area>;
+      const category = document.createElement("category-information") as CategoryInformation<Area>;
       category
     })
   }

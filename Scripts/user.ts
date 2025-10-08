@@ -59,7 +59,7 @@ class User {
 
 type UserConstructor<K extends User> = new (id: number, name: string, display: string, past: string[]) => K;
 
-type MinimumUserData = {
+interface MinimumUserData {
   id: number,
   name: string,
   display: string,
@@ -111,7 +111,7 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
    */
   async load_database() {
     console.info("Loading users from local database");
-    let data = await this.#db.toArray()
+    const data = await this.#db.toArray()
     data.forEach((user) => {
       const obj = new this.#userClass(user.id, user.name, user.display, user.past);
       this.#users.push(obj);
@@ -183,7 +183,7 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
 
     logs.log(`Attempting to load user via roblox-proxy`, `user_manager/load`, 10);
 
-    let networkUserRequest = await tryCatch(fetch(new Request(
+    const networkUserRequest = await tryCatch(fetch(new Request(
       `${CLOUD_URL}/users/${identifier}`
     )));
 
@@ -198,14 +198,14 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
     }
 
 
-    let userRequest = await tryCatch(networkUserRequest.data.json() as Promise<MinimumUserData>);
+    const userRequest = await tryCatch(networkUserRequest.data.json() as Promise<MinimumUserData>);
     if (userRequest.error) {
       console.error('Failed to parse user data from server. Please try again. If the issue presits please open an issue on github.');
       return;
     }
 
     logs.log(`Got user data via roblox-proxy`, `user_manager/load`, 50);
-    let user = userRequest.data;
+    const user = userRequest.data;
     const obj = new this.#userClass(user.id, user.name, user.display, []);
     this.#users.push(obj);
     this.current_user = obj;

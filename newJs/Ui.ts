@@ -103,8 +103,8 @@ class UI {
   * @param {bool} new_since How the badge been claimed since we last loaded the data.
   */
   update_badge(name, date, new_since) {
-    let elm = this.badges.get(name);
-    let badgeCompleted = elm.querySelector("[tag='completed']");
+    const elm = this.badges.get(name);
+    const badgeCompleted = elm.querySelector("[tag='completed']");
     badgeCompleted.date = date;
     date = Math.min(badgeCompleted.date, date);
     badgeCompleted.innerHTML = date ? new Date(date).toLocaleString(undefined, {
@@ -115,9 +115,9 @@ class UI {
 
     if (!elm.counted) {
       // this.verbose.log(elm.category);
-      let cat = this.categories.get(elm.category);
+      const cat = this.categories.get(elm.category);
       if (cat) {
-        let title = cat.querySelector("[tag='title']");
+        const title = cat.querySelector("[tag='title']");
         let count = Number(title.style.getPropertyValue("--count"));
         count += date ? 1 : 0;
         title.style.setProperty("--count", count);
@@ -152,9 +152,9 @@ class UI {
   * @param {Array[]} information The classes for the information field.
   */
   set_classes(badge, name, information) {
-    let elm = this.badges.get(badge);
-    let badgeName = elm.querySelector("[tag='name']")
-    let badgeInformation = elm.querySelector("[tag='information']");
+    const elm = this.badges.get(badge);
+    const badgeName = elm.querySelector("[tag='name']")
+    const badgeInformation = elm.querySelector("[tag='information']");
 
     badgeName.classList.remove(...badgeName.classList);
     name.forEach((n) => badgeName.classList.add(n));
@@ -174,7 +174,7 @@ class UI {
   search(value) {
     // transform to lower case as it makes everything easier to work with.
     value = value.toLowerCase();
-    let filteredSearch = Object.entries(this.search_data).map((v) => [v[0].toLowerCase(), v[1]]).filter((v) => v[0].includes(value));
+    const filteredSearch = Object.entries(this.search_data).map((v) => [v[0].toLowerCase(), v[1]]).filter((v) => v[0].includes(value));
     // if (filteredSearch.length < 10) this.verbose.log(filteredSearch);
 
     // just clean up the old search.
@@ -230,7 +230,7 @@ class UI {
     // show new badge data.
     badge = this.previous_search_list[this.#searchIndex];
     if (badge) {
-      let elm = this.badges.get(badge[1]);
+      const elm = this.badges.get(badge[1]);
       this.#effectElm(elm, undefined, undefined, true);
       elm.scrollIntoView(false);
     }
@@ -253,9 +253,9 @@ class UI {
   #effectElm(elm, hover, search, selected) {
     // Get the children first.
     /** @type {HTMLDivElement} */
-    let badgeName = elm.querySelector("[tag='name']")
+    const badgeName = elm.querySelector("[tag='name']")
     /** @type {HTMLDivElement} */
-    let badgeInformation = elm.querySelector("[tag='info']");
+    const badgeInformation = elm.querySelector("[tag='info']");
 
     if (hover === true) {
       if (this.hover == elm) return; // just don't update it if we are already hovering it.
@@ -271,7 +271,7 @@ class UI {
     elm.selected = selected == undefined ? elm.selected : selected;
 
     /** @type {Badge} */
-    let badgeInfo = badgeManager.name(elm.badge)[0];
+    const badgeInfo = badgeManager.name(elm.badge)[0];
 
     // this.verbose.log(elm, hover, elm.isHover, search, elm.search);
 
@@ -279,13 +279,13 @@ class UI {
     /** @type {string} */
     let name_text = badgeInfo.get_name_field(elm.isHover);
     if (elm.search != '' && elm.search != undefined) {
-      let regex = new RegExp(`[${elm.search}]`, "gi");
+      const regex = new RegExp(`[${elm.search}]`, "gi");
       name_text = name_text.replaceAll(regex, (match) => {
         return `<span class="search ${elm.selected ? 'selected' : ''}">${match}</span>`;
       });
     }
 
-    let info_text = badgeInfo.get_information_field(elm.isHover);
+    const info_text = badgeInfo.get_information_field(elm.isHover);
 
     badgeName.innerHTML = name_text;
     // this.verbose.log(info_text);
@@ -300,13 +300,13 @@ class UI {
 
       /** @type {HTMLDivElement} */
       // create a clone of the element.
-      let clone = document.querySelector("[tag='badge']").cloneNode(true);
+      const clone = document.querySelector("[tag='badge']").cloneNode(true);
       clone.hidden = false;
       clone.style = "";
 
       // by default, set the badge name to the name,
       /** @type {HTMLDivElement} */
-      let badgeName = clone.querySelector("[tag='name']")
+      const badgeName = clone.querySelector("[tag='name']")
       // /** @type {HTMLDivElement} */
       // let badgeInformation = clone.querySelector("[tag='info']");
       // let badgeCompleted = clone.querySelector("[tag='completed']");
@@ -338,11 +338,11 @@ class UI {
     }
 
     /** @type {HTMLDivElement} */
-    let clone = document.getElementById("category").cloneNode(true);
+    const clone = document.getElementById("category").cloneNode(true);
     clone.hidden = false;
 
     // set the title of the category.
-    let title = clone.querySelector("[tag='title']");
+    const title = clone.querySelector("[tag='title']");
     title.innerHTML = category;
     title.title = category;
 
@@ -372,7 +372,7 @@ class UI {
     if (parent === undefined || parent == null || parent == '') parent = cat_name;
     // if (!parents[name]) parents[name] = parent; // make sure our parent exists.
 
-    let pNode = this.#createCategory(parent, this.categories.get(parents[parent]));
+    const pNode = this.#createCategory(parent, this.categories.get(parents[parent]));
     this.#createCategory(name, pNode);
 
     let path = parents[name];
@@ -430,13 +430,13 @@ class UI {
   * @param {string} category_name
   */
   load_category(category_name) {
-    let data = this.display_categories[category_name];
-    let categories = data.parents;
+    const data = this.display_categories[category_name];
+    const categories = data.parents;
     this.#verbose.log(categories);
     this.current_category = category_name;
 
     // sort out node visibility first.
-    let categoryCategories = Object.keys(categories).flatMap((v) => v)
+    const categoryCategories = Object.keys(categories).flatMap((v) => v)
     this.categories.forEach((value, key) => {
       value.hidden = !categoryCategories.includes(key);
     });
@@ -444,11 +444,11 @@ class UI {
 
     // now time for the badges.
     Object.entries(data.data).forEach(([key, value]) => {
-      let node = this.categories.get(key);
+      const node = this.categories.get(key);
       let completed = 0;
       let hidden = 0;
       value.forEach((badge) => {
-        let child = this.badges.get(badge);
+        const child = this.badges.get(badge);
         hidden += child.classList.contains("locked") || child.classList.contains("mini-hidden") ? 1 : 0;
         completed += child.classList.contains("completed") ? 1 : 0;
         // this.verbose.log(hidden);
@@ -457,7 +457,7 @@ class UI {
         child.category = key;
       });
 
-      let title = node.querySelector("[tag='title']");
+      const title = node.querySelector("[tag='title']");
       // title.innerHTML = `${title.title} (${completed}/${value.length})`;
       title.style.setProperty("--count", completed);
       title.style.setProperty("--hidden", hidden);

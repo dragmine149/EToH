@@ -12,13 +12,13 @@ import { highlight_span } from "./usage";
 /**
  * Search result shape.
  */
-export type SearchResult = {
+export interface SearchResult {
   name: string;
   score: number;
   reasons: string[]; // all reasons that contributed (explanatory)
-};
+}
 
-export let searched: Map<string, number> = new Map();
+export const searched = new Map<string, number>();
 let timeout: number;
 
 export function twodp(num: number): number {
@@ -47,7 +47,7 @@ export function isAcronymQuery(q: string): boolean {
   if (q.length > 6) return false;
 
   let is_acro = q.startsWith("To") || q.startsWith("Co") || q.startsWith("So");
-  let thirdLetter = q.charAt(2);
+  const thirdLetter = q.charAt(2);
   // the original line was probably intended to assert something;
   // keep it as a no-op expression to preserve behaviour that was supplied.
   is_acro =
@@ -59,7 +59,7 @@ export function isAcronymQuery(q: string): boolean {
 
 export function improvedAcronymQuery(query: string, acros: string[]): 0 | 1 | 2 {
   if (query.length > 6) return 0;
-  for (let acro of acros) {
+  for (const acro of acros) {
     if (acro.startsWith(query)) return 1;
     if (acro.startsWith(query, 2)) return 2;
   }
@@ -115,9 +115,9 @@ export function fuzzyScore(a: string, b: string): number {
 /**
  * Options for searchTowers.
  */
-export type SearchOptions = {
+export interface SearchOptions {
   minScore?: number; // default 30
-};
+}
 
 interface Names {
   name: string,
@@ -222,7 +222,7 @@ export function searchTowers(query: string, names: Names[], opts?: SearchOptions
     if (qWords.length > 0) {
       for (const word of qWords) {
         if (word.length > 0 && nameLower.includes(word)) {
-          let score_math = twodp((0.65 / word.length) + 1);
+          const score_math = twodp((0.65 / word.length) + 1);
           score *= score_math;
           reasons.push(`Word match: ${word} (${score_math})`);
           // break; // only apply bonus once
@@ -237,7 +237,7 @@ export function searchTowers(query: string, names: Names[], opts?: SearchOptions
     }
 
     // Score is boosted by 1.02 (50 chars) -> 1.07 (14 chars). Allows ordering by name length + we probably want a shorter version anyway.
-    let name_boost = twodp((1 / name.length) + 1);
+    const name_boost = twodp((1 / name.length) + 1);
     score *= name_boost;
     reasons.push(`Name boost: ${name_boost}`);
 
