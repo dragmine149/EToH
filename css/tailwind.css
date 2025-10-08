@@ -29,6 +29,7 @@ button {
   border: 0px;
   font-size: 16px;
   text-wrap: nowrap;
+  user-select: none;
 }
 
 .fake-button:hover:not(:disabled),

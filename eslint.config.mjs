@@ -20,10 +20,11 @@ export default tseslint.config(
       "Thumbs.db",
     ]
   },
-  js.configs.recommended,
+  // js.configs.recommended,
   ...tseslint.configs.recommended,
   ...tseslint.configs.strict,
   ...tseslint.configs.stylistic,
+  ...tseslint.configs.eslintRecommended,
   {
     files: ["**/*.{js,ts,tsx,mjs,cjs}"],
     languageOptions: {

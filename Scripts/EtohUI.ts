@@ -51,6 +51,8 @@ class UI {
   #retry_count: 0 | 1 | 2 = 0;
 
   // Stuff related to loading user data.
+  #main_nav_toggle: HTMLInputElement;
+  #main_menu_btn: HTMLAnchorElement;
   #search_main: HTMLDivElement;
   #user_list: HTMLDataListElement;
 
@@ -94,6 +96,10 @@ class UI {
     })
 
     // basic search
+    this.#main_nav_toggle = document.getElementById("nav-hide") as HTMLInputElement;
+    this.#main_menu_btn = document.getElementById("main_menu_button") as HTMLAnchorElement;
+    this.#main_menu_btn.onclick = () => this.main_user_load();
+
     this.#search_main = document.getElementById("search-main") as HTMLDivElement;
     this.#user_list = document.getElementById("user_list") as HTMLDataListElement;
 
@@ -218,6 +224,14 @@ class UI {
     let url = new URL(location.toString());
     url.searchParams.set("user", user.name);
     if (popped == undefined || popped == false) history.pushState(undefined, "", url);
+  }
+
+  /**
+   * Loads the main menu, should be a really small function but a separate function just in case.
+   */
+  async main_user_load() {
+    this.#search_main.hidden = false;
+    if (isMobile()) this.#main_nav_toggle.checked = false;
   }
 
   show_required_data() {
