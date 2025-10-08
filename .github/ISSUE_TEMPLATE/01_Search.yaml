@@ -1,0 +1,28 @@
+name: Search Suggestions / Issues
+description: Anything related to the search system should go here!
+title: "[Search]: "
+labels: ["search", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The search system is kinda thrown together, although optimised might not be in the best state for everyone.
+  - type: dropdown
+    id: search_type
+    attributes:
+      label: What are you here to report?
+      multiple: false
+      options:
+        - Suggestion
+        - Issue
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: more_information
+    attributes:
+      label: More information
+      description: Please provide more information, including screenshots if possible.
+      placeholder: "Example: Whilst searching for xyz, abc doesn't appear like i would expect"
+    validations:
+      required: true
