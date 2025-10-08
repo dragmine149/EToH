@@ -1,8 +1,8 @@
 import { GenericManager } from "./GenericManager";
-import { Badge, badgeManager } from "./BadgeManager";
+import { Badge } from "./BadgeManager";
 import { Area, areaManager } from "./AreaManager";
 import { User } from "./user";
-import { userManager } from "./Etoh";
+import { userManager, badgeManager, Tower, Other } from "./Etoh";
 import { ui } from "./EtohUI";
 
 console.log("Setting up debug!");
@@ -19,5 +19,6 @@ globalThis.debug = {
   user: {
     userManager,
     User
-  }
+  },
+  Tower, Other
 }

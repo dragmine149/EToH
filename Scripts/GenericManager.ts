@@ -1,4 +1,5 @@
-type Constructor<T> = new (...args: unknown[]) => T;
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type Constructor<K> = new (...args: any[]) => K;
 
 class GenericManager<K, T> {
   #items: K[] = [];
@@ -73,6 +74,18 @@ class GenericManager<K, T> {
       .forEach((key) => this.#processFilter(key, item, index - 1));
   }
 
+  /**
+   * Adds another way of filtering the items.
+   *
+   * Typescript note: Filters can't be added dynamically to anything which extends this. Hence please add the following code
+   * ```ts
+   * filter_name!: { (): K[], (item?: K): T[] };
+   * ```
+   * where `filter_name`, `K` and `T` are the types/variables provided.
+   *
+   * @param filter_name The name of the filter. Used when doing `this.xyz()`
+   * @param callback How each item is added to the filter.
+   */
   addFilter(filter_name: string, callback: (item: K) => T | T[]) {
     if (filter_name.includes(" ")) {
       filter_name = filter_name.replaceAll(" ", "_");
@@ -89,9 +102,14 @@ class GenericManager<K, T> {
     });
   }
 
-  type<C extends Constructor<T>>(ctor: C) {
+  /**
+   * Returns the type.
+   * @param ctor
+   * @returns
+   */
+  type(ctor: Constructor<K>) {
     return this.#items.filter((item) => item instanceof ctor);
   }
 }
 
-export { GenericManager }
+export { GenericManager, Constructor }

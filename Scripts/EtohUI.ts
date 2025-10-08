@@ -1,8 +1,8 @@
 import { Area, areaManager } from "./AreaManager";
-import { Category, userManager } from "./Etoh";
+import { Badge } from "./BadgeManager";
+import { Category, Tower, userManager, badgeManager } from "./Etoh";
 import { isMobile, load_required_data } from "./initial";
-import { BadgeInformation, CategoryInformation } from "./ui";
-import { UserManager } from "./user";
+import { BadgeInformation, CategoryInformation, UIBadgeData } from "./ui";
 
 enum PreloadState {
   TowerData,
@@ -56,7 +56,7 @@ class UI {
   #search_main: HTMLDivElement;
   #user_list: HTMLDataListElement;
 
-  // Stuff relatied to the displaying of users.
+  // Stuff related to the displaying of users.
   #user: HTMLDivElement;
   #user_profile: HTMLAnchorElement;
   #user_img: HTMLImageElement;
@@ -68,6 +68,12 @@ class UI {
   #user_search_back: HTMLButtonElement;
   #user_mini_button: HTMLButtonElement;
   #user_mini_viewing: HTMLSpanElement;
+
+  // Stuff related to storing UI information
+  #categories: Map<string, CategoryInformation<Badge>>;
+
+  // stuff related to dispaling of badges.
+  #badgesUI: HTMLDivElement;
 
   constructor() {
     // set this straight away to show it and ignore the noscript element popup. The parent object is more important.
@@ -132,6 +138,9 @@ class UI {
     this.#user_mini_input.onblur = () => this.#miniSearch(false);
     this.#user_mini_input.onfocus = () => this.#user_mini_input.select();
     this.#user_mini_input.onkeydown = this.#submitUserSearch.bind(this);
+
+    this.#categories = new Map();
+    this.#badgesUI = document.getElementById("badges") as HTMLDivElement;
   }
 
   /**
@@ -234,15 +243,77 @@ class UI {
     if (isMobile()) this.#main_nav_toggle.checked = false;
   }
 
-  show_required_data() {
-    (areaManager.category(Category.Permanent)).forEach((area) => {
-      const category = document.createElement("category-information") as CategoryInformation<Area>;
-      category
-    })
+  #makeAreas(area: Area, unprocessed_children: Map<string, CategoryInformation<Badge>[]>, badges: Badge[]) {
+    // make the area
+    const cat = categoryFromArea(area, badges);
+    this.#categories.set(area.name, cat);
+
+    // add any children.
+    unprocessed_children.get(area.name)?.forEach((child) => cat.addCategory(child));
+
+    // sort out the parent situation.
+    if (area.parent) {
+      const parent = this.#categories.get(area.parent);
+      if (parent == undefined) {
+        const children = unprocessed_children.get(area.parent) ?? [];
+        children.push(cat);
+        unprocessed_children.set(area.parent, children);
+        return;
+      }
+      parent.addCategory(cat);
+      return;
+    }
+
+    this.#badgesUI.appendChild(cat);
+  }
+
+  /**
+   * Load the required data onto the UI in the background.
+   */
+  load_required_data() {
+    const unprocessed_children = new Map<string, CategoryInformation<Tower>[]>();
+    const permanent_badges = badgeManager.category(Category.Permanent);
+    // going to bet on the fact that `unprocessed_children` is a reference and not the object itself.
+    areaManager.category(Category.Permanent).forEach((area) => this.#makeAreas(area, unprocessed_children, permanent_badges));
+
+    const temporary_badges = badgeManager.category(Category.Temporary);
+    // going to bet on the fact that `unprocessed_children` is a reference and not the object itself.
+    areaManager.category(Category.Temporary).forEach((area) => this.#makeAreas(area, unprocessed_children, temporary_badges));
+
+    const other_badges = badgeManager.category(Category.Other);
+    // going to bet on the fact that `unprocessed_children` is a reference and not the object itself.
+    areaManager.category(Category.Other).forEach((area) => this.#makeAreas(area, unprocessed_children, other_badges));
   }
 
 }
 
 const ui = new UI();
+
+function categoryFromArea<T extends Badge>(area: Area, badges: T[]) {
+  const category = new CategoryInformation<T>();
+  category.data = {
+    name: area.name,
+    lock_type: area.lock_type,
+    lock_reason: area.lock_reason
+  };
+
+  const uiBadges = badges.map((badge) => {
+    return {
+      completed: -1,
+      id: badge.id,
+      information: badge.get_information_field,
+      lock_reason: badge.lock_reason,
+      lock_type: badge.lock_type,
+      name: badge.get_name_field,
+      url: badge.link,
+      wiki: badge.wiki
+    } as UIBadgeData<T>;
+  })
+
+  category.addBadges(...uiBadges);
+
+  return category;
+}
+
 
 export { ui, PreloadState };

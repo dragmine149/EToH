@@ -1,5 +1,5 @@
 import { etohDB } from ".";
-import { Badge, Lock } from "./BadgeManager";
+import { Badge, BadgeManager, Lock } from "./BadgeManager";
 import { DIFFICULTIES, SUB_LEVELS } from "./constants";
 import { logs } from "./logs";
 import { CLOUD_URL, network, RawBadge } from "./network";
@@ -230,7 +230,18 @@ class Other extends Badge {
   }
 }
 
+class EtohBadgeManager extends BadgeManager<Tower | Other, Category> {
+  category!: { (): Category[], (item?: Category): (Tower | Other)[] };
+
+  constructor() {
+    super();
+
+    this.addFilter("category", badge => badge.category);
+  }
+}
+
 // defined here to allow for access to said database and userclass.
 const userManager = new UserManager(etohDB.users, EToHUser);
+const badgeManager = new EtohBadgeManager();
 
-export { userManager, shortTowerName, Tower, Category, Other, numberToType };
+export { userManager, badgeManager, shortTowerName, Tower, Category, Other, numberToType };

@@ -1,6 +1,6 @@
-import { userManager, Tower, Category, Other, numberToType } from "./Etoh";
+import { userManager, Tower, Category, Other, numberToType, badgeManager } from "./Etoh";
 import { ui, PreloadState } from "./EtohUI";
-import { badgeManager, Lock } from "./BadgeManager";
+import { Lock } from "./BadgeManager";
 import { ServerAreas, ServerOtherParent, ServerTowers } from "./constants";
 import { tryCatch } from "./utils";
 import { areaManager, Area } from "./AreaManager";
@@ -60,7 +60,7 @@ function load_area(category: Category, area: ServerAreas) {
     points: area.r.p,
   }
 
-  const area_data = new Area(area.n, area.s == "Windswept Peak" ? "" : area.s, requirements, category);
+  const area_data = new Area(area.n, area.s == "Windswept Peak" ? "" : area.s, requirements, category, Lock.Unlocked);
   areaManager.addArea(area_data);
   ui.preload(`Finish loading area ${area.n} of ${category}`, PreloadState.TowerData);
 }
@@ -147,7 +147,7 @@ async function load_required_data() {
   await loadOthersFromServer();
 
   ui.preload(`Completed loading of required assets.`, PreloadState.Finished);
-  ui.show_required_data();
+  ui.load_required_data();
 }
 
 /**

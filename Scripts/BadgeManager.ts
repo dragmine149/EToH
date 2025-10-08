@@ -3,12 +3,18 @@
 import { GenericManager } from "../Scripts/GenericManager";
 
 // The reason why this badge / category can not be claimed.
+//
+// The lock state of a badge should never change unless external data says so.
 enum Lock {
   // The badge is unlocked for the taking. (aka you can get it at anytime pretty much)
   Unlocked,
+  // The badge is unlocked but only for a limited time.
+  Limited,
   // The badge / category was only available for a limited time.
   Temporary,
   // The badge / category requires another badge / category to be unlocked first.
+  //
+  // NOTE: The UI will automatically sort this out. Badge object should not change.
   Another
 }
 
@@ -108,19 +114,19 @@ class Badge {
   }
 }
 
-class BadgeManager extends GenericManager<Badge, string | number[] | Lock> {
+class BadgeManager<B extends Badge, T> extends GenericManager<B, string | number[] | Lock | T> {
   /** Given an id, returns a list of badges with that id. Given nothing, returns a list of ids. */
-  ids!: { (): number[], (item?: number): Badge[] };
+  ids!: { (): number[], (item?: number): B[] };
   /** Given a name, returns a list of badges with that name. Given nothing, returns a list of badge names. */
-  name!: { (): string[], (item?: string): Badge[] };
+  name!: { (): string[], (item?: string): B[] };
   /** Given a lock, returns a list of badges with that lock. Given nothing, returns a list of lock. */
-  lock!: { (): Lock[], (item?: Lock): Badge[] };
+  lock!: { (): Lock[], (item?: Lock): B[] };
 
   /**
    * Add a Badge to the manager.
    * @param badge The badge to add.
    */
-  addBadge(badge: Badge) {
+  addBadge(badge: B) {
     if (!(badge instanceof Badge)) {
       throw new Error("Only instances of Badge can be added to BadgeManager.");
     }
@@ -147,6 +153,4 @@ class BadgeManager extends GenericManager<Badge, string | number[] | Lock> {
   }
 }
 
-const badgeManager = new BadgeManager();
-
-export { badgeManager, Badge, Lock };
+export { BadgeManager, Badge, Lock };

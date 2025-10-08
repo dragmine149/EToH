@@ -52,7 +52,7 @@ function highlight_span(span: HTMLSpanElement, text: string, selected: boolean) 
  */
 class CategoryInformation<K extends Badge> extends HTMLElement {
   // ====================================================================================================
-  // This section is for data which can be affected externaly by the user.
+  // This section is for data which can be affected externally by the user.
   // ====================================================================================================
 
   #data?: CategoryData;
@@ -428,8 +428,8 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
    */
   #effectElement(hover: boolean) {
     if (!this.#data) return;
-    this.#name_field.innerText = this.#data.name(hover);
-    this.#info_data.innerText = this.#data.information(hover);
+    this.#name_field.innerHTML = this.#data.name(hover);
+    this.#info_data.innerHTML = this.#data.information(hover);
   }
 
   /**
