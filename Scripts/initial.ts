@@ -1,7 +1,7 @@
 import { userManager, Tower, Category, Other, numberToType } from "./Etoh";
 import { ui, PreloadState } from "./EtohUI";
 import { badgeManager, Lock } from "./BadgeManager";
-import { ServerAreas, ServerTowers } from "./constants";
+import { ServerAreas, ServerOtherParent, ServerTowers } from "./constants";
 import { tryCatch } from "./utils";
 import { areaManager, Area } from "./AreaManager";
 
@@ -156,31 +156,24 @@ async function load_required_data() {
  * @author T3 Chat (GPT-5 mini)
  */
 export const isMobile = (): boolean => {
-  // guard: non-browser environment (SSR)
+  // SSR guard
   if (typeof window === 'undefined' || typeof navigator === 'undefined') {
     return false
   }
 
-  const ua = navigator.userAgent || (window as any).opera || ''
+  const ua = navigator.userAgent ?? ''
   const uaLower = ua.toLowerCase()
 
-  // common mobile user-agent hints
-  const mobileUA =
-    /iphone|ipad|ipod|android|blackberry|bb10|opera mini|iemobile|wpdesktop|mobile/i
+  // basic UA hint for phones/tablets
+  const mobileUA = /iphone|ipad|ipod|android|mobile/i
 
-  // touch capability hint
-  const hasTouch =
-    'ontouchstart' in window ||
-    // modern browsers
-    (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) ||
-    // legacy
-    (navigator as any).msMaxTouchPoints > 0
+  // modern touch detection and coarse pointer hint
+  const hasTouch = (navigator.maxTouchPoints ?? 0) > 0
+  const coarsePointer = window.matchMedia?.('(pointer: coarse)').matches ?? false
 
-  // narrow screens often indicate mobile
   const smallScreen = Math.min(window.screen.width, window.screen.height) <= 820
 
-  const result = mobileUA.test(uaLower) || (hasTouch && smallScreen)
-  return result
+  return mobileUA.test(uaLower) || hasTouch || coarsePointer || smallScreen
 }
 
 // some simple, auto run functions.

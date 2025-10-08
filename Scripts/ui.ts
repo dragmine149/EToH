@@ -75,8 +75,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     const map = new Map<number, BadgeInformation<K>>();
     if (this.#table == undefined) return map;
 
-    for (let i = 0; i < this.#table.children.length; i++) {
-      const element = this.#table.children[i];
+    for (const element of this.#table.children) {
       if (!(element instanceof BadgeInformation)) continue;
 
       const badge = element as BadgeInformation<K>;
@@ -276,7 +275,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
       return;
     }
     categories.forEach((cat) => {
-      this.#shadow!.appendChild(cat)
+      this.#shadow?.appendChild(cat);
     });
   }
 
@@ -297,7 +296,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
       // If we have deleted it succesffully, then we know that we can remove it. and return it.
       const result = noSyncTryCatch(() => this.#table.removeChild(entry));
       if (result.error) return;
-      badges.push(entry!);
+      badges.push(entry);
     });
 
     this.#autoHide();
@@ -399,7 +398,7 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
     this.#info_field.appendChild(this.#info_comp);
   }
   // This is empty because we don't want to recreate a ton of stuff.
-  connectedMoveCallback() { }
+  connectedMoveCallback() { return; }
 
   connectedCallback() {
     // On update stuff to keep everything in check.
@@ -428,8 +427,9 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
    * @param hover Is user hover?
    */
   #effectElement(hover: boolean) {
-    this.#name_field.innerText = this.#data!.name(hover);
-    this.#info_data.innerText = this.#data!.information(hover);
+    if (!this.#data) return;
+    this.#name_field.innerText = this.#data.name(hover);
+    this.#info_data.innerText = this.#data.information(hover);
   }
 
   /**
