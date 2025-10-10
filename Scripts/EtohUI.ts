@@ -243,9 +243,9 @@ class UI {
     if (isMobile()) this.#main_nav_toggle.checked = false;
   }
 
-  #makeAreas(area: Area, unprocessed_children: Map<string, CategoryInformation<Badge>[]>, badges: Badge[]) {
+  #makeAreas(area: Area, unprocessed_children: Map<string, CategoryInformation<Badge>[]>) {
     // make the area
-    const cat = categoryFromArea(area, badges);
+    const cat = categoryFromArea(area);
     this.#categories.set(area.name, cat);
 
     // add any children.
@@ -272,24 +272,17 @@ class UI {
    */
   load_required_data() {
     const unprocessed_children = new Map<string, CategoryInformation<Tower>[]>();
-    const permanent_badges = badgeManager.category(Category.Permanent);
     // going to bet on the fact that `unprocessed_children` is a reference and not the object itself.
-    areaManager.category(Category.Permanent).forEach((area) => this.#makeAreas(area, unprocessed_children, permanent_badges));
-
-    const temporary_badges = badgeManager.category(Category.Temporary);
-    // going to bet on the fact that `unprocessed_children` is a reference and not the object itself.
-    areaManager.category(Category.Temporary).forEach((area) => this.#makeAreas(area, unprocessed_children, temporary_badges));
-
-    const other_badges = badgeManager.category(Category.Other);
-    // going to bet on the fact that `unprocessed_children` is a reference and not the object itself.
-    areaManager.category(Category.Other).forEach((area) => this.#makeAreas(area, unprocessed_children, other_badges));
+    areaManager.category(Category.Permanent).forEach((area) => this.#makeAreas(area, unprocessed_children));
+    areaManager.category(Category.Temporary).forEach((area) => this.#makeAreas(area, unprocessed_children));
+    areaManager.category(Category.Other).forEach((area) => this.#makeAreas(area, unprocessed_children));
   }
 
 }
 
 const ui = new UI();
 
-function categoryFromArea<T extends Badge>(area: Area, badges: T[]) {
+function categoryFromArea<T extends Badge>(area: Area) {
   const category = new CategoryInformation<T>();
   category.data = {
     name: area.name,
@@ -297,7 +290,7 @@ function categoryFromArea<T extends Badge>(area: Area, badges: T[]) {
     lock_reason: area.lock_reason
   };
 
-  const uiBadges = badges.map((badge) => {
+  const uiBadges = badgeManager.area(area.name).map((badge) => {
     return {
       completed: -1,
       id: badge.id,
