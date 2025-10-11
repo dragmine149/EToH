@@ -203,12 +203,18 @@ class Tower extends Badge {
 
   get shortName() { return shortTowerName(this.name); }
 
-  // get_name_field(hover: boolean) {
-  //   return hover ? this.name : this.shortName;
-  // }
-  // get_information_field(hover: boolean) {
-  //   return hover ? `${getDifficulty(this.difficulty)} (${this.difficulty})` : getDifficultyWord(this.difficulty);
-  // }
+  get_name_field(hover: boolean) {
+    return hover ? this.name : this.shortName;
+  }
+  get_information_field(hover: boolean) {
+    const word = getDifficultyWord(this.difficulty);
+    return hover ? `${getDifficulty(this.difficulty)} (${this.difficulty})` : word;
+  }
+
+  set_info_style(): string {
+    const lword = getDifficultyWord(this.difficulty).toLowerCase();
+    return `background: var(--difficulty-${lword}); color: var(--difficulty-${lword}-text);`;
+  }
 
 
   constructor(name: string, ids: number[], lock_type: Lock, difficulty: number, area: string, type: TowerType, category: Category, lock_reason?: string, wiki?: URL) {

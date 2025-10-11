@@ -3,57 +3,85 @@
  *
  * Difficulty colour source: https://jtoh.fandom.com/wiki/Difficulty
 */
-.difficulty.easy {
-  background: #75F347;
-  color: black;
+
+:root {
+  --difficulty-easy: #75F347;
+  --difficulty-easy-text: black;
+  --difficulty-medium: #FFFE00;
+  --difficulty-medium-text: black;
+  --difficulty-hard: #FD7C00;
+  --difficulty-hard-text: black;
+  --difficulty-difficult: #FF3232;
+  --difficulty-difficult-text: black;
+  --difficulty-challenging: #A00000;
+  --difficulty-challenging-text: white;
+  --difficulty-intense: #19232D;
+  --difficulty-intense-text: white;
+  --difficulty-remorseless: #C800C8;
+  --difficulty-remorseless-text: white;
+  --difficulty-insane: #0000FF;
+  --difficulty-insane-text: white;
+  --difficulty-extreme: #0389FF;
+  --difficulty-extreme-text: white;
+  --difficulty-terrifying: #00FFFF;
+  --difficulty-terrifying-text: black;
+  --difficulty-catastrophic: #FFFFFF;
+  --difficulty-catastrophic-text: black;
 }
 
-.difficulty.medium {
-  background: #FFFE00;
-  color: black;
-}
+.difficulty {
+  .easy {
+    background: var(--difficulty-easy);
+    color: var(--difficulty-easy-text);
+  }
 
-.difficulty.hard {
-  background: #FD7C00;
-  color: black;
-}
+  .medium {
+    background: var(--difficulty-medium);
+    color: var(--difficulty-medium-text);
+  }
 
-.difficulty.difficult {
-  background: #FF3232;
-  color: black;
-}
+  .hard {
+    background: var(--difficulty-hard);
+    color: var(--difficulty-hard-text);
+  }
 
-.difficulty.challenging {
-  background: #A00000;
-  color: white;
-}
+  .difficult {
+    background: var(--difficulty-difficult);
+    color: var(--difficulty-difficult-text);
+  }
 
-.difficulty.intense {
-  background: #19232D;
-  color: white;
-}
+  .challenging {
+    background: var(--difficulty-challenging);
+    color: var(--difficulty-challenging-text);
+  }
 
-.difficulty.remorseless {
-  background: #C800C8;
-  color: white;
-}
+  .intense {
+    background: var(--difficulty-intense);
+    color: var(--difficulty-intense-text);
+  }
 
-.difficulty.insane {
-  background: #0000FF;
-  color: white;
-}
+  .remorseless {
+    background: var(--difficulty-remorseless);
+    color: var(--difficulty-remorseless-text);
+  }
 
-.difficulty.extreme {
-  background: #0389FF;
-  color: white;
-}
+  .insane {
+    background: var(--difficulty-insane);
+    color: var(--difficulty-insane-text);
+  }
 
-.difficulty.terrifying {
-  background: #00FFFF;
-  color: black;
-}
+  .extreme {
+    background: var(--difficulty-extreme);
+    color: var(--difficulty-extreme-text);
+  }
 
-.difficulty.catastrophic {
-  background: #FFFFFF;
-  color: black;
+  .terrifying {
+    background: var(--difficulty-terrifying);
+    color: var(--difficulty-terrifying-text);
+  }
+
+  .catastrophic {
+    background: var(--difficulty-catastrophic);
+    color: var(--difficulty-catastrophic-text);
+  }
 }

@@ -63,7 +63,7 @@ body {
 
 .area {
   float: left;
-  margin: 5px 10px 10px 0px;
+  margin: 2.5px 5px 5px 0px;
   background: var(--color-gray-800);
   padding: 0.5rem;
   border-radius: 0.25rem;

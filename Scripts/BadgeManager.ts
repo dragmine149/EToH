@@ -83,6 +83,9 @@ class Badge {
     return `<a href="${this.link}">Badge Link</a>`;
   }
 
+  set_name_style() { return ""; }
+  set_info_style() { return ""; }
+
   // /**
   // * How to reference this badge in the search data. key is potential references whilst value is itself.
   // * @param search_data An object of the data to search.

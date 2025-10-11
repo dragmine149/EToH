@@ -8,7 +8,7 @@ import { areaManager, Area } from "./AreaManager";
 /**Custom regex is formatted as such to handle `"{name},{difficult},[{badges},{more badges}],{type}"`
  * @see https://regex101.com/r/Y1GLyf/1 for examples
  */
-const regex = /([^,]+),(\d?\d.?\d?\d?),(\[.*\]),(\d)/gm;
+const regex = /^(.*?)(?=,\d),(\d?\d.?\d?\d?),(\[.*\]),(\d)/gm;
 
 /**
  * Helper function to load areas from the server as there is a lot to do.
@@ -34,7 +34,7 @@ function load_area(category: Category, area: ServerAreas) {
       addTowerType(tower_data[1], tower_type),
       JSON.parse(tower_data[3]),
       Lock.Unlocked,
-      Number.parseInt(tower_data[2]),
+      Number.parseFloat(tower_data[2]),
       area.n,
       tower_type,
       category

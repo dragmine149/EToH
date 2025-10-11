@@ -4,8 +4,12 @@ import { noSyncTryCatch } from "./utils";
 interface UIBadgeData<K extends Badge> {
   /** Function to call to show information in the name field of the ui. */
   name: K['get_name_field'],
+  /** Function to call to set the style of the element. Shouldn't be used often */
+  name_style: K['set_name_style'],
   /** Function to call to show information in the info field of the ui. */
   information: K['get_information_field'],
+  /** Function to call to set the style of the element. Shouldn't be used often */
+  info_style: K['set_info_style'],
   /** Link to the badge on roblox itself. */
   url: K['link'],
   /** Badge ID */
@@ -194,17 +198,25 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
    * Allows for all children to be the same size so we have no weirdness with jumping.
    */
   updateSize() {
-    const sizes = [
+    const sizes: [number, number][] = [
       ...this.categories.map((c) => c.updateSize()),
       ...Array.from(this.badges.values()).map((b) => b.setWidth()),
     ];
+    const name = sizes.map((s) => s[0]);
+    const info = sizes.map((s) => s[1]);
+    const max_name = name.reduce((m, s) => Math.max(m, s), 0);
+    const max_info = info.reduce((m, s) => Math.max(m, s), 0);
 
-    const max = sizes.reduce((m, s) => Math.max(m, s), 0);
+    if (max_name + max_info > 0) this.style.width = `${max_name + max_info + 8}px`;
 
-    // Then only if it's bigger than our current width. Do we set the children width. `+4` is for the table offset.
-    if (max > this.clientWidth) this.style.width = `${max + 4}px`;
+    return [max_name, max_info];
 
-    return max;
+    // const max = sizes.reduce((m, s) => Math.max(m, s), 0);
+
+    // // Then only if it's bigger than our current width. Do we set the children width. `+4` is for the table offset.
+    // if (max > this.clientWidth) this.style.width = `${max + 4 + 4}px`;
+
+    // return max;
   }
 
   /**
@@ -415,11 +427,16 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
    */
   setWidth() {
     this.#effectElement(true);
+    // this.style.width = "";
     // console.log(this.clientWidth);
-    const width = this.clientWidth;
-    if (this.clientWidth > 0) this.style.width = `${width}px`;
+
+    const name = this.#name_field.clientWidth;
+    const data = this.#info_field.clientWidth;
+
+    // const width = this.clientWidth;
+    // if (this.clientWidth > 0) this.style.width = `${width}px`;
     this.#effectElement(false);
-    return width;
+    return [name, data];
   }
 
   /**
@@ -461,6 +478,9 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
     // sort out external events.
     this.#row.onmouseover = this.#effectElement.bind(this, true);
     this.#row.onmouseleave = this.#effectElement.bind(this, false);
+
+    this.setNameStyle();
+    this.setInfoStyle();
   }
 
   /**
@@ -480,6 +500,13 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   isCompleted() {
     if (!this.#data) return false;
     return this.#data.completed > 0;
+  }
+
+  setNameStyle(style?: string) {
+    this.#name_field.style = style ?? (this.#data ? this.#data.name_style() : "");
+  }
+  setInfoStyle(style?: string) {
+    this.#info_field.style = style ?? (this.#data ? this.#data.info_style() : "");
   }
 
   // search(data: string, is_acro: string);

@@ -299,9 +299,11 @@ function categoryFromArea<T extends Badge>(area: Area) {
       completed: -1,
       id: badge.id,
       information: badge.get_information_field.bind(badge),
+      info_style: badge.set_info_style.bind(badge),
       lock_reason: badge.lock_reason,
       lock_type: badge.lock_type,
       name: badge.get_name_field.bind(badge),
+      name_style: badge.set_name_style.bind(badge),
       url: badge.link,
       wiki: badge.wiki
     } as UIBadgeData<T>;
