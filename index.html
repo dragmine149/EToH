@@ -66,7 +66,7 @@
           </button>
         </div>
         <a id="user-profile" href="https://roblox.com/users/unknown" target="_blank" rel="noopener noreferrer">
-          <img src="https://roblox-proxy.dragmine149.workers.dev/users/unknown/avatar_headshot.png?size=75&direct&circular" class="size-12.5">
+          <img class="size-12.5">
         </a>
       </div>
     </div>
@@ -109,9 +109,9 @@
 
     <datalist id="user_list"></datalist>
 
-    <div id="badges" hidden></div>
+    <div id="badges" class="scroll-auto overflow-y-scroll fixed top-16 h-full-2 w-full-1.5"></div>
 
-    <div id="search-main" hidden class="bg-neutral-800/80 box-border size-full items-center justify-center flex z-5">
+    <div id="search-main" hidden class="bg-neutral-800/80 box-border h-full-2 w-full-1.5 items-center justify-center flex z-20 fixed top-16">
       <div id="search" class="bg-gray-900/70 text-white text-center rounded-md p-3 flex items-center flex-col
         justify-between box-border
         h-5/10 lg:h-3/10 w-full lg:w-4/10">
@@ -133,7 +133,7 @@
       </div>
     </div>
 
-    <div hidden id="pre-load" class="bg-neutral-800/80 box-border size-full items-center justify-center flex z-5">
+    <div hidden id="pre-load" class="bg-neutral-800/80 box-border size-full items-center justify-center flex z-50 fixed top-16 h-full-2 w-full-1.5">
       <div id="pre-load-info" class="bg-gray-900/70 text-white text-center rounded-md p-3 flex items-center flex-col
         justify-between box-border
         h-5/10 lg:h-3/10 w-full lg:w-4/10">
@@ -141,11 +141,11 @@
         <br>
         <span class="text-2xl"></span>
         <br>
-        <button class="text-3xl">Retry loading required assets (or refresh)</button>
+        <button class="text-3xl" hidden>Retry loading required assets (or refresh)</button>
       </div>
     </div>
 
-    <noscript class="bg-neutral-800/80 box-border size-full items-center justify-center flex z-5">
+    <noscript class="bg-neutral-800/80 box-border size-full items-center justify-center flex z-100 fixed top-16 h-full-2 w-full-1.5">
       <div class="bg-gray-900/70 text-white text-center rounded-md p-3 flex items-center flex-col
         justify-between box-border
         h-5/10 lg:h-3/10 w-full lg:w-4/10">

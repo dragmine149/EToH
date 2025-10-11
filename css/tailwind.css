@@ -13,6 +13,11 @@
   --size-full-1\.5: calc(100% - (var(--spacing) * 3));
   --width-full-1\.5: calc(100% - (var(--spacing) * 3));
   --height-full-1\.5: calc(100% - (var(--spacing) * 3));
+
+  /* 2 each size for a total of 4 */
+  --size-full-2: calc(100% - (var(--spacing) * 4));
+  --width-full-2: calc(100% - (var(--spacing) * 4));
+  --height-full-2: calc(100% - (var(--spacing) * 4));
 }
 
 /* This would just be a pain to define for everything in class format, so we do it here. */

@@ -39,7 +39,7 @@ function load_area(category: Category, area: ServerAreas) {
       tower_type,
       category
     );
-    console.log(tower_data, tower_badge);
+    // console.log(tower_data, tower_badge);
 
     badgeManager.addBadge(tower_badge);
   });
@@ -67,12 +67,29 @@ function load_area(category: Category, area: ServerAreas) {
   ui.preload(`Finish loading area ${area.n} of ${category}`, PreloadState.TowerData);
 }
 
+// eslint-disable-next-line no-undef
+async function fetchWithCache(input: RequestInfo | URL, init?: RequestInit) {
+  const cache = await caches.open(`fetch_cache`);
+  const cached_result = await cache.match(input);
+  if (cached_result) {
+    console.log(`Loading fetch from cache`);
+    return cached_result;
+  }
+
+  const result = await fetch(input, init);
+  if (!result.ok) return result;
+
+  // only cache an ok results.
+  await cache.put(input, result);
+  return result;
+}
+
 /**
  * Sends a network request to get all the towers and starts loading them into memory for immedite and future use.
  */
 async function loadTowersFromServer() {
   ui.preload("Load towers from server", PreloadState.TowerData);
-  const server_tower = await fetch('https://raw.githubusercontent.com/dragmine149/EToH/refs/heads/Data/tower_data.json');
+  const server_tower = await fetchWithCache('https://raw.githubusercontent.com/dragmine149/EToH/refs/heads/Data/tower_data.json');
 
   if (!server_tower.ok) {
     ui.preload(`Failed to fetch due to ${server_tower.statusText}`, PreloadState.Errored);
@@ -97,7 +114,7 @@ async function loadTowersFromServer() {
  */
 async function loadOthersFromServer() {
   ui.preload(`Attempting to load other data`, PreloadState.OtherData);
-  const server_other = await fetch('data/other_data.json');
+  const server_other = await fetchWithCache('data/other_data.json');
   if (!server_other.ok) {
     ui.preload(`Failed to get other data:${server_other.statusText}`, PreloadState.Errored);
     return;
@@ -120,8 +137,6 @@ async function loadOthersFromServer() {
 // Doesn't need to have any connection with `preload` as this can be loaded in the background at any time. And isn't technically required to be able to
 // use this project.
 addEventListener('user_manager_loaded', () => {
-  load_user_from_url("initial");
-
   // console.log(userManager);
   // console.log(userManager.name());
   ui.datalist_add_user(...userManager.name());
@@ -150,6 +165,9 @@ async function load_required_data() {
 
   ui.preload(`Completed loading of required assets.`, PreloadState.Finished);
   ui.load_required_data();
+
+  // everything else should load way later than the user manager. Hence this can go here.
+  load_user_from_url("initial");
 }
 
 /**

@@ -133,6 +133,7 @@ class UI {
     this.#user_mini_button.onmousedown = this.#submitUserSearch.bind(this);
     this.#user_search_button.disabled = this.#user_search.value.length <= 0;
     this.#user_search_back.disabled = true;
+    this.#user_search_back.onclick = () => this.#search_main.hidden = true;
     this.#user.onclick = () => this.#miniSearch(true);
     this.#user_mini_input.onclick = () => this.#miniSearch(true);
     this.#user_mini_input.onblur = () => this.#miniSearch(false);
@@ -228,11 +229,14 @@ class UI {
 
     this.#user_profile.hidden = false;
     this.#user_search_back.disabled = false;
+    // this style is so that its hopefully invisible when no user loaded.
     this.#user_mini_button.style.right = "3.4rem";
 
     const url = new URL(location.toString());
     url.searchParams.set("user", user.name);
     if (popped == undefined || popped == false) history.pushState(undefined, "", url);
+
+    this.#search_main.hidden = true;
   }
 
   /**

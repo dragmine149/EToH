@@ -30,7 +30,6 @@ export default tseslint.config(
     languageOptions: {
       globals: {
         ...globals.browser,
-        Dexie: "readonly"
       },
       ecmaVersion: 2022,
       sourceType: "module"

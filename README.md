@@ -8,7 +8,6 @@ Visit the product here: https://dragmine149.github.io/ETOH
 - Switch over to [Cypress](https://docs.cypress.io/app/end-to-end-testing/writing-your-first-end-to-end-test) for testing and add more tests.
 - Compare data between users. (Only after users have been downloaded)
 - Graphs showing data (like difficulty jumps or similar)
-- Rework of major components to use web components?
 - Get more data from github instead of having to update 2 repos when 1 thing changes.
 - Improved filter system (with more options as to how to show data)
 - Default / saved settings
