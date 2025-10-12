@@ -198,25 +198,15 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
    * Allows for all children to be the same size so we have no weirdness with jumping.
    */
   updateSize() {
-    const sizes: [number, number][] = [
+    const sizes: number[][] = [
       ...this.categories.map((c) => c.updateSize()),
       ...Array.from(this.badges.values()).map((b) => b.setWidth()),
     ];
-    const name = sizes.map((s) => s[0]);
-    const info = sizes.map((s) => s[1]);
-    const max_name = name.reduce((m, s) => Math.max(m, s), 0);
-    const max_info = info.reduce((m, s) => Math.max(m, s), 0);
+    const name = sizes.map((s) => s[0]).reduce((m, s) => Math.max(m, s), 0);
+    const info = sizes.map((s) => s[1]).reduce((m, s) => Math.max(m, s), 0);
 
-    if (max_name + max_info > 0) this.style.width = `${max_name + max_info + 8}px`;
-
-    return [max_name, max_info];
-
-    // const max = sizes.reduce((m, s) => Math.max(m, s), 0);
-
-    // // Then only if it's bigger than our current width. Do we set the children width. `+4` is for the table offset.
-    // if (max > this.clientWidth) this.style.width = `${max + 4 + 4}px`;
-
-    // return max;
+    if (name + info > 0) this.style.width = `${name + info + 8}px`;
+    return [name, info];
   }
 
   /**
