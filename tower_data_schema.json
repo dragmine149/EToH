@@ -170,9 +170,14 @@
         "temporary",
         "other"
       ]
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
     }
   },
   "required": [
-    "areas"
+    "areas",
+    "updated"
   ]
 }

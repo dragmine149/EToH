@@ -1,5 +1,6 @@
 use std::{collections::HashMap, fs, path::PathBuf};
 
+use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -174,9 +175,42 @@ impl TowerJSON {
             "$schema".to_string(),
             serde_json::Value::String(self.schema.clone()),
         );
-        root.insert("areas".to_string(), serde_json::Value::Object(areas_map));
+
+        // Keep a Value form of the new areas so we can compare with existing file
+        let new_areas_value = serde_json::Value::Object(areas_map.clone());
+        root.insert("areas".to_string(), new_areas_value.clone());
+
+        // Determine whether we need to update the "updated" field.
+        // If an existing file is present and its "areas" value equals the new "areas",
+        // preserve its "updated" value. Otherwise, set a new timestamp.
+        let mut preserved_updated: Option<String> = None;
+        if let Ok(old_content) = fs::read_to_string(&path) {
+            if let Ok(old_json) = serde_json::from_str::<serde_json::Value>(&old_content) {
+                if let Some(old_areas) = old_json.get("areas") {
+                    if old_areas == &new_areas_value {
+                        if let Some(s) = old_json.get("u").and_then(|v| v.as_str()) {
+                            preserved_updated = Some(s.to_string());
+                        }
+                    }
+                }
+            }
+        }
+
+        let updated_str = match preserved_updated {
+            Some(s) => s,
+            None => Utc::now().to_rfc3339(),
+        };
+        root.insert("u".to_string(), serde_json::Value::String(updated_str));
 
         let data = serde_json::to_string(&serde_json::Value::Object(root))?;
+
+        // Only write if content differs (avoids updating timestamp/mtime unnecessarily).
+        if let Ok(old_content) = fs::read_to_string(&path) {
+            if old_content == data {
+                return Ok(());
+            }
+        }
+
         Ok(fs::write(path, data)?)
     }
 }

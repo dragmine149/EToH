@@ -136,9 +136,14 @@
         "temporary",
         "other"
       ]
+    },
+    "u": {
+      "type": "string",
+      "format": "date"
     }
   },
   "required": [
-    "areas"
+    "areas",
+    "u"
   ]
 }
