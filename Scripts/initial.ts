@@ -69,6 +69,9 @@ function load_area(category: Category, area: ServerAreas) {
 
 // eslint-disable-next-line no-undef
 async function fetchWithCache(input: RequestInfo | URL, init?: RequestInit) {
+  // Can't cache without a secure context so, we just do the default option.
+  if (window.isSecureContext) return await fetch(input, init);
+
   const cache = await caches.open(`fetch_cache`);
   const cached_result = await cache.match(input);
   if (cached_result) {
@@ -201,4 +204,4 @@ load_required_data();
 // Console only function for debugging purposes. Separated out to reduce overhead + whatever.
 globalThis.import_debug = async () => await import('./debug');
 
-export { load_required_data };
+export { load_required_data, fetchWithCache };
