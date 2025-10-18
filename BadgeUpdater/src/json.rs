@@ -198,7 +198,7 @@ impl TowerJSON {
 
         let updated_str = match preserved_updated {
             Some(s) => s,
-            None => Utc::now().to_rfc3339(),
+            None => Utc::now().date_naive().to_string(),
         };
         root.insert("u".to_string(), serde_json::Value::String(updated_str));
 
