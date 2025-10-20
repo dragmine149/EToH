@@ -1,31 +1,17 @@
-/*eslint no-unused-vars: "error"*/
+import { ui } from './ETOH/EtohUI';
 
-import Dexie, { type EntityTable, type InsertType, type Table } from "dexie";
-
-interface BadgeData {
-  badgeId: number;
-  userId: number;
-  date: number;
-}
-interface UserData {
-  id: number;
-  name: string;
-  display: string;
-  past: string[];
-  last: number;
+/**
+ * Helper function to load user based on the URL.
+ * @param orig The place this got used from. Used for debugging purposes.
+ */
+function load_user_from_url(orig: string) {
+  const url = new URL(location.toString());
+  const user = url.searchParams.get("user");
+  console.log(`attempting to load ${user} from ${orig}`);
+  if (user) ui.load_user(user, true);
 }
 
-type UserTable = Table<UserData, number, InsertType<UserData, "id">>;
+addEventListener('popstate', load_user_from_url.bind(this, "pop"))
 
-
-const etohDB = new Dexie("EToH") as Dexie & {
-  badges: EntityTable<BadgeData, 'badgeId'>,
-  users: EntityTable<UserData, 'id'>
-};
-etohDB.version(1).stores({
-  badges: `[badgeId+userId], badgeId, userId`,
-  users: `&id, name, display, past, last`
-})
-
-export { etohDB };
-export type { UserData, BadgeData, UserTable };
+// Console only function for debugging purposes. Separated out to reduce overhead + whatever.
+globalThis.import_debug = async () => await import('./debug');

@@ -43,4 +43,31 @@ function noSyncTryCatch<T, E = Error>(func: () => T): Result<T, E> {
   }
 }
 
-export { tryCatch, noSyncTryCatch };
+
+/**
+ * Tests to see if the user is on a mobile device by looking at certain parameters.
+ * @returns An estimate to if the user is on a mobile device or not.
+ * @author T3 Chat (GPT-5 mini)
+ */
+const isMobile = (): boolean => {
+  // SSR guard
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+    return false
+  }
+
+  const ua = navigator.userAgent ?? ''
+  const uaLower = ua.toLowerCase()
+
+  // basic UA hint for phones/tablets
+  const mobileUA = /iphone|ipad|ipod|android|mobile/i
+
+  // modern touch detection and coarse pointer hint
+  const hasTouch = (navigator.maxTouchPoints ?? 0) > 0
+  const coarsePointer = window.matchMedia?.('(pointer: coarse)').matches ?? false
+
+  const smallScreen = Math.min(window.screen.width, window.screen.height) <= 820
+
+  return mobileUA.test(uaLower) || hasTouch || coarsePointer || smallScreen
+}
+
+export { tryCatch, noSyncTryCatch, isMobile };

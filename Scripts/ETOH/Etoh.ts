@@ -1,9 +1,9 @@
-import { etohDB } from ".";
-import { Badge, BadgeManager, Lock } from "./BadgeManager";
+import { etohDB } from "./database";
+import { Badge, BadgeManager, Lock } from "../ETOHBridge/BadgeManager";
 import { DIFFICULTIES, SUB_LEVELS } from "./constants";
-import { logs } from "./logs";
-import { CLOUD_URL, network, RawBadge } from "./network";
-import { User, UserManager } from "./user";
+import { logs } from "../Core/logs";
+import { CLOUD_URL, network, RawBadge } from "../Core/network";
+import { User, UserManager } from "../Core/user";
 
 type BadgeId = number;
 type CompletedDate = number;

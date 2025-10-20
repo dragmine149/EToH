@@ -1,7 +1,7 @@
-import { GenericManager } from "../Scripts/GenericManager";
-import { DIFFICULTIES, AreaRequirements } from "../Scripts/constants";
+import { GenericManager } from "../Core/GenericManager";
+import { DIFFICULTIES, AreaRequirements } from "../ETOH/constants";
 import { Lock } from "./BadgeManager";
-import { Category } from "./Etoh";
+import { Category } from "../ETOH/Etoh";
 
 class Area {
   /** The name of this area */

@@ -1,5 +1,5 @@
-import { CategoryInformation, UIBadgeData, CategoryData, Count, BadgeInformation } from "./ui";
-import { Lock, Badge } from "./BadgeManager";
+import { CategoryInformation, UIBadgeData, CategoryData, Count } from "./ui";
+import { Lock, Badge } from "../ETOHBridge/BadgeManager";
 
 /**
 * Returns the shortened version of the text, in accordance to tower format.

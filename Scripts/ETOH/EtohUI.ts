@@ -1,8 +1,9 @@
-import { Area, areaManager } from "./AreaManager";
-import { Badge } from "./BadgeManager";
+import { Area, areaManager } from "../ETOHBridge/AreaManager";
+import { Badge } from "../ETOHBridge/BadgeManager";
 import { Category, Tower, userManager, badgeManager } from "./Etoh";
-import { isMobile, load_required_data } from "./initial";
-import { CategoryInformation, UIBadgeData } from "./ui";
+import { load_required_data } from "..";
+import { isMobile } from "../utils";
+import { CategoryInformation, UIBadgeData } from "../Core/ui";
 
 enum PreloadState {
   TowerData,

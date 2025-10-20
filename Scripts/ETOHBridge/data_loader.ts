@@ -1,11 +1,12 @@
-import { userManager, Tower, Category, Other, numberToType, badgeManager, addTowerType } from "./Etoh";
-import { ui, PreloadState } from "./EtohUI";
 import { Lock } from "./BadgeManager";
-import { ServerAreas, ServerOtherParent, ServerTowers } from "./constants";
-import { tryCatch } from "./utils";
+import { ServerAreas, ServerOtherParent, ServerTowers } from "../ETOH/constants";
+import { tryCatch } from "../utils";
 import { areaManager, Area } from "./AreaManager";
+import { fetchWithCache } from "../Core/network";
+import { userManager, Tower, Category, Other, numberToType, badgeManager, addTowerType } from "../ETOH/Etoh";
+import { PreloadState, ui } from "../ETOH/EtohUI";
 
-/**Custom regex is formatted as such to handle `"{name},{difficult},[{badges},{more badges}],{type}"`
+/** Custom regex is formatted as such to handle `"{name},{difficult},[{badges},{more badges}],{type}"`
  * @see https://regex101.com/r/Y1GLyf/1 for examples
  */
 const regex = /^(.*?)(?=,\d),(\d?\d.?\d?\d?),(\[.*\]),(\d)/gm;
@@ -67,25 +68,6 @@ function load_area(category: Category, area: ServerAreas) {
   ui.preload(`Finish loading area ${area.n} of ${category}`, PreloadState.TowerData);
 }
 
-// eslint-disable-next-line no-undef
-async function fetchWithCache(input: RequestInfo | URL, init?: RequestInit) {
-  // Can't cache without a secure context so, we just do the default option.
-  if (window.isSecureContext) return await fetch(input, init);
-
-  const cache = await caches.open(`fetch_cache`);
-  const cached_result = await cache.match(input);
-  if (cached_result) {
-    console.log(`Loading fetch from cache`);
-    return cached_result;
-  }
-
-  const result = await fetch(input, init);
-  if (!result.ok) return result;
-
-  // only cache an ok results.
-  await cache.put(input, result);
-  return result;
-}
 
 /**
  * Sends a network request to get all the towers and starts loading them into memory for immedite and future use.
@@ -145,19 +127,6 @@ addEventListener('user_manager_loaded', () => {
   ui.datalist_add_user(...userManager.name());
 });
 
-addEventListener('popstate', load_user_from_url.bind(this, "pop"))
-
-/**
- * Helper function to load user based on the URL.
- * @param orig The place this got used from. Used for debugging purposes.
- */
-function load_user_from_url(orig: string) {
-  const url = new URL(location.toString());
-  const user = url.searchParams.get("user");
-  console.log(`attempting to load ${user} from ${orig}`);
-  if (user) ui.load_user(user, true);
-}
-
 /**
  * Global function to load data and keep track of it.
  * Can also be used run again if the data failed to load, hence the export.
@@ -173,35 +142,5 @@ async function load_required_data() {
   load_user_from_url("initial");
 }
 
-/**
- * Tests to see if the user is on a mobile device by looking at certain parameters.
- * @returns An estimate to if the user is on a mobile device or not.
- * @author T3 Chat (GPT-5 mini)
- */
-export const isMobile = (): boolean => {
-  // SSR guard
-  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
-    return false
-  }
-
-  const ua = navigator.userAgent ?? ''
-  const uaLower = ua.toLowerCase()
-
-  // basic UA hint for phones/tablets
-  const mobileUA = /iphone|ipad|ipod|android|mobile/i
-
-  // modern touch detection and coarse pointer hint
-  const hasTouch = (navigator.maxTouchPoints ?? 0) > 0
-  const coarsePointer = window.matchMedia?.('(pointer: coarse)').matches ?? false
-
-  const smallScreen = Math.min(window.screen.width, window.screen.height) <= 820
-
-  return mobileUA.test(uaLower) || hasTouch || coarsePointer || smallScreen
-}
-
 // some simple, auto run functions.
 load_required_data();
-// Console only function for debugging purposes. Separated out to reduce overhead + whatever.
-globalThis.import_debug = async () => await import('./debug');
-
-export { load_required_data, fetchWithCache };

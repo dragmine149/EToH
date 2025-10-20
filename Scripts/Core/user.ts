@@ -1,7 +1,7 @@
-import { tryCatch } from "./utils";
-import { type UserTable } from ".";
+import { tryCatch } from "../utils";
+import { type UserTable } from "../ETOH/database";
 import { GenericManager } from "./GenericManager";
-import { CLOUD_URL, network } from "./network";
+import { CLOUD_URL } from "./network";
 import { logs } from "./logs";
 
 class User {

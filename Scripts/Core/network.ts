@@ -1,4 +1,4 @@
-import { tryCatch } from "./utils";
+import { tryCatch } from "../utils";
 import { logs } from "./logs";
 const CLOUD_URL = 'https://roblox-proxy.dragmine149.workers.dev';
 
@@ -128,7 +128,28 @@ class Network {
   }
 }
 
+
+// eslint-disable-next-line no-undef
+async function fetchWithCache(input: RequestInfo | URL, init?: RequestInit) {
+  // Can't cache without a secure context so, we just do the default option.
+  if (window.isSecureContext) return await fetch(input, init);
+
+  const cache = await caches.open(`fetch_cache`);
+  const cached_result = await cache.match(input);
+  if (cached_result) {
+    console.log(`Loading fetch from cache`);
+    return cached_result;
+  }
+
+  const result = await fetch(input, init);
+  if (!result.ok) return result;
+
+  // only cache an ok results.
+  await cache.put(input, result);
+  return result;
+}
+
 const network = new Network();
 
-export { network, CLOUD_URL };
+export { network, CLOUD_URL, fetchWithCache };
 export type { RawBadge };

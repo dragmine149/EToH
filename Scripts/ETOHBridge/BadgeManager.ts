@@ -1,6 +1,6 @@
 /*eslint no-undef: "error"*/
 
-import { GenericManager } from "../Scripts/GenericManager";
+import { GenericManager } from "../Core/GenericManager";
 
 // The reason why this badge / category can not be claimed.
 //

@@ -1,5 +1,5 @@
-import { Badge, Lock } from "./BadgeManager";
-import { noSyncTryCatch } from "./utils";
+import { Badge, Lock } from "../ETOHBridge/BadgeManager";
+import { noSyncTryCatch } from "../utils";
 
 interface UIBadgeData<K extends Badge> {
   /** Function to call to show information in the name field of the ui. */
