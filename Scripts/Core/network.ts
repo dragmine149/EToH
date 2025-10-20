@@ -76,9 +76,14 @@ class Network {
       return;
     }
 
+    if (!response.data.body) {
+      logs.log(`Failed to get body stream. (body stream is null somehow)`, `network`, 100);
+      return;
+    }
+
     logs.log(`Creating streamer and starting reading`, `network`, 10);
     // create stuff for reading data
-    const reader = (response.data.body as ReadableStream<any>).getReader();
+    const reader = response.data.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
 
@@ -128,8 +133,6 @@ class Network {
   }
 }
 
-
-// eslint-disable-next-line no-undef
 async function fetchWithCache(input: RequestInfo | URL, init?: RequestInit) {
   // Can't cache without a secure context so, we just do the default option.
   if (window.isSecureContext) return await fetch(input, init);

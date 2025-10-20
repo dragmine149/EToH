@@ -65,12 +65,13 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import '@typescript-eslint/eslint-plugin';
 import { defineConfig } from 'eslint/config';
+import globals from "globals";
 
 export default defineConfig(
   eslint.configs.recommended,
   tseslint.configs.recommended,
   {
-    "ignores": ["dist/", "node_modules/", "Assets/", "ETOH/", "**/*.*js"],
+    "ignores": ["dist/", "node_modules/", "**/*.*js"],
   },
   {
     "rules": {
@@ -82,5 +83,10 @@ export default defineConfig(
         reportUnusedFallthroughComment: true
       }]
     },
+    languageOptions: {
+      globals: {
+        ...globals.browser
+      }
+    }
   },
 );
