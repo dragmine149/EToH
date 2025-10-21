@@ -292,7 +292,8 @@ function categoryFromArea<T extends Badge>(area: Area) {
   category.data = {
     name: area.name,
     lock_type: area.lock_type,
-    lock_reason: area.lock_reason
+    lock_reason: area.lock_reason,
+    icon: `Assets/Emblems/${area.name.replaceAll(/\s/gm, '')}.webp`,
   };
 
   const uiBadges = badgeManager.area(area.name).map((badge) => {

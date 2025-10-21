@@ -31,6 +31,8 @@ interface CategoryData {
   lock_type: Lock,
   /** Indept reason as to why this is locked */
   lock_reason?: string,
+  /** Path to the icon to display on the left side of the dropdown.. */
+  icon?: string,
 }
 
 enum Count {
@@ -81,7 +83,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
 
   #data?: CategoryData;
   /** Data stored about the element. */
-  set data(data: CategoryData | undefined) { this.#data = Object.freeze(data); }
+  set data(data: CategoryData | undefined) { this.#data = Object.freeze(data); this.#updateData(); }
   get data() { return this.#data; }
 
   /** Whether to display the count of completed vs total in the header or not. */
@@ -204,8 +206,10 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     this.classList.add("area");
 
     // set header
-    this.#header.title = this.#data?.name || "";
-    this.#header.innerText = this.#data?.name || "";
+    this.#headerText.title = this.#data?.name || "";
+    this.#headerText.innerText = this.#data?.name || "";
+    this.#headerIcon.src = this.#data?.icon || "Assets/Emblems/Unknown.webp";
+    this.#headerIcon.onerror = () => this.#headerIcon.src = "Assets/Emblems/Unknown.webp";
 
     // process those waiting, if we have any waiting.
     // console.log(`Adding categories from queue`, this.#categoriesToProcess);
@@ -220,6 +224,16 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   // ====================================================================================================
   // Now we get into back-end UI management
   // ====================================================================================================
+
+  /**
+   * Update elements that rely on the data object when they have been set.
+   */
+  #updateData() {
+    this.#headerText.title = this.#data!.name;
+    this.#headerText.innerText = this.#data!.name;
+    this.#headerIcon.src = this.#data!.icon || "Assets/Emblems/Unknown.webp";
+  }
+
 
   /**
    * Automatically hide this element if there is no data in the table.
@@ -274,7 +288,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   #updateCount() {
     const completed_count = Array.from(this.badges.values()).filter(x => x.isCompleted()).length;
     const count_data = this.#countString(completed_count, this.badges?.size);
-    this.#header.innerText = `${this.#data?.name || ""}${count_data}`;
+    this.#headerText.innerText = `${this.#data?.name || ""}${count_data}`;
   }
 
   // ====================================================================================================
