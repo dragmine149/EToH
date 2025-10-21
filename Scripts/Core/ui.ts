@@ -50,6 +50,26 @@ function highlight_span(span: HTMLSpanElement, text: string, selected: boolean) 
   })
 }
 
+function createArrowSVG(direction: 'up' | 'down' = 'down', className?: string): SVGSVGElement {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("xmlns", svgNS);
+  if (className) svg.setAttribute("class", className);
+
+  const path = document.createElementNS(svgNS, "path");
+  path.setAttribute("fill-rule", "evenodd");
+  path.setAttribute("clip-rule", "evenodd");
+
+  const DOWN_D = "M4.29289 8.29289C4.68342 7.90237 5.31658 7.90237 5.70711 8.29289L12 14.5858L18.2929 8.29289C18.6834 7.90237 19.3166 7.90237 19.7071 8.29289C20.0976 8.68342 20.0976 9.31658 19.7071 9.70711L12.7071 16.7071C12.3166 17.0976 11.6834 17.0976 11.2929 16.7071L4.29289 9.70711C3.90237 9.31658 3.90237 8.68342 4.29289 8.29289Z";
+  const UP_D = "M12 7C12.2652 7 12.5196 7.10536 12.7071 7.29289L19.7071 14.2929C20.0976 14.6834 20.0976 15.3166 19.7071 15.7071C19.3166 16.0976 18.6834 16.0976 18.2929 15.7071L12 9.41421L5.70711 15.7071C5.31658 16.0976 4.68342 16.0976 4.29289 15.7071C3.90237 15.3166 3.90237 14.6834 4.29289 14.2929L11.2929 7.29289C11.4804 7.10536 11.7348 7 12 7Z";
+
+  path.setAttribute("d", direction === "down" ? DOWN_D : UP_D);
+  svg.appendChild(path);
+
+  return svg;
+}
+
 /**
  * Custom HTMLElement for making a table. Uses shadowDOM for cleaner HTML files.
  * Designed specifically to hold multiple badges which are dynamically added and removed.
@@ -116,7 +136,12 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   /** A dummy element for a 1px extra stylelish gap between the header and the content */
   #gap: HTMLTableRowElement;
   /** The header of the table, containing the title, count/progression, and the button for sub-children */
-  #header: HTMLSpanElement;
+  #header: HTMLDivElement;
+  #headerIcon: HTMLImageElement;
+  #headerText: HTMLSpanElement;
+  #headerDrop: HTMLDivElement;
+  #headerDropDown: SVGSVGElement;
+  #headerDropUp: SVGSVGElement;
   /** The style element as shadows do not read style from main body by default. */
   #style: HTMLLinkElement;
 
@@ -133,7 +158,12 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
 
     this.#table = document.createElement("table");
     this.#gap = document.createElement("tr");
-    this.#header = document.createElement("span");
+    this.#header = document.createElement("div");
+    this.#headerIcon = document.createElement("img");
+    this.#headerText = document.createElement("span");
+    this.#headerDrop = document.createElement("div");
+    this.#headerDropDown = createArrowSVG('down', 'hidden');
+    this.#headerDropUp = createArrowSVG('up', 'hidden');
     this.#style = document.createElement("link");
 
     // random span for gap reason.
@@ -142,9 +172,19 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     this.#style.href = "css/tables/table.css";
     this.#style.rel = "stylesheet";
 
-    this.#header.addEventListener('click', () => {
+    this.#header.appendChild(this.#headerIcon);
+    this.#header.appendChild(this.#headerText);
+    this.#header.appendChild(this.#headerDrop);
+    this.#headerDrop.appendChild(this.#headerDropDown);
+    this.#headerDrop.appendChild(this.#headerDropUp);
+
+    this.#headerDrop.addEventListener('click', () => {
+      if (this.categories.length <= 0) return;
+
       console.log('header click');
       this.toggleCategoryVisibility(!this.#subCategoryState);
+      this.#headerDropDown.classList.toggle('hidden');
+      this.#headerDropUp.classList.toggle('hidden');
     })
   }
   // This is empty because we don't want to recreate a ton of stuff.
@@ -279,6 +319,8 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     categories.forEach((cat) => {
       this.#shadow?.appendChild(cat);
     });
+
+    this.#headerDropUp.classList.remove('hidden');
   }
 
   /**
@@ -313,6 +355,10 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   removeCategory(...indexes: number[]) {
     const elms = this.categories.filter((v, i) => i in indexes);
     elms.forEach((elm) => this.#shadow?.removeChild(elm));
+
+    if (this.categories.length <= 0) {
+      this.#headerDropUp.classList.remove('hidden');
+    }
     return elms;
   }
 

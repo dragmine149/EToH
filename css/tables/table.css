@@ -95,3 +95,50 @@ table badge-info[hidden] {
   background-color: #555;
   color: white;
 }
+
+svg {
+  width: 3rem;
+}
+
+svg.hidden {
+  display: none;
+}
+
+div:not(*>div) {
+  border-top-left-radius: 9999px;
+  border-top-right-radius: 9999px;
+  display: flex;
+  justify-content: space-between;
+
+  * {
+    background-color: initial;
+  }
+
+  >:first-child {
+    padding-left: 1.2rem;
+    padding-top: 0.7rem;
+    width: 2rem;
+    height: 2rem;
+
+  }
+
+  >:nth-child(2) {
+    text-align: center;
+    font-weight: bold;
+    align-content: center;
+    white-space: nowrap;
+  }
+
+  >:last-child {
+    display: flex;
+    justify-content: end;
+    align-content: end;
+    padding-right: 0.5rem;
+    width: 4.5rem;
+  }
+
+  :last-child.hidden {
+    display: none;
+  }
+
+}
