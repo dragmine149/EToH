@@ -13,7 +13,7 @@ function load_user_from_url(orig: string) {
 }
 
 addEventListener('popstate', load_user_from_url.bind(this, "pop"));
-addEventListener('user_load', (ev) => load_user_from_url((ev as CustomEvent).detail)); g
+addEventListener('user_load', (ev) => load_user_from_url((ev as CustomEvent).detail));
 load_required_data();
 
 
