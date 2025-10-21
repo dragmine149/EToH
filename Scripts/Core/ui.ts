@@ -289,6 +289,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     const completed_count = Array.from(this.badges.values()).filter(x => x.isCompleted()).length;
     const count_data = this.#countString(completed_count, this.badges?.size);
     this.#headerText.innerText = `${this.#data?.name || ""}${count_data}`;
+    this.#headerText.classList[completed_count == this.badges.size ? 'add' : 'remove']("rainbow");
   }
 
   // ====================================================================================================
