@@ -139,8 +139,9 @@ async function load_required_data() {
   ui.load_required_data();
 
   // everything else should load way later than the user manager. Hence this can go here.
-  load_user_from_url("initial");
+  window.dispatchEvent(new CustomEvent("user_load", {
+    detail: "initial"
+  }))
 }
 
-// some simple, auto run functions.
-load_required_data();
+export { load_required_data };

@@ -1,4 +1,5 @@
 import { ui } from './ETOH/EtohUI';
+import { load_required_data } from './ETOHBridge/data_loader';
 
 /**
  * Helper function to load user based on the URL.
@@ -11,7 +12,10 @@ function load_user_from_url(orig: string) {
   if (user) ui.load_user(user, true);
 }
 
-addEventListener('popstate', load_user_from_url.bind(this, "pop"))
+addEventListener('popstate', load_user_from_url.bind(this, "pop"));
+addEventListener('user_load', (ev) => load_user_from_url((ev as CustomEvent).detail)); g
+load_required_data();
+
 
 // Console only function for debugging purposes. Separated out to reduce overhead + whatever.
 globalThis.import_debug = async () => await import('./debug');
