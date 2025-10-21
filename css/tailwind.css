@@ -18,6 +18,12 @@
   --size-full-2: calc(100% - (var(--spacing) * 4));
   --width-full-2: calc(100% - (var(--spacing) * 4));
   --height-full-2: calc(100% - (var(--spacing) * 4));
+
+  /* 2 at top plus a bunch of custom at bottom for a total of 14 */
+  --size-full-2: calc(100% - (var(--spacing) * 14));
+  --width-full-2: calc(100% - (var(--spacing) * 14));
+  --height-full-2: calc(100% - (var(--spacing) * 14));
+
 }
 
 @layer base {
