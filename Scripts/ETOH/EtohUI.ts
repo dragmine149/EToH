@@ -298,7 +298,6 @@ function categoryFromArea<T extends Badge>(area: Area) {
 
   const uiBadges = badgeManager.area(area.name).map((badge) => {
     return {
-      completed: -1,
       id: badge.id,
       information: badge.get_information_field.bind(badge),
       info_style: badge.set_info_style.bind(badge),

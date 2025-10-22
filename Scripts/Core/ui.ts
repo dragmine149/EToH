@@ -16,12 +16,15 @@ interface UIBadgeData<K extends Badge> {
   id: K['id'],
   /** Link to a wiki page about said badge. */
   wiki?: URL,
-  /** Completed date in utc time (via `new Date().getTime()`) */
-  completed: number,
   /** Overview of why this is locked */
   lock_type: K['lock_type'],
   /** Indept reason as to why this is locked */
   lock_reason: K['lock_reason'],
+}
+
+interface BadgeUserData {
+  /** Completed date in utc time (via `new Date().getTime()`) */
+  completed: number,
 }
 
 interface CategoryData {
@@ -433,6 +436,9 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   }
   get data() { return this.#data; }
 
+  /** Data stored about the specific user. This is meant to change all the time without a need to regenerate the whole thing. */
+  user_badge_data?: BadgeUserData;
+
   /// Contains quick references to different children for global use.
   #row: HTMLTableRowElement;
   #name_field: HTMLTableCellElement;
@@ -522,7 +528,7 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
     // set the fields default values so something exists.
     this.#name_field.innerHTML = this.#data.name(false);
     this.#info_data.innerHTML = this.#data.information();
-    this.#info_comp.innerHTML = this.#data.completed > 0 ? new Date(this.#data.completed).toLocaleString(undefined, {
+    this.#info_comp.innerHTML = this.isCompleted() ? new Date(this.user_badge_data!.completed).toLocaleString(undefined, {
       year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: false,
     }) : '';
 
@@ -549,8 +555,8 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
    * @returns Is the badge completed. Or false if no data.
    */
   isCompleted() {
-    if (!this.#data) return false;
-    return this.#data.completed > 0;
+    if (!this.user_badge_data) return false;
+    return this.user_badge_data.completed > 0;
   }
 
   setNameStyle(style?: string) {
@@ -567,4 +573,4 @@ customElements.define("category-info", CategoryInformation);
 customElements.define("badge-info", BadgeInformation);
 
 
-export { BadgeInformation, CategoryInformation, UIBadgeData, CategoryData, Count };
+export { BadgeInformation, CategoryInformation, UIBadgeData, CategoryData, Count, BadgeUserData };
