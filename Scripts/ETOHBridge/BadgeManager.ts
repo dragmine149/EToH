@@ -1,6 +1,7 @@
 /*eslint no-undef: "error"*/
 
 import { GenericManager } from "../Core/GenericManager";
+import { BadgeUserData } from "../Core/ui";
 
 // The reason why this badge / category can not be claimed.
 //
@@ -83,8 +84,23 @@ class Badge {
     return `<a href="${this.link}">Badge Link</a>`;
   }
 
-  set_name_style() { return ""; }
-  set_info_style() { return ""; }
+  set_name_style(data?: BadgeUserData) {
+    // console.log(data);
+    if (data == undefined) return ``;
+
+    // Maths to work out the gradient that we should be showing.
+    const now = (new Date()).getTime();
+    const diff = now - data.completed;
+    const progress = Math.min(Math.max(diff / 2419200000, 0), 1);
+    // console.log(diff, progress);
+    const colour_progress = Math.floor(256 - (progress * 256));
+    // console.log(colour_progress);
+    // console.log(colour_progress.toString(16));
+
+    return `background: #00FF${colour_progress.toString(16)}`;
+  }
+
+  set_info_style(_data?: BadgeUserData) { return ""; }
 
   // /**
   // * How to reference this badge in the search data. key is potential references whilst value is itself.

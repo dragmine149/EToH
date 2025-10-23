@@ -186,7 +186,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     this.#headerDrop.addEventListener('click', () => {
       if (this.categories.length <= 0) return;
 
-      console.log('header click');
+      // console.log('header click');
       this.toggleCategoryVisibility(!this.#subCategoryState);
       this.#headerDropDown.classList.toggle('hidden');
       this.#headerDropUp.classList.toggle('hidden');
@@ -437,7 +437,13 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   get data() { return this.#data; }
 
   /** Data stored about the specific user. This is meant to change all the time without a need to regenerate the whole thing. */
-  user_badge_data?: BadgeUserData;
+  // user_badge_data?: BadgeUserData;
+  #user_data?: BadgeUserData;
+  set user_badge_data(data: BadgeUserData | undefined) {
+    this.#user_data = data;
+    this.#updateRow();
+  }
+  get user_badge_data() { return this.#user_data; }
 
   /// Contains quick references to different children for global use.
   #row: HTMLTableRowElement;
@@ -560,10 +566,10 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   }
 
   setNameStyle(style?: string) {
-    this.#name_field.style = style ?? (this.#data ? this.#data.name_style() : "");
+    this.#name_field.style = style ?? (this.#data ? this.#data.name_style(this.user_badge_data) : "");
   }
   setInfoStyle(style?: string) {
-    this.#info_field.style = style ?? (this.#data ? this.#data.info_style() : "");
+    this.#info_field.style = style ?? (this.#data ? this.#data.info_style(this.user_badge_data) : "");
   }
 
   // search(data: string, is_acro: string);
