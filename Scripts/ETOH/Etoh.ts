@@ -16,12 +16,17 @@ type CompletedDate = number;
 class EToHUser extends User {
   completed: Map<BadgeId, CompletedDate>;
 
+  constructor(id: number, name: string, display: string, past: string[]) {
+    super(id, name, display, past);
+    this.completed = new Map();
+  }
+
   /**
    * Load badges from the server, only those not completed.
    * @param badges Badges not yet completed.
    * @param callback Callback once we get a badge.
    */
-  async loadServerBadges(badges: number[], callback: (badge: RawBadge) => void) {
+  async loadServerBadges(badges: number[], callback?: (badge: RawBadge) => void) {
     logs.log(`Attempting to load badges from server for ${this.name}`, `user`, 0);
     await network.requestStream(new Request(`${CLOUD_URL}/badges/${this.id}/all`, {
       method: 'POST',
@@ -40,7 +45,7 @@ class EToHUser extends User {
 
       this.completed.set(badgeInfo.badgeId, badgeInfo.date);
 
-      callback(badgeInfo);
+      if (callback) callback(badgeInfo);
     });
     logs.log(`Storing data in the local database...`, `user`, 90);
     await this.saveDatabase();
@@ -52,10 +57,14 @@ class EToHUser extends User {
    * This is intended for quicker loading whilst we wait on server.
    */
   async loadDatabaseBadges() {
+    logs.log(`Loading badges from the local database`, `user`, 0);
     const database = await etohDB.badges.where({ userId: this.id }).toArray();
-    database.forEach((b) => {
+    const count = database.length;
+    database.forEach((b, i) => {
+      logs.log(`loading badge ${b.badgeId}`, `user`, Math.floor((i / count) * 100));
       this.completed.set(b.badgeId, b.date);
     });
+    logs.log(`completed load from database`, `user`, 100);
     // Note, no need to save the database we just loaded.
   }
 

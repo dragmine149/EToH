@@ -1,9 +1,9 @@
 import { Area, areaManager } from "../ETOHBridge/AreaManager";
 import { Badge } from "../ETOHBridge/BadgeManager";
-import { Category, Tower, userManager, badgeManager, EToHUser } from "./Etoh";
+import { Category, Tower, userManager, badgeManager, EToHUser, Other } from "./Etoh";
 import { load_required_data } from "../ETOHBridge/data_loader";
 import { isMobile } from "../utils";
-import { CategoryInformation, UIBadgeData } from "../Core/ui";
+import { BadgeInformation, CategoryInformation, UIBadgeData } from "../Core/ui";
 
 enum PreloadState {
   TowerData,
@@ -64,6 +64,7 @@ class UI {
   #user_img: HTMLImageElement;
   #user_menu: HTMLDivElement;
   #user_link: HTMLAnchorElement;
+  #user_update: HTMLButtonElement;
   #user_default: HTMLButtonElement;
   #user_favourite: HTMLButtonElement;
   #user_delete: HTMLButtonElement;
@@ -79,6 +80,7 @@ class UI {
 
   // Stuff related to storing UI information
   #categories: Map<string, CategoryInformation<Badge>>;
+  #badges: Map<number, BadgeInformation<Badge>>;
 
   // stuff related to dispaling of badges.
   #badgesUI: HTMLDivElement;
@@ -122,10 +124,12 @@ class UI {
     this.#user_img = document.getElementById("user-profile") as HTMLImageElement;
     this.#user_menu = document.getElementById("usermenu") as HTMLImageElement;
     this.#user_link = this.#user_menu.firstElementChild as HTMLAnchorElement;
+    this.#user_update = document.getElementById("usermenu-update") as HTMLButtonElement;
     this.#user_default = document.getElementById("usermenu-default") as HTMLButtonElement;
     this.#user_favourite = document.getElementById("usermenu-favourite") as HTMLButtonElement;
     this.#user_delete = document.getElementById("usermenu-delete") as HTMLButtonElement;
 
+    this.#user_update.addEventListener('click', () => this.updateUserData());
     // This section makes the user menu work.
     this.#user_default.addEventListener('click', () => {
       this.#user_menu.hidden = true;
@@ -169,6 +173,7 @@ class UI {
     this.#user_mini_input.onkeydown = this.#submitUserSearch.bind(this);
 
     this.#categories = new Map();
+    this.#badges = new Map();
     this.#badgesUI = document.getElementById("badges") as HTMLDivElement;
   }
 
@@ -275,6 +280,9 @@ class UI {
     const user = await userManager.find_user(user_input);
     if (user == undefined) { return; }
 
+    // no await as we do in background, hopefully.
+    user.loadDatabaseBadges();
+
     this.#user.textContent = user.ui_name;
     this.#user_link.href = user.link;
     this.#user_img.src = user.profile;
@@ -290,6 +298,31 @@ class UI {
     if (popped == undefined || popped == false) history.pushState(undefined, "", url);
 
     this.#search_main.hidden = true;
+    this.updateUIData();
+  }
+
+  async updateUserData() {
+    const user = userManager.current_user;
+    if (user == undefined) return;
+    const badges = badgeManager.uncompleted(Array.from(user.completed.keys()));
+    await user.loadServerBadges(badges);
+
+    this.updateUIData();
+  }
+
+  updateUIData() {
+    const user = userManager.current_user;
+    if (user == undefined) return;
+    for (const [id, time] of user.completed) {
+      const badgeUI = this.#badges.get(id);
+      if (badgeUI == undefined) {
+        console.error(`Somehow user has a badge not defined, please report ${id}`);
+        continue;
+      }
+      badgeUI.user_badge_data = {
+        completed: time
+      };
+    }
   }
 
   /**
@@ -305,6 +338,7 @@ class UI {
     // make the area
     const cat = categoryFromArea(area);
     this.#categories.set(area.name, cat);
+    cat.badges.forEach((badge) => this.#badges.set(badge.data!.id, badge));
 
     // add any children.
     unprocessed_children.get(area.name)?.forEach((child) => cat.addCategory(child));
