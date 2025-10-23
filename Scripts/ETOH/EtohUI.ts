@@ -120,20 +120,18 @@ class UI {
     // advanced search and user profile
     this.#user = document.getElementsByTagName("user").item(0) as HTMLDivElement;
     this.#user_img = document.getElementById("user-profile") as HTMLImageElement;
-    // this.#user_img = this.#user_profile.firstElementChild as HTMLImageElement;
     this.#user_menu = document.getElementById("usermenu") as HTMLImageElement;
     this.#user_link = this.#user_menu.firstElementChild as HTMLAnchorElement;
     this.#user_default = document.getElementById("usermenu-default") as HTMLButtonElement;
     this.#user_favourite = document.getElementById("usermenu-favourite") as HTMLButtonElement;
     this.#user_delete = document.getElementById("usermenu-delete") as HTMLButtonElement;
 
-    // this.#user_img.addEventListener('click', () => this.#user_menu.hidden = !this.#user_menu.hidden);
+    // This section makes the user menu work.
     this.#user_default.addEventListener('click', () => {
       this.#user_menu.hidden = true;
       localStorage.setItem("etoh-default", userManager.current_user!.id.toString());
     });
     this.#user_menu_timers = [0, 0, 0, 0];
-
     this.#user_menu.addEventListener('mouseover', () => {
       if (this.#user_menu.dataset.visible === "false") return;
       this.#userMenuHover(true)
@@ -142,7 +140,7 @@ class UI {
     this.#user_img.addEventListener('mouseover', () => this.#userMenuHover(true));
     this.#user_img.addEventListener('mouseleave', () => this.#userMenuHover(false));
 
-
+    // and more defining of elements.
     this.#user_search = document.getElementById("search_input") as HTMLInputElement;
     this.#user_search_button = document.getElementById("search_button") as HTMLButtonElement;
     this.#user_search_back = document.getElementById("search_back") as HTMLButtonElement;
