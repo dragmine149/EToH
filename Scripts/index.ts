@@ -9,7 +9,16 @@ function load_user_from_url(orig: string) {
   const url = new URL(location.toString());
   const user = url.searchParams.get("user");
   console.log(`attempting to load ${user} from ${orig}`);
-  if (user) ui.load_user(user, true);
+  if (user) {
+    ui.load_user(user, true);
+    return;
+  }
+  if (orig == "initial") {
+    const id = localStorage.getItem("etoh-default");
+    if (id == null) return;
+    ui.load_user(Number.parseInt(id), true);
+    return;
+  }
 }
 
 addEventListener('popstate', load_user_from_url.bind(this, "pop"));

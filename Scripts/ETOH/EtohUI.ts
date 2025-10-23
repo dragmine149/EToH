@@ -1,6 +1,6 @@
 import { Area, areaManager } from "../ETOHBridge/AreaManager";
 import { Badge } from "../ETOHBridge/BadgeManager";
-import { Category, Tower, userManager, badgeManager } from "./Etoh";
+import { Category, Tower, userManager, badgeManager, EToHUser } from "./Etoh";
 import { load_required_data } from "../ETOHBridge/data_loader";
 import { isMobile } from "../utils";
 import { CategoryInformation, UIBadgeData } from "../Core/ui";
@@ -59,8 +59,15 @@ class UI {
 
   // Stuff related to the displaying of users.
   #user: HTMLDivElement;
-  #user_profile: HTMLAnchorElement;
+  // #user_img: HTMLAnchorElement;
+  #user_menu_timers: number[];
   #user_img: HTMLImageElement;
+  #user_menu: HTMLDivElement;
+  #user_link: HTMLAnchorElement;
+  #user_default: HTMLButtonElement;
+  #user_favourite: HTMLButtonElement;
+  #user_delete: HTMLButtonElement;
+
   #user_mini_search: HTMLDivElement;
   #user_mini_input: HTMLInputElement;
   #user_search: HTMLInputElement;
@@ -112,8 +119,30 @@ class UI {
 
     // advanced search and user profile
     this.#user = document.getElementsByTagName("user").item(0) as HTMLDivElement;
-    this.#user_profile = document.getElementById("user-profile") as HTMLAnchorElement;
-    this.#user_img = this.#user_profile.firstElementChild as HTMLImageElement;
+    this.#user_img = document.getElementById("user-profile") as HTMLImageElement;
+    // this.#user_img = this.#user_profile.firstElementChild as HTMLImageElement;
+    this.#user_menu = document.getElementById("usermenu") as HTMLImageElement;
+    this.#user_link = this.#user_menu.firstElementChild as HTMLAnchorElement;
+    this.#user_default = document.getElementById("usermenu-default") as HTMLButtonElement;
+    this.#user_favourite = document.getElementById("usermenu-favourite") as HTMLButtonElement;
+    this.#user_delete = document.getElementById("usermenu-delete") as HTMLButtonElement;
+
+    // this.#user_img.addEventListener('click', () => this.#user_menu.hidden = !this.#user_menu.hidden);
+    this.#user_default.addEventListener('click', () => {
+      this.#user_menu.hidden = true;
+      localStorage.setItem("etoh-default", userManager.current_user!.id.toString());
+    });
+    this.#user_menu_timers = [0, 0, 0, 0];
+
+    this.#user_menu.addEventListener('mouseover', () => {
+      if (this.#user_menu.dataset.visible === "false") return;
+      this.#userMenuHover(true)
+    });
+    this.#user_menu.addEventListener('mouseleave', () => this.#userMenuHover(false));
+    this.#user_img.addEventListener('mouseover', () => this.#userMenuHover(true));
+    this.#user_img.addEventListener('mouseleave', () => this.#userMenuHover(false));
+
+
     this.#user_search = document.getElementById("search_input") as HTMLInputElement;
     this.#user_search_button = document.getElementById("search_button") as HTMLButtonElement;
     this.#user_search_back = document.getElementById("search_back") as HTMLButtonElement;
@@ -124,7 +153,7 @@ class UI {
     this.#user_mini_viewing = (document.getElementById("viewing") as HTMLDivElement).firstElementChild as HTMLSpanElement;
 
     // initial settings, bindings, etc that need to be made for everything to work.
-    this.#user_profile.hidden = true;
+    this.#user_img.hidden = true;
     this.#user_search.onkeydown = this.#submitUserSearch.bind(this);
     this.#user_search.oninput = this.#syncUserSearch.bind(this);
     this.#user_mini_input.oninput = this.#syncUserSearch.bind(this);
@@ -143,6 +172,20 @@ class UI {
 
     this.#categories = new Map();
     this.#badgesUI = document.getElementById("badges") as HTMLDivElement;
+  }
+
+  #userMenuHover(hover: boolean) {
+    if (this.#user_menu_timers[0]) {
+      clearTimeout(this.#user_menu_timers[0]);
+      clearTimeout(this.#user_menu_timers[1]);
+      clearTimeout(this.#user_menu_timers[2]);
+    }
+
+    this.#user_menu_timers[0] = setTimeout(() => {
+      if (hover) this.#user_menu.hidden = false;
+      this.#user_menu_timers[1] = setTimeout(() => this.#user_menu.dataset.visible = hover.toString(), 50);
+      if (!hover) this.#user_menu_timers[2] = setTimeout(() => this.#user_menu.hidden = true, 200);
+    }, hover ? 0 : 300);
   }
 
   /**
@@ -213,25 +256,36 @@ class UI {
     })
   }
 
+  #updateDefaultOption(current_user: EToHUser) {
+    const stored_user = localStorage.getItem("etoh-default");
+    if (stored_user == null) return;
+    const is_default = current_user.id != Number.parseInt(stored_user);
+
+    this.#user_default.disabled = !is_default;
+    this.#user_default.innerText = !is_default ? "Already default user" : "Set default user";
+    this.#user_default.title = !is_default ? "This user is already being loaded upon no url parameter" : "If URL user search parameter doesn't exist, load this user.";
+  }
+
   /**
    * Loads a user via userManager. Updates the UI accordingly etc.
    *
    * There is no "unload" event as loading a new user will unload the old user.
    * @param user_input The user the user inputted.
-   * @param popped Has this user been requested to load from a `popstate` event? (If so, we don't do `pushState`)
+   * @param popped Stops us from editing the history by modifying the state.
    */
-  async load_user(user_input: string, popped?: boolean) {
+  async load_user(user_input: string | number, popped?: boolean) {
     const user = await userManager.find_user(user_input);
     if (user == undefined) { return; }
 
     this.#user.textContent = user.ui_name;
-    this.#user_profile.href = user.link;
+    this.#user_link.href = user.link;
     this.#user_img.src = user.profile;
 
-    this.#user_profile.hidden = false;
+    this.#user_img.hidden = false;
     this.#user_search_back.disabled = false;
     // this style is so that its hopefully invisible when no user loaded.
     this.#user_mini_button.style.right = "3.4rem";
+    this.#updateDefaultOption(user);
 
     const url = new URL(location.toString());
     url.searchParams.set("user", user.name);

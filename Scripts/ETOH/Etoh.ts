@@ -257,4 +257,4 @@ class EtohBadgeManager extends BadgeManager<Tower | Other, Category> {
 const userManager = new UserManager(etohDB.users, EToHUser);
 const badgeManager = new EtohBadgeManager();
 
-export { userManager, badgeManager, shortTowerName, Tower, Category, Other, numberToType, addTowerType };
+export { userManager, badgeManager, shortTowerName, Tower, Category, Other, numberToType, addTowerType, EToHUser };

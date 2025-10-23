@@ -65,9 +65,21 @@
             </svg>
           </button>
         </div>
-        <a id="user-profile" href="https://roblox.com/users/unknown" target="_blank" rel="noopener noreferrer">
+        <img id="user-profile" class="size-12.5 peer">
+        <div id="usermenu" class="fixed flex-col bg-zinc-gray right-[0.35rem] top-17 p-2 border-2 border-black border-solid
+          flex
+          opacity-0 data-[visible=true]:opacity-100
+          transition-opacity delay-75
+          " data-visible="false" hidden>
+          <a href="https://roblox.com/users/unknown" class="fake-button" target="_blank" rel="noopener noreferrer">Visit roblox profile</a>
+          <hr>
+          <button id="usermenu-default" title="If URL user search parameter doesn't exist, load this user.">Set default user</button>
+          <button id="usermenu-favourite" hidden>Favourite user</button>
+          <button id="usermenu-delete" hidden>Delete user</button>
+        </div>
+        <!--<a id="user-profile" href="https://roblox.com/users/unknown" target="_blank" rel="noopener noreferrer">
           <img class="size-12.5">
-        </a>
+        </a>-->
       </div>
     </div>
     <div hidden id="under_top_bar" class="bg-neutral-800/40 flex p-0.5 text-white rounded-b-sm z-2">

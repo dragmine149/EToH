@@ -5,10 +5,12 @@
   --color-gray-750: #495057;
   --color-gray-760: #384046;
   --color-gray-red-700: #703030;
+  --color-zinc-gray: #223;
 
   --color-etoh-purple: #302030;
   --color-etoh-pink: #604060;
 
+  --
   /* 1.5 each size for a total of 3 */
   --size-full-1\.5: calc(100% - (var(--spacing) * 3));
   --width-full-1\.5: calc(100% - (var(--spacing) * 3));
@@ -49,6 +51,7 @@ button {
   font-size: 16px;
   text-wrap: nowrap;
   user-select: none;
+  cursor: pointer;
 }
 
 .fake-button:hover:not(:disabled),
