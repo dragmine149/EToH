@@ -1,6 +1,6 @@
 /*eslint no-undef: "error" */
 enum DIFFICULTIES {
-  Easy, Medium, Hard, Difficult, Challenging, Insane, Remorseless, Intense, Extreme, Terrifying, Catastrophic
+  Easy, Medium, Hard, Difficult, Challenging, Intense, Remorseless, Insane, Extreme, Terrifying, Catastrophic
 }
 
 const SUB_LEVELS = Object.freeze([
