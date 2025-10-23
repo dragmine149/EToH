@@ -297,6 +297,7 @@ class UI {
    */
   async main_user_load() {
     this.#search_main.hidden = false;
+    this.#user_search.focus();
     if (isMobile()) this.#main_nav_toggle.checked = false;
   }
 
