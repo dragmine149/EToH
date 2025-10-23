@@ -15,3 +15,14 @@ Visit the product here: https://dragmine149.github.io/ETOH
 - Better way of showing which badges are obtainable and which are not.
 - Have towers sorted (locally) instead of relying on the server.
 - Fully functional offline mode
+
+## Cloning
+This section is for the random person who wants to make their own. Well, go ahead, all i request is credit.
+
+The main folder is `Scripts/Core`, this contains underlying classes where everything else is built uptop of. Without this, nothing works.
+
+Following that, `Script/ETOHBridge` exists for some more important functions which do rely on EToH data a tad bit.
+
+Lastly, `Scripts/ETOH` is where 90% of things related to EToH is stored. This also handles UI rendering due to it being customised FOR EToH.
+
+The scripts outside, in `Scripts` are either important for debugging, running the code, or every single other script.
