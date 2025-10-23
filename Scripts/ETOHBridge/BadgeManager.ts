@@ -96,8 +96,9 @@ class Badge {
     const colour_progress = Math.floor(256 - (progress * 256));
     // console.log(colour_progress);
     // console.log(colour_progress.toString(16));
+    const hex = ("0" + (Number(colour_progress).toString(16))).slice(-2).toUpperCase();
 
-    return `background: #00FF${colour_progress.toString(16)}`;
+    return `background: #00FF${hex}`;
   }
 
   set_info_style(_data?: BadgeUserData) { return ""; }
