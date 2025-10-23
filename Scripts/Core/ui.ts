@@ -575,8 +575,8 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   // search(data: string, is_acro: string);
 }
 
-customElements.define("category-info", CategoryInformation);
-customElements.define("badge-info", BadgeInformation);
+if (customElements.get('category-info') == undefined) customElements.define("category-info", CategoryInformation);
+if (customElements.get('badge-info') == undefined) customElements.define("badge-info", BadgeInformation);
 
 
 export { BadgeInformation, CategoryInformation, UIBadgeData, CategoryData, Count, BadgeUserData };
