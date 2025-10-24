@@ -242,11 +242,10 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
    * Automatically hide this element if there is no data in the table.
    */
   #autoHide() {
-    this.updateSize();
-
     // Use <= 1 due to the invisible `gap` 1px row.
     // also check for categories. As no badges != no categories. (Thanks Windswept Peaks)
     this.hidden = this.#table?.children.length <= 1 && this.categories.length <= 0;
+    if (!this.hidden) this.updateSize();
   }
 
   /**
@@ -255,6 +254,8 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
    * Allows for all children to be the same size so we have no weirdness with jumping.
    */
   updateSize() {
+    if (!this.#shadow) return [0, 0];
+
     const sizes: number[][] = [
       ...this.categories.map((c) => c.updateSize()),
       ...Array.from(this.badges.values()).map((b) => b.setWidth()),
