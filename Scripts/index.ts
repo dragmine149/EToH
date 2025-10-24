@@ -13,7 +13,7 @@ function load_user_from_url(orig: string) {
     ui.load_user(user, true);
     return;
   }
-  if (orig == "initial") {
+  if (orig == "initial" || !user) {
     const id = localStorage.getItem("etoh-default");
     if (id == null) return;
     ui.load_user(Number.parseInt(id), true);
