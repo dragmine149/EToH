@@ -135,7 +135,7 @@ class Network {
 
 async function fetchWithCache(input: RequestInfo | URL, init?: RequestInit) {
   // Can't cache without a secure context so, we just do the default option.
-  if (window.isSecureContext) return await fetch(input, init);
+  if (!window.isSecureContext) return await fetch(input, init);
 
   const cache = await caches.open(`fetch_cache`);
   const cached_result = await cache.match(input);
