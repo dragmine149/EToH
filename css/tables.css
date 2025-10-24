@@ -11,7 +11,7 @@
 .area {
   float: left;
   margin: 5px 10px 10px 0px;
-  align-items: center;
+  /*align-items: center;*/
 }
 
 .area [tag="title"],

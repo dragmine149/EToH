@@ -136,6 +136,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
 
   /** The main child, everything is hidden in here */
   #shadow?: ShadowRoot;
+  #items: HTMLDivElement;
   /** Reference to the table where all the badges are displayed */
   #table: HTMLTableElement;
   /** A dummy element for a 1px extra stylelish gap between the header and the content */
@@ -145,13 +146,27 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   #headerIcon: HTMLImageElement;
   #headerText: HTMLSpanElement;
   #headerDrop: HTMLDivElement;
-  #headerDropDown: SVGSVGElement;
-  #headerDropUp: SVGSVGElement;
+  // #headerDropDown: SVGSVGElement;
+  // #headerDropUp: SVGSVGElement;
   /** The style element as shadows do not read style from main body by default. */
   #style: HTMLLinkElement;
 
+  parent: {
+    index?: number;
+  };
+
   /** Internal state of the sub categories. Are they visible or not. */
-  #subCategoryState = true;
+  // #subCategoryState = true;
+  #categoryIndex = 0;
+  set categoryIndex(v: number) {
+    if (v >= this.categories.length + 1) v = 0;
+    if (v < 0) v = this.categories.length;
+    this.#categoryIndex = v;
+    this.toggleCategoryVisibility();
+  }
+  get categoryIndex() {
+    return this.#categoryIndex;
+  }
 
   // ====================================================================================================
   // The code to run on element creation / add to DOM.
@@ -161,14 +176,19 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   constructor() {
     super();
 
+    this.#items = document.createElement("div");
+    this.#items.id = "items";
+
     this.#table = document.createElement("table");
     this.#gap = document.createElement("tr");
     this.#header = document.createElement("div");
     this.#headerIcon = document.createElement("img");
     this.#headerText = document.createElement("span");
     this.#headerDrop = document.createElement("div");
-    this.#headerDropDown = createArrowSVG('down', 'hidden');
-    this.#headerDropUp = createArrowSVG('up', 'hidden');
+    this.#headerDrop.addEventListener('click', this.showCategories);
+    this.parent = {};
+    // this.#headerDropDown = createArrowSVG('down', 'hidden');
+    // this.#headerDropUp = createArrowSVG('up', 'hidden');
     this.#style = document.createElement("link");
 
     // random span for gap reason.
@@ -180,17 +200,22 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     this.#header.appendChild(this.#headerIcon);
     this.#header.appendChild(this.#headerText);
     this.#header.appendChild(this.#headerDrop);
-    this.#headerDrop.appendChild(this.#headerDropDown);
-    this.#headerDrop.appendChild(this.#headerDropUp);
+    // this.#headerDrop.appendChild(this.#headerDropDown);
+    // this.#headerDrop.appendChild(this.#headerDropUp);
 
-    this.#headerDrop.addEventListener('click', () => {
-      if (this.categories.length <= 0) return;
+    // this.#headerDrop.addEventListener('click', () => {
+    //   if (this.categories.length <= 0) return;
 
-      // console.log('header click');
-      this.toggleCategoryVisibility(!this.#subCategoryState);
-      this.#headerDropDown.classList.toggle('hidden');
-      this.#headerDropUp.classList.toggle('hidden');
-    })
+    // console.log('header click');
+    // this.toggleCategoryVisibility(!this.#subCategoryState);
+    // this.#headerDropDown.classList.toggle('hidden');
+    // this.#headerDropUp.classList.toggle('hidden');
+    // });
+
+    this.#items.appendChild(this.#header);
+    this.#items.appendChild(this.#table);
+
+    this.toggleCategoryVisibility();
   }
   // This is empty because we don't want to recreate a ton of stuff.
   connectedMoveCallback() { console.log('e'); }
@@ -202,8 +227,9 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
 
     // sort out shadow children
     this.#shadow.appendChild(this.#style);
-    this.#shadow.appendChild(this.#header);
-    this.#shadow.appendChild(this.#table);
+    this.#shadow.appendChild(this.#items);
+    // this.#shadow.appendChild(this.#header);
+    // this.#shadow.appendChild(this.#table);
 
     // sort out styles
     this.classList.add("area");
@@ -255,13 +281,23 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
    */
   updateSize() {
     if (!this.#shadow) return [0, 0];
+    // return [0, 0];
+
+    const sub = this.categories.map((c) => c.updateSize());
+    const subMax = [
+      sub.length >= 1 ? sub[0].reduce((m, s) => Math.max(m, s), 0) : 0,
+      sub.length >= 2 ? sub[1].reduce((m, s) => Math.max(m, s), 0) : 0,
+    ];
 
     const sizes: number[][] = [
-      ...this.categories.map((c) => c.updateSize()),
+      // ...this.categories.map((c) => c.updateSize()),
       ...Array.from(this.badges.values()).map((b) => b.setWidth()),
     ];
-    const name = sizes.map((s) => s[0]).reduce((m, s) => Math.max(m, s), 0);
-    const info = sizes.map((s) => s[1]).reduce((m, s) => Math.max(m, s), 0);
+    let name = sizes.map((s) => s[0]).reduce((m, s) => Math.max(m, s), 0);
+    let info = sizes.map((s) => s[1]).reduce((m, s) => Math.max(m, s), 0);
+    name += subMax[0];
+    info += subMax[1];
+
 
     if (name + info > 0) this.style.width = `${name + info + 8}px`;
     return [name, info];
@@ -335,11 +371,19 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
       this.#categoriesToProcess = [...(this.#categoriesToProcess || []), ...categories];
       return;
     }
+
+    const cat_get = () => this.categoryIndex;
+    const cat_set = (v: number) => this.categoryIndex = v;
+
     categories.forEach((cat) => {
       this.#shadow?.appendChild(cat);
+      Object.defineProperty(cat.parent, 'index', {
+        get: cat_get,
+        set: cat_set,
+      })
     });
 
-    this.#headerDropUp.classList.remove('hidden');
+    // this.#headerDropUp.classList.remove('hidden');
   }
 
   /**
@@ -375,9 +419,9 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     const elms = this.categories.filter((v, i) => i in indexes);
     elms.forEach((elm) => this.#shadow?.removeChild(elm));
 
-    if (this.categories.length <= 0) {
-      this.#headerDropUp.classList.remove('hidden');
-    }
+    // if (this.categories.length <= 0) {
+    //   this.#headerDropUp.classList.remove('hidden');
+    // }
     return elms;
   }
 
@@ -386,9 +430,17 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   /** @param badgeIds The badges to hide. */
   hideBadges = (...badgeIds: number[]) => this.toggleBadgesVisibility(false, ...badgeIds);
   /** */
-  showCategories = () => this.toggleCategoryVisibility(true);
+  showCategories = () => {
+    if (this.parent.index) {
+      this.parent.index += 1;
+      return;
+    }
+    this.categoryIndex += 1;
+  };
   /** */
-  hideCategories = () => this.toggleCategoryVisibility(false);
+  hideCategories = () => {
+    this.categoryIndex -= 1;
+  };
 
   /**
    * Makes a set of badges visible / hidden. This is different to `add/remove Badges` as we keep the ownership of said badge.
@@ -412,10 +464,17 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   /**
    * Makes all the sub-categories invisible or not.
    */
-  toggleCategoryVisibility(visible: boolean) {
-    this.#subCategoryState = visible;
-    this.categories.forEach((cat) => cat.hidden = !visible);
-    this.#autoHide();
+  toggleCategoryVisibility() {
+    this.#items.hidden = this.categoryIndex !== 0;
+    this.categories.forEach((cat, index) => {
+      const cats = this.categoryIndex > 0;
+      const dex = index == this.categoryIndex - 1;
+      console.log(cats, dex);
+      return cat.hidden = !(cats && dex);
+    });
+    // this.#subCategoryState = visible;
+    // this.categories.forEach((cat) => cat.hidden = !visible);
+    // this.#autoHide();
   }
 
   /**

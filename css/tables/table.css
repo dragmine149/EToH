@@ -1,7 +1,15 @@
 * {
-  background: var(--background, #fff);
   width: 100%;
 }
+
+#items>div,
+#items>table {
+  background: var(--background, #fff);
+}
+
+/**:not(*>*) {
+  display: grid;
+}*/
 
 table:not(:last-child),
 category-info:not(:last-child) {
@@ -104,7 +112,7 @@ svg.hidden {
   display: none;
 }
 
-div:not(*>div) {
+div>div:not(div>div>*>div) {
   border-top-left-radius: 9999px;
   border-top-right-radius: 9999px;
   display: flex;
