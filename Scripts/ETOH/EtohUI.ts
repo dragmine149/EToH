@@ -281,7 +281,7 @@ class UI {
     if (user == undefined) { return; }
 
     // no await as we do in background, hopefully.
-    user.loadDatabaseBadges();
+    const loading = user.loadDatabaseBadges();
 
     this.#user.textContent = user.ui_name;
     this.#user_link.href = user.link;
@@ -297,6 +297,7 @@ class UI {
     url.searchParams.set("user", user.name);
     if (popped == undefined || popped == false) history.pushState(undefined, "", url);
 
+    await loading;
     this.#search_main.hidden = true;
     this.updateUIData();
   }
