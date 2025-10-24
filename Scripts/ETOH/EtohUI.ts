@@ -317,7 +317,7 @@ class UI {
     for (const [id, time] of user.completed) {
       const badgeUI = this.#badges.get(id);
       if (badgeUI == undefined) {
-        console.error(`Somehow user has a badge not defined, please report ${id}`);
+        console.warn(`Somehow user has a badge not defined, please report ${id}`);
         continue;
       }
       badgeUI.user_badge_data = {
