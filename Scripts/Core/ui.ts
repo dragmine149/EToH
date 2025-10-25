@@ -42,6 +42,12 @@ enum Count {
   None, Numbers, Percent
 }
 
+function localStorageCount() {
+  const local_value = localStorage.getItem("etoh-count");
+  if (local_value == null) return Count.None;
+  return Number.parseInt(local_value) as Count;
+}
+
 /**
  * Highlights a span by creating span children. Uses `innerText` to avoid having to reget the text or do weird stuff.
  * @param span The span to affect.
@@ -194,7 +200,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     // random span for gap reason.
     this.#table.appendChild(this.#gap);
 
-    this.#style.href = "css/tables/table.css";
+    this.#style.href = "css/shadow_table.css";
     this.#style.rel = "stylesheet";
 
     this.#header.appendChild(this.#headerIcon);
@@ -639,4 +645,4 @@ if (customElements.get('category-info') == undefined) customElements.define("cat
 if (customElements.get('badge-info') == undefined) customElements.define("badge-info", BadgeInformation);
 
 
-export { BadgeInformation, CategoryInformation, UIBadgeData, CategoryData, Count, BadgeUserData };
+export { BadgeInformation, CategoryInformation, UIBadgeData, CategoryData, Count, BadgeUserData, localStorageCount };

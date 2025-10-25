@@ -70,4 +70,12 @@ const isMobile = (): boolean => {
   return mobileUA.test(uaLower) || hasTouch || coarsePointer || smallScreen
 }
 
-export { tryCatch, noSyncTryCatch, isMobile };
+function loopClamp(value: number, lower: number, upper?: number) {
+  if (lower == undefined && upper == undefined) return value;
+  if (upper == undefined) upper = lower; lower = 0;
+  if (value >= upper) return 0;
+  if (value < lower) return upper - 1;
+  return value;
+}
+
+export { tryCatch, noSyncTryCatch, isMobile, loopClamp };

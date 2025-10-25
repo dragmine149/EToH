@@ -1,0 +1,214 @@
+import { loopClamp, noSyncTryCatch } from "../utils";
+import { Badge, Lock } from "./BadgeManager";
+import { BadgeInformation, Count, localStorageCount, UIBadgeData } from "./ui";
+
+class CategroyInformation<K extends Badge> extends HTMLElement {
+  #shadow?: ShadowRoot;
+  #style: HTMLLinkElement;
+
+  #header: HTMLDivElement;
+  #headerIcon: HTMLImageElement;
+  #headerText: HTMLSpanElement;
+  #headerSwitch: HTMLDivElement;
+
+  #subCategoryDiv: HTMLDivElement;
+  #subCategories: SubCategoryInformation<K>[];
+
+  #category_index = 0;
+  set category_index(v: number) {
+    // basic loop-around clamp.
+    this.#category_index = loopClamp(v, this.#subCategories.length);
+    this.changeCategory();
+  }
+  get category_index() { return this.#category_index; }
+
+  get #sub_category() { return this.#subCategories[this.category_index]; }
+  get category_name() { return this.#sub_category.category_name; }
+  get category_icon() { return this.#sub_category.icon; }
+  addBadges = this.#sub_category.addBadges;
+  removeBadges = this.#sub_category.removeBadges;
+
+  constructor() {
+    super();
+
+    this.#header = document.createElement("div");
+    this.#headerIcon = document.createElement("img");
+    this.#headerIcon.onerror = () => this.#headerIcon.src = "Assets/Emblems/Unknown.webp";
+    this.#headerText = document.createElement("span");
+    this.#headerSwitch = document.createElement("div");
+    this.#headerSwitch.click = () => this.category_index += 1;
+
+    this.#style = document.createElement("link");
+    this.#style.rel = "stylesheet";
+    this.#style.href = "css/shadow_table.css";
+
+    this.#subCategoryDiv = document.createElement("div");
+    this.#subCategories = [];
+  }
+
+  connectedCallback() {
+    this.#shadow = this.attachShadow({ mode: "open" });
+    this.#shadow.appendChild(this.#style);
+    this.#shadow.appendChild(this.#header);
+    this.#shadow.appendChild(this.#subCategoryDiv);
+  }
+
+  capture(subCategory: SubCategoryInformation<K>) {
+    this.#subCategories.push(subCategory);
+    this.#subCategoryDiv.appendChild(subCategory);
+    this.changeCategory(this.#subCategories.length - 1);
+  }
+
+  release(index?: number) {
+    if (index == undefined) index = this.#subCategories.length - 1;
+    this.changeCategory();
+    return this.#subCategories.splice(index, 1)[0];
+  }
+
+  changeCategory(index?: number) {
+    this.#sub_category.hidden = true;
+    if (index == undefined) index = this.category_index;
+    if (index != this.#category_index) this.#category_index = loopClamp(index, this.#subCategories.length);
+
+    this.#headerIcon.src = this.category_icon || "Assets/Emblems/Unknown.webp";
+    this.#headerText.innerText = this.category_name;
+    this.#headerText.title = `${this.category_name}${this.#sub_category.getCountString()}`;
+    this.#headerText.classList[this.#sub_category.isCompleted() ? 'add' : 'remove']("rainbow");
+    this.#sub_category.hidden = false;
+  }
+}
+
+class SubCategoryInformation<K extends Badge> extends HTMLElement {
+  category_name: string;
+  locked: Lock;
+  locked_reason?: string;
+  icon?: string;
+
+  /**
+   * A list of badges this category is in control of. Returns data depending on it's children instead of storing stuff
+   * locally.
+   *
+   * Every call to this getter checks all the top-level children in the table.
+   */
+  get badges(): Map<number, BadgeInformation<K>> {
+    const map = new Map<number, BadgeInformation<K>>();
+    if (this.#table == undefined) return map;
+
+    for (const element of this.#table.children) {
+      if (!(element instanceof BadgeInformation)) continue;
+
+      const badge = element as BadgeInformation<K>;
+      if (!badge.data) continue;
+
+      map.set(badge.data.id, badge);
+    }
+    return map;
+  }
+
+  get completed(): BadgeInformation<K>[] {
+    return Array.from(this.#table.children)
+      .filter((b) => b instanceof BadgeInformation)
+      .filter((b) => b.isCompleted())
+      .filter((b) => !b.hidden);
+  }
+
+  get total(): BadgeInformation<K>[] {
+    return Array.from(this.#table.children)
+      .filter((b) => b instanceof BadgeInformation)
+      .filter((b) => !b.isCompleted())
+      .filter((b) => !b.hidden);
+  }
+
+  #table: HTMLTableElement;
+  #gap: HTMLTableRowElement;
+
+  constructor() {
+    super();
+
+    this.#table = document.createElement("table");
+    this.#gap = document.createElement("tr");
+
+    this.#table.appendChild(this.#gap);
+  }
+
+  connectedCallback() {
+    this.appendChild(this.#table);
+  }
+
+  /**
+   * Add a badge for this element to take care of. Can take raw badge data or modified information data.
+   *
+   * @param badges Information about badges to add. Can take an array or just one.
+   */
+  addBadges(...badges: (BadgeInformation<K> | UIBadgeData<K>)[]) {
+    badges.forEach((badge) => {
+      // we can already use as-is
+      if ((badge as BadgeInformation<K>).data) {
+        this.#table.appendChild(badge as BadgeInformation<K>);
+        return;
+      }
+
+      // but we might have to translate
+      const row = document.createElement("badge-info") as BadgeInformation<K>;
+      row.data = badge as UIBadgeData<K>;
+      this.#table.appendChild(row);
+    })
+  }
+
+  /**
+   * Removes a badge this element is taking care of.
+   * @param badgeId The badge to remove.
+   * @returns The raw data for that badge or `undefined` if this element isn't taking care of that badge.
+   */
+  removeBadges(...badgeIds: number[]) {
+    const badges: BadgeInformation<K>[] = [];
+    const stored_badges = this.badges;
+
+    badgeIds.forEach((badgeId) => {
+      // attempts to get the badge and delete it.
+      const entry = stored_badges.get(badgeId);
+      if (entry == undefined) return;
+
+      // If we have deleted it succesffully, then we know that we can remove it. and return it.
+      const result = noSyncTryCatch(() => this.#table.removeChild(entry));
+      if (result.error) return;
+      badges.push(entry);
+    });
+
+    return badges;
+  }
+
+  /** @param badgeIds The badges to show. */
+  showBadges = (...badgeIds: number[]) => this.toggleBadgesVisibility(true, ...badgeIds);
+  /** @param badgeIds The badges to hide. */
+  hideBadges = (...badgeIds: number[]) => this.toggleBadgesVisibility(false, ...badgeIds);
+
+  /**
+   * Makes a set of badges visible / hidden. This is different to `add/remove Badges` as we keep the ownership of said badge.
+   *
+   * No dedicated function to a certain category as we don't know much about what to hide / not to hide.
+   * @param visible To make them visible or hidden.
+   * @param badgeIds The badges to affect.
+   */
+  toggleBadgesVisibility(visible: boolean, ...badgeIds: number[]) {
+    const stored_badges = this.badges;
+    badgeIds.forEach((badgeId) => {
+      const entry = stored_badges.get(badgeId);
+      if (entry == undefined) return;
+
+      entry.hidden = !visible;
+    });
+  }
+
+  getCountString(count_type?: Count) {
+    if (count_type == undefined) count_type = localStorageCount();
+
+    switch (count_type) {
+      case Count.None: return ``;
+      case Count.Numbers: return ` (${this.completed.length}/${this.total.length})`;
+      case Count.Percent: return ` (${this.total.length === 0 ? 0 : ((this.completed.length / this.total.length) * 100).toFixed(2)})`;
+    }
+  }
+
+  isCompleted() { return this.completed.length == this.total.length; }
+}
