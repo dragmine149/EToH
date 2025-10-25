@@ -20,11 +20,6 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     // basic loop-around clamp.
     this.#category_index = loopClamp(v, this.#subCategories.length);
     this.changeCategory();
-    if (this.#subCategories.length > 0) {
-      const next = loopClamp(this.category_index + 1, this.#subCategories.length);
-      // console.log(next);
-      this.#headerSwitch.innerText = `View ${this.#subCategories[next].category_name}`;
-    }
   }
   get category_index() { return this.#category_index; }
 
@@ -115,6 +110,13 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   }
 
   changeCategory(index?: number) {
+    this.#headerSwitch.hidden = this.#subCategories.length <= 1;
+    if (!this.#headerSwitch.hidden) {
+      const next = loopClamp(this.category_index + 1, this.#subCategories.length);
+      // console.log(next);
+      this.#headerSwitch.innerText = `View ${this.#subCategories[next].category_name}`;
+    }
+
     // this.#sub_category.hidden = true;
     this.#subCategories.forEach((sub) => sub.hidden = true);
     if (index == undefined) index = this.category_index;
@@ -129,6 +131,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
 
   setMinSize() {
     if (!this.#shadow) return;
+    this.#subCategoryDiv.classList.remove('sized');
     this.style.width = ``;
     // console.log(this.#subCategories);
     this.#subCategories.forEach((sub) => sub.hidden = false);
@@ -138,6 +141,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     if (final_size > 0) this.style.width = `${final_size}px`;
     this.#subCategories.forEach((sub) => sub.hidden = true);
     this.changeCategory();
+    this.#subCategoryDiv.classList.add('sized');
     console.log(final_size);
   }
 }

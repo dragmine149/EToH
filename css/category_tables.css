@@ -24,7 +24,7 @@
   }
 
   >:last-child {
-    border-top-right-radius: 2rem;
+    border-radius: 0 1.5rem 0 0;
     display: flex;
     justify-content: end;
     align-content: end;
@@ -34,12 +34,14 @@
     white-space: nowrap;
   }
 
-  :last-child.hidden {
-    display: none;
+  :last-child[hidden] {
+    /*display: none;*/
+    opacity: 0;
+    pointer-events: none;
   }
 }
 
-#sub>table {
+#sub.sized>table {
   width: 100%;
 }
 
