@@ -1,4 +1,4 @@
-import { Lock } from "./BadgeManager";
+import { Lock } from "../Core/BadgeManager";
 import { ServerAreas, ServerOtherParent, ServerTowers } from "../ETOH/constants";
 import { tryCatch } from "../utils";
 import { areaManager, Area } from "./AreaManager";

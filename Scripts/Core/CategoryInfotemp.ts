@@ -2,7 +2,7 @@ import { loopClamp, noSyncTryCatch } from "../utils";
 import { Badge, Lock } from "./BadgeManager";
 import { BadgeInformation, Count, localStorageCount, UIBadgeData } from "./ui";
 
-class CategroyInformation<K extends Badge> extends HTMLElement {
+class CategoryInformation<K extends Badge> extends HTMLElement {
   #shadow?: ShadowRoot;
   #style: HTMLLinkElement;
 
@@ -28,6 +28,19 @@ class CategroyInformation<K extends Badge> extends HTMLElement {
   addBadges = this.#sub_category.addBadges;
   removeBadges = this.#sub_category.removeBadges;
 
+  // this lot is related to THIS object, hence why [0]
+  static get observedAttributes() {
+    return ['name', 'locked', 'locked_reason', 'icon'];
+  }
+  get name() { return this.#subCategories[0].category_name; }
+  set name(v: string) { this.#subCategories[0].category_name = v; }
+  get locked() { return this.#subCategories[0].locked; }
+  set locked(v: Lock) { this.#subCategories[0].locked = v; }
+  get locked_reason() { return this.#subCategories[0].locked_reason; }
+  set locked_reason(v: string | undefined) { this.#subCategories[0].locked_reason = v; }
+  get icon() { return this.#subCategories[0].icon; }
+  set icon(v: string | undefined) { this.#subCategories[0].icon = v; }
+
   constructor() {
     super();
 
@@ -43,7 +56,7 @@ class CategroyInformation<K extends Badge> extends HTMLElement {
     this.#style.href = "css/shadow_table.css";
 
     this.#subCategoryDiv = document.createElement("div");
-    this.#subCategories = [];
+    this.#subCategories = [new SubCategoryInformation<K>()];
   }
 
   connectedCallback() {
@@ -53,16 +66,26 @@ class CategroyInformation<K extends Badge> extends HTMLElement {
     this.#shadow.appendChild(this.#subCategoryDiv);
   }
 
-  capture(subCategory: SubCategoryInformation<K>) {
-    this.#subCategories.push(subCategory);
-    this.#subCategoryDiv.appendChild(subCategory);
+  capture(category?: CategoryInformation<K>) {
+    if (category == undefined) {
+      return this.#subCategories[0];
+    }
+
+    // undefined is only return if category is not defined so its fine.
+    const sub = category.capture()!;
+
+    this.#subCategories.push(sub);
+    this.#subCategoryDiv.appendChild(sub.table);
     this.changeCategory(this.#subCategories.length - 1);
   }
 
-  release(index?: number) {
-    if (index == undefined) index = this.#subCategories.length - 1;
+  release(category?: CategoryInformation<K>) {
+    if (category == undefined) throw new Error("help");
+
+    const index = this.#subCategories.findIndex((sub) => sub.category_name == category.name);
+    this.#subCategories.splice(index, 1);
     this.changeCategory();
-    return this.#subCategories.splice(index, 1)[0];
+    return;
   }
 
   changeCategory(index?: number) {
@@ -78,11 +101,18 @@ class CategroyInformation<K extends Badge> extends HTMLElement {
   }
 }
 
-class SubCategoryInformation<K extends Badge> extends HTMLElement {
+customElements.define("category-info", CategoryInformation);
+const a = document.createElement("category-info") as CategoryInformation<Badge>;
+console.log(a.category_name);
+
+class SubCategoryInformation<K extends Badge> {
   category_name: string;
   locked: Lock;
   locked_reason?: string;
   icon?: string;
+
+  set hidden(v: boolean) { this.table.hidden = v; }
+  get hidden() { return this.table.hidden; }
 
   /**
    * A list of badges this category is in control of. Returns data depending on it's children instead of storing stuff
@@ -92,9 +122,9 @@ class SubCategoryInformation<K extends Badge> extends HTMLElement {
    */
   get badges(): Map<number, BadgeInformation<K>> {
     const map = new Map<number, BadgeInformation<K>>();
-    if (this.#table == undefined) return map;
+    if (this.table == undefined) return map;
 
-    for (const element of this.#table.children) {
+    for (const element of this.table.children) {
       if (!(element instanceof BadgeInformation)) continue;
 
       const badge = element as BadgeInformation<K>;
@@ -106,33 +136,26 @@ class SubCategoryInformation<K extends Badge> extends HTMLElement {
   }
 
   get completed(): BadgeInformation<K>[] {
-    return Array.from(this.#table.children)
+    return Array.from(this.table.children)
       .filter((b) => b instanceof BadgeInformation)
       .filter((b) => b.isCompleted())
       .filter((b) => !b.hidden);
   }
 
   get total(): BadgeInformation<K>[] {
-    return Array.from(this.#table.children)
+    return Array.from(this.table.children)
       .filter((b) => b instanceof BadgeInformation)
       .filter((b) => !b.isCompleted())
       .filter((b) => !b.hidden);
   }
 
-  #table: HTMLTableElement;
+  table: HTMLTableElement;
   #gap: HTMLTableRowElement;
 
   constructor() {
-    super();
-
-    this.#table = document.createElement("table");
+    this.table = document.createElement("table");
     this.#gap = document.createElement("tr");
-
-    this.#table.appendChild(this.#gap);
-  }
-
-  connectedCallback() {
-    this.appendChild(this.#table);
+    this.table.appendChild(this.#gap);
   }
 
   /**
@@ -144,14 +167,14 @@ class SubCategoryInformation<K extends Badge> extends HTMLElement {
     badges.forEach((badge) => {
       // we can already use as-is
       if ((badge as BadgeInformation<K>).data) {
-        this.#table.appendChild(badge as BadgeInformation<K>);
+        this.table.appendChild(badge as BadgeInformation<K>);
         return;
       }
 
       // but we might have to translate
       const row = document.createElement("badge-info") as BadgeInformation<K>;
       row.data = badge as UIBadgeData<K>;
-      this.#table.appendChild(row);
+      this.table.appendChild(row);
     })
   }
 
@@ -170,7 +193,7 @@ class SubCategoryInformation<K extends Badge> extends HTMLElement {
       if (entry == undefined) return;
 
       // If we have deleted it succesffully, then we know that we can remove it. and return it.
-      const result = noSyncTryCatch(() => this.#table.removeChild(entry));
+      const result = noSyncTryCatch(() => this.table.removeChild(entry));
       if (result.error) return;
       badges.push(entry);
     });
@@ -212,3 +235,5 @@ class SubCategoryInformation<K extends Badge> extends HTMLElement {
 
   isCompleted() { return this.completed.length == this.total.length; }
 }
+
+export { CategoryInformation };
