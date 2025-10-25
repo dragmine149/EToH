@@ -13,6 +13,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
 
   #subCategoryDiv: HTMLDivElement;
   #subCategories: SubCategoryInformation<K>[];
+  #captures: CategoryInformation<K>[];
 
   #category_index = 0;
   set category_index(v: number) {
@@ -63,7 +64,10 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
 
     this.#subCategoryDiv = document.createElement("div");
     this.#subCategoryDiv.id = "sub";
-    this.#subCategories = [new SubCategoryInformation<K>()];
+    const default_sub = new SubCategoryInformation<K>();
+    this.#subCategories = [default_sub];
+    this.#subCategoryDiv.appendChild(default_sub.table);
+    this.#captures = [];
   }
 
   connectedCallback() {
@@ -71,6 +75,8 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     this.#shadow.appendChild(this.#style);
     this.#shadow.appendChild(this.#header);
     this.#shadow.appendChild(this.#subCategoryDiv);
+
+    this.setMinSize();
   }
 
   capture(category?: CategoryInformation<K>) {
@@ -83,15 +89,20 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     const sub = category.capture()!;
 
     this.#subCategories.push(sub);
+    this.#captures.push(category);
     this.#subCategoryDiv.appendChild(sub.table);
+    this.setMinSize();
     this.changeCategory(this.#subCategories.length - 1);
   }
+  get captures() { return this.#captures; }
 
   release(category?: CategoryInformation<K>) {
     if (category == undefined) throw new Error("help");
 
     const index = this.#subCategories.findIndex((sub) => sub.category_name == category.name);
     this.#subCategories.splice(index, 1);
+    this.#captures.splice(index, 1);
+    this.setMinSize();
     this.changeCategory();
     return;
   }
@@ -107,13 +118,31 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     this.#headerText.classList[this.#sub_category.isCompleted() ? 'add' : 'remove']("rainbow");
     this.#sub_category.hidden = false;
   }
+
+  setMinSize() {
+    if (!this.#shadow) return;
+    this.style.width = ``;
+    console.log(this.#subCategories);
+    const final_size = this.#subCategories
+      .map((c) => c.size)
+      .filter((c) => {
+        console.log(c);
+        return true;
+      })
+      .reduce((m, s) => Math.max(m, s), 0) + 100;
+    if (final_size > 0) this.style.width = `${final_size}px`;
+    console.log(final_size);
+  }
 }
 
 class SubCategoryInformation<K extends Badge> {
-  category_name: string;
+  // category_name: string;
   locked: Lock;
   locked_reason?: string;
   icon?: string;
+
+  set category_name(v: string) { this.table.setAttribute('name', v); }
+  get category_name() { return this.table.getAttribute('name') || ""; }
 
   set hidden(v: boolean) { this.table.hidden = v; }
   get hidden() { return this.table.hidden; }
@@ -151,6 +180,26 @@ class SubCategoryInformation<K extends Badge> {
       .filter((b) => b instanceof BadgeInformation)
       .filter((b) => !b.isCompleted())
       .filter((b) => !b.hidden);
+  }
+
+  get size() {
+    console.group('e');
+    const size = Array.from(this.table.children)
+      .filter((child) => child instanceof BadgeInformation)
+      .map((child) => {
+        let a = child.setWidth();
+        console.log(a);
+        return a;
+      })
+      .map((numbers) => numbers
+        .reduce((m, s) => m + s, 0))
+      .map((a) => {
+        console.log(a);
+        return a;
+      })
+      .reduce((m, s) => Math.max(m, s), 0);
+    console.groupEnd();
+    return Math.ceil(size / 100) * 100;
   }
 
   table: HTMLTableElement;
