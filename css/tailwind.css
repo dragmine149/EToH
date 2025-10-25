@@ -78,19 +78,12 @@ body {
 }
 
 
-.area {
+category-info {
   float: left;
   margin: 2.5px 5px 5px 0px;
-  background: var(--color-gray-800);
-  padding: 0.5rem;
+  /*background: var(--color-gray-800);*/
+  padding: 0.25rem;
   border-radius: 0.25rem;
-}
-
-
-category-info {
-  display: flex;
-  flex-direction: column;
-  /*ali*/
 }
 
 :root {

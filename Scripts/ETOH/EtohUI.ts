@@ -1,9 +1,9 @@
 import { Area, areaManager } from "../ETOHBridge/AreaManager";
 import { Badge } from "../Core/BadgeManager";
-import { Category, Tower, userManager, badgeManager, EToHUser, Other } from "./Etoh";
+import { Category, Tower, userManager, badgeManager, EToHUser } from "./Etoh";
 import { load_required_data } from "../ETOHBridge/data_loader";
 import { isMobile } from "../utils";
-import { BadgeInformation, CategoryInformation, UIBadgeData } from "../Core/ui";
+import { BadgeInformation, UIBadgeData, CategoryInformation } from "../Core/ui";
 
 enum PreloadState {
   TowerData,
@@ -342,7 +342,7 @@ class UI {
     cat.badges.forEach((badge) => this.#badges.set(badge.data!.id, badge));
 
     // add any children.
-    unprocessed_children.get(area.name)?.forEach((child) => cat.addCategory(child));
+    unprocessed_children.get(area.name)?.forEach((child) => cat.capture(child));
 
     // sort out the parent situation.
     if (area.parent) {
@@ -353,7 +353,7 @@ class UI {
         unprocessed_children.set(area.parent, children);
         return;
       }
-      parent.addCategory(cat);
+      parent.capture(cat);
       return;
     }
 
@@ -377,12 +377,11 @@ const ui = new UI();
 
 function categoryFromArea<T extends Badge>(area: Area) {
   const category = new CategoryInformation<T>();
-  category.data = {
-    name: area.name,
-    lock_type: area.lock_type,
-    lock_reason: area.lock_reason,
-    icon: `Assets/Emblems/${area.name.replaceAll(/\s/gm, '')}.webp`,
-  };
+  category.name = area.name;
+  category.locked = area.lock_type;
+  category.locked_reason = area.lock_reason;
+  category.icon = `Assets/Emblems/${area.name.replaceAll(/\s/gm, '')}.webp`;
+
 
   const uiBadges = badgeManager.area(area.name).map((badge) => {
     return {

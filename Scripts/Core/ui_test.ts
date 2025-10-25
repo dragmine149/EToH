@@ -1,5 +1,4 @@
-import { UIBadgeData, CategoryData } from "./ui";
-import { CategoryInformation } from "./CategoryInfotemp";
+import { UIBadgeData, CategoryData, CategoryInformation } from "./ui";
 import { Lock, Badge } from "./BadgeManager";
 
 /**

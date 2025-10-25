@@ -1,5 +1,6 @@
 import { Badge, Lock } from "./BadgeManager";
-import { noSyncTryCatch } from "../utils";
+import { loopClamp, noSyncTryCatch } from "../utils";
+
 
 interface UIBadgeData<K extends Badge> {
   /** Function to call to show information in the name field of the ui. */
@@ -81,24 +82,163 @@ function createArrowSVG(direction: 'up' | 'down' = 'down', className?: string): 
   return svg;
 }
 
-/**
- * Custom HTMLElement for making a table. Uses shadowDOM for cleaner HTML files.
- * Designed specifically to hold multiple badges which are dynamically added and removed.
- */
+
 class CategoryInformation<K extends Badge> extends HTMLElement {
-  // ====================================================================================================
-  // This section is for data which can be affected externally by the user.
-  // ====================================================================================================
+  #shadow?: ShadowRoot;
+  #style: HTMLLinkElement;
 
-  #data?: CategoryData;
-  /** Data stored about the element. */
-  set data(data: CategoryData | undefined) { this.#data = Object.freeze(data); this.#updateData(); }
-  get data() { return this.#data; }
+  #header: HTMLDivElement;
+  #headerIcon: HTMLImageElement;
+  #headerText: HTMLSpanElement;
+  #headerSwitch: HTMLButtonElement;
 
-  /** Whether to display the count of completed vs total in the header or not. */
-  set count(v) { this.#count = v; this.#updateCount(); }
-  get count() { return this.#count; }
-  #count: Count = Count.Numbers;
+  #subCategoryDiv: HTMLDivElement;
+  #subCategories: SubCategoryInformation<K>[];
+  #captures: CategoryInformation<K>[];
+
+  #category_index = 0;
+  set category_index(v: number) {
+    // basic loop-around clamp.
+    this.#category_index = loopClamp(v, this.#subCategories.length);
+    this.changeCategory();
+  }
+  get category_index() { return this.#category_index; }
+
+  get #sub_category() { return this.#subCategories[this.category_index]; }
+  get category_name() { return this.#sub_category.category_name; }
+  get category_icon() { return this.#sub_category.icon; }
+  get addBadges() { return this.#sub_category.addBadges.bind(this.#sub_category); }
+  get removeBadges() { return this.#sub_category.removeBadges.bind(this.#sub_category) };
+  get badges() { return this.#sub_category.badges; }
+
+  // this lot is related to THIS object, hence why [0]
+  static get observedAttributes() {
+    return ['name', 'locked', 'locked_reason', 'icon'];
+  }
+  get name() { return this.#subCategories[0].category_name; }
+  set name(v: string) { this.#subCategories[0].category_name = v; }
+  get locked() { return this.#subCategories[0].locked; }
+  set locked(v: Lock) { this.#subCategories[0].locked = v; }
+  get locked_reason() { return this.#subCategories[0].locked_reason; }
+  set locked_reason(v: string | undefined) { this.#subCategories[0].locked_reason = v; }
+  get icon() { return this.#subCategories[0].icon; }
+  set icon(v: string | undefined) { this.#subCategories[0].icon = v; }
+
+  constructor() {
+    super();
+    console.log('e');
+
+    this.#header = document.createElement("div");
+    this.#headerIcon = document.createElement("img");
+    this.#headerIcon.onerror = () => this.#headerIcon.src = "Assets/Emblems/Unknown.webp";
+    this.#headerText = document.createElement("span");
+    this.#headerSwitch = document.createElement("button");
+    this.#headerSwitch.addEventListener('click', () => {
+      this.category_index += 1;
+    })
+
+    this.#style = document.createElement("link");
+    this.#style.rel = "stylesheet";
+    this.#style.href = "css/category_tables.css";
+
+    this.#header.appendChild(this.#headerIcon);
+    this.#header.appendChild(this.#headerText);
+    this.#header.appendChild(this.#headerSwitch);
+    this.#header.id = "header";
+
+    this.#subCategoryDiv = document.createElement("div");
+    this.#subCategoryDiv.id = "sub";
+    const default_sub = new SubCategoryInformation<K>();
+    this.#subCategories = [default_sub];
+    this.#subCategoryDiv.appendChild(default_sub.table);
+    this.#captures = [];
+  }
+
+  connectedCallback() {
+    this.#shadow = this.attachShadow({ mode: "open" });
+    this.#shadow.appendChild(this.#style);
+    this.#shadow.appendChild(this.#header);
+    this.#shadow.appendChild(this.#subCategoryDiv);
+
+    this.setMinSize();
+  }
+
+  capture(category?: CategoryInformation<K>) {
+    if (category == undefined) {
+      this.parentElement?.removeChild(this);
+      return this.#subCategories[0];
+    }
+
+    // undefined is only return if category is not defined so its fine.
+    const sub = category.capture()!;
+
+    this.#subCategories.push(sub);
+    this.#captures.push(category);
+    this.#subCategoryDiv.appendChild(sub.table);
+    this.setMinSize();
+    this.changeCategory(this.#subCategories.length - 1);
+  }
+  get captures() { return this.#captures; }
+
+  release(category?: CategoryInformation<K>) {
+    if (category == undefined) throw new Error("help");
+
+    const index = this.#subCategories.findIndex((sub) => sub.category_name == category.name);
+    this.#subCategories.splice(index, 1);
+    this.#captures.splice(index, 1);
+    this.setMinSize();
+    this.changeCategory();
+    return;
+  }
+
+  changeCategory(index?: number) {
+    this.#headerSwitch.hidden = this.#subCategories.length <= 1;
+    if (!this.#headerSwitch.hidden) {
+      const next = loopClamp(this.category_index + 1, this.#subCategories.length);
+      // console.log(next);
+      this.#headerSwitch.innerText = `View ${this.#subCategories[next].category_name}`;
+    }
+
+    // this.#sub_category.hidden = true;
+    this.#subCategories.forEach((sub) => sub.hidden = true);
+    if (index == undefined) index = this.category_index;
+    if (index != this.#category_index) this.#category_index = loopClamp(index, this.#subCategories.length);
+
+    this.#headerIcon.src = this.category_icon || "Assets/Emblems/Unknown.webp";
+    this.#headerText.innerText = this.category_name;
+    this.#headerText.title = `${this.category_name}${this.#sub_category.getCountString()}`;
+    this.#headerText.classList[this.#sub_category.isCompleted() ? 'add' : 'remove']("rainbow");
+    this.#sub_category.hidden = false;
+  }
+
+  setMinSize() {
+    if (!this.#shadow) return;
+    this.#subCategoryDiv.classList.remove('sized');
+    this.style.width = ``;
+    // console.log(this.#subCategories);
+    this.#subCategories.forEach((sub) => sub.hidden = false);
+    const final_size = this.#subCategories
+      .map((c) => c.size)
+      .reduce((m, s) => Math.max(m, s), 0) + 50;
+    if (final_size > 0) this.style.width = `${final_size}px`;
+    this.#subCategories.forEach((sub) => sub.hidden = true);
+    this.changeCategory();
+    this.#subCategoryDiv.classList.add('sized');
+    console.log(final_size);
+  }
+}
+
+class SubCategoryInformation<K extends Badge> {
+  // category_name: string;
+  locked: Lock;
+  locked_reason?: string;
+  icon?: string;
+
+  set category_name(v: string) { this.table.setAttribute('name', v); }
+  get category_name() { return this.table.getAttribute('name') || ""; }
+
+  set hidden(v: boolean) { this.table.hidden = v; }
+  get hidden() { return this.table.hidden; }
 
   /**
    * A list of badges this category is in control of. Returns data depending on it's children instead of storing stuff
@@ -108,9 +248,9 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
    */
   get badges(): Map<number, BadgeInformation<K>> {
     const map = new Map<number, BadgeInformation<K>>();
-    if (this.#table == undefined) return map;
+    if (this.table == undefined) return map;
 
-    for (const element of this.#table.children) {
+    for (const element of this.table.children) {
       if (!(element instanceof BadgeInformation)) continue;
 
       const badge = element as BadgeInformation<K>;
@@ -121,275 +261,57 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     return map;
   }
 
-  /**
-   * A list of sub-categories this category is in control of. Returns data depending on children instead of local storage
-   * guessing.
-   *
-   * Every call to this getter checks all the top-level children in the shadow.
-   */
-  get categories(): CategoryInformation<K>[] {
-    if (this.#shadow == undefined) return [];
-    // console.log('getting categories', this.#shadow.children);
-    return Array.from(this.#shadow.children).filter((child) => child instanceof CategoryInformation);
+  get completed(): BadgeInformation<K>[] {
+    return Array.from(this.table.children)
+      .filter((b) => b instanceof BadgeInformation)
+      .filter((b) => b.isCompleted())
+      .filter((b) => !b.hidden);
   }
 
-  // ====================================================================================================
-  // Now we get into the section of behind-the-scenes stuff
-  // ====================================================================================================
+  get total(): BadgeInformation<K>[] {
+    return Array.from(this.table.children)
+      .filter((b) => b instanceof BadgeInformation)
+      .filter((b) => !b.isCompleted())
+      .filter((b) => !b.hidden);
+  }
 
-  /** A list of categories we are still yet to process due to the shadow no being ready */
-  #categoriesToProcess?: (CategoryInformation<K>)[];
+  get size() {
+    const size = Array.from(this.table.children)
+      .filter((child) => child instanceof BadgeInformation)
+      .map((child) => child.setWidth())
+      .map((numbers) => numbers
+        .reduce((m, s) => m + s, 0))
+      .reduce((m, s) => Math.max(m, s), 0);
+    return Math.ceil(size / 100) * 100;
+  }
 
-  /** The main child, everything is hidden in here */
-  #shadow?: ShadowRoot;
-  #items: HTMLDivElement;
-  /** Reference to the table where all the badges are displayed */
-  #table: HTMLTableElement;
-  /** A dummy element for a 1px extra stylelish gap between the header and the content */
+  table: HTMLTableElement;
   #gap: HTMLTableRowElement;
-  /** The header of the table, containing the title, count/progression, and the button for sub-children */
-  #header: HTMLDivElement;
-  #headerIcon: HTMLImageElement;
-  #headerText: HTMLSpanElement;
-  #headerDrop: HTMLDivElement;
-  // #headerDropDown: SVGSVGElement;
-  // #headerDropUp: SVGSVGElement;
-  /** The style element as shadows do not read style from main body by default. */
-  #style: HTMLLinkElement;
 
-  parent: {
-    index?: number;
-  };
-
-  /** Internal state of the sub categories. Are they visible or not. */
-  // #subCategoryState = true;
-  #categoryIndex = 0;
-  set categoryIndex(v: number) {
-    if (v >= this.categories.length + 1) v = 0;
-    if (v < 0) v = this.categories.length;
-    this.#categoryIndex = v;
-    this.toggleCategoryVisibility();
-  }
-  get categoryIndex() {
-    return this.#categoryIndex;
-  }
-
-  // ====================================================================================================
-  // The code to run on element creation / add to DOM.
-  // ====================================================================================================
-
-  /** Sets up the basics things that can be created on creation as we can off-screen manipulate this */
   constructor() {
-    super();
-
-    this.#items = document.createElement("div");
-    this.#items.id = "items";
-
-    this.#table = document.createElement("table");
+    this.table = document.createElement("table");
     this.#gap = document.createElement("tr");
-    this.#header = document.createElement("div");
-    this.#headerIcon = document.createElement("img");
-    this.#headerText = document.createElement("span");
-    this.#headerDrop = document.createElement("div");
-    this.#headerDrop.addEventListener('click', this.showCategories);
-    this.parent = {};
-    // this.#headerDropDown = createArrowSVG('down', 'hidden');
-    // this.#headerDropUp = createArrowSVG('up', 'hidden');
-    this.#style = document.createElement("link");
-
-    // random span for gap reason.
-    this.#table.appendChild(this.#gap);
-
-    this.#style.href = "css/shadow_table.css";
-    this.#style.rel = "stylesheet";
-
-    this.#header.appendChild(this.#headerIcon);
-    this.#header.appendChild(this.#headerText);
-    this.#header.appendChild(this.#headerDrop);
-    // this.#headerDrop.appendChild(this.#headerDropDown);
-    // this.#headerDrop.appendChild(this.#headerDropUp);
-
-    // this.#headerDrop.addEventListener('click', () => {
-    //   if (this.categories.length <= 0) return;
-
-    // console.log('header click');
-    // this.toggleCategoryVisibility(!this.#subCategoryState);
-    // this.#headerDropDown.classList.toggle('hidden');
-    // this.#headerDropUp.classList.toggle('hidden');
-    // });
-
-    this.#items.appendChild(this.#header);
-    this.#items.appendChild(this.#table);
-
-    this.toggleCategoryVisibility();
+    this.table.appendChild(this.#gap);
   }
-  // This is empty because we don't want to recreate a ton of stuff.
-  connectedMoveCallback() { console.log('e'); }
-
-  /** Add to DOM and setup the things that could not be setup previously due to various reasons. */
-  connectedCallback() {
-    // make the base required data.
-    this.#shadow = this.attachShadow({ mode: "open" });
-
-    // sort out shadow children
-    this.#shadow.appendChild(this.#style);
-    this.#shadow.appendChild(this.#items);
-    // this.#shadow.appendChild(this.#header);
-    // this.#shadow.appendChild(this.#table);
-
-    // sort out styles
-    this.classList.add("area");
-
-    // set header
-    this.#headerText.title = this.#data?.name || "";
-    this.#headerText.innerText = this.#data?.name || "";
-    this.#headerIcon.src = this.#data?.icon || "Assets/Emblems/Unknown.webp";
-    this.#headerIcon.onerror = () => this.#headerIcon.src = "Assets/Emblems/Unknown.webp";
-
-    // process those waiting, if we have any waiting.
-    // console.log(`Adding categories from queue`, this.#categoriesToProcess);
-    if (this.#categoriesToProcess) this.addCategory(...this.#categoriesToProcess);
-
-    // Sorts out table, then sort it out again once we have style.
-    // This gets around the network issue causing all those before the style has loaded once to break.
-    this.#autoHide();
-    if (!this.#style.sheet) this.#style.onload = this.#autoHide.bind(this);
-  }
-
-  // ====================================================================================================
-  // Now we get into back-end UI management
-  // ====================================================================================================
-
-  /**
-   * Update elements that rely on the data object when they have been set.
-   */
-  #updateData() {
-    this.#headerText.title = this.#data!.name;
-    this.#headerText.innerText = this.#data!.name;
-    this.#headerIcon.src = this.#data!.icon || "Assets/Emblems/Unknown.webp";
-  }
-
-
-  /**
-   * Automatically hide this element if there is no data in the table.
-   */
-  #autoHide() {
-    // Use <= 1 due to the invisible `gap` 1px row.
-    // also check for categories. As no badges != no categories. (Thanks Windswept Peaks)
-    this.hidden = this.#table?.children.length <= 1 && this.categories.length <= 0;
-    if (!this.hidden) this.updateSize();
-  }
-
-  /**
-   * Update the size of this element according to the children element sizes.
-   *
-   * Allows for all children to be the same size so we have no weirdness with jumping.
-   */
-  updateSize() {
-    if (!this.#shadow) return [0, 0];
-    // return [0, 0];
-
-    const sub = this.categories.map((c) => c.updateSize());
-    const subMax = [
-      sub.length >= 1 ? sub[0].reduce((m, s) => Math.max(m, s), 0) : 0,
-      sub.length >= 2 ? sub[1].reduce((m, s) => Math.max(m, s), 0) : 0,
-    ];
-
-    const sizes: number[][] = [
-      // ...this.categories.map((c) => c.updateSize()),
-      ...Array.from(this.badges.values()).map((b) => b.setWidth()),
-    ];
-    let name = sizes.map((s) => s[0]).reduce((m, s) => Math.max(m, s), 0);
-    let info = sizes.map((s) => s[1]).reduce((m, s) => Math.max(m, s), 0);
-    name += subMax[0];
-    info += subMax[1];
-
-
-    if (name + info > 0) this.style.width = `${name + info + 8}px`;
-    return [name, info];
-  }
-
-  /**
-   * Formats a string to display counted data.
-   * @param completed The completed element count.
-   * @param total The total element count.
-   * @returns A formatted string based off Count enum.
-   */
-  #countString(completed: number, total: number) {
-    // nice and simple
-    if (this.count == Count.Numbers) return ` (${completed}/${total})`;
-    if (this.count == Count.Percent) {
-      // need to do a tad bit of maths
-      const percentage = (total === 0) ? 0 : ((completed / total) * 100);
-      // 2dp is perfect. No need to make setting for it either as kinda recognised everywhere.
-      return ` (${percentage.toFixed(2)}%)`;
-    }
-    // Also accounts for Count.None
-    return ``;
-  }
-
-  /**
-   * Updates the count display.
-   */
-  #updateCount() {
-    const completed_count = Array.from(this.badges.values()).filter(x => x.isCompleted()).length;
-    const count_data = this.#countString(completed_count, this.badges?.size);
-    this.#headerText.innerText = `${this.#data?.name || ""}${count_data}`;
-    this.#headerText.classList[completed_count == this.badges.size ? 'add' : 'remove']("rainbow");
-  }
-
-  // ====================================================================================================
-  // Now we deal with adding / hiding / removing / showing
-  // ====================================================================================================
 
   /**
    * Add a badge for this element to take care of. Can take raw badge data or modified information data.
    *
    * @param badges Information about badges to add. Can take an array or just one.
    */
-  addBadges(...badges: (UIBadgeData<K> | BadgeInformation<K>)[]) {
-    // now we process said badges
+  addBadges(...badges: (BadgeInformation<K> | UIBadgeData<K>)[]) {
     badges.forEach((badge) => {
       // we can already use as-is
       if ((badge as BadgeInformation<K>).data) {
-        this.#table.appendChild(badge as BadgeInformation<K>);
+        this.table.appendChild(badge as BadgeInformation<K>);
         return;
       }
 
       // but we might have to translate
       const row = document.createElement("badge-info") as BadgeInformation<K>;
       row.data = badge as UIBadgeData<K>;
-      this.#table.appendChild(row);
-    });
-
-    // Update the UI with the new badges.
-    this.#autoHide();
-    this.#updateCount();
-  }
-
-  /**
-   * Add a category to act kinda like a sub-area. Useful for grouping stuff.
-   *
-   * Note: pre-loads the categories waiting for the element to be added to the DOM due to the use of shadow-dom.
-   */
-  addCategory(...categories: CategoryInformation<K>[]) {
-    if (!this.#shadow) {
-      this.#categoriesToProcess = [...(this.#categoriesToProcess || []), ...categories];
-      return;
-    }
-
-    const cat_get = () => this.categoryIndex;
-    const cat_set = (v: number) => this.categoryIndex = v;
-
-    categories.forEach((cat) => {
-      this.#shadow?.appendChild(cat);
-      Object.defineProperty(cat.parent, 'index', {
-        get: cat_get,
-        set: cat_set,
-      })
-    });
-
-    // this.#headerDropUp.classList.remove('hidden');
+      this.table.appendChild(row);
+    })
   }
 
   /**
@@ -407,46 +329,18 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
       if (entry == undefined) return;
 
       // If we have deleted it succesffully, then we know that we can remove it. and return it.
-      const result = noSyncTryCatch(() => this.#table.removeChild(entry));
+      const result = noSyncTryCatch(() => this.table.removeChild(entry));
       if (result.error) return;
       badges.push(entry);
     });
 
-    this.#autoHide();
     return badges;
-  }
-
-  /**
-   * Removes a category this element is taking care of.
-   * @param indexes List of indexes to remove
-   * @returns The CategoryInformation for that index. (or nothing if index out of range)
-   */
-  removeCategory(...indexes: number[]) {
-    const elms = this.categories.filter((v, i) => i in indexes);
-    elms.forEach((elm) => this.#shadow?.removeChild(elm));
-
-    // if (this.categories.length <= 0) {
-    //   this.#headerDropUp.classList.remove('hidden');
-    // }
-    return elms;
   }
 
   /** @param badgeIds The badges to show. */
   showBadges = (...badgeIds: number[]) => this.toggleBadgesVisibility(true, ...badgeIds);
   /** @param badgeIds The badges to hide. */
   hideBadges = (...badgeIds: number[]) => this.toggleBadgesVisibility(false, ...badgeIds);
-  /** */
-  showCategories = () => {
-    if (this.parent.index) {
-      this.parent.index += 1;
-      return;
-    }
-    this.categoryIndex += 1;
-  };
-  /** */
-  hideCategories = () => {
-    this.categoryIndex -= 1;
-  };
 
   /**
    * Makes a set of badges visible / hidden. This is different to `add/remove Badges` as we keep the ownership of said badge.
@@ -463,32 +357,21 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
 
       entry.hidden = !visible;
     });
-
-    this.#autoHide();
   }
 
-  /**
-   * Makes all the sub-categories invisible or not.
-   */
-  toggleCategoryVisibility() {
-    this.#items.hidden = this.categoryIndex !== 0;
-    this.categories.forEach((cat, index) => {
-      const cats = this.categoryIndex > 0;
-      const dex = index == this.categoryIndex - 1;
-      console.log(cats, dex);
-      return cat.hidden = !(cats && dex);
-    });
-    // this.#subCategoryState = visible;
-    // this.categories.forEach((cat) => cat.hidden = !visible);
-    // this.#autoHide();
+  getCountString(count_type?: Count) {
+    if (count_type == undefined) count_type = localStorageCount();
+
+    switch (count_type) {
+      case Count.None: return ``;
+      case Count.Numbers: return ` (${this.completed.length}/${this.total.length})`;
+      case Count.Percent: return ` (${this.total.length === 0 ? 0 : ((this.completed.length / this.total.length) * 100).toFixed(2)})`;
+    }
   }
 
-  /**
-   * Removes all the data ready for pre-loading.
-   * @returns The data stored by doing `addCategories` when `#Shadow` is undefined.
-   */
-  removeCategoriesInQueue() { return this.#categoriesToProcess?.splice(0); }
+  isCompleted() { return this.completed.length == this.total.length; }
 }
+
 
 /**
  * UI Element for each individual badge displayed. Aka CategoryInformation for Badges.
@@ -643,8 +526,8 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   // search(data: string, is_acro: string);
 }
 
-// if (customElements.get('category-info') == undefined) customElements.define("category-info", CategoryInformation);
+if (customElements.get('category-info') == undefined) customElements.define("category-info", CategoryInformation);
 if (customElements.get('badge-info') == undefined) customElements.define("badge-info", BadgeInformation);
 
 
-export { BadgeInformation, CategoryInformation, UIBadgeData, CategoryData, Count, BadgeUserData, localStorageCount };
+export { BadgeInformation, UIBadgeData, CategoryData, Count, BadgeUserData, localStorageCount, CategoryInformation };

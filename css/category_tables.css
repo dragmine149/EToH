@@ -1,3 +1,8 @@
+*:not(*>) {
+  display: flex;
+  flex-direction: column;
+}
+
 #header {
   /*width: 100%;*/
   border-top-left-radius: 2rem;
@@ -58,11 +63,11 @@ badge-info {
   white-space: nowrap;
 
   >:first-child {
-    width: 40%;
+    width: 50%;
   }
 
   >:last-child {
-    width: 60%;
+    width: 40%;
   }
 }
 
