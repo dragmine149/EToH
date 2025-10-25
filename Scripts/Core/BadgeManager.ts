@@ -1,7 +1,7 @@
 /*eslint no-undef: "error"*/
 
-import { GenericManager } from "../Core/GenericManager";
-import { BadgeUserData } from "../Core/ui";
+import { GenericManager } from "./GenericManager";
+import { BadgeUserData } from "./ui";
 
 // The reason why this badge / category can not be claimed.
 //

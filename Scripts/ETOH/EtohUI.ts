@@ -1,5 +1,5 @@
 import { Area, areaManager } from "../ETOHBridge/AreaManager";
-import { Badge } from "../ETOHBridge/BadgeManager";
+import { Badge } from "../Core/BadgeManager";
 import { Category, Tower, userManager, badgeManager, EToHUser, Other } from "./Etoh";
 import { load_required_data } from "../ETOHBridge/data_loader";
 import { isMobile } from "../utils";

@@ -1,4 +1,4 @@
-import { Badge, Lock } from "../ETOHBridge/BadgeManager";
+import { Badge, Lock } from "./BadgeManager";
 import { noSyncTryCatch } from "../utils";
 
 interface UIBadgeData<K extends Badge> {

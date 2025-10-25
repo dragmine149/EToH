@@ -1,5 +1,5 @@
 import { etohDB } from "./database";
-import { Badge, BadgeManager, Lock } from "../ETOHBridge/BadgeManager";
+import { Badge, BadgeManager, Lock } from "../Core/BadgeManager";
 import { DIFFICULTIES, SUB_LEVELS } from "./constants";
 import { logs } from "../Core/logs";
 import { CLOUD_URL, network, RawBadge } from "../Core/network";
