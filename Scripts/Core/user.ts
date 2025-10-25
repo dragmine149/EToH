@@ -31,6 +31,16 @@ class User {
   set name(new_name: string) { this.update_name(new_name); }
   get name() { return this.#name; }
 
+  get database() {
+    return {
+      id: this.id,
+      name: this.name,
+      display: this.display,
+      past: this.past_names,
+      last: this.last_viewed
+    }
+  }
+
   constructor(id: number, name: string, display: string, past: string[]) {
     this.id = id;
     this.#name = name;
@@ -122,6 +132,16 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
     dispatchEvent(new Event("user_manager_loaded"));
 
     // console.info(`Database loaded`);
+  }
+
+  async store_user(user?: K) {
+    if (user == undefined) user = this.current_user;
+    if (user == undefined) {
+      console.warn("no user loaded to store");
+      return;
+    }
+
+    await this.#db.put(user.database);
   }
 
   /**

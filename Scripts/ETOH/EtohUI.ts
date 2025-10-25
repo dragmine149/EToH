@@ -277,8 +277,11 @@ class UI {
    * @param popped Stops us from editing the history by modifying the state.
    */
   async load_user(user_input: string | number, popped?: boolean) {
+    const old_user = userManager.current_user;
     const user = await userManager.find_user(user_input);
     if (user == undefined) { return; }
+    userManager.store_user(old_user);
+    this.datalist_add_user(user.name);
 
     // no await as we do in background, hopefully.
     const loading = user.loadDatabaseBadges();
