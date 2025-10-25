@@ -24,11 +24,14 @@
   }
 
   >:last-child {
+    border-top-right-radius: 2rem;
     display: flex;
     justify-content: end;
     align-content: end;
+    text-align: center;
+    align-items: center;
     padding-right: 0.5rem;
-    width: 4.5rem;
+    white-space: nowrap;
   }
 
   :last-child.hidden {
@@ -91,4 +94,37 @@ badge-info {
   to {
     background-position: 100% 0;
   }
+}
+
+
+
+
+/* This would just be a pain to define for everything in class format, so we do it here. */
+.fake-button,
+#badge_search,
+button {
+  padding: 0.5rem 1rem;
+  margin: 4px;
+  background-color: var(--color-gray-750);
+  color: white;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  transition: background-color 0.2s;
+  border: 0px;
+  font-size: 16px;
+  text-wrap: nowrap;
+  user-select: none;
+  cursor: pointer;
+}
+
+.fake-button:hover:not(:disabled),
+button:hover:not(:disabled) {
+  background-color: var(--color-gray-red-700);
+}
+
+.fake-button:disabled,
+#badge_search:disabled,
+button:disabled {
+  background-color: var(--color-gray-760);
+  color: var(--color-neutral-300);
 }

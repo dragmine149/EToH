@@ -9,7 +9,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   #header: HTMLDivElement;
   #headerIcon: HTMLImageElement;
   #headerText: HTMLSpanElement;
-  #headerSwitch: HTMLDivElement;
+  #headerSwitch: HTMLButtonElement;
 
   #subCategoryDiv: HTMLDivElement;
   #subCategories: SubCategoryInformation<K>[];
@@ -20,6 +20,11 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     // basic loop-around clamp.
     this.#category_index = loopClamp(v, this.#subCategories.length);
     this.changeCategory();
+    if (this.#subCategories.length > 0) {
+      const next = loopClamp(this.category_index + 1, this.#subCategories.length);
+      // console.log(next);
+      this.#headerSwitch.innerText = `View ${this.#subCategories[next].category_name}`;
+    }
   }
   get category_index() { return this.#category_index; }
 
@@ -50,8 +55,10 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     this.#headerIcon = document.createElement("img");
     this.#headerIcon.onerror = () => this.#headerIcon.src = "Assets/Emblems/Unknown.webp";
     this.#headerText = document.createElement("span");
-    this.#headerSwitch = document.createElement("div");
-    this.#headerSwitch.click = () => this.category_index += 1;
+    this.#headerSwitch = document.createElement("button");
+    this.#headerSwitch.addEventListener('click', () => {
+      this.category_index += 1;
+    })
 
     this.#style = document.createElement("link");
     this.#style.rel = "stylesheet";
@@ -108,7 +115,8 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   }
 
   changeCategory(index?: number) {
-    this.#sub_category.hidden = true;
+    // this.#sub_category.hidden = true;
+    this.#subCategories.forEach((sub) => sub.hidden = true);
     if (index == undefined) index = this.category_index;
     if (index != this.#category_index) this.#category_index = loopClamp(index, this.#subCategories.length);
 
