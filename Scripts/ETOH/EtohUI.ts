@@ -300,6 +300,7 @@ class UI {
     await loading;
     this.#search_main.hidden = true;
     this.updateUIData();
+    await this.updateUserData();
   }
 
   async updateUserData() {
@@ -314,6 +315,9 @@ class UI {
   updateUIData() {
     const user = userManager.current_user;
     if (user == undefined) return;
+    // reset the user badge data as it breaks stuff otherwise.
+    Array.from(this.#badges.values()).forEach((b) => b.user_badge_data = undefined);
+
     for (const [id, time] of user.completed) {
       const badgeUI = this.#badges.get(id);
       if (badgeUI == undefined) {
