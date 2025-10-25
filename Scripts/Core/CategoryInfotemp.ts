@@ -122,14 +122,10 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   setMinSize() {
     if (!this.#shadow) return;
     this.style.width = ``;
-    console.log(this.#subCategories);
+    // console.log(this.#subCategories);
     const final_size = this.#subCategories
       .map((c) => c.size)
-      .filter((c) => {
-        console.log(c);
-        return true;
-      })
-      .reduce((m, s) => Math.max(m, s), 0) + 100;
+      .reduce((m, s) => Math.max(m, s), 0) + 50;
     if (final_size > 0) this.style.width = `${final_size}px`;
     console.log(final_size);
   }
@@ -183,22 +179,12 @@ class SubCategoryInformation<K extends Badge> {
   }
 
   get size() {
-    console.group('e');
     const size = Array.from(this.table.children)
       .filter((child) => child instanceof BadgeInformation)
-      .map((child) => {
-        let a = child.setWidth();
-        console.log(a);
-        return a;
-      })
+      .map((child) => child.setWidth())
       .map((numbers) => numbers
         .reduce((m, s) => m + s, 0))
-      .map((a) => {
-        console.log(a);
-        return a;
-      })
       .reduce((m, s) => Math.max(m, s), 0);
-    console.groupEnd();
     return Math.ceil(size / 100) * 100;
   }
 
