@@ -89,6 +89,10 @@ body {
 
 category-info {
   display: flex;
+  flex-direction: column;
   /*ali*/
-  /*flex-direction: column;*/
+}
+
+:root {
+  --background: #aaa;
 }

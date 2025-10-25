@@ -512,7 +512,7 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   get user_badge_data() { return this.#user_data; }
 
   /// Contains quick references to different children for global use.
-  #row: HTMLTableRowElement;
+  // #row: HTMLTableRowElement;
   #name_field: HTMLTableCellElement;
   #info_field: HTMLTableCellElement;
   #info_data: HTMLSpanElement;
@@ -524,7 +524,7 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
     // To prevent duplicate children. The main nodes are only created once, in here.
     // This is extremely important as we do "remove" and "add" these elements a lot.
 
-    this.#row = document.createElement("tr");
+    // this.#row = document.createElement("tr");
     this.#name_field = document.createElement("td");
     this.#info_field = document.createElement("td");
     this.#info_data = document.createElement("span");
@@ -532,8 +532,8 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
     this.#info_comp = document.createElement("span");
 
     // sort out normal children.
-    this.#row.appendChild(this.#name_field);
-    this.#row.appendChild(this.#info_field);
+    // this.#row.appendChild(this.#name_field);
+    // this.#row.appendChild(this.#info_field);
     this.#info_field.appendChild(this.#info_data);
     this.#info_field.appendChild(this.#info_br);
     this.#info_field.appendChild(this.#info_comp);
@@ -543,7 +543,9 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
 
   connectedCallback() {
     // On update stuff to keep everything in check.
-    this.appendChild(this.#row);
+    // this.appendChild(this.#row);
+    this.appendChild(this.#name_field);
+    this.appendChild(this.#info_field);
     this.#updateRow();
   }
 
@@ -605,8 +607,8 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
     }) : '';
 
     // sort out external events.
-    this.#row.onmouseover = this.#effectElement.bind(this, true);
-    this.#row.onmouseleave = this.#effectElement.bind(this, false);
+    this.onmouseover = this.#effectElement.bind(this, true);
+    this.onmouseleave = this.#effectElement.bind(this, false);
 
     this.setNameStyle();
     this.setInfoStyle();
@@ -641,7 +643,7 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   // search(data: string, is_acro: string);
 }
 
-if (customElements.get('category-info') == undefined) customElements.define("category-info", CategoryInformation);
+// if (customElements.get('category-info') == undefined) customElements.define("category-info", CategoryInformation);
 if (customElements.get('badge-info') == undefined) customElements.define("badge-info", BadgeInformation);
 
 

@@ -25,8 +25,8 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   get #sub_category() { return this.#subCategories[this.category_index]; }
   get category_name() { return this.#sub_category.category_name; }
   get category_icon() { return this.#sub_category.icon; }
-  addBadges = this.#sub_category.addBadges;
-  removeBadges = this.#sub_category.removeBadges;
+  get addBadges() { return this.#sub_category.addBadges.bind(this.#sub_category); }
+  get removeBadges() { return this.#sub_category.removeBadges.bind(this.#sub_category) };
 
   // this lot is related to THIS object, hence why [0]
   static get observedAttributes() {
@@ -43,6 +43,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
 
   constructor() {
     super();
+    console.log('e');
 
     this.#header = document.createElement("div");
     this.#headerIcon = document.createElement("img");
@@ -53,9 +54,15 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
 
     this.#style = document.createElement("link");
     this.#style.rel = "stylesheet";
-    this.#style.href = "css/shadow_table.css";
+    this.#style.href = "css/category_tables.css";
+
+    this.#header.appendChild(this.#headerIcon);
+    this.#header.appendChild(this.#headerText);
+    this.#header.appendChild(this.#headerSwitch);
+    this.#header.id = "header";
 
     this.#subCategoryDiv = document.createElement("div");
+    this.#subCategoryDiv.id = "sub";
     this.#subCategories = [new SubCategoryInformation<K>()];
   }
 
@@ -68,6 +75,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
 
   capture(category?: CategoryInformation<K>) {
     if (category == undefined) {
+      this.parentElement?.removeChild(this);
       return this.#subCategories[0];
     }
 
@@ -100,10 +108,6 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     this.#sub_category.hidden = false;
   }
 }
-
-customElements.define("category-info", CategoryInformation);
-const a = document.createElement("category-info") as CategoryInformation<Badge>;
-console.log(a.category_name);
 
 class SubCategoryInformation<K extends Badge> {
   category_name: string;

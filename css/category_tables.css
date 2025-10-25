@@ -1,0 +1,94 @@
+#header {
+  /*width: 100%;*/
+  border-top-left-radius: 2rem;
+  border-top-right-radius: 2rem;
+  display: flex;
+  justify-content: space-between;
+  background-color: var(--background, white);
+
+  min-height: 3rem;
+
+  >:first-child {
+    padding-left: 1rem;
+    padding-top: 0.5rem;
+    width: 2rem;
+    height: 2rem;
+  }
+
+  >:nth-child(2) {
+    text-align: center;
+    font-weight: bold;
+    align-content: center;
+    white-space: nowrap;
+    font-size: x-large;
+  }
+
+  >:last-child {
+    display: flex;
+    justify-content: end;
+    align-content: end;
+    padding-right: 0.5rem;
+    width: 4.5rem;
+  }
+
+  :last-child.hidden {
+    display: none;
+  }
+}
+
+#sub>table {
+  /*width: 100%;*/
+}
+
+badge-info {
+  display: table-row;
+  background-color: var(--background, white);
+  width: 100%;
+
+  tr {
+    width: 100%;
+    display: block;
+  }
+
+  white-space: nowrap;
+
+  >:first-child {
+    width: 40%;
+  }
+
+  >:last-child {
+    width: 60%;
+  }
+}
+
+
+
+.rainbow {
+  background: linear-gradient(to right,
+      rgba(255, 0, 0, 1) 0%,
+      rgba(255, 154, 0, 1) 10%,
+      rgba(208, 222, 33, 1) 20%,
+      rgba(79, 220, 74, 1) 30%,
+      rgba(63, 218, 216, 1) 40%,
+      rgba(47, 201, 226, 1) 50%,
+      rgba(28, 127, 238, 1) 60%,
+      rgba(95, 21, 242, 1) 70%,
+      rgba(186, 12, 248, 1) 80%,
+      rgba(251, 7, 217, 1) 90%,
+      rgba(255, 0, 0, 1) 100%);
+  background-clip: text;
+  color: transparent;
+  animation: loop_bow 4s linear infinite;
+  background-size: 1000% 100%;
+  /*-webkit-text-stroke: 0.5px #000;*/
+}
+
+@keyframes loop_bow {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 100% 0;
+  }
+}

@@ -1,5 +1,6 @@
-import { CategoryInformation, UIBadgeData, CategoryData, Count } from "./ui";
-import { Lock, Badge } from "../ETOHBridge/BadgeManager";
+import { UIBadgeData, CategoryData } from "./ui";
+import { CategoryInformation } from "./CategoryInfotemp";
+import { Lock, Badge } from "./BadgeManager";
 
 /**
 * Returns the shortened version of the text, in accordance to tower format.
@@ -27,9 +28,47 @@ function random_Category(): CategoryData {
   const locks: Lock[] = [Lock.Unlocked, Lock.Temporary, Lock.Another];
   const randomLock = locks[Math.floor(Math.random() * locks.length)];
 
+  // Emblem/icon filenames that are expected to live in the provided Emblems folder.
+  // (95% chance we'll return an icon + lock reason using these emblems)
+  const emblemFiles = [
+    "Ring0.webp",
+    "System1.webp",
+    "Zone4.webp",
+    "PitofMisery.webp",
+    "LostRiver.webp",
+    "Christmas.webp",
+    "BIOUMS.webp",
+    "Zone10.webp",
+    "LostRiver.webp",
+    "GlacialOutpost.webp"
+  ];
+
+  const willProvideEmblem = Math.random() < 0.95;
+  let icon: string | undefined = undefined;
+  let lock_reason: string | undefined = undefined;
+
+  if (willProvideEmblem) {
+    const picked = emblemFiles[Math.floor(Math.random() * emblemFiles.length)];
+    // Use the Emblems folder path referenced in the prompt.
+    icon = `Assets/Emblems/${picked}`;
+
+    const reasons = [
+      "Requires completion of previous tower.",
+      "Event-exclusive content.",
+      "Account level too low for access.",
+      "Time-locked — available later.",
+      "Requires a special achievement.",
+      "Season pass content.",
+      "Developer locked for testing."
+    ];
+    lock_reason = reasons[Math.floor(Math.random() * reasons.length)];
+  }
+
   return {
     name: randomName,
     lock_type: randomLock,
+    lock_reason,
+    icon,
   };
 }
 
@@ -57,29 +96,39 @@ function random_badges(): UIBadgeData<Badge>[] {
       completed: completed,
       lock_type: lock_type,
       lock_reason: `Locked because reasons.`,
+      name_style: () => ``,
+      info_style: () => ``,
     };
   });
 }
 
+if (customElements.get("category-info") == undefined) customElements.define("category-info", CategoryInformation);
 const elms: CategoryInformation<Badge>[] = [];
 
 const createCI = (recursive?: boolean) => {
   console.log('creating new element');
   const ci = document.createElement('category-info') as CategoryInformation<Badge>;
   const data = random_Category();
-  ci.data = data;
-  ci.count = Math.random() >
-    0.33 ? Count.None : (Math.random() > 0.66 ? Count.Numbers : Count.Percent);
+
+  ci.name = data.name;
+  ci.locked = data.lock_type;
+  ci.locked_reason = data.lock_reason;
+  ci.icon = data.icon;
+
+  // ci.data = data;
+  // ci.count = Math.random() >
+  //   0.33 ? Count.None : (Math.random() > 0.66 ? Count.Numbers : Count.Percent);
 
   console.log(data.name);
   console.log(recursive);
+  console.log(ci);
   ci.addBadges(...random_badges());
   if (recursive === true) {
     console.group("cat sub gen");
     const group = createCI(false);
     console.groupEnd();
     console.log(group);
-    ci.addCategory(group);
+    ci.capture(group);
   }
   if (recursive === undefined || recursive === true) {
     document.body.appendChild(ci);
