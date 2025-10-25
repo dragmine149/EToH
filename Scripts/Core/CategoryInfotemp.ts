@@ -123,10 +123,13 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     if (!this.#shadow) return;
     this.style.width = ``;
     // console.log(this.#subCategories);
+    this.#subCategories.forEach((sub) => sub.hidden = false);
     const final_size = this.#subCategories
       .map((c) => c.size)
       .reduce((m, s) => Math.max(m, s), 0) + 50;
     if (final_size > 0) this.style.width = `${final_size}px`;
+    this.#subCategories.forEach((sub) => sub.hidden = true);
+    this.changeCategory();
     console.log(final_size);
   }
 }
