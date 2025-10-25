@@ -96,6 +96,8 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   #subCategories: SubCategoryInformation<K>[];
   #captures: CategoryInformation<K>[];
 
+  captured: boolean;
+
   #category_index = 0;
   set category_index(v: number) {
     // basic loop-around clamp.
@@ -166,6 +168,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   capture(category?: CategoryInformation<K>) {
     if (category == undefined) {
       this.parentElement?.removeChild(this);
+      this.captured = true;
       return this.#subCategories[0];
     }
 
@@ -181,13 +184,17 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   get captures() { return this.#captures; }
 
   release(category?: CategoryInformation<K>) {
-    if (category == undefined) throw new Error("help");
+    if (category == undefined) {
+      this.captured = false;
+      return;
+    }
 
     const index = this.#subCategories.findIndex((sub) => sub.category_name == category.name);
     this.#subCategories.splice(index, 1);
     this.#captures.splice(index, 1);
     this.setMinSize();
     this.changeCategory();
+    category.release();
     return;
   }
 

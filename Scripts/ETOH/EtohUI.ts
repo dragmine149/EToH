@@ -369,6 +369,12 @@ class UI {
     areaManager.category(Category.Permanent).forEach((area) => this.#makeAreas(area, unprocessed_children));
     areaManager.category(Category.Temporary).forEach((area) => this.#makeAreas(area, unprocessed_children));
     areaManager.category(Category.Other).forEach((area) => this.#makeAreas(area, unprocessed_children));
+
+    Array.from(this.#categories.values()).forEach((cat) => {
+      console.log(cat.name);
+      if (cat.captured) return;
+      cat.changeCategory(0);
+    });
   }
 
 }
