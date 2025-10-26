@@ -15,6 +15,8 @@ interface UIBadgeData<K extends Badge> {
   url: K['link'],
   /** Badge ID */
   id: K['id'],
+  /** Badge ids, not used on display but internally. */
+  ids: K['ids']
   /** Link to a wiki page about said badge. */
   wiki?: URL,
   /** Overview of why this is locked */
@@ -109,7 +111,10 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
   get #sub_category() { return this.#subCategories[this.category_index]; }
   get category_name() { return this.#sub_category.category_name; }
   get category_icon() { return this.#sub_category.icon; }
-  get addBadges() { return this.#sub_category.addBadges.bind(this.#sub_category); }
+  addBadges(...badges: (BadgeInformation<K> | UIBadgeData<K>)[]) {
+    this.#sub_category.addBadges(...badges);
+    this.setMinSize();
+  }
   get removeBadges() { return this.#sub_category.removeBadges.bind(this.#sub_category) };
   get badges() { return this.#sub_category.badges; }
 
@@ -222,12 +227,15 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     if (!this.#shadow) return;
     this.#subCategoryDiv.classList.remove('sized');
     this.style.width = ``;
+
     // console.log(this.#subCategories);
     this.#subCategories.forEach((sub) => sub.hidden = false);
-    const final_size = this.#subCategories
+    let final_size = this.#subCategories
       .map((c) => c.size)
-      .reduce((m, s) => Math.max(m, s), 0) + 50;
+      .reduce((m, s) => Math.max(m, s), 0) + 80;
+    final_size = Math.max(final_size, Math.ceil(this.#headerText.clientWidth * 100) / 100);
     if (final_size > 0) this.style.width = `${final_size}px`;
+
     this.#subCategories.forEach((sub) => sub.hidden = true);
     this.changeCategory();
     this.#subCategoryDiv.classList.add('sized');

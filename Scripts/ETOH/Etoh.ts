@@ -247,18 +247,15 @@ class Other extends Badge {
 
 class EtohBadgeManager extends BadgeManager<Tower | Other, Category> {
   category!: { (): Category[], (item?: Category): (Tower | Other)[] };
-  area!: { (): string[], (item: string): Tower[] };
+  area!: { (): string[], (item?: string): Tower[] };
+  other_category!: { (): string[], (item?: string): Other[] };
 
   constructor() {
     super();
 
     this.addFilter("category", badge => badge.category);
-    this.addFilter("area", badge => {
-      if (badge instanceof Tower) {
-        return badge.area;
-      }
-      return "";
-    });
+    this.addFilter("area", badge => badge instanceof Tower ? badge.area : "");
+    this.addFilter("other_category", badge => badge instanceof Other ? badge.category : "");
   }
 }
 

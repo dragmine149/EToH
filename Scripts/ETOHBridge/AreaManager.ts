@@ -1,6 +1,6 @@
 import { GenericManager } from "../Core/GenericManager";
 import { DIFFICULTIES, AreaRequirements } from "../ETOH/constants";
-import { Lock } from "./BadgeManager";
+import { Lock } from "../Core/BadgeManager";
 import { Category } from "../ETOH/Etoh";
 
 class Area {

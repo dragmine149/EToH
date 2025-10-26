@@ -1,6 +1,6 @@
 import { Area, areaManager } from "../ETOHBridge/AreaManager";
 import { Badge } from "../Core/BadgeManager";
-import { Category, Tower, userManager, badgeManager, EToHUser } from "./Etoh";
+import { Category, Tower, userManager, badgeManager, EToHUser, Other } from "./Etoh";
 import { load_required_data } from "../ETOHBridge/data_loader";
 import { isMobile } from "../utils";
 import { BadgeInformation, UIBadgeData, CategoryInformation } from "../Core/ui";
@@ -346,7 +346,9 @@ class UI {
     // make the area
     const cat = categoryFromArea(area);
     this.#categories.set(area.name, cat);
-    cat.badges.forEach((badge) => this.#badges.set(badge.data!.id, badge));
+    cat.badges.forEach((badge) => {
+      badge.data!.ids.forEach((id) => this.#badges.set(id, badge));
+    });
 
     // add any children.
     unprocessed_children.get(area.name)?.forEach((child) => cat.capture(child));
@@ -367,6 +369,34 @@ class UI {
     this.#badgesUI.appendChild(cat);
   }
 
+  #makeOther(category: string) {
+    if (category == "") return;
+
+    const info = badgeManager.other_category(category);
+    const elm = new CategoryInformation<Other>();
+    elm.name = category;
+    const uiBadges = info.map((badge) => {
+      return {
+        name: badge.get_name_field.bind(badge),
+        name_style: badge.set_name_style.bind(badge),
+        information: badge.get_information_field.bind(badge),
+        info_style: badge.set_info_style.bind(badge),
+        url: badge.link,
+        id: badge.id,
+        ids: badge.ids,
+        wiki: badge.wiki,
+        lock_type: badge.lock_type,
+        lock_reason: badge.lock_reason,
+      } as UIBadgeData<Other>
+    });
+    elm.addBadges(...uiBadges);
+    elm.badges.forEach((badge) => {
+      badge.data!.ids.forEach((id) => this.#badges.set(id, badge));
+    });
+    this.#categories.set(category, elm);
+    this.#badgesUI.appendChild(elm);
+  }
+
   /**
    * Load the required data onto the UI in the background.
    */
@@ -376,6 +406,7 @@ class UI {
     areaManager.category(Category.Permanent).forEach((area) => this.#makeAreas(area, unprocessed_children));
     areaManager.category(Category.Temporary).forEach((area) => this.#makeAreas(area, unprocessed_children));
     areaManager.category(Category.Other).forEach((area) => this.#makeAreas(area, unprocessed_children));
+    badgeManager.other_category().forEach((category) => this.#makeOther(category));
 
     Array.from(this.#categories.values()).forEach((cat) => {
       console.log(cat.name);
@@ -395,10 +426,10 @@ function categoryFromArea<T extends Badge>(area: Area) {
   category.locked_reason = area.lock_reason;
   category.icon = `Assets/Emblems/${area.name.replaceAll(/\s/gm, '')}.webp`;
 
-
   const uiBadges = badgeManager.area(area.name).map((badge) => {
     return {
       id: badge.id,
+      ids: badge.ids,
       information: badge.get_information_field.bind(badge),
       info_style: badge.set_info_style.bind(badge),
       lock_reason: badge.lock_reason,
