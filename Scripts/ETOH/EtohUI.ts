@@ -409,7 +409,7 @@ class UI {
     badgeManager.other_category().forEach((category) => this.#makeOther(category));
 
     Array.from(this.#categories.values()).forEach((cat) => {
-      console.log(cat.name);
+      // console.log(cat.name);
       if (cat.captured) return;
       cat.changeCategory(0);
     });

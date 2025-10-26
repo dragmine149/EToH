@@ -133,7 +133,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
 
   constructor() {
     super();
-    console.log('e');
+    // console.log('e');
 
     this.#header = document.createElement("div");
     this.#headerIcon = document.createElement("img");
@@ -239,7 +239,7 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
     this.#subCategories.forEach((sub) => sub.hidden = true);
     this.changeCategory();
     this.#subCategoryDiv.classList.add('sized');
-    console.log(final_size);
+    // console.log(final_size);
   }
 }
 
