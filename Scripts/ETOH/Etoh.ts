@@ -158,7 +158,7 @@ function getTowerType(name: string, type: string) {
 function addTowerType(name: string, type: TowerType) {
   switch (type) {
     case TowerType.Citadel: return `Citadel of ${name}`;
-    case TowerType.Tower: return `Tower of ${name}`;
+    case TowerType.Tower: return name.trim() == "Thanos Tower" ? name : `Tower of ${name}`;
     case TowerType.Steeple: return `Steeple of ${name}`;
     case TowerType.Obelisk: return `Obelisk of ${name}`;
   }
