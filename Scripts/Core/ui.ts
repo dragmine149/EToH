@@ -200,16 +200,16 @@ class CategoryInformation<K extends Badge> extends HTMLElement {
 
   changeCategory(index?: number) {
     this.#headerSwitch.hidden = this.#subCategories.length <= 1;
+    // this.#sub_category.hidden = true;
+    this.#subCategories.forEach((sub) => sub.hidden = true);
+    if (index == undefined) index = this.category_index;
+    if (index != this.#category_index) this.#category_index = loopClamp(index, this.#subCategories.length);
+
     if (!this.#headerSwitch.hidden) {
       const next = loopClamp(this.category_index + 1, this.#subCategories.length);
       // console.log(next);
       this.#headerSwitch.innerText = `View ${this.#subCategories[next].category_name}`;
     }
-
-    // this.#sub_category.hidden = true;
-    this.#subCategories.forEach((sub) => sub.hidden = true);
-    if (index == undefined) index = this.category_index;
-    if (index != this.#category_index) this.#category_index = loopClamp(index, this.#subCategories.length);
 
     this.#headerIcon.src = this.category_icon || "Assets/Emblems/Unknown.webp";
     this.#headerText.innerText = this.category_name;
