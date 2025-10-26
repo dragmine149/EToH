@@ -127,7 +127,14 @@ fn parse_infobox(
         return Ok(WIkiTower::default());
     }
 
-    let raw_location = raw_location.getattr("value")?.extract::<String>()?;
+    let raw_location = raw_location
+        .getattr("value")?
+        .extract::<String>()?
+        .trim()
+        .to_string();
+    if raw_location.is_empty() {
+        return Ok(WIkiTower::default());
+    }
     // println!("{:?}", raw_location);
     let mut tower_location = wtp
         .call_method1("parse", (raw_location,))?
