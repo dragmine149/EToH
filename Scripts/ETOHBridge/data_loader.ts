@@ -99,7 +99,7 @@ async function loadTowersFromServer() {
  */
 async function loadOthersFromServer() {
   ui.preload(`Attempting to load other data`, PreloadState.OtherData);
-  const server_other = await fetchWithCache('data/other_data.json');
+  const server_other = await fetchWithCache('https://raw.githubusercontent.com/dragmine149/EToH/refs/heads/Data/other_data.json');
   if (!server_other.ok) {
     ui.preload(`Failed to get other data:${server_other.statusText}`, PreloadState.Errored);
     return;
