@@ -80,7 +80,7 @@ class EToHUser extends User {
     }));
 
     await etohDB.badges.bulkPut(badgeArray)
-      .then((v) => { console.info(`Finished storing all badges in database`); console.log(v) })
+      .then(() => { console.info(`Finished storing all badges in database`); })
       .catch(e => {
         console.error(`Failed to add in ${badgeArray.length - e.failures.length} badges`, e);
       });
