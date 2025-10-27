@@ -15,6 +15,7 @@ Visit the product here: https://dragmine149.github.io/ETOH
 - Better way of showing which badges are obtainable and which are not.
 - Have towers sorted (locally) instead of relying on the server.
 - Fully functional offline mode
+- If a user has only played the new game, don't bother with sending network requests out to check old game badges. Should save 300+ badge checks. (basically around 50% quicker)
 
 ## Cloning
 This section is for the random person who wants to make their own. Well, go ahead, all i request is credit.

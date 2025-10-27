@@ -1,4 +1,4 @@
-<html>
+<html class="stick">
   <head>
     <title>EToH Tower Tracker</title>
     <link rel="stylesheet" href="dist/tailwind.css">
@@ -7,20 +7,9 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <meta charset="UTF-8">
     <meta name="description" content="Track badge progress for the roblox game Eternals Towers of Hell. Works with every badge in game (including unobtainable ones), offline, and can even filter completed areas or badge categories.">
-
-    <!-- <script src="https://cdn.jsdelivr.net/npm/compress-json@3/bundle.min.js"></script> -->
-    <!-- <script src="https://dragmine149.github.io/external/storage.js" type="module"></script>
-    <script src="https://dragmine149.github.io/Scripts/verbose.mjs" type="module"></script> -->
-    <!-- <script src="https://dragmine149.github.io/Scripts/verbose.css"></script> -->
-    <!--<link rel="stylesheet" href="Scripts/verbose.css">
-    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>-->
-
     <script src="dist/index.js" type="module"></script>
-
-    <!--<script src="Scripts/storage.js"></script>
-    <script src="Scripts/verbose.js"></script>-->
   </head>
-  <body class="bg-zinc-600 font-[Noto_Serif] p-1.5">
+  <body class="bg-zinc-600 font-[Noto_Serif] p-1.5 stick">
     <div id="top_bar" class="absolute w-full-1.5 z-100 bg-neutral-900 flex items-center justify-between p-1.5 text-white rounded-t-sm text-lg">
       <input type="checkbox" hidden id="nav-hide" class="peer">
       <label for="nav-hide" class="fake-button peer-checked:hidden w-40 lg:text-center">Show Navigation</label>
@@ -171,20 +160,5 @@
         <span class="text-xl">If you need help enabling javascript, please visit: <a class="visited:text-blue-500 text-blue-400 underline" href="https://www.enablejavascript.io/">https://www.enablejavascript.io/</a></span>
       </div>
     </noscript>
-
-
-    <!--<div id="main" class="flex flex-col items-center justify-center h-(--height-almost-full)">
-      <noscript class="noscript">
-        For full functionality of this sub-site site it is necessary to enable <bold>JavaScript</bold>.<br>
-        Here are the <a href="https://www.enablejavascript.io/">
-          instructions on How to enable JavaScript in your web browser
-        </a>.
-      </noscript>
-
-      <div id="badges" hidden>
-      </div>
-
-
-    </div>-->
   </body>
 </html>

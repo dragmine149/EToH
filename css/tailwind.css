@@ -66,8 +66,8 @@ button:disabled {
   color: var(--color-neutral-300);
 }
 
-html,
-body {
+html.stick,
+body.stick {
   margin: 0;
   height: 100%;
   overflow: hidden;
@@ -88,4 +88,37 @@ category-info {
 
 :root {
   --background: #aaa;
+}
+
+
+article {
+  width: 100%;
+  margin: 0;
+  padding: 0.3rem;
+  background-color: #222;
+  border: 1px solid;
+}
+
+article>h2 {
+  margin: 0.5rem;
+  padding: 0.3rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+article h4 {
+  font-size: 1.2rem;
+  border-bottom: 1px solid;
+  width: max-content;
+  color: orange;
+}
+
+article section {
+  /*border: 1px solid;*/
+  padding: 1rem;
+}
+
+article li {
+  list-style: disc inside;
 }
