@@ -1,9 +1,10 @@
 import { Area, areaManager } from "../ETOHBridge/AreaManager";
 import { Badge } from "../Core/BadgeManager";
-import { Category, Tower, userManager, badgeManager, EToHUser, Other, TowerType, getTowerPoints } from "./Etoh";
+import { Category, Tower, userManager, badgeManager, EToHUser, Other, TowerType, getTowerPoints, shortTowerName } from "./Etoh";
 import { load_required_data } from "../ETOHBridge/data_loader";
 import { isMobile } from "../utils";
 import { BadgeInformation, UIBadgeData, CategoryInformation } from "../Core/ui";
+import { Names, searchTowers } from "./search";
 
 enum PreloadState {
   TowerData,
@@ -93,6 +94,11 @@ class UI {
   #count_Obelisk: HTMLElement;
   #count_towers: HTMLElement;
   #count_points: HTMLElement;
+
+  #tower_search_input: HTMLInputElement;
+  #tower_search_count: HTMLSpanElement;
+  #tower_searchNames: Names[];
+  #tower_totalCount: number;
 
   constructor() {
     // set this straight away to show it and ignore the noscript element popup. The parent object is more important.
@@ -192,6 +198,10 @@ class UI {
     this.#count_Citadel = this.#count2.getElementsByClassName("count-Citadel")[0].firstElementChild as HTMLElement;
     this.#count_Obelisk = this.#count2.getElementsByClassName("count-Obelisk")[0].firstElementChild as HTMLElement;
 
+    this.#tower_search_count = document.getElementById("search_count") as HTMLSpanElement;
+    this.#tower_search_input = document.getElementById("tower_search_input") as HTMLInputElement;
+    this.#tower_search_input.oninput = this.#towerSearch.bind(this);
+
     // TODO: Make this some kind of global?
     // Source: https://github.com/bobbyhadz/javascript-hide-element-when-clicked-outside/blob/main/index.js
     document.addEventListener('click', (ev) => {
@@ -210,6 +220,13 @@ class UI {
         this.#count2.hidden = true;
       }
     });
+  }
+
+  #towerSearch() {
+    // console.log(this.#tower_searchNames);
+    const results = searchTowers(this.#tower_search_input.value, this.#tower_searchNames, { "minScore": 100 });
+    console.log(results);
+    this.#tower_search_count.innerText = `${results.length}/${this.#tower_totalCount}`;
   }
 
   /**
@@ -438,6 +455,11 @@ class UI {
       if (cat.captured) return;
       cat.changeCategory(0);
     });
+
+    this.#tower_searchNames = badgeManager.category(Category.Permanent)
+      .map((t) => t.name)
+      .map((name) => { return { "name": name, "short": shortTowerName(name) } });
+    this.#tower_totalCount = badgeManager.category(Category.Permanent).length;
   }
 
 }

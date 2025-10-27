@@ -48,7 +48,7 @@
       </div>
     </div>
 
-    <div id="under_top_bar" class="bg-neutral-800/40 flex p-0.5 text-white rounded-b-sm z-2 top-18 absolute w-full-1.5">
+    <div id="under_top_bar" class="bg-neutral-800/40 flex p-0.5 text-white rounded-b-sm z-2 top-18 absolute w-full-1.5 justify-between">
       <div id="points" class="bg-neutral-800 grid lg:grid-cols-4 grid-cols-3">
         <span class="count-NAT">Other: <count></count></span>
         <span class="count-towers">Towers: <count></count></span>
@@ -65,14 +65,11 @@
         <button id="toggle-locked" onclick="etohUI.toggleLocked()">Hide Locked Towers</button>
         <button id="toggle-mini" onclick="etohUI.toggleMini()">Hide Mini Towers</button>
       </div>
-      <div id="other" class="flex ml-auto" hidden>
-        <div id="badge_search" hidden>
-          <input type="text" id="badge-search-input" placeholder="Search for a Badge"
-            oninput="etohUI.search(this.value)"
-            onkeydown="if (event.key === 'Enter') { if (event.shiftKey) { return etohUI.previous_search(); } return etohUI.next_search() }"
-          >
-          <span tag="search_count"></span>
-        </div>
+      <div id="search" class="flex flex-row">
+        <input type="text" placeholder="Search for a Badge" id="tower_search_input"
+          class="pr-10 pl-3 py-1 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+        >
+        <span id="search_count">0/0</span>
       </div>
     </div>
 

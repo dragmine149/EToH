@@ -1,4 +1,4 @@
-import { highlight_span } from "./usage";
+// import { highlight_span } from "./usage";
 
 // Code written by T3 Chat (AI assistant)
 // File: tower-search.ts
@@ -12,13 +12,13 @@ import { highlight_span } from "./usage";
 /**
  * Search result shape.
  */
-export interface SearchResult {
+export type SearchResult = {
   name: string;
   score: number;
   reasons: string[]; // all reasons that contributed (explanatory)
-}
+};
 
-export const searched = new Map<string, number>();
+export let searched: Map<string, number> = new Map();
 let timeout: number;
 
 export function twodp(num: number): number {
@@ -47,7 +47,7 @@ export function isAcronymQuery(q: string): boolean {
   if (q.length > 6) return false;
 
   let is_acro = q.startsWith("To") || q.startsWith("Co") || q.startsWith("So");
-  const thirdLetter = q.charAt(2);
+  let thirdLetter = q.charAt(2);
   // the original line was probably intended to assert something;
   // keep it as a no-op expression to preserve behaviour that was supplied.
   is_acro =
@@ -59,7 +59,7 @@ export function isAcronymQuery(q: string): boolean {
 
 export function improvedAcronymQuery(query: string, acros: string[]): 0 | 1 | 2 {
   if (query.length > 6) return 0;
-  for (const acro of acros) {
+  for (let acro of acros) {
     if (acro.startsWith(query)) return 1;
     if (acro.startsWith(query, 2)) return 2;
   }
@@ -115,9 +115,9 @@ export function fuzzyScore(a: string, b: string): number {
 /**
  * Options for searchTowers.
  */
-export interface SearchOptions {
+export type SearchOptions = {
   minScore?: number; // default 30
-}
+};
 
 interface Names {
   name: string,
@@ -126,7 +126,16 @@ interface Names {
 
 /**
  * Main search function.
- * Does maths to hopefully get decent results to the query provided.
+ *
+ * Behaviour:
+ * - If `isAcronymQuery(query)` is true, scoring compares against the
+ *   tower short codes produced by `shortTowerName`.
+ * - Otherwise, scoring is performed against the full tower name.
+ * - All matching "reasons" are collected in the `reasons` array for
+ *   transparency/debugging.
+ *
+ * Returns results filtered by the configured minScore (default 30),
+ * sorted by descending score and alphabetically as a tiebreaker.
  */
 export function searchTowers(query: string, names: Names[], opts?: SearchOptions): SearchResult[] {
   opts = opts || {};
@@ -139,7 +148,6 @@ export function searchTowers(query: string, names: Names[], opts?: SearchOptions
   const qHasAcr = improvedAcronymQuery(q, names.map((v) => v.short));
 
   const scored = names.map(({ name, short }) => {
-    // default score of 100.
     let score = 100;
     const reasons: string[] = [];
     // const isAcr = improvedAcronymQuery(q, short);
@@ -155,24 +163,16 @@ export function searchTowers(query: string, names: Names[], opts?: SearchOptions
       // reasons.push(`Acro boost: ${short}`);
 
       if (q == short) {
-        // Max score of 400, because we found it exactly.
-        score *= 4;
+        score *= 3;
         reasons.push("Acro exact");
         return { name, score: Math.floor(score), reasons };
       }
 
-      // starting with the query should give us more points, we understand it better.
       if (short.startsWith(q)) {
         score *= 1.4;
         reasons.push("Acro startswith");
       }
-      if (short.startsWith(q, 2)) {
-        // a bit less if we have to offset it, but still the same.
-        score *= 1.3;
-        reasons.push("Acro starts w/o type");
-      }
 
-      // fuzzy query gives way less as it might not be as relevant.
       const fs = fuzzyScore(q, short);
       if (fs > 0.6) {
         score *= (fs / 0.6) * 0.9;
@@ -181,21 +181,16 @@ export function searchTowers(query: string, names: Names[], opts?: SearchOptions
     }
 
     if (q == name) {
-      // Max score, same as query.
-      score *= 4;
+      score *= 3;
       reasons.push("Name exact");
       return { name, score: Math.floor(score), reasons };
     }
 
-    let name_type = false;
-    // The first word is almost always the type of tower. Hence we give a small boost.
     if (name.split(" ")[0] == q.split(" ")[0]) {
       score *= 1.05;
       reasons.push("name is type");
-      name_type = true;
     }
 
-    // bigger boost if name starts with it
     let start = false;
     if (name.startsWith(q)) {
       score *= 2;
@@ -209,35 +204,13 @@ export function searchTowers(query: string, names: Names[], opts?: SearchOptions
       reasons.push("name includes");
     }
 
-    // if somehow other way around we want something
-    if (q.includes(name)) {
-      score *= 1.2;
-      reasons.push("Query includes");
-    }
-
-    // if any word in q is in name, score *= 1.1
-    let qWords = q.split(/\s+/);
-    const nameLower = name.toLowerCase().split(/\s+/);
-    if (name_type) qWords = qWords.splice(1);
-    if (qWords.length > 0) {
-      for (const word of qWords) {
-        if (word.length > 0 && nameLower.includes(word)) {
-          const score_math = twodp((0.65 / word.length) + 1);
-          score *= score_math;
-          reasons.push(`Word match: ${word} (${score_math})`);
-          // break; // only apply bonus once
-        }
-      }
-    }
-
-    // punishment for items which have no contribution. It's HIGHLY unlikely any of these will be chosen.
     if (reasons.length == 0) {
       score *= 0.4;
       reasons.push("No reason, hence bad score");
     }
 
-    // Score is boosted by 1.02 (50 chars) -> 1.07 (14 chars). Allows ordering by name length + we probably want a shorter version anyway.
-    const name_boost = twodp((1 / name.length) + 1);
+    // names are given bonus score if their length is shorter.
+    let name_boost = twodp((1 / name.length) + 1);
     score *= name_boost;
     reasons.push(`Name boost: ${name_boost}`);
 
