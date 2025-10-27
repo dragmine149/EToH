@@ -2,7 +2,7 @@ import { tryCatch } from "../utils";
 import { type UserTable } from "../ETOH/database";
 import { GenericManager } from "./GenericManager";
 import { CLOUD_URL } from "./network";
-import { logs } from "./logs";
+import { display_log } from "./ui";
 
 class User {
   // The id of the user. Use this where possible
@@ -172,9 +172,9 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
    * @returns The user, or undefined if failed to load.
    */
   async find_user(identifier: string | number) {
-    logs.log(`Loading data for ${identifier}`, `user_manager/load`, 0);
+    display_log(`Loading data for ${identifier}`, `user_manager/load`, 0);
     if (this.current_user?.is_user(identifier)) {
-      logs.log(`${identifier} is already loaded. Cancelled.`, `user_manager/load`, 100);
+      display_log(`${identifier} is already loaded. Cancelled.`, `user_manager/load`, 100);
       return;
     }
 
@@ -182,26 +182,26 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
     this.current_user = undefined;
 
     if (typeof identifier == 'number') {
-      logs.log(`Attempting to search for user by id in database`, `user_manager/load`, 5);
+      display_log(`Attempting to search for user by id in database`, `user_manager/load`, 5);
       const id_load = this.id(identifier) as K[];
       const user = id_load[0];
       if (this.#load_user(user)) {
-        logs.log(`User loaded via id`, `user_manager/load`, 100);
+        display_log(`User loaded via id`, `user_manager/load`, 100);
         return this.current_user;
       }
     }
 
     if (typeof identifier == 'string') {
-      logs.log(`Attempting to search for user by name in database`, `user_manager/load`, 5);
+      display_log(`Attempting to search for user by name in database`, `user_manager/load`, 5);
       const id_load = this.name(identifier) as K[];
       const user = id_load[0];
       if (this.#load_user(user)) {
-        logs.log(`User loaded via name`, `user_manager/load`, 100);
+        display_log(`User loaded via name`, `user_manager/load`, 100);
         return this.current_user;
       }
     }
 
-    logs.log(`Attempting to load user via roblox-proxy`, `user_manager/load`, 10);
+    display_log(`Attempting to load user via roblox-proxy`, `user_manager/load`, 10);
 
     const networkUserRequest = await tryCatch(fetch(new Request(
       `${CLOUD_URL}/users/${identifier}`
@@ -224,12 +224,12 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
       return;
     }
 
-    logs.log(`Got user data via roblox-proxy`, `user_manager/load`, 50);
+    display_log(`Got user data via roblox-proxy`, `user_manager/load`, 50);
     const user = userRequest.data;
     const obj = new this.#userClass(user.id, user.name, user.display, []);
     this.#users.push(obj);
     this.current_user = obj;
-    logs.log(`Finish finding user.`, `user_manager/load`, 100);
+    display_log(`Finish finding user.`, `user_manager/load`, 100);
     return this.current_user;
   }
 }

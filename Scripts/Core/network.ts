@@ -1,5 +1,5 @@
 import { tryCatch } from "../utils";
-import { logs } from "./logs";
+import { display_log } from "./ui";
 const CLOUD_URL = 'https://roblox-proxy.dragmine149.workers.dev';
 
 interface EarlierBadge {
@@ -25,18 +25,18 @@ class Network {
   */
   async getEarlierBadge(user_id: number, old_badge: number, new_badge: number): Promise<EarlierBadge> {
     const url = `${CLOUD_URL}/badges/${user_id}/earliest/${old_badge}/${new_badge}`;
-    logs.log(`Sending network request to ${url}`, `network`, 0);
+    display_log(`Sending network request to ${url}`, `network`, 0);
     const response = await tryCatch(fetch(url));
 
     if (response.error) {
-      logs.log(`Failed to fetch badge data. (status: ${response.error.message} ${response.error.cause})`, `network`, 100);
+      display_log(`Failed to fetch badge data. (status: ${response.error.message} ${response.error.cause})`, `network`, 100);
       return {
         earliest: -1, data: []
       }
     }
 
     if (!response.data.ok) {
-      logs.log(`Failed to fetch badge data. (status: ${response.data.status} ${response.data.statusText})`, `network`, 100);
+      display_log(`Failed to fetch badge data. (status: ${response.data.status} ${response.data.statusText})`, `network`, 100);
       return {
         earliest: -1, data: []
       }
@@ -44,13 +44,13 @@ class Network {
 
     const data = await tryCatch(response.data.json() as Promise<EarlierBadge>);
     if (data.error) {
-      logs.log(`Failed to fetch badge data. (status: ${response.data.status} ${response.data.statusText})`, `network`, 100);
+      display_log(`Failed to fetch badge data. (status: ${response.data.status} ${response.data.statusText})`, `network`, 100);
       return {
         earliest: -1, data: []
       }
     }
 
-    logs.log(`Data received successfully!`)
+    display_log(`Data received successfully!`, `network`, 100);
     return data.data;
   }
 
@@ -62,26 +62,26 @@ class Network {
   * @param data_received The callback function upon retrieving some data
   */
   async requestStream(fetch_request: Request, data_received: (v: string) => Promise<void>) {
-    logs.log(`received stream request: ${fetch_request.url}`, `network`, 0);
+    display_log(`received stream request: ${fetch_request.url}`, `network`, 0);
 
     // get the data from server
     const response = await tryCatch(fetch(fetch_request));
     if (response.error) {
-      logs.log(`Failed to fetch badge data. (status: ${response.error.message} ${response.error.cause})`, `network`, 100);
+      display_log(`Failed to fetch badge data. (status: ${response.error.message} ${response.error.cause})`, `network`, 100);
       return;
     }
 
     if (!response.data.ok) {
-      logs.log(`Failed to fetch badge data. (status: ${response.data.status} ${response.data.statusText})`, `network`, 100);
+      display_log(`Failed to fetch badge data. (status: ${response.data.status} ${response.data.statusText})`, `network`, 100);
       return;
     }
 
     if (!response.data.body) {
-      logs.log(`Failed to get body stream. (body stream is null somehow)`, `network`, 100);
+      display_log(`Failed to get body stream. (body stream is null somehow)`, `network`, 100);
       return;
     }
 
-    logs.log(`Creating streamer and starting reading`, `network`, 10);
+    display_log(`Creating streamer and starting reading`, `network`, 10);
     // create stuff for reading data
     const reader = response.data.body.getReader();
     const decoder = new TextDecoder();
@@ -111,7 +111,7 @@ class Network {
       // escape the loop.
       if (done) break;
     }
-    logs.log(`Stream is finished.`, `network`, 100);
+    display_log(`Stream is finished.`, `network`, 100);
   }
 
   /**
@@ -121,14 +121,14 @@ class Network {
   */
   async retryTilResult(request: Request) {
     let response: Response = new Response(null, { status: 400 });
-    logs.log(`Attempting ${request.url} until sucesed.`, `network`, 0);
+    display_log(`Attempting ${request.url} until sucesed.`, `network`, 0);
     while (!response.ok) {
       response = await fetch(request);
       if (!response.ok) {
         await new Promise((r) => setTimeout(r, 2000));
       }
     }
-    logs.log(`${request.url} success!`, `network`, 100);
+    display_log(`${request.url} success!`, `network`, 100);
     return response;
   }
 }

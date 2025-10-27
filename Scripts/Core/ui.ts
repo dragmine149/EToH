@@ -366,7 +366,6 @@ class SubCategoryInformation<K extends Badge> {
   isCompleted() { return this.completed.length == this.total.length; }
 }
 
-
 /**
  * UI Element for each individual badge displayed. Aka CategoryInformation for Badges.
  */
@@ -525,8 +524,13 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   // search(data: string, is_acro: string);
 }
 
+function display_log(message: string, category: string, progress: number) {
+  console.log(`Received log: ${message} for ${category} at progress ${progress}`);
+  (document.getElementById("status") as HTMLSpanElement).innerText = `${category}: ${message} (${progress}%)`;
+}
+
 if (customElements.get('category-info') == undefined) customElements.define("category-info", CategoryInformation);
 if (customElements.get('badge-info') == undefined) customElements.define("badge-info", BadgeInformation);
 
 
-export { BadgeInformation, UIBadgeData, CategoryData, Count, BadgeUserData, localStorageCount, CategoryInformation };
+export { BadgeInformation, UIBadgeData, CategoryData, Count, BadgeUserData, localStorageCount, CategoryInformation, display_log };

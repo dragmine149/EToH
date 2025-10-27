@@ -1,9 +1,9 @@
 import { etohDB } from "./database";
 import { Badge, BadgeManager, Lock } from "../Core/BadgeManager";
 import { DIFFICULTIES, SUB_LEVELS } from "./constants";
-import { logs } from "../Core/logs";
 import { CLOUD_URL, network, RawBadge } from "../Core/network";
 import { User, UserManager } from "../Core/user";
+import { display_log } from "../Core/ui";
 
 type BadgeId = number;
 type CompletedDate = number;
@@ -27,7 +27,7 @@ class EToHUser extends User {
    * @param callback Callback once we get a badge.
    */
   async loadServerBadges(badges: number[], callback?: (badge: RawBadge) => void) {
-    logs.log(`Attempting to load badges from server for ${this.name}`, `user`, 0);
+    display_log(`Attempting to load badges from server for ${this.name}`, `user`, 0);
     await network.requestStream(new Request(`${CLOUD_URL}/badges/${this.id}/all`, {
       method: 'POST',
       headers: {
@@ -39,7 +39,7 @@ class EToHUser extends User {
     }), async (line) => {
       const badgeInfo = JSON.parse(line) as RawBadge;
       if (this.completed.has(badgeInfo.badgeId)) {
-        logs.log(`Already have badge stored: ${badgeInfo.badgeId}`, `user`, 50);
+        display_log(`Already have badge stored: ${badgeInfo.badgeId}`, `user`, 50);
         return;
       }
 
@@ -47,9 +47,9 @@ class EToHUser extends User {
 
       if (callback) callback(badgeInfo);
     });
-    logs.log(`Storing data in the local database...`, `user`, 90);
+    display_log(`Storing data in the local database...`, `user`, 90);
     await this.saveDatabase();
-    logs.log(`Completed load from network!`, `user`, 100);
+    display_log(`Completed load from network!`, `user`, 100);
   }
 
   /**
@@ -57,14 +57,14 @@ class EToHUser extends User {
    * This is intended for quicker loading whilst we wait on server.
    */
   async loadDatabaseBadges() {
-    logs.log(`Loading badges from the local database`, `user`, 0);
+    display_log(`Loading badges from the local database`, `user`, 0);
     const database = await etohDB.badges.where({ userId: this.id }).toArray();
     const count = database.length;
     database.forEach((b, i) => {
-      logs.log(`loading badge ${b.badgeId}`, `user`, Math.floor((i / count) * 100));
+      display_log(`loading badge ${b.badgeId}`, `user`, Math.floor((i / count) * 100));
       this.completed.set(b.badgeId, b.date);
     });
-    logs.log(`completed load from database`, `user`, 100);
+    display_log(`completed load from database`, `user`, 100);
     // Note, no need to save the database we just loaded.
   }
 
