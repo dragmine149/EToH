@@ -36,6 +36,12 @@
       "items": {
         "$ref": "#/definitions/badge"
       }
+    },
+    "ignored": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
     }
   },
   "required": [

@@ -133,20 +133,25 @@ fn compress_name(badge: &str) -> String {
         .replace("Steeple of ", "")
 }
 
-fn parse_badge(badge: &mut Badge, data: &mut TowerJSON, map: &AreaMap, client: &Client) {
+fn parse_badge(
+    badge: &mut Badge,
+    data: &mut TowerJSON,
+    map: &AreaMap,
+    client: &Client,
+) -> Result<(), ()> {
     println!("Badge: {:?}", badge.id);
     println!("Tower: {:?}", badge.name);
     let wiki = scrap_wiki(&client, &badge.name);
     println!("{:#?}", wiki);
 
     if wiki.is_none() {
-        return;
+        return Err(());
     }
     let mut wiki = wiki.unwrap();
     wiki.tower_name = compress_name(&wiki.tower_name);
     wiki.location = wiki.location.replacen("*", "", 1).trim().to_owned();
     if wiki.tower_type == TowerType::Invalid {
-        return;
+        return Err(());
     }
     // if data.has_tower(&badge.name) {
     //     data.add_tower_badge(
@@ -170,7 +175,19 @@ fn parse_badge(badge: &mut Badge, data: &mut TowerJSON, map: &AreaMap, client: &
 
     data.add_tower(wiki, badge.id, map);
 
+    Ok(())
     // data.insert_tower(wiki, &compress_name(&name), badge.id, &map);
+}
+
+fn parse_other(badge: &Badge, other_ids: &[u64], ignored: &[u64]) -> String {
+    println!("Is of type, other");
+    if !other_ids.contains(&badge.id) && !ignored.contains(&badge.id) {
+        return format!(
+            "Badge ({:?}) {:?} is not a wiki tower, not in the other list and not ignored! (New badge?)",
+            badge.id, badge.name
+        );
+    }
+    String::new()
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -188,6 +205,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     .unwrap();
     badges.append(&mut other);
     drop(other);
+    let other_data =
+        serde_json::from_str::<OtherMap>(&fs::read_to_string("../other_data.json").unwrap())?;
+    let other_ids = other_data
+        .data
+        .iter()
+        .flat_map(|b| b.badges.clone())
+        .collect::<Vec<u64>>();
 
     let mut data = TowerJSON::new();
     let map = serde_json::from_str::<AreaMap>(&fs::read_to_string("../area_info.json").unwrap())?;
@@ -201,17 +225,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .iter_mut()
         .for_each(|b| b.name = clean_badge_name(&b.name));
 
+    let mut other_notices = vec![];
     for badge in badges.iter_mut() {
         if let Some(name) = badge_map.get_badge(&badge.id) {
             badge.name = name.to_owned();
         }
-        parse_badge(badge, &mut data, &map, &client);
+        let res = parse_badge(badge, &mut data, &map, &client);
+        if res.is_err() {
+            other_notices.push(parse_other(badge, &other_ids, &other_data.ignored));
+        }
     }
     for mut badge in badge_map.use_unused() {
-        parse_badge(&mut badge, &mut data, &map, &client);
+        let res = parse_badge(&mut badge, &mut data, &map, &client);
+        if res.is_err() {
+            other_notices.push(parse_other(&badge, &other_ids, &other_data.ignored));
+        }
     }
 
-    data.write_to_file("../tower_data.json".into())
+    data.write_to_file("../tower_data.json".into())?;
+
+    println!();
+    println!();
+    println!();
+    let items = other_notices.iter().filter(|n| !n.is_empty());
+    items.clone().for_each(|n| println!("{:}", n));
+    if items.count() > 0 {
+        panic!("Items to deal with!");
+    }
+    Ok(())
+
     // let old_badges = get_badges(
     //     &Client::new(),
     //     String::from("https://badges.roblox.com/v1/universes/1055653882/badges?limit=100"),

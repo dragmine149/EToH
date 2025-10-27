@@ -408,3 +408,16 @@ impl BadgeMap {
         // })
     }
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct OtherData {
+    pub name: String,
+    pub category: String,
+    pub badges: Vec<u64>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct OtherMap {
+    pub data: Vec<OtherData>,
+    pub ignored: Vec<u64>,
+}

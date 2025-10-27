@@ -189,6 +189,20 @@
       ]
     },
     {
+      "name": "ETOH TYCOON TYCOON TYCOON TYCOON",
+      "category": "BIOUMS: April Fools 2025",
+      "badges": [
+        3705364496125918
+      ]
+    },
+    {
+      "name": "Mush Stepl",
+      "category": "BIOUMS: April Fools 2025",
+      "badges": [
+        1675378900956293
+      ]
+    },
+    {
       "name": "Present of Naughty or Nice",
       "category": "Glacial Outpost: Christmas 2024",
       "badges": [
@@ -221,6 +235,13 @@
       "category": "Glacial Outpost: Christmas 2024",
       "badges": [
         2363457678065839
+      ]
+    },
+    {
+      "name": "Present of Nightmarish Holly",
+      "category": "Glacial Outpost: Christmas 2024",
+      "badges": [
+        827771120600062
       ]
     },
     {
@@ -265,7 +286,7 @@
     },
     {
       "name": "Secret (Find in ToR)",
-      "category": "Unknown",
+      "category": "Secrets",
       "badges": [
         2125364337,
         2124457637
@@ -273,7 +294,7 @@
     },
     {
       "name": "lolwut (r2 secret badge)",
-      "category": "Unknown",
+      "category": "Secrets",
       "badges": [
         2125365064,
         2124457638
@@ -301,14 +322,6 @@
       ]
     },
     {
-      "name": "Gifted (ring 2)",
-      "category": "Areas",
-      "badges": [
-        2125364443,
-        2124457653
-      ]
-    },
-    {
       "name": "Find the Room of Absolute Garbage",
       "category": "Exploration",
       "badges": [
@@ -317,7 +330,22 @@
       ]
     },
     {
-      "name": "Talented",
+      "name": "The Beginning (ring 1 / zone 1)",
+      "category": "Areas",
+      "badges": [
+        3000238536354213
+      ]
+    },
+    {
+      "name": "Gifted (ring 2)",
+      "category": "Areas",
+      "badges": [
+        2125364443,
+        2124457653
+      ]
+    },
+    {
+      "name": "Talented (ring 3)",
       "category": "Areas",
       "badges": [
         2125365440,
@@ -325,7 +353,7 @@
       ]
     },
     {
-      "name": "Refined",
+      "name": "Refined (ring 4)",
       "category": "Areas",
       "badges": [
         2125383763,
@@ -333,7 +361,7 @@
       ]
     },
     {
-      "name": "Skilled",
+      "name": "Skilled (ring 5)",
       "category": "Areas",
       "badges": [
         2125383894,
@@ -341,18 +369,109 @@
       ]
     },
     {
-      "name": "Tower of Inner and Outer Scaling",
-      "category": "Removed Towers",
-      "badges": [
-        2124459810
-      ]
-    },
-    {
-      "name": "Woke",
+      "name": "Woke (ring 6)",
       "category": "Areas",
       "badges": [
         2125384013,
         2124459815
+      ]
+    },
+    {
+      "name": "Mental (ring 7)",
+      "category": "Areas",
+      "badges": [
+        2125394307,
+        2124516385
+      ]
+    },
+    {
+      "name": "Insanity (ring 8)",
+      "category": "Areas",
+      "badges": [
+        2125416473,
+        2124548579
+      ]
+    },
+    {
+      "name": "Legendary (ring 9)",
+      "category": "Areas",
+      "badges": [
+        2125416536,
+        2124755327
+      ]
+    },
+    {
+      "name": "Zoned (zone 2)",
+      "category": "Areas",
+      "badges": [
+        2125418283,
+        2124486331
+      ]
+    },
+    {
+      "name": "Sky-High (zone 3)",
+      "category": "Areas",
+      "badges": [
+        2125418395,
+        2124516386
+      ]
+    },
+    {
+      "name": "Out of This World! (zone 4)",
+      "category": "Areas",
+      "badges": [
+        2125418521,
+        2124670689
+      ]
+    },
+    {
+      "name": "Lunarian (zone 5)",
+      "category": "Areas",
+      "badges": [
+        2125418581,
+        2124828896
+      ]
+    },
+    {
+      "name": "Martian (zone 6)",
+      "category": "Areas",
+      "badges": [
+        2125418653
+      ]
+    },
+    {
+      "name": "Astronomical (zone 7)",
+      "category": "Areas",
+      "badges": [
+        2127933620
+      ]
+    },
+    {
+      "name": "Through the Cosmos (zone 8)",
+      "category": "Areas",
+      "badges": [
+        4499496967815217
+      ]
+    },
+    {
+      "name": "Infinity and Beyond (zone 9)",
+      "category": "Areas",
+      "badges": [
+        2603846111247978
+      ]
+    },
+    {
+      "name": "Deep Space (zone 10)",
+      "category": "Areas",
+      "badges": [
+        2099542350799003
+      ]
+    },
+    {
+      "name": "Tower of Inner and Outer Scaling",
+      "category": "Removed Towers",
+      "badges": [
+        2124459810
       ]
     },
     {
@@ -435,14 +554,6 @@
       ]
     },
     {
-      "name": "Zoned",
-      "category": "Areas",
-      "badges": [
-        2125418283,
-        2124486331
-      ]
-    },
-    {
       "name": "Totem from Hell",
       "category": "Halloween 2019",
       "badges": [
@@ -504,30 +615,6 @@
       "badges": [
         2125419135,
         2124498283
-      ]
-    },
-    {
-      "name": "Mental",
-      "category": "Areas",
-      "badges": [
-        2125394307,
-        2124516385
-      ]
-    },
-    {
-      "name": "Insanity",
-      "category": "Areas",
-      "badges": [
-        2125416473,
-        2124548579
-      ]
-    },
-    {
-      "name": "Sky-High",
-      "category": "Areas",
-      "badges": [
-        2125418395,
-        2124516386
       ]
     },
     {
@@ -705,14 +792,6 @@
       ]
     },
     {
-      "name": "Out of This World! (Z4)",
-      "category": "Areas",
-      "badges": [
-        2125418521,
-        2124670689
-      ]
-    },
-    {
       "name": "Champion of Frost",
       "category": "Christmas 2020",
       "badges": [
@@ -742,14 +821,6 @@
       "badges": [
         2125427112,
         2124713970
-      ]
-    },
-    {
-      "name": "Legendary (R9)",
-      "category": "Areas",
-      "badges": [
-        2125416536,
-        2124755327
       ]
     },
     {
@@ -925,14 +996,6 @@
       ]
     },
     {
-      "name": "Lunarian (Z5)",
-      "category": "Areas",
-      "badges": [
-        2125418581,
-        2124828896
-      ]
-    },
-    {
       "name": "Present of Festive Blizzards",
       "category": "Christmas 2021",
       "badges": [
@@ -1020,13 +1083,6 @@
       ]
     },
     {
-      "name": "Martian (Z6)",
-      "category": "Areas",
-      "badges": [
-        2125418653
-      ]
-    },
-    {
       "name": "Discover Terrain World!",
       "category": "April Fools 2022",
       "badges": [
@@ -1052,13 +1108,6 @@
       "category": "Tower Secrets",
       "badges": [
         2126168310
-      ]
-    },
-    {
-      "name": "Astronomical (Z7)",
-      "category": "Areas",
-      "badges": [
-        2127933620
       ]
     },
     {
@@ -1307,11 +1356,53 @@
       ]
     },
     {
-      "name": "The Beginning (R1/Z1)",
-      "category": "Areas",
+      "name": "Soul Seeker",
+      "category": "Secrets",
       "badges": [
-        3000238536354213
+        2603701654594117
+      ]
+    },
+    {
+      "name": "Step Right Up!",
+      "category": "Halloween 2025",
+      "badges": [
+        4019679002407690
+      ]
+    },
+    {
+      "name": "Eight Legs, No Mercy",
+      "category": "Halloween 2025",
+      "badges": [
+        200142521415421
+      ]
+    },
+    {
+      "name": "Dead Serious Haunting",
+      "category": "Halloween 2025",
+      "badges": [
+        2066357764635831
+      ]
+    },
+    {
+      "name": "The Unseen Hand",
+      "category": "Halloween 2025",
+      "badges": [
+        1545859739398010
+      ]
+    },
+    {
+      "name": "Coin Collector",
+      "category": "Tower Secrets",
+      "badges": [
+        836480911820257
       ]
     }
+  ],
+  "ignored": [
+    2984716480208851,
+    1403295112580944,
+    2146811227,
+    2125205818,
+    2125029939
   ]
 }
