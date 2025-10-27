@@ -72,6 +72,8 @@ class UI {
   #user_load_error: HTMLSpanElement;
   #user_search_back: HTMLButtonElement;
 
+  #page_title: HTMLTitleElement;
+
   // Stuff related to storing UI information
   #categories: Map<string, CategoryInformation<Badge>>;
   #badges: Map<number, BadgeInformation<Badge>>;
@@ -114,6 +116,7 @@ class UI {
     this.#user_list = document.getElementById("user_list") as HTMLDataListElement;
 
     // advanced search and user profile
+    this.#page_title = document.getElementsByTagName("title")[0];
     this.#user_img = document.getElementById("user-profile") as HTMLImageElement;
     this.#user_menu = document.getElementById("usermenu") as HTMLImageElement;
     this.#user_link = this.#user_menu.firstElementChild as HTMLAnchorElement;
@@ -249,9 +252,9 @@ class UI {
     // no await as we do in background, hopefully.
     const loading = user.loadDatabaseBadges();
 
+    this.#page_title.innerText = `${user.display} - EToH Tower Tracker`;
     this.#user_link.href = user.link;
     this.#user_img.src = user.profile;
-
     this.#user_img.hidden = false;
     this.#user_search_back.disabled = false;
     // this style is so that its hopefully invisible when no user loaded.
