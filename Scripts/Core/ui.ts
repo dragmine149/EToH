@@ -453,8 +453,13 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
    */
   #effectElement(hover: boolean) {
     if (!this.#data) return;
-    this.#name_field.innerHTML = this.#data.name(hover);
-    this.#info_data.innerHTML = this.#data.information(hover);
+
+    if (this.#data.name() !== this.#data.name(true)) {
+      this.#name_field.innerHTML = this.#data.name(hover);
+    }
+    if (this.#data.information() !== this.#data.information(true)) {
+      this.#info_data.innerHTML = this.#data.information(hover);
+    }
   }
 
   /**
