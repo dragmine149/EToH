@@ -34,18 +34,16 @@
           <user class="text-nowrap"></user>
         </div>
         <img id="user-profile" class="size-12.5 peer">
-        <div id="usermenu" class="fixed flex-col bg-zinc-gray right-[0.35rem] top-17 p-2 border-2 border-black border-solid
-          flex
-          opacity-0 data-[visible=true]:opacity-100
-          transition-opacity delay-75
-          " data-visible="false" hidden>
-          <button class="fake-button" disabled id="usermenu-user"></button>
-          <a href="https://roblox.com/users/unknown" class="fake-button text-center" target="_blank" rel="noopener noreferrer" id="usermenu-link">Visit roblox profile</a>
-          <button id="usermenu-update">Sync badges</button>
-          <hr>
-          <button id="usermenu-default" title="If URL user search parameter doesn't exist, load this user.">Set default user</button>
-          <button id="usermenu-favourite" hidden>Favourite user</button>
-          <button id="usermenu-delete" hidden>Delete user</button>
+        <div id="usermenu" class="fixed right-1 top-17 p-2" hidden>
+          <div class="flex flex-col bg-zinc-gray border-black border-solid border-2">
+            <button class="fake-button pointer-events-none" disabled id="usermenu-user"></button>
+            <a href="https://roblox.com/users/unknown" class="fake-button text-center" target="_blank" rel="noopener noreferrer" id="usermenu-link">Visit roblox profile</a>
+            <button id="usermenu-update">Sync badges</button>
+            <hr>
+            <button id="usermenu-default" title="If URL user search parameter doesn't exist, load this user.">Set default user</button>
+            <button id="usermenu-favourite" hidden>Favourite user</button>
+            <button id="usermenu-delete" hidden>Delete user</button>
+          </div>
         </div>
       </div>
     </div>

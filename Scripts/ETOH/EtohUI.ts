@@ -58,7 +58,6 @@ class UI {
   #user_list: HTMLDataListElement;
 
   // Stuff related to the displaying of users.
-  #user_menu_timers: number[];
   #user_img: HTMLImageElement;
   #user_menu: HTMLDivElement;
   #user_link: HTMLAnchorElement;
@@ -129,7 +128,10 @@ class UI {
     this.#user_favourite = document.getElementById("usermenu-favourite") as HTMLButtonElement;
     this.#user_delete = document.getElementById("usermenu-delete") as HTMLButtonElement;
 
-    this.#user_update.addEventListener('click', () => this.updateUserData());
+    this.#user_update.addEventListener('click', () => {
+      this.#user_menu.hidden = true;
+      this.updateUserData();
+    });
     // This section makes the user menu work.
     this.#user_default.addEventListener('click', () => {
       this.#user_menu.hidden = true;
@@ -144,14 +146,21 @@ class UI {
       localStorage.setItem("etoh-default", userManager.current_user!.id.toString());
       this.#updateDefaultOption(userManager.current_user!);
     });
-    this.#user_menu_timers = [0, 0, 0, 0];
-    this.#user_menu.addEventListener('mouseover', () => {
-      if (this.#user_menu.dataset.visible === "false") return;
-      this.#userMenuHover(true)
-    });
-    this.#user_menu.addEventListener('mouseleave', () => this.#userMenuHover(false));
-    this.#user_img.addEventListener('mouseover', () => this.#userMenuHover(true));
-    this.#user_img.addEventListener('mouseleave', () => this.#userMenuHover(false));
+    this.#user_img.addEventListener('click', () => this.#user_menu.hidden = !this.#user_menu.hidden);
+    this.#user.addEventListener('click', () => this.#user_menu.hidden = !this.#user_menu.hidden);
+
+    // TODO: Make this some kind of global?
+    // Source: https://github.com/bobbyhadz/javascript-hide-element-when-clicked-outside/blob/main/index.js
+    document.addEventListener('click', (ev) => {
+      const node = ev.target as HTMLElement | null;
+      if (
+        !this.#user_menu.contains(node) &&
+        !this.#user_img.contains(node) &&
+        !this.#user.contains(node)
+      ) {
+        this.#user_menu.hidden = true;
+      }
+    })
 
     // and more defining of elements.
     this.#user_search = document.getElementById("search_input") as HTMLInputElement;
@@ -171,20 +180,6 @@ class UI {
     this.#categories = new Map();
     this.#badges = new Map();
     this.#badgesUI = document.getElementById("badges") as HTMLDivElement;
-  }
-
-  #userMenuHover(hover: boolean) {
-    if (this.#user_menu_timers[0]) {
-      clearTimeout(this.#user_menu_timers[0]);
-      clearTimeout(this.#user_menu_timers[1]);
-      clearTimeout(this.#user_menu_timers[2]);
-    }
-
-    this.#user_menu_timers[0] = setTimeout(() => {
-      if (hover) this.#user_menu.hidden = false;
-      this.#user_menu_timers[1] = setTimeout(() => this.#user_menu.dataset.visible = hover.toString(), 50);
-      if (!hover) this.#user_menu_timers[2] = setTimeout(() => this.#user_menu.hidden = true, 200);
-    }, hover ? 0 : 300);
   }
 
   /**
