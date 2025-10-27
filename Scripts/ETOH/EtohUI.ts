@@ -63,7 +63,9 @@ class UI {
   #user_link: HTMLAnchorElement;
   #user_update: HTMLButtonElement;
   #user_default: HTMLButtonElement;
+  // eslint-disable-next-line no-unused-private-class-members
   #user_favourite: HTMLButtonElement;
+  // eslint-disable-next-line no-unused-private-class-members
   #user_delete: HTMLButtonElement;
 
   #user_search: HTMLInputElement;
@@ -187,9 +189,11 @@ class UI {
    * @param ev The event to check for `ENTER`. Has to take other types just to make ts happy.
    */
   #submitUserSearch(ev: KeyboardEvent | MouseEvent | SubmitEvent) {
+    this.#user_search_button.disabled = this.#user_search.value.length <= 0;
     if (ev instanceof KeyboardEvent) {
       if (ev.key !== 'Enter') return;
     }
+    if (this.#user_search.value.length <= 0) return;
     this.load_user(this.#user_search.value);
   }
 
