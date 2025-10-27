@@ -72,6 +72,8 @@ class UI {
   #user_load_error: HTMLSpanElement;
   #user_search_back: HTMLButtonElement;
 
+  #user: HTMLElement;
+  #user_user: HTMLButtonElement;
   #page_title: HTMLTitleElement;
 
   // Stuff related to storing UI information
@@ -117,9 +119,11 @@ class UI {
 
     // advanced search and user profile
     this.#page_title = document.getElementsByTagName("title")[0];
+    this.#user = document.getElementsByTagName("user")[0] as HTMLElement;
+    this.#user_user = document.getElementById("usermenu-user") as HTMLButtonElement;
     this.#user_img = document.getElementById("user-profile") as HTMLImageElement;
     this.#user_menu = document.getElementById("usermenu") as HTMLImageElement;
-    this.#user_link = this.#user_menu.firstElementChild as HTMLAnchorElement;
+    this.#user_link = document.getElementById("usermenu-link") as HTMLAnchorElement;
     this.#user_update = document.getElementById("usermenu-update") as HTMLButtonElement;
     this.#user_default = document.getElementById("usermenu-default") as HTMLButtonElement;
     this.#user_favourite = document.getElementById("usermenu-favourite") as HTMLButtonElement;
@@ -253,6 +257,8 @@ class UI {
     const loading = user.loadDatabaseBadges();
 
     this.#page_title.innerText = `${user.display} - EToH Tower Tracker`;
+    this.#user.innerText = isMobile() ? user.display : user.ui_name;
+    this.#user_user.innerText = `Current User: ${user.name}`;
     this.#user_link.href = user.link;
     this.#user_img.src = user.profile;
     this.#user_img.hidden = false;

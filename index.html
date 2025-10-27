@@ -29,13 +29,18 @@
         </div>
       </div>
       <div id="viewing" class="z-10 flex justify-end w-40 lg:w-auto">
+        <div class="lg:pr-5 text-center">
+          Viewing:<br>
+          <user class="text-nowrap"></user>
+        </div>
         <img id="user-profile" class="size-12.5 peer">
         <div id="usermenu" class="fixed flex-col bg-zinc-gray right-[0.35rem] top-17 p-2 border-2 border-black border-solid
           flex
           opacity-0 data-[visible=true]:opacity-100
           transition-opacity delay-75
           " data-visible="false" hidden>
-          <a href="https://roblox.com/users/unknown" class="fake-button" target="_blank" rel="noopener noreferrer">Visit roblox profile</a>
+          <button class="fake-button" disabled id="usermenu-user"></button>
+          <a href="https://roblox.com/users/unknown" class="fake-button text-center" target="_blank" rel="noopener noreferrer" id="usermenu-link">Visit roblox profile</a>
           <button id="usermenu-update">Sync badges</button>
           <hr>
           <button id="usermenu-default" title="If URL user search parameter doesn't exist, load this user.">Set default user</button>
