@@ -29,34 +29,6 @@
         </div>
       </div>
       <div id="viewing" class="z-10 flex justify-end w-40 lg:w-auto">
-        <div class="hidden lg:block">
-          <span class="select-none">Currently viewing</span>:<br>
-          <user class="hover:text-gray-500 transition-colors">No-one!</user>&nbsp;
-        </div>
-        <div id="mini-search" hidden>
-          <input type="text" placeholder="User name/id/profile"
-            maxlength="50"
-            list="user_list"
-            class="w-full pr-10 pl-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-          >
-          <!--0.3rem whilst no pfp. 3.4rem whilst pfp. It would be nice for an alternative way but this is what we have to do for now.-->
-          <button
-            type="submit"
-            aria-label="Submit search"
-            class="absolute top-[0.7rem]
-                    place-items-center text-gray-500"
-            style="right: 0.3rem;"
-          >
-            <svg viewBox="0 0 24 24" width="16" height="16"
-              class="fill-current" aria-hidden="true" focusable="false">
-              <path
-                d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5
-                    6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79
-                    L20 20.49 21.49 19l-5.99-5zM9.5 14A4.5 4.5 0 1 1 14 9.5
-                    4.5 4.5 0 0 1 9.5 14z"/>
-            </svg>
-          </button>
-        </div>
         <img id="user-profile" class="size-12.5 peer">
         <div id="usermenu" class="fixed flex-col bg-zinc-gray right-[0.35rem] top-17 p-2 border-2 border-black border-solid
           flex
@@ -70,9 +42,6 @@
           <button id="usermenu-favourite" hidden>Favourite user</button>
           <button id="usermenu-delete" hidden>Delete user</button>
         </div>
-        <!--<a id="user-profile" href="https://roblox.com/users/unknown" target="_blank" rel="noopener noreferrer">
-          <img class="size-12.5">
-        </a>-->
       </div>
     </div>
     <div hidden id="under_top_bar" class="bg-neutral-800/40 flex p-0.5 text-white rounded-b-sm z-2">

@@ -58,8 +58,6 @@ class UI {
   #user_list: HTMLDataListElement;
 
   // Stuff related to the displaying of users.
-  #user: HTMLDivElement;
-  // #user_img: HTMLAnchorElement;
   #user_menu_timers: number[];
   #user_img: HTMLImageElement;
   #user_menu: HTMLDivElement;
@@ -69,14 +67,10 @@ class UI {
   #user_favourite: HTMLButtonElement;
   #user_delete: HTMLButtonElement;
 
-  #user_mini_search: HTMLDivElement;
-  #user_mini_input: HTMLInputElement;
   #user_search: HTMLInputElement;
   #user_search_button: HTMLButtonElement;
   #user_load_error: HTMLSpanElement;
   #user_search_back: HTMLButtonElement;
-  #user_mini_button: HTMLButtonElement;
-  #user_mini_viewing: HTMLSpanElement;
 
   // Stuff related to storing UI information
   #categories: Map<string, CategoryInformation<Badge>>;
@@ -120,7 +114,6 @@ class UI {
     this.#user_list = document.getElementById("user_list") as HTMLDataListElement;
 
     // advanced search and user profile
-    this.#user = document.getElementsByTagName("user").item(0) as HTMLDivElement;
     this.#user_img = document.getElementById("user-profile") as HTMLImageElement;
     this.#user_menu = document.getElementById("usermenu") as HTMLImageElement;
     this.#user_link = this.#user_menu.firstElementChild as HTMLAnchorElement;
@@ -158,28 +151,15 @@ class UI {
     this.#user_search_button = document.getElementById("search_button") as HTMLButtonElement;
     this.#user_search_back = document.getElementById("search_back") as HTMLButtonElement;
     this.#user_load_error = document.getElementById("load_errors") as HTMLSpanElement;
-    this.#user_mini_search = document.getElementById("mini-search") as HTMLDivElement;
-    this.#user_mini_input = this.#user_mini_search.firstElementChild as HTMLInputElement;
-    this.#user_mini_button = this.#user_mini_search.lastElementChild as HTMLButtonElement;
-    this.#user_mini_viewing = (document.getElementById("viewing") as HTMLDivElement).firstElementChild as HTMLSpanElement;
 
     // initial settings, bindings, etc that need to be made for everything to work.
     this.#user_img.hidden = true;
     this.#user_search.onkeydown = this.#submitUserSearch.bind(this);
-    this.#user_search.oninput = this.#syncUserSearch.bind(this);
-    this.#user_mini_input.oninput = this.#syncUserSearch.bind(this);
     this.#user_search.value = "";
-    this.#user_mini_input.value = "";
     this.#user_search_button.onmousedown = this.#submitUserSearch.bind(this);
-    this.#user_mini_button.onmousedown = this.#submitUserSearch.bind(this);
     this.#user_search_button.disabled = this.#user_search.value.length <= 0;
     this.#user_search_back.disabled = true;
     this.#user_search_back.onclick = () => this.#search_main.hidden = true;
-    this.#user.onclick = () => this.#miniSearch(true);
-    this.#user_mini_input.onclick = () => this.#miniSearch(true);
-    this.#user_mini_input.onblur = () => this.#miniSearch(false);
-    this.#user_mini_input.onfocus = () => this.#user_mini_input.select();
-    this.#user_mini_input.onkeydown = this.#submitUserSearch.bind(this);
 
     this.#categories = new Map();
     this.#badges = new Map();
@@ -201,17 +181,6 @@ class UI {
   }
 
   /**
-   * Syncs the main search with the mini search and vis-versa.
-   * @param ev The event. Used to get the value as we have no idea which to overwrite otherwise.
-   */
-  #syncUserSearch(ev: InputEvent) {
-    const target = ev.target as HTMLInputElement;
-    this.#user_mini_input.value = target.value;
-    this.#user_search.value = target.value;
-    this.#user_search_button.disabled = this.#user_search.value.length <= 0;
-  }
-
-  /**
    * User submits a search, we have to process and do stuff now.
    * @param ev The event to check for `ENTER`. Has to take other types just to make ts happy.
    */
@@ -219,21 +188,7 @@ class UI {
     if (ev instanceof KeyboardEvent) {
       if (ev.key !== 'Enter') return;
     }
-    this.#miniSearch(false);
     this.load_user(this.#user_search.value);
-  }
-
-  /**
-   * Enables / Disables the minisearch. Mobile is disabled no matter what.
-   * @param enabled Should the minisearch be enablled or not.
-   */
-  #miniSearch(enabled: boolean) {
-    if (isMobile()) return;
-
-    this.#user.hidden = enabled;
-    this.#user_mini_search.hidden = !enabled;
-    this.#user_mini_viewing.textContent = enabled ? "Load user" : "Currently viewing"
-    if (enabled) this.#user_mini_input.focus();
   }
 
   /**
@@ -294,14 +249,12 @@ class UI {
     // no await as we do in background, hopefully.
     const loading = user.loadDatabaseBadges();
 
-    this.#user.textContent = user.ui_name;
     this.#user_link.href = user.link;
     this.#user_img.src = user.profile;
 
     this.#user_img.hidden = false;
     this.#user_search_back.disabled = false;
     // this style is so that its hopefully invisible when no user loaded.
-    this.#user_mini_button.style.right = "3.4rem";
     this.#updateDefaultOption(user);
 
     const url = new URL(location.toString());
