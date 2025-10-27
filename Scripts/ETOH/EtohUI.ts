@@ -133,7 +133,16 @@ class UI {
     // This section makes the user menu work.
     this.#user_default.addEventListener('click', () => {
       this.#user_menu.hidden = true;
+
+      const remove = this.#user_default.getAttribute("remove") === "true";
+      if (remove) {
+        localStorage.removeItem("etoh-default");
+        this.#updateDefaultOption(userManager.current_user!);
+        return;
+      }
+
       localStorage.setItem("etoh-default", userManager.current_user!.id.toString());
+      this.#updateDefaultOption(userManager.current_user!);
     });
     this.#user_menu_timers = [0, 0, 0, 0];
     this.#user_menu.addEventListener('mouseover', () => {
@@ -261,12 +270,11 @@ class UI {
 
   #updateDefaultOption(current_user: EToHUser) {
     const stored_user = localStorage.getItem("etoh-default");
-    if (stored_user == null) return;
-    const is_default = current_user.id != Number.parseInt(stored_user);
+    const is_default = current_user.id != Number.parseInt(stored_user || "");
 
-    this.#user_default.disabled = !is_default;
-    this.#user_default.innerText = !is_default ? "Already default user" : "Set default user";
-    this.#user_default.title = !is_default ? "This user is already being loaded upon no url parameter" : "If URL user search parameter doesn't exist, load this user.";
+    this.#user_default.innerText = !is_default ? "Remove default user" : "Set default user";
+    this.#user_default.title = !is_default ? "Remove this user from being the default (set to none)" : "If URL user search parameter doesn't exist, load this user.";
+    this.#user_default.setAttribute("remove", (!is_default).toString());
   }
 
   /**
