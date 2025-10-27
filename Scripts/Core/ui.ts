@@ -533,7 +533,7 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
 }
 
 function display_log(message: string, category: string, progress: number) {
-  console.log(`Received log: ${message} for ${category} at progress ${progress}`);
+  // console.log(`Received log: ${message} for ${category} at progress ${progress}`);
   (document.getElementById("status") as HTMLSpanElement).innerText = `${category}: ${message} (${progress}%)`;
 }
 
