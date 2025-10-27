@@ -101,7 +101,7 @@ enum Category {
 function shortTowerName(tower_name: string) {
   // Tower codes are made up of:
   // each word
-  return tower_name.split(/[\s-]/gm)
+  return tower_name.replaceAll(/\(\S *\)/gm, '').split(/[\s -]/gm)
     // lowered
     .map(word => word.toLowerCase())
     // for 'of' and 'and' to be lower, and the rest upper.
