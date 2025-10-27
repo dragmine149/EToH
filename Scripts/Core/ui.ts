@@ -1,5 +1,5 @@
 import { Badge, Lock } from "./BadgeManager";
-import { loopClamp, noSyncTryCatch } from "../utils";
+import { isMobile, loopClamp, noSyncTryCatch } from "../utils";
 
 
 interface UIBadgeData<K extends Badge> {
@@ -394,6 +394,7 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
   #info_data: HTMLSpanElement;
   #info_br: HTMLBRElement;
   #info_comp: HTMLSpanElement;
+  #hovered: boolean;
 
   constructor() {
     super();
@@ -450,13 +451,17 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
    * Update element (and over stuff eventually) when we hover.
    * @param hover Is user hover?
    */
-  #effectElement(hover: boolean) {
+  #effectElement(hover?: boolean) {
     if (!this.#data) return;
+    if (hover == undefined) hover = !this.#hovered;
+    // console.log(hover, this.#hovered);
+    this.#hovered = hover;
 
-    if (this.#data.name() !== this.#data.name(true)) {
+    // no this is not false !== true
+    if (this.#data.name(false) !== this.#data.name(true)) {
       this.#name_field.innerHTML = this.#data.name(hover);
     }
-    if (this.#data.information() !== this.#data.information(true)) {
+    if (this.#data.information(false) !== this.#data.information(true)) {
       this.#info_data.innerHTML = this.#data.information(hover);
     }
   }
@@ -488,9 +493,12 @@ class BadgeInformation<K extends Badge> extends HTMLElement {
     }) : '';
 
     // sort out external events.
-    this.onmouseover = this.#effectElement.bind(this, true);
-    this.onmouseleave = this.#effectElement.bind(this, false);
-
+    if (!isMobile()) {
+      this.onmouseover = this.#effectElement.bind(this, true);
+      this.onmouseleave = this.#effectElement.bind(this, false);
+    } else {
+      this.onclick = this.#effectElement.bind(this, undefined);
+    }
     this.setNameStyle();
     this.setInfoStyle();
   }
