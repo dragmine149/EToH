@@ -246,9 +246,14 @@ class UI {
    * @param popped Stops us from editing the history by modifying the state.
    */
   async load_user(user_input: string | number, popped?: boolean) {
+    this.#user_load_error.hidden = true;
     const old_user = userManager.current_user;
     const user = await userManager.find_user(user_input);
-    if (user == undefined) { return; }
+    if (user == undefined) {
+      this.#user_load_error.innerText = `Failed to find any user "${user_input}".`
+      this.#user_load_error.hidden = false;
+      return;
+    }
     userManager.store_user(old_user);
     this.datalist_add_user(user.name);
 

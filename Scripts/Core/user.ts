@@ -209,11 +209,13 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
 
     if (networkUserRequest.error) {
       console.error('Failed to get data from server. Please check your internet and try again. If the issue presits please open an issue on github.');
+      display_log('Failed to get data from server. Please check your internet and try again. If the issue presits please open an issue on github.', `user_manager/load`, 100);
       return;
     }
 
     if (!networkUserRequest.data.ok) {
-      console.error("Failed to get user data from server. Please check the userID and try again");
+      console.error("Failed to get user data from server. Please check the user and try again");
+      display_log("Failed to get user data from server. Please check the user and try again", `user_manager/load`, 100);
       return;
     }
 
@@ -221,6 +223,7 @@ class UserManager<K extends User> extends GenericManager<K, string | number> {
     const userRequest = await tryCatch(networkUserRequest.data.json() as Promise<MinimumUserData>);
     if (userRequest.error) {
       console.error('Failed to parse user data from server. Please try again. If the issue presits please open an issue on github.');
+      display_log('Failed to parse user data from server. Please try again. If the issue presits please open an issue on github.', `user_manager/load`, 100);
       return;
     }
 
