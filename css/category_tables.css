@@ -48,6 +48,7 @@
 
 #sub.sized>table {
   width: 100%;
+  /*font-size: var(--text-xl);*/
 }
 
 badge-info {
