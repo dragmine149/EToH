@@ -1,6 +1,6 @@
 import { Area, areaManager } from "../ETOHBridge/AreaManager";
 import { Badge } from "../Core/BadgeManager";
-import { Category, Tower, userManager, badgeManager, EToHUser, Other } from "./Etoh";
+import { Category, Tower, userManager, badgeManager, EToHUser, Other, TowerType, getTowerPoints } from "./Etoh";
 import { load_required_data } from "../ETOHBridge/data_loader";
 import { isMobile } from "../utils";
 import { BadgeInformation, UIBadgeData, CategoryInformation } from "../Core/ui";
@@ -83,6 +83,16 @@ class UI {
 
   // stuff related to dispaling of badges.
   #badgesUI: HTMLDivElement;
+  #count: HTMLDivElement;
+  #count2: HTMLDivElement;
+  #count_Nat: HTMLElement;
+  #count_Mini: HTMLElement;
+  #count_Steeple: HTMLElement;
+  #count_Tower: HTMLElement;
+  #count_Citadel: HTMLElement;
+  #count_Obelisk: HTMLElement;
+  #count_towers: HTMLElement;
+  #count_points: HTMLElement;
 
   constructor() {
     // set this straight away to show it and ignore the noscript element popup. The parent object is more important.
@@ -151,19 +161,6 @@ class UI {
     this.#user_img.addEventListener('click', () => this.#user_menu.hidden = !this.#user_menu.hidden);
     this.#user.addEventListener('click', () => this.#user_menu.hidden = !this.#user_menu.hidden);
 
-    // TODO: Make this some kind of global?
-    // Source: https://github.com/bobbyhadz/javascript-hide-element-when-clicked-outside/blob/main/index.js
-    document.addEventListener('click', (ev) => {
-      const node = ev.target as HTMLElement | null;
-      if (
-        !this.#user_menu.contains(node) &&
-        !this.#user_img.contains(node) &&
-        !this.#user.contains(node)
-      ) {
-        this.#user_menu.hidden = true;
-      }
-    })
-
     // and more defining of elements.
     this.#user_search = document.getElementById("search_input") as HTMLInputElement;
     this.#user_search_button = document.getElementById("search_button") as HTMLButtonElement;
@@ -182,6 +179,37 @@ class UI {
     this.#categories = new Map();
     this.#badges = new Map();
     this.#badgesUI = document.getElementById("badges") as HTMLDivElement;
+
+    this.#count = document.getElementById("points") as HTMLDivElement;
+    this.#count.addEventListener('click', () => this.#count2.hidden = !this.#count2.hidden);
+    this.#count2 = document.getElementById("count") as HTMLDivElement;
+    this.#count_Nat = this.#count.getElementsByClassName("count-Nat")[0].firstElementChild as HTMLElement;
+    this.#count_towers = this.#count.getElementsByClassName("count-towers")[0].firstElementChild as HTMLElement;
+    this.#count_points = this.#count.getElementsByClassName("count-points")[0].firstElementChild as HTMLElement;
+    this.#count_Mini = this.#count2.getElementsByClassName("count-Mini")[0].firstElementChild as HTMLElement;
+    this.#count_Steeple = this.#count2.getElementsByClassName("count-Steeple")[0].firstElementChild as HTMLElement;
+    this.#count_Tower = this.#count2.getElementsByClassName("count-Tower")[0].firstElementChild as HTMLElement;
+    this.#count_Citadel = this.#count2.getElementsByClassName("count-Citadel")[0].firstElementChild as HTMLElement;
+    this.#count_Obelisk = this.#count2.getElementsByClassName("count-Obelisk")[0].firstElementChild as HTMLElement;
+
+    // TODO: Make this some kind of global?
+    // Source: https://github.com/bobbyhadz/javascript-hide-element-when-clicked-outside/blob/main/index.js
+    document.addEventListener('click', (ev) => {
+      const node = ev.target as HTMLElement | null;
+      if (
+        !this.#user_menu.contains(node) &&
+        !this.#user_img.contains(node) &&
+        !this.#user.contains(node)
+      ) {
+        this.#user_menu.hidden = true;
+      }
+      if (
+        !this.#count2.contains(node) &&
+        !this.#count.contains(node)
+      ) {
+        this.#count2.hidden = true;
+      }
+    });
   }
 
   /**
@@ -305,6 +333,29 @@ class UI {
         completed: time
       };
     }
+    const map = Array.from(user.completed.keys()).map((key) => badgeManager.ids(key)[0]);
+    const completed_map: (Tower | Other)[] = []
+    map.forEach((b) => {
+      // console.log(b);
+      if (completed_map.filter((t) => t.name == b.name).length > 0) return;
+      // console.log(b);
+      completed_map.push(b);
+    });
+    console.log(completed_map);
+    const user_towers = completed_map.filter((b) => b instanceof Tower).filter((t) => t.category == Category.Permanent);
+    const total_towers = badgeManager.category(Category.Permanent);
+    const getUserCount = (type: TowerType) => user_towers.filter((t) => t.type == type).length;
+    const getTotalCount = (type: TowerType) => total_towers.filter((t) => t.type == type).length;
+
+    this.#count_Nat.innerText = `${completed_map.filter((b) => b instanceof Other).length}/${badgeManager.type(Other).length}`;
+    this.#count_Mini.innerText = `${getUserCount(TowerType.MiniTower)}/${getTotalCount(TowerType.MiniTower)} (${(getUserCount(TowerType.MiniTower) / getTotalCount(TowerType.MiniTower) * 100).toFixed(2)}%)`;
+    this.#count_Steeple.innerText = `${getUserCount(TowerType.Steeple)}/${getTotalCount(TowerType.Steeple)} (${(getUserCount(TowerType.Steeple) / getTotalCount(TowerType.Steeple) * 100).toFixed(2)}%)`;
+    this.#count_Tower.innerText = `${getUserCount(TowerType.Tower)}/${getTotalCount(TowerType.Tower)} (${(getUserCount(TowerType.Tower) / getTotalCount(TowerType.Tower) * 100).toFixed(2)}%)`;
+    this.#count_Citadel.innerText = `${getUserCount(TowerType.Citadel)}/${getTotalCount(TowerType.Citadel)} (${(getUserCount(TowerType.Citadel) / getTotalCount(TowerType.Citadel) * 100).toFixed(2)}%)`;
+    this.#count_Obelisk.innerText = `${getUserCount(TowerType.Obelisk)}/${getTotalCount(TowerType.Obelisk)} (0.00%)`;
+    // this.#count_Obelisk.innerText = `${getUserCount(TowerType.Obelisk)}/${getTotalCount(TowerType.Obelisk)} (${(getUserCount(TowerType.Obelisk) / getTotalCount(TowerType.Obelisk) * 100).toFixed(2)}%)`;
+    this.#count_towers.innerText = `${user_towers.length}/${total_towers.length}`;
+    this.#count_points.innerText = `${user_towers.map((t) => getTowerPoints(t.type) as number).reduce((m, s) => m + s, 0)}`;
   }
 
   /**

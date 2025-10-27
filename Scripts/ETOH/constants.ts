@@ -16,35 +16,6 @@ const SUB_LEVELS = Object.freeze([
   { threshold: 0.00, name: "Baseline" }
 ]);
 
-enum TOWER_TYPE {
-  Steeple = "Steeple", Tower = "Tower", Citadel = "Citadel", Obelisk = "Obelisk", Mini_Tower = "Mini_Tower", Other = "Other"
-}
-
-/**
-* Gets how many points that type of tower is worth.
-* @param type The type of tower.
-*/
-function pointsFromType(type: TOWER_TYPE) {
-  switch (type) {
-    case TOWER_TYPE.Steeple: return 0.5;
-    case TOWER_TYPE.Tower: return 1;
-    case TOWER_TYPE.Citadel: return 2;
-    case TOWER_TYPE.Obelisk: return 3;
-    default: return 0;
-  }
-}
-
-function typeFromNumber(num: number) {
-  switch (num) {
-    case 0: return TOWER_TYPE.Mini_Tower;
-    case 1: return TOWER_TYPE.Steeple;
-    case 2: return TOWER_TYPE.Tower;
-    case 3: return TOWER_TYPE.Citadel;
-    case 4: return TOWER_TYPE.Obelisk;
-    default: return TOWER_TYPE.Other;
-  }
-}
-
 
 interface ServerTower {
   name: string;
@@ -119,5 +90,5 @@ interface ServerOtherParent {
   data: ServerOther[];
 }
 
-export { DIFFICULTIES, SUB_LEVELS, TOWER_TYPE, pointsFromType }
+export { DIFFICULTIES, SUB_LEVELS }
 export type { ServerAreas, ServerDifficulties, ServerOther, ServerOtherParent, ServerTower, ServerTowers, AreaRequirements };

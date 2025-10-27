@@ -237,7 +237,7 @@ class Tower extends Badge {
 
 class Other extends Badge {
   #category: string;
-  get category() { return this.#category; }
+  get other_category() { return this.#category; }
 
   constructor(name: string, ids: number[], lock_type: Lock, category: string, lock_reason?: string) {
     super(name, ids, lock_type, undefined, lock_reason);
@@ -253,9 +253,9 @@ class EtohBadgeManager extends BadgeManager<Tower | Other, Category> {
   constructor() {
     super();
 
-    this.addFilter("category", badge => badge.category);
+    this.addFilter("category", badge => badge instanceof Tower ? badge.category : "");
     this.addFilter("area", badge => badge instanceof Tower ? badge.area : "");
-    this.addFilter("other_category", badge => badge instanceof Other ? badge.category : "");
+    this.addFilter("other_category", badge => badge instanceof Other ? badge.other_category : "");
   }
 }
 
@@ -263,4 +263,4 @@ class EtohBadgeManager extends BadgeManager<Tower | Other, Category> {
 const userManager = new UserManager(etohDB.users, EToHUser);
 const badgeManager = new EtohBadgeManager();
 
-export { userManager, badgeManager, shortTowerName, Tower, Category, Other, numberToType, addTowerType, EToHUser };
+export { userManager, badgeManager, shortTowerName, Tower, Category, Other, numberToType, addTowerType, EToHUser, TowerType, getTowerPoints };

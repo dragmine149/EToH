@@ -47,23 +47,25 @@
         </div>
       </div>
     </div>
-    <div hidden id="under_top_bar" class="bg-neutral-800/40 flex p-0.5 text-white rounded-b-sm z-2">
-      <div id="points" class="grid grid-rows-2 grid-cols-2">
-        <span count="towers">Towers: </span>
-        <span count="points">Tower points: </span>
-        <span count="info" class="col-span-2">Permanent, Non mini-towers above. Hover to see all badges.</span>
+
+    <div id="under_top_bar" class="bg-neutral-800/40 flex p-0.5 text-white rounded-b-sm z-2 top-18 absolute w-full-1.5">
+      <div id="points" class="bg-neutral-800 grid lg:grid-cols-4 grid-cols-3">
+        <span class="count-NAT">Other: <count></count></span>
+        <span class="count-towers">Towers: <count></count></span>
+        <span class="count-points">Tower points: <count></count></span>
+        <span count="info" class="col-span-3 lg:col-span-1 text-center">Click to see all badge counts.</span>
       </div>
-      <div id="categories" class="pl-5">
+      <div id="categories" class="pl-5" hidden>
         View:
         <button onclick="etohUI.load_category('default')">Default</button>
         <button onclick="etohUI.load_category('difficulty')">Difficulty</button>
         <button onclick="etohUI.load_category('other')">Other</button>
       </div>
-      <div id="toggleables">
+      <div id="toggleables" hidden>
         <button id="toggle-locked" onclick="etohUI.toggleLocked()">Hide Locked Towers</button>
         <button id="toggle-mini" onclick="etohUI.toggleMini()">Hide Mini Towers</button>
       </div>
-      <div id="other" class="flex ml-auto">
+      <div id="other" class="flex ml-auto" hidden>
         <div id="badge_search" hidden>
           <input type="text" id="badge-search-input" placeholder="Search for a Badge"
             oninput="etohUI.search(this.value)"
@@ -71,22 +73,20 @@
           >
           <span tag="search_count"></span>
         </div>
-        <button onclick="userManager.current_user.loadUncompleted()">Update Badges</button>
       </div>
     </div>
 
-    <div id="count" hidden>
-      <span count="NAT">Other: </span>
-      <span count="Mini"> Mini-Towers (NEATs): </span>
-      <span count="Steeple"> Steeples: </span>
-      <span count="Tower">Towers: </span>
-      <span count="Citadel">Citadels: </span>
-      <span count="Obelisk">Obelisk: </span>
+    <div id="count" class="flex lg:flex-row flex-col fixed left-2 top-32 lg:top-24 bg-neutral-800 text-white z-20" hidden>
+      <button disabled class="count-Mini"> Mini-Towers (NEATs): <count></count></button>
+      <button disabled class="count-Steeple"> Steeples: <count></count></button>
+      <button disabled class="count-Tower">Towers: <count></count></button>
+      <button disabled class="count-Citadel">Citadels: <count></count></button>
+      <button disabled class="count-Obelisk">Obelisk: <count></count></button>
     </div>
 
     <datalist id="user_list"></datalist>
 
-    <div id="badges" class="scroll-auto overflow-y-scroll fixed top-16 h-full-2 w-full-1.5 pt-0.5 justify-center block place-items-center"></div>
+    <div id="badges" class="scroll-auto overflow-y-scroll fixed lg:top-24 top-31 h-full-2 w-full-1.5 pt-0.5 justify-center block place-items-center"></div>
 
     <div id="search-main" hidden class="bg-neutral-800/80 box-border h-full-2 w-full-1.5 items-center justify-center flex z-20 fixed top-16">
       <div id="search" class="bg-gray-900/70 text-white text-center rounded-md p-3 flex items-center flex-col
