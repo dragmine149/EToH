@@ -4,6 +4,10 @@ Tower tracker for the roblox game: Eternal-Towers-of-Hell (https://www.roblox.co
 This code is free to use for any user case, Just be sure to credit me.
 Visit the product here: https://dragmine149.github.io/ETOH
 
+## NOTICE
+EToH Just recently had an update (monday). And as you can see, a lot of commits have been made since last update to this tracker. An update will come out either saturday/sunday depending on how complex these last few features
+are.
+
 ## Planned features
 - Switch over to [Cypress](https://docs.cypress.io/app/end-to-end-testing/writing-your-first-end-to-end-test) for testing and add more tests.
 - Compare data between users. (Only after users have been downloaded)
