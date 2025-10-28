@@ -164,22 +164,6 @@ function addTowerType(name: string, type: TowerType) {
   }
   return name;
 }
-/**
-* Returns the amount of points that the type provided is worth.
-* @param {TowerType} type The type of tower.
-*/
-function getTowerPoints(type: TowerType) {
-  switch (type) {
-    case TowerType.Obelisk: return 3;
-    case TowerType.Citadel: return 2;
-    case TowerType.Tower: return 1;
-    case TowerType.Steeple: return 0.5;
-
-    default:
-    case TowerType.MiniTower:
-    case TowerType.Other: return 0;
-  }
-}
 
 /**
  * Converts a number from the server to use as a more readable type.
@@ -263,4 +247,4 @@ class EtohBadgeManager extends BadgeManager<Tower | Other, Category> {
 const userManager = new UserManager(etohDB.users, EToHUser);
 const badgeManager = new EtohBadgeManager();
 
-export { userManager, badgeManager, shortTowerName, Tower, Category, Other, numberToType, addTowerType, EToHUser, TowerType, getTowerPoints };
+export { userManager, badgeManager, shortTowerName, Tower, Category, Other, numberToType, addTowerType, EToHUser, TowerType };

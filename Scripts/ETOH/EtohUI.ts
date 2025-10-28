@@ -1,6 +1,6 @@
 import { Area, areaManager } from "../ETOHBridge/AreaManager";
 import { Badge } from "../Core/BadgeManager";
-import { Category, Tower, userManager, badgeManager, EToHUser, Other, TowerType, getTowerPoints, shortTowerName } from "./Etoh";
+import { Category, Tower, userManager, badgeManager, EToHUser, Other, TowerType, shortTowerName } from "./Etoh";
 import { load_required_data } from "../ETOHBridge/data_loader";
 import { isMobile } from "../utils";
 import { BadgeInformation, UIBadgeData, CategoryInformation } from "../Core/ui";
@@ -93,7 +93,6 @@ class UI {
   #count_Citadel: HTMLElement;
   #count_Obelisk: HTMLElement;
   #count_towers: HTMLElement;
-  #count_points: HTMLElement;
 
   #tower_search_input: HTMLInputElement;
   #tower_search_count: HTMLSpanElement;
@@ -191,7 +190,6 @@ class UI {
     this.#count2 = document.getElementById("count") as HTMLDivElement;
     this.#count_Nat = this.#count.getElementsByClassName("count-Nat")[0].firstElementChild as HTMLElement;
     this.#count_towers = this.#count.getElementsByClassName("count-towers")[0].firstElementChild as HTMLElement;
-    this.#count_points = this.#count.getElementsByClassName("count-points")[0].firstElementChild as HTMLElement;
     this.#count_Mini = this.#count2.getElementsByClassName("count-Mini")[0].firstElementChild as HTMLElement;
     this.#count_Steeple = this.#count2.getElementsByClassName("count-Steeple")[0].firstElementChild as HTMLElement;
     this.#count_Tower = this.#count2.getElementsByClassName("count-Tower")[0].firstElementChild as HTMLElement;
@@ -372,7 +370,6 @@ class UI {
     this.#count_Obelisk.innerText = `${getUserCount(TowerType.Obelisk)}/${getTotalCount(TowerType.Obelisk)} (0.00%)`;
     // this.#count_Obelisk.innerText = `${getUserCount(TowerType.Obelisk)}/${getTotalCount(TowerType.Obelisk)} (${(getUserCount(TowerType.Obelisk) / getTotalCount(TowerType.Obelisk) * 100).toFixed(2)}%)`;
     this.#count_towers.innerText = `${user_towers.length}/${total_towers.length}`;
-    this.#count_points.innerText = `${user_towers.map((t) => getTowerPoints(t.type) as number).reduce((m, s) => m + s, 0)}`;
   }
 
   /**
