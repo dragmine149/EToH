@@ -1,7 +1,13 @@
+# rust output data not needed.
 target/
 .cache/
 output.*
 
+# main branch left overs
 dist/
 node_modules/
 *.temp*
+
+# pywikibot + stuff
+apicache
+throttle.ctrl

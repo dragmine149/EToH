@@ -2,17 +2,29 @@ mod cache;
 mod definitions;
 mod json;
 mod parse_wikitext;
+mod pywiki;
 
-use std::fs;
+use std::{
+    collections::{HashMap, HashSet},
+    fs,
+};
 
 use definitions::*;
+use lazy_regex::regex_replace;
 use parse_wikitext::WIkiTower;
+use regex::Regex;
 use reqwest::blocking::Client;
+use serde::{Deserialize, Serialize};
 use url::Url;
 
 use crate::json::TowerJSON;
 
 const WIKI_BASE: &str = "https://jtoh.fandom.com/wiki";
+
+#[derive(Debug, Serialize, Deserialize)]
+struct Mappings {
+    mappings: HashMap<String, String>,
+}
 
 fn get_badges(client: &Client, url: String) -> Result<Vec<Badge>, Box<dyn std::error::Error>> {
     let mut badges: Vec<Badge> = vec![];
@@ -116,14 +128,17 @@ fn follow_redirect(wikitext: &str) -> Option<String> {
 // }
 
 fn clean_badge_name(badge: &str) -> String {
-    badge
+    let trimmed = badge
         .trim()
         .replace("Beat The", "")
         .replace("Beat the", "")
         .replace("beat The", "")
         .replace("beat the", "")
+        .replace("(Unobtainable)", "")
+        .replace("(LE)", "")
         .trim()
-        .to_string()
+        .to_string();
+    regex_replace!(r"\(.*"i, &trimmed, "").to_string()
 }
 
 fn compress_name(badge: &str) -> String {
@@ -191,6 +206,8 @@ fn parse_other(badge: &Badge, other_ids: &[u64], ignored: &[u64]) -> String {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    env_logger::init();
+
     let client = Client::new();
 
     let mut badges = get_badges(
@@ -213,46 +230,66 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .flat_map(|b| b.badges.clone())
         .collect::<Vec<u64>>();
 
-    let mut data = TowerJSON::new();
-    let map = serde_json::from_str::<AreaMap>(&fs::read_to_string("../area_info.json").unwrap())?;
-    // data.make_areas(&map);
-    data.load_map(&map);
-    let mut badge_map =
-        serde_json::from_str::<BadgeMap>(&fs::read_to_string("../badge_map.json").unwrap())?;
-    badge_map.parse();
+    let mappings =
+        serde_json::from_str::<Mappings>(&fs::read_to_string("../mappings.json").unwrap())?;
 
-    badges
-        .iter_mut()
-        .for_each(|b| b.name = clean_badge_name(&b.name));
+    let mut deduped = HashSet::<String>::new();
+    badges.iter_mut().for_each(|b| {
+        b.name = clean_badge_name(&b.name);
+        let name = mappings.mappings.get(&b.name).unwrap_or(&b.name);
+        deduped.insert(name.to_owned());
+    });
 
-    let mut other_notices = vec![];
-    for badge in badges.iter_mut() {
-        if let Some(name) = badge_map.get_badge(&badge.id) {
-            badge.name = name.to_owned();
-        }
-        let res = parse_badge(badge, &mut data, &map, &client);
-        if res.is_err() {
-            other_notices.push(parse_other(badge, &other_ids, &other_data.ignored));
-        }
-    }
-    for mut badge in badge_map.use_unused() {
-        let res = parse_badge(&mut badge, &mut data, &map, &client);
-        if res.is_err() {
-            other_notices.push(parse_other(&badge, &other_ids, &other_data.ignored));
-        }
-    }
-
-    data.write_to_file("../tower_data.json".into())?;
-
-    println!();
-    println!();
-    println!();
-    let items = other_notices.iter().filter(|n| !n.is_empty());
-    items.clone().for_each(|n| println!("{:}", n));
-    if items.count() > 0 {
-        panic!("Items to deal with!");
-    }
+    let result = pywiki::parse_badges(
+        &deduped
+            .iter()
+            .map(|b| b.to_owned())
+            .collect::<Vec<String>>(),
+    )
+    .unwrap();
+    println!("{:#?}", result.0);
+    result.1.iter().for_each(|r| {
+        println!("{:?}", r);
+        println!("============================================");
+    });
     Ok(())
+
+    // let mut data = TowerJSON::new();
+    // let map = serde_json::from_str::<AreaMap>(&fs::read_to_string("../area_info.json").unwrap())?;
+    // // data.make_areas(&map);
+    // data.load_map(&map);
+    // let mut badge_map =
+    //     serde_json::from_str::<BadgeMap>(&fs::read_to_string("../badge_map.json").unwrap())?;
+    // badge_map.parse();
+
+    // let mut other_notices = vec![];
+    // for badge in badges.iter_mut() {
+    //     if let Some(name) = badge_map.get_badge(&badge.id) {
+    //         badge.name = name.to_owned();
+    //     }
+    //     let res = parse_badge(badge, &mut data, &map, &client);
+    //     if res.is_err() {
+    //         other_notices.push(parse_other(badge, &other_ids, &other_data.ignored));
+    //     }
+    // }
+    // for mut badge in badge_map.use_unused() {
+    //     let res = parse_badge(&mut badge, &mut data, &map, &client);
+    //     if res.is_err() {
+    //         other_notices.push(parse_other(&badge, &other_ids, &other_data.ignored));
+    //     }
+    // }
+
+    // data.write_to_file("../tower_data.json".into())?;
+
+    // println!();
+    // println!();
+    // println!();
+    // let items = other_notices.iter().filter(|n| !n.is_empty());
+    // items.clone().for_each(|n| println!("{:}", n));
+    // if items.count() > 0 {
+    //     panic!("Items to deal with!");
+    // }
+    // Ok(())
 
     // let old_badges = get_badges(
     //     &Client::new(),
