@@ -3,6 +3,7 @@ mod definitions;
 mod json;
 mod parse_wikitext;
 mod pywiki;
+mod rust_wiki;
 
 use std::{
     collections::{HashMap, HashSet},
@@ -11,15 +12,11 @@ use std::{
 
 use definitions::*;
 use lazy_regex::regex_replace;
-use parse_wikitext::WIkiTower;
-use regex::Regex;
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::json::TowerJSON;
-
-const WIKI_BASE: &str = "https://jtoh.fandom.com/wiki";
+use crate::rust_wiki::{WikiTower, WikiTowerBuilder};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Mappings {
@@ -48,85 +45,6 @@ fn get_badges(client: &Client, url: String) -> Result<Vec<Badge>, Box<dyn std::e
     Ok(badges)
 }
 
-fn scrap_wiki(client: &Client, badge_name: impl Into<String>) -> Option<WIkiTower> {
-    let badge: String = badge_name.into();
-
-    let url =
-        Url::parse_with_params(&format!("{}/{}", WIKI_BASE, badge), &[("action", "raw")]).unwrap();
-
-    let wikicache = cache::read_cache(&url);
-    let wikitext = match wikicache {
-        Some(wikicache) => wikicache,
-        None => {
-            let data = client.get(url.to_owned()).send().ok()?.text().ok()?;
-            // println!("{data}");
-            cache::write_cache(&url, &data).ok()?;
-            // println!("e");
-            data
-        }
-    };
-
-    let new_badge = follow_redirect(&wikitext);
-    if let Some(badge) = new_badge {
-        return scrap_wiki(client, badge);
-    }
-
-    let mut wiki = parse_wikitext::parse_wiki_text(&wikitext)?;
-    wiki.tower_name = badge;
-    Some(wiki)
-}
-fn scrap_wiki_area(client: &Client, area_name: impl Into<String>) -> Option<AreaInformation> {
-    let area: String = area_name.into();
-
-    let url =
-        Url::parse_with_params(&format!("{}/{}", WIKI_BASE, area), &[("action", "raw")]).unwrap();
-
-    let wikicache = cache::read_cache(&url);
-    let wikitext = match wikicache {
-        Some(wikicache) => wikicache,
-        None => {
-            let data = client.get(url.to_owned()).send().ok()?.text().ok()?;
-            // println!("{data}");
-            cache::write_cache(&url, &data).ok()?;
-            // println!("e");
-            data
-        }
-    };
-
-    let new_area = follow_redirect(&wikitext);
-    if let Some(area) = new_area {
-        return scrap_wiki_area(client, area);
-    }
-
-    parse_wikitext::parse_wiki_text_area(&wikitext)
-}
-
-fn follow_redirect(wikitext: &str) -> Option<String> {
-    match wikitext.starts_with("#REDIRECT") {
-        true => {
-            let tower_name = wikitext
-                .split_once(" ")
-                .unwrap()
-                .1
-                .replace("[[", "")
-                .replace("]]", "");
-            Some(tower_name)
-        }
-        false => None,
-    }
-}
-
-// fn process_badges(badge_list: &[u64], badges: Vec<Badge>) -> String {
-//     badges
-//         .iter()
-//         .filter(|badge| !badge_list.contains(&badge.id))
-//         .filter(|badge| !badge.name.to_lowercase().contains("placeholder"))
-//         .filter(|badge| badge.name != "Beat The Tower Of ...")
-//         .filter(|badge| badge.id != 2124560526) // The duplicate badge of Tower of Suffering Outside.
-//         .map(|badge| format!("{} - {}\n", badge.id, badge.name))
-//         .collect::<String>()
-// }
-
 fn clean_badge_name(badge: &str) -> String {
     let trimmed = badge
         .trim()
@@ -148,61 +66,45 @@ fn compress_name(badge: &str) -> String {
         .replace("Steeple of ", "")
 }
 
-fn parse_badge(
-    badge: &mut Badge,
-    data: &mut TowerJSON,
-    map: &AreaMap,
-    client: &Client,
-) -> Result<(), ()> {
-    println!("Badge: {:?}", badge.id);
-    println!("Tower: {:?}", badge.name);
-    let wiki = scrap_wiki(&client, &badge.name);
-    println!("{:#?}", wiki);
+/// Convert a list of badges to wikitower for later processing.
+///
+/// # Arguments
+/// - badges -> List of badges (mutable) to use
+///
+/// # Returns
+/// - Vec<WikiTower> -> WikiTower::default() pre-made.
+fn convert_basic_wikitower(badges: &mut [Badge]) -> Vec<WikiTower> {
+    // mappings for those annoying towers.
+    let mappings =
+        serde_json::from_str::<Mappings>(&fs::read_to_string("../mappings.json").unwrap())
+            .unwrap()
+            .mappings;
 
-    if wiki.is_none() {
-        return Err(());
+    // the basic conversion to raw.
+    let raw = badges.iter_mut().map(|b| {
+        let name = clean_badge_name(&b.name);
+        WikiTowerBuilder::default()
+            .badge_name(b.name.clone())
+            .name(mappings.get(&name).unwrap_or(&name).to_owned())
+            .badges(vec![b.id])
+            .build()
+            .unwrap()
+    });
+
+    // removes those which have more than one and collapses them.
+    let mut deduped = HashMap::<String, WikiTower>::new();
+    for mut r in raw {
+        match deduped.get_mut(&r.name) {
+            Some(v) => v.badges.append(&mut r.badges),
+            None => {
+                deduped.insert(r.name.to_owned(), r).unwrap();
+            }
+        }
     }
-    let mut wiki = wiki.unwrap();
-    wiki.tower_name = compress_name(&wiki.tower_name);
-    wiki.location = wiki.location.replacen("*", "", 1).trim().to_owned();
-    if wiki.tower_type == TowerType::Invalid {
-        return Err(());
-    }
-    // if data.has_tower(&badge.name) {
-    //     data.add_tower_badge(
-    //         &badge.name,
-    //         badge.id,
-    //         &map.get_area(&wiki.location),
-    //         &wiki.location,
-    //     );
-    //     return;
-    // }
-    // let name = wiki.tower_name.to_owned();
-
-    println!("area: {:?}", wiki.location);
-    if !data.has_area(&wiki.location, &map) {
-        let area = scrap_wiki_area(&client, &wiki.location);
-        let mut area = area.unwrap();
-        println!("data: {:?}", area);
-        area.name = wiki.location.trim().to_owned();
-        data.add_area(area, &map);
-    }
-
-    data.add_tower(wiki, badge.id, map);
-
-    Ok(())
-    // data.insert_tower(wiki, &compress_name(&name), badge.id, &map);
-}
-
-fn parse_other(badge: &Badge, other_ids: &[u64], ignored: &[u64]) -> String {
-    println!("Is of type, other");
-    if !other_ids.contains(&badge.id) && !ignored.contains(&badge.id) {
-        return format!(
-            "Badge ({:?}) {:?} is not a wiki tower, not in the other list and not ignored! (New badge?)",
-            badge.id, badge.name
-        );
-    }
-    String::new()
+    deduped
+        .values()
+        .map(|v| v.to_owned())
+        .collect::<Vec<WikiTower>>()
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -222,31 +124,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     .unwrap();
     badges.append(&mut other);
     drop(other);
-    let other_data =
-        serde_json::from_str::<OtherMap>(&fs::read_to_string("../other_data.json").unwrap())?;
-    let other_ids = other_data
-        .data
-        .iter()
-        .flat_map(|b| b.badges.clone())
-        .collect::<Vec<u64>>();
+    // let other_data =
+    //     serde_json::from_str::<OtherMap>(&fs::read_to_string("../other_data.json").unwrap())?;
+    // let other_ids = other_data
+    //     .data
+    //     .iter()
+    //     .flat_map(|b| b.badges.clone())
+    //     .collect::<Vec<u64>>();
 
-    let mappings =
-        serde_json::from_str::<Mappings>(&fs::read_to_string("../mappings.json").unwrap())?;
+    let towers = convert_basic_wikitower(&mut badges);
 
-    let mut deduped = HashSet::<String>::new();
-    badges.iter_mut().for_each(|b| {
-        b.name = clean_badge_name(&b.name);
-        let name = mappings.mappings.get(&b.name).unwrap_or(&b.name);
-        deduped.insert(name.to_owned());
-    });
-
-    let result = pywiki::parse_badges(
-        &deduped
-            .iter()
-            .map(|b| b.to_owned())
-            .collect::<Vec<String>>(),
-    )
-    .unwrap();
+    let result = rust_wiki::parse_badges(&towers).unwrap();
     println!("{:#?}", result.0);
     result.1.iter().for_each(|r| {
         println!("{:?}", r);

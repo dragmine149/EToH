@@ -1,6 +1,6 @@
 use pyo3::{
     Bound, PyAny, PyResult, Python,
-    types::{PyAnyMethods, PyDict, PyIterator, PyList, PyListMethods, PyModule, PyNone},
+    types::{PyAnyMethods, PyDict, PyIterator, PyList, PyListMethods, PyModule},
 };
 use regex::Regex;
 use std::error;
