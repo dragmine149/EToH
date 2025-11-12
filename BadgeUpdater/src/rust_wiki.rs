@@ -101,15 +101,80 @@ impl WikiConverter<'_> {
     /// 	- Option - If any redirects were followed (and if so, the name)
     /// - Err(dyn Error) - Any errors that might have happened
     fn get_wiki_page(&self, page: &str) -> Result<(String, Option<String>), Box<dyn error::Error>> {
+        // gets the page.
         let result = self
             .pwb
             .call_method1("Page", (&self.site, page))?
             .call_method1("get", (false, true))?
             .extract::<String>()?;
+
+        // if we have a redirect, always follow it.
         if result.starts_with("#redirect") {
-            let redirect = &self.parse_redirect(&result)?;
-            return Ok((self.get_wiki_page(redirect)?.0, Some(redirect.to_owned())));
+            let redirect = self.parse_redirect(&result)?;
+            let new = self.get_wiki_page(&redirect)?;
+
+            // return the page data, and the redirect. Lowest level is more important
+            return Ok((new.0, Some(new.1.unwrap_or(redirect))));
         }
+
+        // return the page data, and the none saying we haven't redirected.
         Ok((result, None))
     }
+
+    /// Parse the redirect of the page. Bit over the top but its needed
+    ///
+    /// # Arguments
+    /// - redirect - The raw source of the redirect page.
+    ///
+    /// # Returns
+    /// - Ok(String) - The new page to go to.
+    /// - Err(dyn Error) - Any errors that might have happened
+    fn parse_redirect(&self, redirect: &str) -> Result<String, Box<dyn error::Error>> {
+        Ok(self
+            .wtp
+            .call_method1("parse", (redirect,))?
+            .getattr("wikilinks")?
+            .get_item(0)?
+            .call_method0("plain_text")?
+            .extract::<String>()?)
+    }
+
+    fn search_wiki(
+        &self,
+        page: &str,
+        search_count: Option<u8>,
+    ) -> Result<String, Box<dyn error::Error>> {
+        let search_args = PyDict::new(self.site.py());
+        search_args.set_item("total", search_count.unwrap_or(3));
+        let pages = self
+            .site
+            .call_method("search", (page,), Some(&search_args))?;
+        for page in pages.cast::<PyIterator>()? {
+            let data = self.get_wiki_page(page?.call_method0("title")?.extract::<String>())?;
+            let links = self.get_external_links(data.0)?;
+            links.iter().any(|link|)
+        }
+    }
+
+    fn get_external_links(
+            &self,
+            page_data: &str,
+            page_name: &str,
+        ) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+            let parsed = self.wtp.call_method1("parse", (page_data,))?;
+            let external_links = parsed.getattr("external_links")?;
+            let py_list = external_links.cast::<PyList>()?.to_owned();
+
+            let mut links: Vec<String> = Vec::new();
+
+            for item in py_list.iter() {
+                let text = match item.getattr("text") {
+                    Ok(attr) => attr.extract::<String>().unwrap_or_default(),
+                    Err(_) => String::new(),
+                };
+                links.push(text.replace("{{PAGENAME}}", page_name));
+            }
+
+            Ok(links)
+        }
 }
