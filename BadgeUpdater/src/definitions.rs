@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     cmp::Ordering,
     collections::{HashMap, HashSet},
+    default,
     fmt::Display,
 };
 
@@ -237,20 +238,14 @@ impl AreaInformation {
 //     pub data: Vec<OtherBadge>,
 // }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum TowerType {
     MiniTower,
     Steeple,
+    #[default]
     Tower,
     Citadel,
     Obelisk,
-    Invalid,
-}
-
-impl Default for TowerType {
-    fn default() -> Self {
-        Self::Invalid
-    }
 }
 
 impl Serialize for TowerType {
@@ -283,7 +278,6 @@ impl Display for TowerType {
                 TowerType::Citadel => "Citadel".to_string(),
                 TowerType::Obelisk => "Obelisk".to_string(),
                 TowerType::Steeple => "Steeple".to_string(),
-                TowerType::Invalid => "".to_string(),
             }
         )
     }
@@ -298,7 +292,7 @@ impl From<&str> for TowerType {
             "citadel" => Self::Citadel,
             "obelisk" => Self::Obelisk,
             "steeple" => Self::Steeple,
-            _ => Self::Invalid,
+            _ => Self::default(),
         }
     }
 }
@@ -316,7 +310,7 @@ impl From<u8> for TowerType {
             2 => Self::Tower,
             3 => Self::Citadel,
             4 => Self::Obelisk,
-            _ => Self::Invalid,
+            _ => Self::default(),
         }
     }
 }
@@ -329,19 +323,10 @@ impl From<TowerType> for u8 {
             TowerType::Tower => 2,
             TowerType::Citadel => 3,
             TowerType::Obelisk => 4,
-            TowerType::Invalid => 0b11110000,
+            _ => Self::default(),
         }
     }
 }
-
-// impl Serialize for TowerType {
-//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-//     where
-//         S: serde::Serializer,
-//     {
-//         let mut s = serializer.serialize_u8(self)
-//     }
-// }
 
 #[derive(Serialize, Debug, Deserialize)]
 pub struct AreaMap {
