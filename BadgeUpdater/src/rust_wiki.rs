@@ -7,15 +7,15 @@ use regex::Regex;
 use serde::Serialize;
 use std::{collections::HashMap, error};
 
-use crate::definitions::TowerType;
+use crate::definitions::{Length, TowerType};
 
 /// The wiki tower object containing all the information.
 #[derive(Debug, Clone, Default, Builder)]
 pub struct WikiTower {
     pub name: String,
-    pub area: String,
-    pub length: u8,
-    pub difficulty: f32,
+    pub area: Option<String>,
+    pub length: Length,
+    pub difficulty: Option<f32>,
     pub tower_type: TowerType,
     pub badges: Vec<u64>,
     /// This is here because the name can be (in some cases), different from the actual tower.
@@ -24,38 +24,27 @@ pub struct WikiTower {
     pub wiki_link: String,
 }
 
-impl WikiTower {
-    pub fn set_area(&mut self, area: Option<&str>) {
-        self.area = area.unwrap_or("Unknown Area").to_owned()
-    }
-
-    pub fn set_length(&mut self, length: Option<u8>) {
-        self.length = length.unwrap_or(0)
-    }
-
-    pub fn set_difficulty(&mut self, difficulty: Option<f32>) {
-        self.difficulty = difficulty.unwrap_or_default()
-    }
-
-    pub fn set_type(&mut self, tower_type: Option<TowerType>) {
-        self.tower_type = tower_type.unwrap_or_default()
-    }
-}
-
 impl Serialize for WikiTower {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
         let csv = format!(
-            "{},{},{},{},{:?},{},{}",
+            "{},{},{},{:?},{}{},{}",
             self.name,
-            self.area,
-            self.length,
-            self.difficulty,
+            self.area.to_owned().unwrap_or_default(),
+            match self.difficulty {
+                Some(diff) => diff.to_string(),
+                None => String::new(),
+            },
             self.badges,
+            (self.length as u8).to_string(),
             self.tower_type,
-            self.wiki_link
+            if self.wiki_link == self.name {
+                String::new()
+            } else {
+                self.wiki_link.to_owned()
+            }
         );
         serializer.serialize_str(&csv)
     }

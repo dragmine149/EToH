@@ -4,6 +4,7 @@ use std::{
     collections::{HashMap, HashSet},
     default,
     fmt::Display,
+    u16::MAX,
 };
 
 #[derive(Debug, Deserialize, Serialize, Default)]
@@ -323,7 +324,81 @@ impl From<TowerType> for u8 {
             TowerType::Tower => 2,
             TowerType::Citadel => 3,
             TowerType::Obelisk => 4,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub enum Length {
+    /// <= 20 mins
+    #[default]
+    CakeWalk,
+    /// 20+ mins
+    VeryShort,
+    /// 30+ mins
+    Short,
+    /// 45+ mins
+    Medium,
+    /// 60+ mins
+    Long,
+    /// 90+ mins
+    VeryLong,
+    /// INHUMANELY
+    Inhumanely,
+}
+
+impl From<u8> for Length {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => Self::CakeWalk,
+            1 => Self::VeryShort,
+            2 => Self::Short,
+            3 => Self::Medium,
+            4 => Self::Long,
+            5 => Self::VeryLong,
+            6 => Self::Inhumanely,
             _ => Self::default(),
+        }
+    }
+}
+
+impl From<Length> for u8 {
+    fn from(value: Length) -> Self {
+        match value {
+            Length::CakeWalk => 0,
+            Length::VeryShort => 1,
+            Length::Short => 2,
+            Length::Medium => 3,
+            Length::Long => 4,
+            Length::VeryLong => 5,
+            Length::Inhumanely => 6,
+        }
+    }
+}
+
+impl From<u16> for Length {
+    fn from(value: u16) -> Self {
+        match value {
+            20 => Self::VeryShort,
+            30 => Self::Short,
+            45 => Self::Medium,
+            60 => Self::Long,
+            90 => Self::VeryLong,
+            u16::MAX => Self::Inhumanely,
+            _ => Self::default(),
+        }
+    }
+}
+impl From<Length> for u16 {
+    fn from(value: Length) -> Self {
+        match value {
+            Length::CakeWalk => 0,
+            Length::VeryShort => 20,
+            Length::Short => 30,
+            Length::Medium => 45,
+            Length::Long => 60,
+            Length::VeryLong => 90,
+            Length::Inhumanely => u16::MAX,
         }
     }
 }
