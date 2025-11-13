@@ -56,6 +56,10 @@ struct WikiConverter<'a> {
     wtp: Bound<'a, PyModule>,
 }
 
+struct Template<'b> {
+    template: Bound<'b, PyAny>,
+}
+
 /// Overall function for setting up python and badges.
 ///
 /// # Arguments
@@ -202,6 +206,24 @@ impl WikiConverter<'_> {
             .collect::<Vec<String>>())
     }
 
+    fn process_tower(&self, tower_obj: &mut WikiTower, page_data: &str) {
+        // get the main template object.
+        let template = Template::new_from_name(self.wtp, page_data, "towerinfobox")?;
+        // let template = self.get_template_from_name(page_data, "towerinfobox")?;
+
+        // get the difficulty of the tower.
+        let difficulty = template.get_argument_by_name("difficulty")?;
+        let diff = Regex::new(r"[\d.]+")?
+            .captures(&difficulty)
+            .unwrap()
+            .get(0)
+            .unwrap()
+            .as_str()
+            .parse::<f32>()?;
+    }
+}
+
+impl Template<'_> {
     /// Get the template on the page with the provided name. Returns **first instance**
     ///
     /// # Arguments
@@ -211,13 +233,12 @@ impl WikiConverter<'_> {
     /// # Returns
     /// - Ok(Bound<'_, PyAny>) -> The template still as the python object.
     /// - Err(dyn Error) -> Some errored happened whilst making the list of templates. (not whilst filtering)
-    fn get_template_from_name(
-        &self,
+    pub fn new_from_name<'b>(
+        wtp: Bound<'b, PyModule>,
         page_data: &str,
         name: &str,
-    ) -> Result<Bound<'_, PyAny>, Box<dyn error::Error>> {
-        let templates = self
-            .wtp
+    ) -> Result<Template<'b>, Box<dyn error::Error>> {
+        let templates = wtp
             .call_method1("parse", (page_data,))?
             .getattr("templates")?;
         let template_list = match templates.cast::<PyList>() {
@@ -229,8 +250,8 @@ impl WikiConverter<'_> {
                 Ok(v) => v.extract::<String>().unwrap_or_default(),
                 Err(_) => continue,
             };
-            if template_name.trim().to_lowercase() == name.trim().to_lowercase() {
-                return Ok(template);
+            if template_name.trim().eq_ignore_ascii_case(name.trim()) {
+                return Ok(Template { template });
             }
         }
         Err("Failed to find template in page".into())
@@ -248,16 +269,12 @@ impl WikiConverter<'_> {
     /// # Returns
     /// - Ok(String) -> The name of the argument once we have succesffully found it.
     /// - Err(dyn Error) -> No argument found or failed to cast into list.
-    fn get_argument_in_template(
-        &self,
-        template_data: Bound<'_, PyAny>,
-        name: &str,
-    ) -> Result<String, Box<dyn std::error::Error>> {
-        let arguments = match template_data.getattr("arguments")?.cast::<PyList>() {
+    pub fn argument_exists(&self, argument: &str) -> Result<String, Box<dyn error::Error>> {
+        let arguments = match self.template.getattr("arguments")?.cast::<PyList>() {
             Ok(v) => v.to_owned(),
             Err(_) => return Err("Failed in casting to list".into()),
         };
-        let name = name.trim().to_lowercase();
+        let name = argument.trim().to_lowercase();
         for arg in arguments {
             let arg_name = match arg.getattr("name") {
                 Ok(v) => v
@@ -274,22 +291,14 @@ impl WikiConverter<'_> {
         Err("Failed to find any hint towards the name provided in the template".into())
     }
 
-    fn process_tower(&self, tower_obj: &mut WikiTower, page_data: &str) {
-        // get the main template object.
-        let template = self.get_template_from_name(page_data, "towerinfobox")?;
-
-        // get the difficulty of the tower.
-        let difficulty_name = self.get_argument_in_template(template, "difficulty")?;
-        let difficulty = template
-            .call_method1("get_arg", (difficulty_name,))?
+    pub fn get_argument(&self, argument: &str) -> Result<String, pyo3::PyErr> {
+        self.template
+            .call_method1("get_arg", (argument,))?
             .getattr("value")?
-            .extract::<String>()?;
-        let diff = Regex::new(r"[\d.]+")?
-            .captures(&difficulty)
-            .unwrap()
-            .get(0)
-            .unwrap()
-            .as_str()
-            .parse::<f32>()?;
+            .extract::<String>()
+    }
+
+    pub fn get_argument_by_name(&self, argument: &str) -> Result<String, pyo3::PyErr> {
+        self.get_argument(&self.argument_exists(argument).unwrap_or_default())
     }
 }
