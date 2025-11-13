@@ -206,20 +206,48 @@ impl WikiConverter<'_> {
             .collect::<Vec<String>>())
     }
 
-    fn process_tower(&self, tower_obj: &mut WikiTower, page_data: &str) {
+    fn process_tower(
+        &self,
+        tower_obj: &mut WikiTower,
+        page_data: &str,
+    ) -> Result<(), Box<dyn error::Error>> {
         // get the main template object.
-        let template = Template::new_from_name(self.wtp, page_data, "towerinfobox")?;
+        let template = Template::new_from_name(&self.wtp, page_data, "towerinfobox")?;
         // let template = self.get_template_from_name(page_data, "towerinfobox")?;
 
         // get the difficulty of the tower.
         let difficulty = template.get_argument_by_name("difficulty")?;
-        let diff = Regex::new(r"[\d.]+")?
+        tower_obj.difficulty = Regex::new(r"[\d.]+")
+            .unwrap()
             .captures(&difficulty)
             .unwrap()
             .get(0)
             .unwrap()
             .as_str()
-            .parse::<f32>()?;
+            .parse::<f32>()
+            .ok();
+
+        let removed = template.get_argument_by_name("date_removed");
+        tower_obj.area = if removed.is_err() {
+            Some("Removed Towers".to_string())
+        } else {
+            let area = template.get_argument_by_name("found_in")?;
+            Some(
+                self.wtp
+                    .call_method1("parse", (area,))?
+                    .call_method0("plain_text")?
+                    .extract::<String>()?
+                    .lines()
+                    .next()
+                    .unwrap()
+                    .trim()
+                    .to_string(),
+            )
+        };
+        let length = template.get_argument_by_name("length");
+        tower_obj.length = Length::from(length.unwrap_or_default().parse::<u16>()?);
+
+        Ok(())
     }
 }
 
@@ -234,7 +262,7 @@ impl Template<'_> {
     /// - Ok(Bound<'_, PyAny>) -> The template still as the python object.
     /// - Err(dyn Error) -> Some errored happened whilst making the list of templates. (not whilst filtering)
     pub fn new_from_name<'b>(
-        wtp: Bound<'b, PyModule>,
+        wtp: &Bound<'b, PyModule>,
         page_data: &str,
         name: &str,
     ) -> Result<Template<'b>, Box<dyn error::Error>> {
