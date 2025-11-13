@@ -4,8 +4,7 @@ use pyo3::{
     types::{PyAnyMethods, PyDict, PyIterator, PyList, PyListMethods, PyModule},
 };
 use regex::Regex;
-use serde::Serialize;
-use std::{collections::HashMap, error};
+use std::error;
 
 use crate::definitions::{Length, TowerType};
 
@@ -22,32 +21,10 @@ pub struct WikiTower {
     pub badge_name: String,
     /// This is here so we can have a direct link in the UI.
     pub wiki_link: String,
-}
 
-impl Serialize for WikiTower {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let csv = format!(
-            "{},{},{},{:?},{}{},{}",
-            self.name,
-            self.area.to_owned().unwrap_or_default(),
-            match self.difficulty {
-                Some(diff) => diff.to_string(),
-                None => String::new(),
-            },
-            self.badges,
-            (self.length as u8).to_string(),
-            self.tower_type,
-            if self.wiki_link == self.name {
-                String::new()
-            } else {
-                self.wiki_link.to_owned()
-            }
-        );
-        serializer.serialize_str(&csv)
-    }
+    /// Move private-ish items
+    is_item: bool,
+    has_tower: bool,
 }
 
 struct WikiConverter<'a> {
@@ -383,11 +360,12 @@ impl Template<'_> {
     /// Get the template on the page with the provided name. Returns **first instance**
     ///
     /// # Arguments
+    /// - wtp -> Wikitextparser python module required for parsing data.
     /// - page_data -> Data of the page, see `get_wiki_page` for a possible way.
     /// - name -> Name of the template to find.
     ///
     /// # Returns
-    /// - Ok(Bound<'_, PyAny>) -> The template still as the python object.
+    /// - Ok(Template) -> A template struct to use.
     /// - Err(dyn Error) -> Some errored happened whilst making the list of templates. (not whilst filtering)
     pub fn new_from_name<'b>(
         wtp: &Bound<'b, PyModule>,
