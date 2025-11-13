@@ -60,6 +60,13 @@ struct Template<'b> {
     template: Bound<'b, PyAny>,
 }
 
+struct ExternalLinks(Vec<ExternalLink>);
+
+struct ExternalLink {
+    pub url: String,
+    pub text: String,
+}
+
 /// Overall function for setting up python and badges.
 ///
 /// # Arguments
@@ -102,7 +109,7 @@ impl WikiConverter<'_> {
     /// # Returns
     /// - Ok
     /// 	- String -> The raw data of the page
-    /// 	- Option -> If any redirects were followed (and if so, the name)
+    /// 	- String -> The page name, due to redirects potentially being followed.
     /// - Err(dyn Error) -> Any errors that might have happened
     fn get_wiki_page(&self, page: &str) -> Result<(String, String), Box<dyn error::Error>> {
         // gets the page.
@@ -166,44 +173,12 @@ impl WikiConverter<'_> {
         for search_result in iter {
             let title = search_result?.call_method0("title")?.extract::<String>()?;
             let data = self.get_wiki_page(&title)?;
-            let links = self.get_external_links(&data.0, &data.1)?;
-            if links.iter().any(|link| {
-                page.to_lowercase().contains(link) || link.contains(&page.to_lowercase())
-            }) {
+            let links = ExternalLinks::new(&self.wtp, &data.0)?;
+            if links.might_contain(page, Some(page)) {
                 return Ok(data);
             }
         }
         Err("No page found during searching with a link.".into())
-    }
-
-    /// Parse the page and look for the links in the page.
-    ///
-    /// # Arguments
-    /// - page_data -> Data of the page (wikitext)
-    /// - page_name -> Name of the page, used in replacing `{{PAGENAME}}`
-    ///
-    /// # Returns
-    /// - Ok(Vec<String>) -> A vector of all of the links found. Links that have no "text" are filtered out.
-    /// - Err(dyn Error) -> Something happened to cause an error.
-    fn get_external_links(
-        &self,
-        page_data: &str,
-        page_name: &str,
-    ) -> Result<Vec<String>, Box<dyn error::Error>> {
-        let parsed = self.wtp.call_method1("parse", (page_data,))?;
-        let external_links = parsed.getattr("external_links")?;
-        let list = match external_links.cast::<PyList>() {
-            Ok(v) => v.to_owned(),
-            Err(_) => return Err("Failed to cast into list.".into()),
-        };
-        Ok(list
-            .iter()
-            .map(|item| match item.getattr("text") {
-                Ok(attr) => attr.extract::<String>().unwrap_or_default(),
-                Err(_) => String::new(),
-            })
-            .map(|link| link.replace("{{PAGENAME}}", page_name).to_lowercase())
-            .collect::<Vec<String>>())
     }
 
     fn process_tower(
@@ -292,6 +267,116 @@ impl WikiConverter<'_> {
     }
 }
 
+impl ExternalLinks {
+    /// Parse the page and look for the links in the page.
+    ///
+    /// # Arguments
+    /// - wtp -> wikitextparser required for parsing data.
+    /// - page_data -> Data of the page (wikitext)
+    ///
+    /// # Returns
+    /// - Ok(ExternalLinks) -> An external links struct to use, just made up of parsed links.
+    /// - Err(dyn Error) -> Something happened to cause an error.
+    pub fn new<'c>(
+        wtp: &Bound<'c, PyModule>,
+        page_data: &str,
+    ) -> Result<ExternalLinks, Box<dyn std::error::Error>> {
+        let parsed = wtp.call_method1("parse", (page_data,))?;
+        let external_links = parsed.getattr("external_links")?;
+        let list = match external_links.cast::<PyList>() {
+            Ok(v) => v.to_owned(),
+            Err(_) => return Err("Failed to cast into list.".into()),
+        };
+        Ok(ExternalLinks(
+            list.iter()
+                .map(|link| ExternalLink::from(link))
+                .collect::<Vec<ExternalLink>>(),
+        ))
+    }
+
+    /// Returns the list but only text of the items.
+    ///
+    /// # Arguments
+    /// - page_name -> An optional argument which allows replacing `{{PAGENAME}}` (a template) with the page name provided.
+    ///
+    /// # Returns
+    /// - Vec<String> -> A list of strings.
+    pub fn text_list(&self, page_name: Option<&str>) -> Vec<String> {
+        self.0
+            .iter()
+            .map(|item| item.text_page(page_name))
+            .collect::<Vec<String>>()
+    }
+
+    /// Returns the list but only url of the items.
+    ///
+    /// # Returns
+    /// - Vec<String> -> A list of strings.
+    pub fn url_list(&self) -> Vec<String> {
+        self.0
+            .iter()
+            .map(|item| item.url.to_owned())
+            .collect::<Vec<String>>()
+    }
+
+    /// Checks to see if a link might contain the provided value (in full)
+    ///
+    /// This checks **BOTH** url and text fields.
+    ///
+    /// Useful for checking if pages contain a link back to another page, a badge for example.
+    ///
+    /// # Arguments
+    /// - value -> The value to search for (will be trimmed and forced lowercase)
+    /// - page_name -> Optional page name to pass into [text_list].
+    ///
+    /// # Returns
+    /// - bool -> Does the link contain it or not.
+    pub fn might_contain(&self, value: &str, page_name: Option<&str>) -> bool {
+        let value = value.trim().to_lowercase();
+        self.0.iter().any(|link| {
+            let text = link.text_page(page_name);
+            text.contains(&value)
+                || value.contains(&text)
+                || link.url.contains(&value)
+                || value.contains(&link.url)
+        })
+    }
+}
+
+impl From<&Bound<'_, PyAny>> for ExternalLink {
+    fn from(value: &Bound<'_, PyAny>) -> Self {
+        let text = match value.getattr("text") {
+            Ok(attr) => attr.extract::<String>().unwrap_or_default(),
+            Err(_) => String::new(),
+        };
+        let url = match value.getattr("url") {
+            Ok(attr) => attr.extract::<String>().unwrap_or_default(),
+            Err(_) => String::new(),
+        };
+        Self { url, text }
+    }
+}
+impl From<Bound<'_, PyAny>> for ExternalLink {
+    fn from(value: Bound<'_, PyAny>) -> Self {
+        Self::from(&value)
+    }
+}
+
+impl ExternalLink {
+    /// Convert text to a string and replace stuff if need be.
+    ///
+    /// # Arguments
+    /// - page_name -> An optional string to replace `{{PAGENAME}}` with.
+    ///
+    /// # Returns
+    /// - String -> The usable text.
+    pub fn text_page(&self, page_name: Option<&str>) -> String {
+        if let Some(name) = page_name {
+            self.text.replace("{{PAGENAME}}", name)
+        } else {
+            self.text.to_owned()
+        }
+    }
 }
 
 impl Template<'_> {
