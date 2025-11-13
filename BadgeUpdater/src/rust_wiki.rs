@@ -249,6 +249,49 @@ impl WikiConverter<'_> {
 
         Ok(())
     }
+
+    /// Process an item.
+    ///
+    /// Some badges are of items, but they are obtained from towers, hence we can categorise these better. We just need to see how we get them
+    /// and attempt to find a tower link.
+    ///
+    /// Ofc, this adds some extra logic but eh later code can deal with that.
+    ///
+    /// # Arguments
+    /// - item_obj -> The tower template, just like [`process_tower`]
+    /// - item_page -> The raw page data for the item. Required to get and check if it is an item
+    ///
+    /// # Returns
+    /// - OK(()) -> Doesn't actually return anything, just modifies the item itself directly.
+    /// - Err(dyn Error) -> Something happened preventing this item from being checked.
+    fn process_item(
+        &self,
+        item_obj: &mut WikiTower,
+        item_page: &str,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        // attempts to find the item first
+        let template = Template::new_from_name(&self.wtp, item_page, "iteminfobox")?;
+        item_obj.is_item = true;
+        // this seems to be the best one to look at.
+        let obtain = template.get_argument_by_name("method_of_obtaining")?;
+        for link in ExternalLinks::new(&self.wtp, &obtain)?.0 {
+            // searching all the pages might not be the most efficient, but eh.
+            // at least it'll break early due to failure to pass.
+            let wiki_page = self.get_wiki_page(&link.text);
+            if wiki_page.is_err() {
+                continue;
+            }
+
+            let tower = self.process_tower(item_obj, &wiki_page.unwrap().0);
+            if tower.is_ok() {
+                item_obj.has_tower = true;
+                return Ok(());
+            }
+        }
+        Err("No tower associated with item.".into())
+    }
+}
+
 }
 
 impl Template<'_> {
