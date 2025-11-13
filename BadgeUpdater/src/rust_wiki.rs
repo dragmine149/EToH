@@ -291,6 +291,16 @@ impl Template<'_> {
         Err("Failed to find any hint towards the name provided in the template".into())
     }
 
+    /// Get the value of the argument on the template.
+    ///
+    /// Unlike [`get_argument_by_name`] this gets the exact value. See [`get_argument_by_name`] for an aproximate guess.
+    ///
+    /// # Arguments
+    /// - argument -> The argument to get
+    ///
+    /// # Returns
+    /// - Ok(String) -> The value of that argument extracted
+    /// - pyo3::PyErr -> Something failed in python whilst trying to extract the argument.
     pub fn get_argument(&self, argument: &str) -> Result<String, pyo3::PyErr> {
         self.template
             .call_method1("get_arg", (argument,))?
@@ -298,6 +308,16 @@ impl Template<'_> {
             .extract::<String>()
     }
 
+    /// A short for both [get_argument] and [argument_exists][^note]
+    ///
+    /// [^note]: If argument_exists returns an error, then it'll default to passing `""` to [get_argument], hence causing another different error.
+    ///
+    /// # Arguments
+    /// - argument -> The argument to get
+    ///
+    /// # Returns
+    /// - Ok(String) -> The value of that argument extracted
+    /// - pyo3::PyErr -> Something failed in python whilst trying to extract the argument.
     pub fn get_argument_by_name(&self, argument: &str) -> Result<String, pyo3::PyErr> {
         self.get_argument(&self.argument_exists(argument).unwrap_or_default())
     }
