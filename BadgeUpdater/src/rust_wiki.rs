@@ -201,4 +201,95 @@ impl WikiConverter<'_> {
             .map(|link| link.replace("{{PAGENAME}}", page_name).to_lowercase())
             .collect::<Vec<String>>())
     }
+
+    /// Get the template on the page with the provided name. Returns **first instance**
+    ///
+    /// # Arguments
+    /// - page_data -> Data of the page, see `get_wiki_page` for a possible way.
+    /// - name -> Name of the template to find.
+    ///
+    /// # Returns
+    /// - Ok(Bound<'_, PyAny>) -> The template still as the python object.
+    /// - Err(dyn Error) -> Some errored happened whilst making the list of templates. (not whilst filtering)
+    fn get_template_from_name(
+        &self,
+        page_data: &str,
+        name: &str,
+    ) -> Result<Bound<'_, PyAny>, Box<dyn error::Error>> {
+        let templates = self
+            .wtp
+            .call_method1("parse", (page_data,))?
+            .getattr("templates")?;
+        let template_list = match templates.cast::<PyList>() {
+            Ok(v) => v.to_owned(),
+            Err(_) => return Err("Failed to cast into pylist".into()),
+        };
+        for template in template_list {
+            let template_name = match template.getattr("name") {
+                Ok(v) => v.extract::<String>().unwrap_or_default(),
+                Err(_) => continue,
+            };
+            if template_name.trim().to_lowercase() == name.trim().to_lowercase() {
+                return Ok(template);
+            }
+        }
+        Err("Failed to find template in page".into())
+    }
+
+    /// Search for an argument in the template.
+    ///
+    /// Normally, we could just do. `.get_arg(arg_name)` but due to the wiki not being consistent.. things like `found_in`, `found_in1` and `found_in<!--1-->` are all possible.
+    /// Hence the requirement to do a mini filter search.
+    ///
+    /// # Arguments
+    /// - template_data -> The template data to search through, an object of `wtp.Template` or gotten from `get_template_from_name`
+    /// - name -> The name of the argument to query against.
+    ///
+    /// # Returns
+    /// - Ok(String) -> The name of the argument once we have succesffully found it.
+    /// - Err(dyn Error) -> No argument found or failed to cast into list.
+    fn get_argument_in_template(
+        &self,
+        template_data: Bound<'_, PyAny>,
+        name: &str,
+    ) -> Result<String, Box<dyn std::error::Error>> {
+        let arguments = match template_data.getattr("arguments")?.cast::<PyList>() {
+            Ok(v) => v.to_owned(),
+            Err(_) => return Err("Failed in casting to list".into()),
+        };
+        let name = name.trim().to_lowercase();
+        for arg in arguments {
+            let arg_name = match arg.getattr("name") {
+                Ok(v) => v
+                    .extract::<String>()
+                    .unwrap_or_default()
+                    .trim()
+                    .to_lowercase(),
+                Err(_) => continue,
+            };
+            if arg_name.contains(&name) || name.contains(&arg_name) {
+                return Ok(arg_name);
+            }
+        }
+        Err("Failed to find any hint towards the name provided in the template".into())
+    }
+
+    fn process_tower(&self, tower_obj: &mut WikiTower, page_data: &str) {
+        // get the main template object.
+        let template = self.get_template_from_name(page_data, "towerinfobox")?;
+
+        // get the difficulty of the tower.
+        let difficulty_name = self.get_argument_in_template(template, "difficulty")?;
+        let difficulty = template
+            .call_method1("get_arg", (difficulty_name,))?
+            .getattr("value")?
+            .extract::<String>()?;
+        let diff = Regex::new(r"[\d.]+")?
+            .captures(&difficulty)
+            .unwrap()
+            .get(0)
+            .unwrap()
+            .as_str()
+            .parse::<f32>()?;
+    }
 }
