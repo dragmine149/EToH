@@ -91,16 +91,16 @@ impl WikiConverter<'_> {
     /// Will automatically follow all redirects as long as the page starts with `#redirect`
     ///
     /// # Arguments
-    /// - pwb - Python module directly linking to pywikibot
-    /// - site - BaseSite provided from `pwb.Site`
-    /// - badge - The badge to search for under `pwb.Page`
+    /// - pwb -> Python module directly linking to pywikibot
+    /// - site -> BaseSite provided from `pwb.Site`
+    /// - badge -> The badge to search for under `pwb.Page`
     ///
     /// # Returns
     /// - Ok
-    /// 	- String - The raw data of the page
-    /// 	- Option - If any redirects were followed (and if so, the name)
-    /// - Err(dyn Error) - Any errors that might have happened
-    fn get_wiki_page(&self, page: &str) -> Result<(String, Option<String>), Box<dyn error::Error>> {
+    /// 	- String -> The raw data of the page
+    /// 	- Option -> If any redirects were followed (and if so, the name)
+    /// - Err(dyn Error) -> Any errors that might have happened
+    fn get_wiki_page(&self, page: &str) -> Result<(String, String), Box<dyn error::Error>> {
         // gets the page.
         let result = self
             .pwb
@@ -111,24 +111,21 @@ impl WikiConverter<'_> {
         // if we have a redirect, always follow it.
         if result.starts_with("#redirect") {
             let redirect = self.parse_redirect(&result)?;
-            let new = self.get_wiki_page(&redirect)?;
-
-            // return the page data, and the redirect. Lowest level is more important
-            return Ok((new.0, Some(new.1.unwrap_or(redirect))));
+            return self.get_wiki_page(&redirect);
         }
 
         // return the page data, and the none saying we haven't redirected.
-        Ok((result, None))
+        Ok((result, page.to_owned()))
     }
 
     /// Parse the redirect of the page. Bit over the top but its needed
     ///
     /// # Arguments
-    /// - redirect - The raw source of the redirect page.
+    /// - redirect -> The raw source of the redirect page.
     ///
     /// # Returns
-    /// - Ok(String) - The new page to go to.
-    /// - Err(dyn Error) - Any errors that might have happened
+    /// - Ok(String) -> The new page to go to.
+    /// - Err(dyn Error) -> Any errors that might have happened
     fn parse_redirect(&self, redirect: &str) -> Result<String, Box<dyn error::Error>> {
         Ok(self
             .wtp
@@ -139,42 +136,69 @@ impl WikiConverter<'_> {
             .extract::<String>()?)
     }
 
+    /// Search the wiki to try and find our page.
+    ///
+    /// # Arguments
+    /// - page -> The page to look for
+    /// - search_count -> How many pages to search. Default 3.
+    ///
+    /// # Returns
+    /// - Ok((String, String)) -> The result of `get_wiki_page` as it contains both title and data already processed
+    /// - Err(dyn Error) -> Something went wrong.
     fn search_wiki(
         &self,
         page: &str,
         search_count: Option<u8>,
-    ) -> Result<String, Box<dyn error::Error>> {
+    ) -> Result<(String, String), Box<dyn error::Error>> {
         let search_args = PyDict::new(self.site.py());
         search_args.set_item("total", search_count.unwrap_or(3));
         let pages = self
             .site
             .call_method("search", (page,), Some(&search_args))?;
-        for page in pages.cast::<PyIterator>()? {
-            let data = self.get_wiki_page(page?.call_method0("title")?.extract::<String>())?;
-            let links = self.get_external_links(data.0)?;
-            links.iter().any(|link|)
+        let iter = match pages.cast::<PyIterator>() {
+            Ok(v) => v.to_owned(),
+            Err(_) => return Err("Failed to cast into iterator".into()),
+        };
+        for search_result in iter {
+            let title = search_result?.call_method0("title")?.extract::<String>()?;
+            let data = self.get_wiki_page(&title)?;
+            let links = self.get_external_links(&data.0, &data.1)?;
+            if links.iter().any(|link| {
+                page.to_lowercase().contains(link) || link.contains(&page.to_lowercase())
+            }) {
+                return Ok(data);
+            }
         }
+        Err("No page found during searching with a link.".into())
     }
 
+    /// Parse the page and look for the links in the page.
+    ///
+    /// # Arguments
+    /// - page_data -> Data of the page (wikitext)
+    /// - page_name -> Name of the page, used in replacing `{{PAGENAME}}`
+    ///
+    /// # Returns
+    /// - Ok(Vec<String>) -> A vector of all of the links found. Links that have no "text" are filtered out.
+    /// - Err(dyn Error) -> Something happened to cause an error.
     fn get_external_links(
-            &self,
-            page_data: &str,
-            page_name: &str,
-        ) -> Result<Vec<String>, Box<dyn std::error::Error>> {
-            let parsed = self.wtp.call_method1("parse", (page_data,))?;
-            let external_links = parsed.getattr("external_links")?;
-            let py_list = external_links.cast::<PyList>()?.to_owned();
-
-            let mut links: Vec<String> = Vec::new();
-
-            for item in py_list.iter() {
-                let text = match item.getattr("text") {
-                    Ok(attr) => attr.extract::<String>().unwrap_or_default(),
-                    Err(_) => String::new(),
-                };
-                links.push(text.replace("{{PAGENAME}}", page_name));
-            }
-
-            Ok(links)
-        }
+        &self,
+        page_data: &str,
+        page_name: &str,
+    ) -> Result<Vec<String>, Box<dyn error::Error>> {
+        let parsed = self.wtp.call_method1("parse", (page_data,))?;
+        let external_links = parsed.getattr("external_links")?;
+        let list = match external_links.cast::<PyList>() {
+            Ok(v) => v.to_owned(),
+            Err(_) => return Err("Failed to cast into list.".into()),
+        };
+        Ok(list
+            .iter()
+            .map(|item| match item.getattr("text") {
+                Ok(attr) => attr.extract::<String>().unwrap_or_default(),
+                Err(_) => String::new(),
+            })
+            .map(|link| link.replace("{{PAGENAME}}", page_name).to_lowercase())
+            .collect::<Vec<String>>())
+    }
 }
