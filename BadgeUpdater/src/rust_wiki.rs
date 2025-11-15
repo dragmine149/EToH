@@ -4,7 +4,11 @@ use pyo3::{
     types::{PyAnyMethods, PyDict, PyIterator, PyList, PyListMethods, PyModule},
 };
 use regex::Regex;
-use std::error;
+use std::{
+    env, error, fs,
+    path::{Path, PathBuf},
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use crate::definitions::{Length, TowerType};
 
@@ -74,32 +78,75 @@ pub fn parse_badges(
 }
 
 impl WikiConverter<'_> {
+    /// Checks the modification date of a file to see if we should use cache or not.
+    ///
+    /// # Environment Variables
+    /// - cache -> The cache path.
+    ///
+    /// # Arguments
+    /// - cache_file -> Name of the cache.
+    /// - cache_age -> Age of the cache in seconds, defaults to 86400.
+    ///
+    /// # Returns
+    /// - Ok(PathBuf) -> We should use the cache and a path to said cache.
+    /// - Err(dyn Error) -> We shouldn't use the cache and the reason why.
+    fn use_cache(
+        &self,
+        cache_file: &str,
+        cache_age: Option<u64>,
+    ) -> Result<PathBuf, Box<dyn error::Error>> {
+        let cache_dir = env::var("cache")?;
+        let cache_path = Path::new(&cache_dir);
+        let cache_path = cache_path.join(cache_file);
+        let modified = fs::metadata(&cache_path)?
+            .modified()?
+            .duration_since(UNIX_EPOCH)?
+            .as_secs();
+        let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
+
+        if now > modified + cache_age.unwrap_or(86400) {
+            Err("Cache is invalid.".into())
+        } else {
+            Ok(cache_path)
+        }
+    }
+
     /// Get the raw data of the wiki page.
     ///
     /// Will automatically follow all redirects as long as the page starts with `#redirect`
     ///
     /// # Arguments
-    /// - pwb -> Python module directly linking to pywikibot
-    /// - site -> BaseSite provided from `pwb.Site`
-    /// - badge -> The badge to search for under `pwb.Page`
+    /// - page -> The page title to get the data for.
+    /// - cache -> How long since the modified time of the cache. (Default to 1d, `86400`)
     ///
     /// # Returns
     /// - Ok
     /// 	- String -> The raw data of the page
     /// 	- String -> The page name, due to redirects potentially being followed.
     /// - Err(dyn Error) -> Any errors that might have happened
-    fn get_wiki_page(&self, page: &str) -> Result<(String, String), Box<dyn error::Error>> {
+    fn get_wiki_page(
+        &self,
+        page: &str,
+        cache: Option<u64>,
+    ) -> Result<(String, String), Box<dyn error::Error>> {
         // gets the page.
-        let result = self
-            .pwb
-            .call_method1("Page", (&self.site, page))?
-            .call_method1("get", (false, true))?
-            .extract::<String>()?;
+        let result = if let Ok(path) = self.use_cache(page, cache) {
+            fs::read_to_string(&path).unwrap()
+        } else {
+            let web_request = self
+                .pwb
+                .call_method1("Page", (&self.site, page))?
+                .call_method1("get", (false, true))?
+                .extract::<String>()?;
+
+            fs::write(page, &web_request).ok().unwrap();
+            web_request
+        };
 
         // if we have a redirect, always follow it.
         if result.starts_with("#redirect") {
             let redirect = self.parse_redirect(&result)?;
-            return self.get_wiki_page(&redirect);
+            return self.get_wiki_page(&redirect, cache);
         }
 
         // return the page data, and the none saying we haven't redirected.
