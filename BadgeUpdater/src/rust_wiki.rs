@@ -31,6 +31,12 @@ pub struct WikiTower {
     has_tower: bool,
 }
 
+struct WikiData {
+    pub wiki_tower: WikiTower,
+    pub wiki_link: String,
+    pub page_data: String,
+}
+
 struct WikiConverter<'a> {
     pwb: Bound<'a, PyModule>,
     site: Bound<'a, PyAny>,
@@ -59,7 +65,7 @@ struct ExternalLink {
 /// 	- Vec<Vec<String>> -> Which badges failed at every step of the process.
 /// - Err -> Just some kind of python error.
 pub fn parse_badges(
-    badges: &[WikiTower],
+    badges: &mut Vec<WikiTower>,
 ) -> Result<(Vec<WikiTower>, Vec<Vec<String>>), pyo3::PyErr> {
     Python::initialize();
     Python::attach(|py| -> PyResult<(Vec<WikiTower>, Vec<Vec<String>>)> {
@@ -73,7 +79,7 @@ pub fn parse_badges(
         let data = WikiConverter { pwb, site, wtp };
 
         // Get all the badges (TODO: return result)
-        Ok(data.get_wiki_pages(&badges))
+        Ok(data.process_wiki_towers(badges))
     })
 }
 
@@ -196,7 +202,7 @@ impl WikiConverter<'_> {
         };
         for search_result in iter {
             let title = search_result?.call_method0("title")?.extract::<String>()?;
-            let data = self.get_wiki_page(&title)?;
+            let data = self.get_wiki_page(&title, None)?;
             let links = ExternalLinks::new(&self.wtp, &data.0)?;
             if links.might_contain(page, Some(page)) {
                 return Ok(data);
@@ -276,7 +282,7 @@ impl WikiConverter<'_> {
         for link in ExternalLinks::new(&self.wtp, &obtain)?.0 {
             // searching all the pages might not be the most efficient, but eh.
             // at least it'll break early due to failure to pass.
-            let wiki_page = self.get_wiki_page(&link.text);
+            let wiki_page = self.get_wiki_page(&link.text, None);
             if wiki_page.is_err() {
                 continue;
             }
@@ -288,6 +294,128 @@ impl WikiConverter<'_> {
             }
         }
         Err("No tower associated with item.".into())
+    }
+
+    /// Take an object and count how many passed/failed.
+    ///
+    /// # Arguments
+    /// - obj -> A vector of objects to list through. (type is dynamic)
+    /// - fail_check -> The function to filter out objects which have failed.
+    /// - name_func -> Function to get the name of the failed objects for later debugging.
+    ///
+    /// # Returns
+    /// - Tuple
+    /// 	- Maths
+    /// 		- usize -> The number passed
+    /// 		- usize -> The number failed
+    /// 		- f64 -> Percent of passed over total
+    /// 	- Vec<String> -> A vector of the names which have failed.
+    fn count_processed<K, P, N>(
+        &self,
+        obj: &[K],
+        fail_check: P,
+        name_func: N,
+    ) -> ((usize, usize, f64), Vec<String>)
+    where
+        P: FnMut(&&K) -> bool,
+        N: Fn(&K) -> String,
+    {
+        let failed = obj
+            .iter()
+            .filter(fail_check)
+            .map(name_func)
+            .collect::<Vec<String>>();
+        let fail_count = failed.len();
+        let pass_count = obj.len() - fail_count;
+        let percent = (pass_count as f64) / (obj.len() as f64);
+        ((pass_count, fail_count, percent), failed)
+    }
+
+    fn get_and_search_wiki(&self, towers: &[WikiTower]) -> (Vec<WikiData>, Vec<Vec<String>>) {
+        let mut data = towers
+            .iter()
+            .map(|tower| -> WikiData {
+                let wiki_data = self.get_wiki_page(&tower.name, None);
+                if wiki_data.is_err() {
+                    return WikiData {
+                        wiki_tower: tower.to_owned(),
+                        wiki_link: String::new(),
+                        page_data: String::new(),
+                    };
+                }
+                let wiki_data = wiki_data.unwrap();
+
+                WikiData {
+                    wiki_tower: tower.to_owned(),
+                    wiki_link: wiki_data.1,
+                    page_data: wiki_data.0,
+                }
+            })
+            .collect::<Vec<WikiData>>();
+
+        let maths = self.count_processed(
+            &data,
+            |w| w.page_data.is_empty(),
+            |w| w.wiki_tower.name.to_owned(),
+        );
+        log::info!(
+            "Pages parsed: {:?}. Pages failed: {:?}. Success: {:?}",
+            maths.0.0,
+            maths.0.1,
+            maths.0.2
+        );
+
+        log::info!("Searching for failed entries");
+        data.iter_mut().for_each(|tower| {
+            let result = self.search_wiki(&tower.wiki_tower.name, Some(1));
+            if result.is_err() {
+                return;
+            }
+            let result = result.unwrap();
+            tower.page_data = result.0;
+            tower.wiki_tower.wiki_link = result.1;
+        });
+
+        let maths2 = self.count_processed(
+            &data,
+            |w| w.page_data.is_empty(),
+            |w| w.wiki_tower.name.to_owned(),
+        );
+        log::info!(
+            "Pages parsed: {:?}. Pages failed: {:?}. Success: {:?}",
+            maths2.0.0,
+            maths2.0.1,
+            maths2.0.2
+        );
+
+        (data, vec![maths.1, maths2.1])
+    }
+
+    pub fn process_wiki_towers(
+        &self,
+        towers: &mut Vec<WikiTower>,
+    ) -> (Vec<WikiTower>, Vec<Vec<String>>) {
+        log::info!("Processing towers...");
+        let simple_get = self.get_and_search_wiki(towers);
+        let mut failed_list = simple_get.1;
+        let mut success = simple_get.0;
+        let mut advanced_list = success
+            .iter()
+            .filter(|simple| simple.page_data.is_empty())
+            .map(|simple| simple.wiki_tower.to_owned())
+            .collect::<Vec<WikiTower>>();
+        advanced_list.iter_mut().for_each(|t| t.clean_name());
+        let mut advanced_get = self.get_and_search_wiki(&advanced_list);
+        failed_list.append(&mut advanced_get.1);
+        success.append(&mut advanced_get.0);
+        let success = success
+            .iter()
+            .map(|simple| simple.wiki_tower.to_owned())
+            .collect::<Vec<WikiTower>>();
+
+        (success, failed_list)
+
+        // log::info!("Processing templates.")
     }
 }
 
@@ -501,5 +629,14 @@ impl Template<'_> {
     /// - pyo3::PyErr -> Something failed in python whilst trying to extract the argument.
     pub fn get_argument_by_name(&self, argument: &str) -> Result<String, pyo3::PyErr> {
         self.get_argument(&self.argument_exists(argument).unwrap_or_default())
+    }
+}
+
+impl WikiTower {
+    /// Clean the name to attempt to get better results whilst getting the wiki page.
+    ///
+    /// Modifies itself because if success, you most likely want this anyway. And besides, we have badge name in case of emergency.
+    fn clean_name(&mut self) {
+        self.name = self.name.replace("-", " ");
     }
 }

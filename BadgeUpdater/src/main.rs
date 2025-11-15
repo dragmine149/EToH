@@ -132,9 +132,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     //     .flat_map(|b| b.badges.clone())
     //     .collect::<Vec<u64>>();
 
-    let towers = convert_basic_wikitower(&mut badges);
+    let mut towers = convert_basic_wikitower(&mut badges);
 
-    let result = rust_wiki::parse_badges(&towers).unwrap();
+    let result = rust_wiki::parse_badges(&mut towers).unwrap();
     println!("{:#?}", result.0);
     result.1.iter().for_each(|r| {
         println!("{:?}", r);
