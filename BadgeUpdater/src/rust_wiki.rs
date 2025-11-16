@@ -91,10 +91,14 @@ pub fn parse_badges(
 }
 
 impl WikiConverter<'_> {
-		fn cache_path(&self, cache_file: &str) -> Result<PathBuf, Box<dyn error::Error>> {
-        let cache_dir = env::var("cache")?;
+		fn cache_path(&self, cache_file: &str) -> PathBuf {
+        let cache_dir = env::var("cache");
+        if cache_dir.is_err() {
+        		return PathBuf::from(Path::new(cache_file));
+        }
+        let cache_dir = cache_dir.unwrap();
         let cache_path = Path::new(&cache_dir);
-       	Ok(cache_path.join(cache_file))
+       	cache_path.join(cache_file)
 		}
 
     /// Checks the modification date of a file to see if we should use cache or not.
@@ -114,7 +118,7 @@ impl WikiConverter<'_> {
         cache_file: &str,
         cache_age: Option<u64>,
     ) -> Result<(), Box<dyn error::Error>> {
-        let modified = fs::metadata(&cache_file)?
+        let modified = fs::metadata(cache_file)?
             .modified()?
             .duration_since(UNIX_EPOCH)?
             .as_secs();
@@ -146,7 +150,8 @@ impl WikiConverter<'_> {
         cache: Option<u64>,
     ) -> Result<(String, String), Box<dyn error::Error>> {
         // gets the page.
-        let cache_path = self.cache_path(page)?;
+        let cache_path = self.cache_path(page);
+        log::debug!("cache path: {:?}", cache_path);
         let result = if self.use_cache(page, cache).is_ok() {
             fs::read_to_string(&cache_path).unwrap()
         } else {
@@ -204,7 +209,7 @@ impl WikiConverter<'_> {
         search_count: Option<u8>,
     ) -> Result<(String, String), Box<dyn error::Error>> {
         let search_args = PyDict::new(self.site.py());
-        search_args.set_item("total", search_count.unwrap_or(3));
+        search_args.set_item("total", search_count.unwrap_or(3))?;
         let pages = self
             .site
             .call_method("search", (page,), Some(&search_args))?;
