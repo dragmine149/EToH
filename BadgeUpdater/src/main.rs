@@ -97,7 +97,7 @@ fn convert_basic_wikitower(badges: &mut [Badge]) -> Vec<WikiTower> {
         match deduped.get_mut(&r.name) {
             Some(v) => v.badges.append(&mut r.badges),
             None => {
-                deduped.insert(r.name.to_owned(), r).unwrap();
+                deduped.insert(r.name.to_owned(), r);
             }
         }
     }

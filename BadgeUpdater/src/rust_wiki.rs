@@ -16,18 +16,25 @@ use crate::definitions::{Length, TowerType};
 #[derive(Debug, Clone, Default, Builder)]
 pub struct WikiTower {
     pub name: String,
+    #[builder(default)]
     pub area: Option<String>,
+    #[builder(default)]
     pub length: Length,
+    #[builder(default)]
     pub difficulty: Option<f32>,
+    #[builder(default)]
     pub tower_type: TowerType,
     pub badges: Vec<u64>,
     /// This is here because the name can be (in some cases), different from the actual tower.
     pub badge_name: String,
     /// This is here so we can have a direct link in the UI.
+    #[builder(default)]
     pub wiki_link: String,
 
     /// Move private-ish items
+    #[builder(default)]
     is_item: bool,
+    #[builder(default)]
     has_tower: bool,
 }
 
@@ -331,6 +338,16 @@ impl WikiConverter<'_> {
         ((pass_count, fail_count, percent), failed)
     }
 
+    /// Attempt to get tower data by searching and page name.
+    ///
+    /// TODO: Rework so its on an individual basis
+    ///
+    /// # Arguments
+    /// - towers -> List of towers to process
+    ///
+    /// # Returns
+    /// - Vec<WikiData> - List of towers and the data for the page.
+    /// - Vec<Vec<String>> - List of list of names of failed.
     fn get_and_search_wiki(&self, towers: &[WikiTower]) -> (Vec<WikiData>, Vec<Vec<String>>) {
         let mut data = towers
             .iter()
