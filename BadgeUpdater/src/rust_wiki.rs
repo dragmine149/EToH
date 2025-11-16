@@ -93,6 +93,7 @@ pub fn parse_badges(
 impl WikiConverter<'_> {
 		fn cache_path(&self, cache_file: &str) -> PathBuf {
         let cache_dir = env::var("cache");
+        // log::debug!("cache_dir: {:?}", cache_dir);
         if cache_dir.is_err() {
         		return PathBuf::from(Path::new(cache_file));
         }

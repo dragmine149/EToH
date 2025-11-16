@@ -6,7 +6,7 @@ mod pywiki;
 mod rust_wiki;
 
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{HashMap},
     fs,
 };
 
@@ -15,6 +15,7 @@ use lazy_regex::regex_replace;
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 use url::Url;
+use dotenv::dotenv;
 
 use crate::rust_wiki::{WikiTower, WikiTowerBuilder};
 
@@ -109,6 +110,7 @@ fn convert_basic_wikitower(badges: &mut [Badge]) -> Vec<WikiTower> {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
+    dotenv().ok();
 
     let client = Client::new();
 
