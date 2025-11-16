@@ -91,16 +91,16 @@ pub fn parse_badges(
 }
 
 impl WikiConverter<'_> {
-		fn cache_path(&self, cache_file: &str) -> PathBuf {
+    fn cache_path(&self, cache_file: &str) -> PathBuf {
         let cache_dir = env::var("cache");
         // log::debug!("cache_dir: {:?}", cache_dir);
         if cache_dir.is_err() {
-        		return PathBuf::from(Path::new(cache_file));
+            return PathBuf::from(Path::new(cache_file));
         }
         let cache_dir = cache_dir.unwrap();
         let cache_path = Path::new(&cache_dir);
-       	cache_path.join(cache_file)
-		}
+        cache_path.join(cache_file)
+    }
 
     /// Checks the modification date of a file to see if we should use cache or not.
     ///
@@ -116,7 +116,7 @@ impl WikiConverter<'_> {
     /// - Err(dyn Error) -> We shouldn't use the cache and the reason why.
     fn use_cache(
         &self,
-        cache_file: &str,
+        cache_file: &PathBuf,
         cache_age: Option<u64>,
     ) -> Result<(), Box<dyn error::Error>> {
         let modified = fs::metadata(cache_file)?
@@ -124,10 +124,13 @@ impl WikiConverter<'_> {
             .duration_since(UNIX_EPOCH)?
             .as_secs();
         let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
+        // log::warn!("{:?}##{:?}", modified, now);
 
         if now > modified + cache_age.unwrap_or(86400) {
+            // log::debug!("Cache out of date");
             Err("Cache is invalid.".into())
         } else {
+            // log::debug!("Using cache");
             Ok(())
         }
     }
@@ -152,17 +155,21 @@ impl WikiConverter<'_> {
     ) -> Result<(String, String), Box<dyn error::Error>> {
         // gets the page.
         let cache_path = self.cache_path(page);
-        log::debug!("cache path: {:?}", cache_path);
-        let result = if self.use_cache(page, cache).is_ok() {
+        // log::debug!("cache path: {:?}", cache_path);
+        // log::debug!("exists: {:?}", cache_path.exists());
+        // log::debug!("cache: {:?}", self.use_cache(&cache_path, cache));
+        let result = if self.use_cache(&cache_path, cache).is_ok() {
+            // log::debug!("Using cache");
             fs::read_to_string(&cache_path).unwrap()
         } else {
+            // log::debug!("Making network reqwest");
             let web_request = self
                 .pwb
                 .call_method1("Page", (&self.site, page))?
                 .call_method1("get", (false, true))?
                 .extract::<String>()?;
 
-						// ignore any errors as we probably won't need the cache if errored.
+            // ignore any errors as we probably won't need the cache if errored.
             fs::write(&cache_path, &web_request).ok().unwrap();
             web_request
         };
