@@ -91,6 +91,12 @@ pub fn parse_badges(
 }
 
 impl WikiConverter<'_> {
+		fn cache_path(&self, cache_file: &str) -> Result<PathBuf, Box<dyn error::Error>> {
+        let cache_dir = env::var("cache")?;
+        let cache_path = Path::new(&cache_dir);
+       	Ok(cache_path.join(cache_file))
+		}
+
     /// Checks the modification date of a file to see if we should use cache or not.
     ///
     /// # Environment Variables
@@ -107,11 +113,8 @@ impl WikiConverter<'_> {
         &self,
         cache_file: &str,
         cache_age: Option<u64>,
-    ) -> Result<PathBuf, Box<dyn error::Error>> {
-        let cache_dir = env::var("cache")?;
-        let cache_path = Path::new(&cache_dir);
-        let cache_path = cache_path.join(cache_file);
-        let modified = fs::metadata(&cache_path)?
+    ) -> Result<(), Box<dyn error::Error>> {
+        let modified = fs::metadata(&cache_file)?
             .modified()?
             .duration_since(UNIX_EPOCH)?
             .as_secs();
@@ -120,7 +123,7 @@ impl WikiConverter<'_> {
         if now > modified + cache_age.unwrap_or(86400) {
             Err("Cache is invalid.".into())
         } else {
-            Ok(cache_path)
+            Ok(())
         }
     }
 
@@ -143,8 +146,9 @@ impl WikiConverter<'_> {
         cache: Option<u64>,
     ) -> Result<(String, String), Box<dyn error::Error>> {
         // gets the page.
-        let result = if let Ok(path) = self.use_cache(page, cache) {
-            fs::read_to_string(&path).unwrap()
+        let cache_path = self.cache_path(page)?;
+        let result = if self.use_cache(page, cache).is_ok() {
+            fs::read_to_string(&cache_path).unwrap()
         } else {
             let web_request = self
                 .pwb
@@ -152,7 +156,8 @@ impl WikiConverter<'_> {
                 .call_method1("get", (false, true))?
                 .extract::<String>()?;
 
-            fs::write(page, &web_request).ok().unwrap();
+						// ignore any errors as we probably won't need the cache if errored.
+            fs::write(&cache_path, &web_request).ok().unwrap();
             web_request
         };
 
