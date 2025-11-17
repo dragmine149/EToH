@@ -5,6 +5,7 @@ use pyo3::{
 };
 use regex::Regex;
 use std::{
+    collections::HashMap,
     env, error, fs,
     path::{Path, PathBuf},
     time::{SystemTime, UNIX_EPOCH},
@@ -38,6 +39,7 @@ pub struct WikiTower {
     has_tower: bool,
 }
 
+#[derive(Debug, Clone)]
 struct WikiData {
     pub wiki_tower: WikiTower,
     pub wiki_link: String,
@@ -54,8 +56,10 @@ struct Template<'b> {
     template: Bound<'b, PyAny>,
 }
 
+#[derive(Debug, Clone)]
 struct ExternalLinks(Vec<ExternalLink>);
 
+#[derive(Debug, Clone)]
 struct ExternalLink {
     pub url: String,
     pub text: String,
@@ -371,41 +375,79 @@ impl WikiConverter<'_> {
         ((pass_count, fail_count, format!("{:.2}%", percent)), failed)
     }
 
-    /// Attempt to get tower data by searching and page name.
-    ///
-    /// TODO: Rework so its on an individual basis
+    /// Combines [get_wiki_page] and [search_wiki] into one.
     ///
     /// # Arguments
-    /// - towers -> List of towers to process
+    /// - tower -> The tower object to get wikidata or
     ///
     /// # Returns
-    /// - Vec<WikiData> - List of towers and the data for the page.
-    /// - Vec<Vec<String>> - List of list of names of failed.
-    fn get_and_search_wiki(&self, towers: &[WikiTower]) -> (Vec<WikiData>, Vec<Vec<String>>) {
-        let mut data = towers
+    /// - WikiData -> The wikidata converted object, run [WikiData::failed()] to check if something failed during getting of data.
+    pub fn get_search(&self, tower: &WikiTower) -> WikiData {
+        log::debug!("Attempting to get: {:?} by pwb.Page", tower.name);
+        let wiki_data = self.get_wiki_page(&tower.name, None);
+        if let Ok(data) = wiki_data {
+            log::debug!("Found {:?} by pwb.Page", tower.name);
+            return WikiData {
+                wiki_tower: tower.to_owned(),
+                wiki_link: data.1,
+                page_data: data.0,
+            };
+        }
+        log::debug!("Attempting to search for {:?}", tower.name);
+        let search_data = self.search_wiki(&tower.name, None);
+        if let Ok(data) = search_data {
+            log::debug!("Found {:?} by searching", tower.name);
+            return WikiData {
+                wiki_tower: tower.to_owned(),
+                wiki_link: data.0,
+                page_data: data.1,
+            };
+        }
+        log::debug!("Failed to find, returning empty");
+        WikiData::from(tower)
+    }
+
+    /// Loops through all provided pages to try and get the data.
+    ///
+    /// Will do 2 loops, one to get data, one after further cleaning of the names to get more on cleaned names only.
+    ///
+    /// # Arguments
+    /// - pages -> List of pages to search
+    ///
+    /// # Returns
+    /// - Vec<WikiData> ->
+    fn get_page_data(&self, pages: &mut [WikiTower]) -> Vec<WikiData> {
+        log::info!("Processing pages...");
+        let simple_get = pages
             .iter()
-            .map(|tower| -> WikiData {
-                let wiki_data = self.get_wiki_page(&tower.name, None);
-                if wiki_data.is_err() {
-                    return WikiData {
-                        wiki_tower: tower.to_owned(),
-                        wiki_link: String::new(),
-                        page_data: String::new(),
-                    };
-                }
-                let wiki_data = wiki_data.unwrap();
-
-                WikiData {
-                    wiki_tower: tower.to_owned(),
-                    wiki_link: wiki_data.1,
-                    page_data: wiki_data.0,
-                }
-            })
+            .map(|tower| self.get_search(tower))
             .collect::<Vec<WikiData>>();
-
         let maths = self.count_processed(
-            &data,
-            |w| w.page_data.is_empty(),
+            &simple_get,
+            |w| w.failed(),
+            |w| w.wiki_tower.name.to_owned(),
+        );
+        log::info!(
+            "Pages parsed: {:?}. Pages failed: {:?}. Success: {:?}",
+            maths.0.0,
+            maths.0.1,
+            maths.0.2
+        );
+        let mut failed_list = simple_get
+            .iter()
+            .filter(|w| w.failed())
+            .map(|w| w.wiki_tower.to_owned())
+            .collect::<Vec<WikiTower>>();
+        failed_list.iter_mut().for_each(|w| w.clean_name());
+
+        log::info!("Processing after cleaning...");
+        let advanced_get = failed_list
+            .iter()
+            .map(|tower| self.get_search(tower))
+            .collect::<Vec<WikiData>>();
+        let maths = self.count_processed(
+            &advanced_get,
+            |w| w.failed(),
             |w| w.wiki_tower.name.to_owned(),
         );
         log::info!(
@@ -415,57 +457,49 @@ impl WikiConverter<'_> {
             maths.0.2
         );
 
-        log::info!("Searching for failed entries");
-        data.iter_mut().for_each(|tower| {
-            let result = self.search_wiki(&tower.wiki_tower.name, Some(1));
-            if result.is_err() {
-                return;
-            }
-            let result = result.unwrap();
-            tower.page_data = result.0;
-            tower.wiki_tower.wiki_link = result.1;
+        let mut result = HashMap::<u64, WikiData>::new();
+        simple_get.iter().for_each(|data| {
+            result.insert(data.wiki_tower.primary_badge(), data.to_owned());
+        });
+        // we can override because it will either be broken or fixed. either way it was already broken... well should be.
+        advanced_get.iter().for_each(|data| {
+            result.insert(data.wiki_tower.primary_badge(), data.to_owned());
         });
 
-        let maths2 = self.count_processed(
-            &data,
-            |w| w.page_data.is_empty(),
-            |w| w.wiki_tower.name.to_owned(),
-        );
-        log::info!(
-            "Pages parsed: {:?}. Pages failed: {:?}. Success: {:?}",
-            maths2.0.0,
-            maths2.0.1,
-            maths2.0.2
-        );
-
-        (data, vec![maths.1, maths2.1])
+        result
+            .values()
+            .map(|d| d.to_owned())
+            .collect::<Vec<WikiData>>()
     }
 
+    /// Process everything
+    ///
+    /// basically does everything required to get from the bare minimum to everything.
+    ///
+    /// # Arguments
+    /// - towers -> List of towers to fill out information for.
+    ///
+    /// # Returns
+    /// - Vec<WikiTower> -> A list of towers with all information filled out.
+    /// - Vec<Vec<String>> -> A list of list of names of towers which failed at each stage.
     pub fn process_wiki_towers(
         &self,
         towers: &mut [WikiTower],
     ) -> (Vec<WikiTower>, Vec<Vec<String>>) {
-        log::info!("Processing towers...");
-        let simple_get = self.get_and_search_wiki(towers);
-        let mut failed_list = simple_get.1;
-        let mut success = simple_get.0;
-        let mut advanced_list = success
-            .iter()
-            .filter(|simple| simple.page_data.is_empty())
-            .map(|simple| simple.wiki_tower.to_owned())
-            .collect::<Vec<WikiTower>>();
-
-        // TODO: Only search changed items between the basic list and the advanced list.
-        advanced_list.iter_mut().for_each(|t| t.clean_name());
-        let mut advanced_get = self.get_and_search_wiki(&advanced_list);
-        failed_list.append(&mut advanced_get.1);
-        success.append(&mut advanced_get.0);
-        let success = success
-            .iter()
-            .map(|simple| simple.wiki_tower.to_owned())
-            .collect::<Vec<WikiTower>>();
-
-        (success, failed_list)
+        let pages = self.get_page_data(towers);
+        (
+            pages
+                .iter()
+                .map(|p| p.wiki_tower.to_owned())
+                .collect::<Vec<WikiTower>>(),
+            vec![
+                pages
+                    .iter()
+                    .filter(|page| page.failed())
+                    .map(|p| p.wiki_tower.name.to_owned())
+                    .collect::<Vec<String>>(),
+            ],
+        )
 
         // log::info!("Processing templates.")
     }
@@ -688,7 +722,34 @@ impl WikiTower {
     /// Clean the name to attempt to get better results whilst getting the wiki page.
     ///
     /// Modifies itself because if success, you most likely want this anyway. And besides, we have badge name in case of emergency.
-    fn clean_name(&mut self) {
+    pub fn clean_name(&mut self) {
         self.name = self.name.replace("-", " ");
+    }
+
+    pub fn primary_badge(&self) -> u64 {
+        self.badges[0]
+    }
+}
+
+impl From<WikiTower> for WikiData {
+    fn from(value: WikiTower) -> Self {
+        Self {
+            wiki_tower: value,
+            page_data: String::default(),
+            wiki_link: String::default(),
+        }
+    }
+}
+
+impl From<&WikiTower> for WikiData {
+    fn from(value: &WikiTower) -> Self {
+        WikiData::from(value.to_owned())
+    }
+}
+
+impl WikiData {
+    /// Returns if this object has failed to parse.
+    pub fn failed(&self) -> bool {
+        self.page_data.is_empty()
     }
 }
