@@ -68,11 +68,11 @@ struct ExternalLink {
 ///
 /// # Returns
 /// - OK
-/// 	- Vec<WikiTower> -> The data which has been converted
-/// 	- Vec<Vec<String>> -> Which badges failed at every step of the process.
+///     - Vec<WikiTower> -> The data which has been converted
+///     - Vec<Vec<String>> -> Which badges failed at every step of the process.
 /// - Err -> Just some kind of python error.
 pub fn parse_badges(
-    badges: &mut Vec<WikiTower>,
+    badges: &mut [WikiTower],
 ) -> Result<(Vec<WikiTower>, Vec<Vec<String>>), pyo3::PyErr> {
     Python::initialize();
     Python::attach(|py| -> PyResult<(Vec<WikiTower>, Vec<Vec<String>>)> {
@@ -145,8 +145,8 @@ impl WikiConverter<'_> {
     ///
     /// # Returns
     /// - Ok
-    /// 	- String -> The raw data of the page
-    /// 	- String -> The page name, due to redirects potentially being followed.
+    ///     - String -> The raw data of the page
+    ///     - String -> The page name, due to redirects potentially being followed.
     /// - Err(dyn Error) -> Any errors that might have happened
     fn get_wiki_page(
         &self,
@@ -335,11 +335,11 @@ impl WikiConverter<'_> {
     ///
     /// # Returns
     /// - Tuple
-    /// 	- Maths
-    /// 		- usize -> The number passed
-    /// 		- usize -> The number failed
-    /// 		- f64 -> Percent of passed over total
-    /// 	- Vec<String> -> A vector of the names which have failed.
+    ///      - Maths
+    ///      - usize -> The number passed
+    ///      - usize -> The number failed
+    ///      - f64 -> Percent of passed over total
+    ///     - Vec<String> -> A vector of the names which have failed.
     fn count_processed<K, P, N>(
         &self,
         obj: &[K],
@@ -433,7 +433,7 @@ impl WikiConverter<'_> {
 
     pub fn process_wiki_towers(
         &self,
-        towers: &mut Vec<WikiTower>,
+        towers: &mut [WikiTower],
     ) -> (Vec<WikiTower>, Vec<Vec<String>>) {
         log::info!("Processing towers...");
         let simple_get = self.get_and_search_wiki(towers);
@@ -444,6 +444,8 @@ impl WikiConverter<'_> {
             .filter(|simple| simple.page_data.is_empty())
             .map(|simple| simple.wiki_tower.to_owned())
             .collect::<Vec<WikiTower>>();
+
+        // TODO: Only search changed items between the basic list and the advanced list.
         advanced_list.iter_mut().for_each(|t| t.clean_name());
         let mut advanced_get = self.get_and_search_wiki(&advanced_list);
         failed_list.append(&mut advanced_get.1);
@@ -481,7 +483,7 @@ impl ExternalLinks {
         };
         Ok(ExternalLinks(
             list.iter()
-                .map(|link| ExternalLink::from(link))
+                .map(ExternalLink::from)
                 .collect::<Vec<ExternalLink>>(),
         ))
     }
