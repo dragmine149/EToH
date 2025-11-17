@@ -355,7 +355,7 @@ impl WikiConverter<'_> {
         obj: &[K],
         fail_check: P,
         name_func: N,
-    ) -> ((usize, usize, f64), Vec<String>)
+    ) -> ((usize, usize, String), Vec<String>)
     where
         P: FnMut(&&K) -> bool,
         N: Fn(&K) -> String,
@@ -367,8 +367,8 @@ impl WikiConverter<'_> {
             .collect::<Vec<String>>();
         let fail_count = failed.len();
         let pass_count = obj.len() - fail_count;
-        let percent = (pass_count as f64) / (obj.len() as f64);
-        ((pass_count, fail_count, percent), failed)
+        let percent = (pass_count as f64) / (obj.len() as f64) * 100.0;
+        ((pass_count, fail_count, format!("{:.2}%", percent)), failed)
     }
 
     /// Attempt to get tower data by searching and page name.
