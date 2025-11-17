@@ -2,9 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     cmp::Ordering,
     collections::{HashMap, HashSet},
-    default,
     fmt::Display,
-    u16::MAX,
 };
 
 #[derive(Debug, Deserialize, Serialize, Default)]

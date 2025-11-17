@@ -184,17 +184,13 @@ impl TowerJSON {
         // If an existing file is present and its "areas" value equals the new "areas",
         // preserve its "updated" value. Otherwise, set a new timestamp.
         let mut preserved_updated: Option<String> = None;
-        if let Ok(old_content) = fs::read_to_string(&path) {
-            if let Ok(old_json) = serde_json::from_str::<serde_json::Value>(&old_content) {
-                if let Some(old_areas) = old_json.get("areas") {
-                    if old_areas == &new_areas_value {
-                        if let Some(s) = old_json.get("u").and_then(|v| v.as_str()) {
+        if let Ok(old_content) = fs::read_to_string(&path)
+            && let Ok(old_json) = serde_json::from_str::<serde_json::Value>(&old_content)
+                && let Some(old_areas) = old_json.get("areas")
+                    && old_areas == &new_areas_value
+                        && let Some(s) = old_json.get("u").and_then(|v| v.as_str()) {
                             preserved_updated = Some(s.to_string());
                         }
-                    }
-                }
-            }
-        }
 
         let updated_str = match preserved_updated {
             Some(s) => s,
@@ -205,11 +201,10 @@ impl TowerJSON {
         let data = serde_json::to_string(&serde_json::Value::Object(root))?;
 
         // Only write if content differs (avoids updating timestamp/mtime unnecessarily).
-        if let Ok(old_content) = fs::read_to_string(&path) {
-            if old_content == data {
+        if let Ok(old_content) = fs::read_to_string(&path)
+            && old_content == data {
                 return Ok(());
             }
-        }
 
         Ok(fs::write(path, data)?)
     }

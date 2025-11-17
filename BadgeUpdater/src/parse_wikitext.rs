@@ -43,26 +43,23 @@ fn get_raw<'a>(item: &'a Bound<'a, PyAny>, name: &'a str) -> Option<Bound<'a, Py
     println!("Getting arg for {:?}", name);
     println!("{:?}", item);
     let result = item.call_method1("get_arg", (name,));
-    if let Ok(arg) = result {
-        if !arg.is_none() {
+    if let Ok(arg) = result
+        && !arg.is_none() {
             println!("Normal");
             return Some(arg);
         }
-    }
     let result = item.call_method1("get_arg", (name.to_owned() + "1",));
-    if let Ok(arg) = result {
-        if !arg.is_none() {
+    if let Ok(arg) = result
+        && !arg.is_none() {
             println!("+1");
             return Some(arg);
         }
-    }
     let result = item.call_method1("get_arg", (name.to_owned() + "<!--1-->",));
-    if let Ok(arg) = result {
-        if !arg.is_none() {
+    if let Ok(arg) = result
+        && !arg.is_none() {
             println!("+comment");
             return Some(arg);
         }
-    }
 
     println!("Uncaught case!");
     // panic!("An uncaught case somehow");

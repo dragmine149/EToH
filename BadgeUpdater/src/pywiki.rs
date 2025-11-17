@@ -36,7 +36,7 @@ pub fn parse_badges(
         let data = WikiConverter { pwb, site, wtp };
 
         // Get all the badges (TODO: return result)
-        Ok(data.get_wiki_pages(&badges))
+        Ok(data.get_wiki_pages(badges))
     })
 }
 
@@ -132,8 +132,7 @@ impl WikiConverter<'_> {
                     ))
                 },
             )
-            .filter(|item| item.is_ok())
-            .map(|item| item.unwrap())
+            .flatten()
             // parse the page for external links linking to our desired badge.
             .map(|page| -> Option<String> {
                 let result = match match match self.wtp.call_method1("parse", (page.1.to_owned(),))
@@ -165,10 +164,7 @@ impl WikiConverter<'_> {
                         || badge.to_lowercase().contains(&text.to_lowercase())
                 });
                 if result { Some(page.1) } else { None }
-            })
-            // take the first result.
-            .filter(|a| a.is_some())
-            .next();
+            }).find(|a| a.is_some());
         if let Some(p) = page {
             return Ok(p.unwrap());
         }
@@ -193,28 +189,25 @@ impl WikiConverter<'_> {
         // println!("Getting arg for {:?}", name);
         // println!("{:?}", item);
         let result = item.call_method1("get_arg", (name,));
-        if let Ok(arg) = result {
-            if !arg.is_none() {
+        if let Ok(arg) = result
+            && !arg.is_none() {
                 // println!("Normal");
                 return Ok(arg);
             }
-        }
         let result = item.call_method1("get_arg", (name.to_owned() + "1",));
-        if let Ok(arg) = result {
-            if !arg.is_none() {
+        if let Ok(arg) = result
+            && !arg.is_none() {
                 // println!("+1");
                 return Ok(arg);
             }
-        }
         let result = item.call_method1("get_arg", (name.to_owned() + "<!--1-->",));
-        if let Ok(arg) = result {
-            if !arg.is_none() {
+        if let Ok(arg) = result
+            && !arg.is_none() {
                 // println!("+comment");
                 return Ok(arg);
             }
-        }
 
-        if ignore_miss.unwrap_or_default() == false {
+        if !ignore_miss.unwrap_or_default() {
             log::error!("Uncaught case!: {:?}", name);
             // panic!("An uncaught case somehow");
             // None
@@ -272,7 +265,7 @@ impl WikiConverter<'_> {
             //     a
             // })
             .next()
-            .ok_or_else(|| "Item is none")?
+            .ok_or("Item is none")?
             .as_any()
             .to_owned()
             .to_owned())
@@ -320,24 +313,22 @@ impl WikiConverter<'_> {
         let length = self.get_raw(&tower_data, "length", Some(true))?;
         let len = if length.is_none() {
             0
-        } else {
-            if let Ok(template) = self
-                .wtp
-                .call_method1("parse", (length.getattr("value")?.extract::<String>()?,))?
-                .getattr("templates")?
-                .get_item(0)
-            {
-                if let Ok(arg) = template.getattr("arguments")?.get_item(0) {
-                    arg.getattr("value")?
-                        .extract::<String>()?
-                        .parse::<u8>()
-                        .unwrap_or_default()
-                } else {
-                    0
-                }
+        } else if let Ok(template) = self
+            .wtp
+            .call_method1("parse", (length.getattr("value")?.extract::<String>()?,))?
+            .getattr("templates")?
+            .get_item(0)
+        {
+            if let Ok(arg) = template.getattr("arguments")?.get_item(0) {
+                arg.getattr("value")?
+                    .extract::<String>()?
+                    .parse::<u8>()
+                    .unwrap_or_default()
             } else {
                 0
             }
+        } else {
+            0
         };
         // let len = 0;
 
@@ -387,7 +378,7 @@ impl WikiConverter<'_> {
         // NOTE: This whole section of code should only be used during prod and not testing as it checks an additional like 1k+ pages (100+ badges search)
         // NOTE: Skipping it during testing is fine as the rest that don't need to be researched should hit most issues if any.
 
-        let failed2: Vec<String>;
+        
         // let mut failed2 = vec![];
         // if !cfg!(debug_assertions) {
         log::info!("Searching wiki...");
@@ -400,7 +391,7 @@ impl WikiConverter<'_> {
             })
             .collect::<Vec<(String, Option<String>)>>();
 
-        failed2 = searched
+        let failed2: Vec<String> = searched
             .iter()
             .filter(|s| s.1.is_none())
             .map(|s| s.0.to_owned())
