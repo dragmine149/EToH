@@ -1,6 +1,6 @@
 use derive_builder::Builder;
 use pyo3::{
-    Bound, PyAny, PyResult, Python,
+    Bound, PyAny, PyErr, PyResult, Python, intern,
     types::{PyAnyMethods, PyDict, PyIterator, PyList, PyListMethods, PyModule},
 };
 use regex::Regex;
@@ -135,6 +135,15 @@ impl WikiConverter<'_> {
         }
     }
 
+    /// Miniature function for [get_wiki_page] just so we can do the actual python code and cache all responses.
+    fn get_page(&self, page: &str) -> Result<String, PyErr> {
+        Ok(self
+            .pwb
+            .call_method1(intern!(self.pwb.py(), "Page"), (&self.site, page))?
+            .call_method1(intern!(self.pwb.py(), "get"), (false, true))?
+            .extract::<String>()?)
+    }
+
     /// Get the raw data of the wiki page.
     ///
     /// Will automatically follow all redirects as long as the page starts with `#redirect`
@@ -163,15 +172,16 @@ impl WikiConverter<'_> {
             fs::read_to_string(&cache_path).unwrap()
         } else {
             // log::debug!("Making network reqwest");
-            let web_request = self
-                .pwb
-                .call_method1("Page", (&self.site, page))?
-                .call_method1("get", (false, true))?
-                .extract::<String>()?;
+            let web_reqwest = self.get_page(page);
+            if web_reqwest.is_err() {
+                fs::write(&cache_path, "Errored").ok().unwrap();
+                return Err(web_reqwest.err().unwrap().into());
+            }
 
+            let web_reqwest = web_reqwest.unwrap();
             // ignore any errors as we probably won't need the cache if errored.
-            fs::write(&cache_path, &web_request).ok().unwrap();
-            web_request
+            fs::write(&cache_path, &web_reqwest).ok().unwrap();
+            web_reqwest
         };
 
         // if we have a redirect, always follow it.
