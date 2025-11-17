@@ -227,6 +227,11 @@ impl WikiConverter<'_> {
         };
         for search_result in iter {
             let title = search_result?.call_method0("title")?.extract::<String>()?;
+            if title.contains("/") {
+                // ignore the pages which are sub-pages. these are probably going to be useless anyway.
+                continue;
+            }
+
             let data = self.get_wiki_page(&title, None)?;
             let links = ExternalLinks::new(&self.wtp, &data.0)?;
             if links.might_contain(page, Some(page)) {
