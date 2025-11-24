@@ -173,7 +173,11 @@ impl WikiConverter<'_> {
         // log::debug!("cache: {:?}", self.use_cache(&cache_path, cache));
         let result = if self.use_cache(&cache_path, cache).is_ok() {
             // log::debug!("Using cache");
-            fs::read_to_string(&cache_path).unwrap()
+            let data = fs::read_to_string(&cache_path).unwrap();
+            if data == "Errored" {
+                return Err("Cache is of error".into());
+            }
+            data
         } else {
             // log::debug!("Making network reqwest");
             let web_reqwest = self.get_page(page);
@@ -723,7 +727,7 @@ impl WikiTower {
     ///
     /// Modifies itself because if success, you most likely want this anyway. And besides, we have badge name in case of emergency.
     pub fn clean_name(&mut self) {
-        self.name = self.name.replace("-", " ");
+        self.name = self.name.replace("-", " ").trim().to_string();
     }
 
     pub fn primary_badge(&self) -> u64 {
