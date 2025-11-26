@@ -5,19 +5,21 @@ mod parse_wikitext;
 mod pywiki;
 mod rust_wiki;
 
-use std::{
-    collections::{HashMap},
-    fs,
-};
+use std::{collections::HashMap, fs};
 
 use definitions::*;
+use dotenv::dotenv;
 use lazy_regex::regex_replace;
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 use url::Url;
-use dotenv::dotenv;
 
 use crate::rust_wiki::{WikiTower, WikiTowerBuilder};
+
+pub const BADGE_URL: &str = "https://badges.roblox.com/v1/universes/3264581003/badges?limit=100";
+pub const OLD_BADGE_URL: &str =
+    "https://badges.roblox.com/v1/universes/1055653882/badges?limit=100";
+pub const ETOH_WIKI: &str = "https://jtoh.fandom.com/rest.php";
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Mappings {

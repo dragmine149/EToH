@@ -1,9 +1,17 @@
 use derive_builder::Builder;
+use mediawiki_rest_api::{
+    error::RestApiError,
+    page::Page,
+    prelude::{PageInfo, RestApi},
+    rest_api_builder::RestApiBuilder,
+    search::Search,
+};
 use pyo3::{
     Bound, PyAny, PyErr, PyResult, Python, intern,
     types::{PyAnyMethods, PyDict, PyIterator, PyList, PyListMethods, PyModule},
 };
 use regex::Regex;
+use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     env, error, fs,
@@ -11,7 +19,10 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::definitions::{Length, TowerType};
+use crate::{
+    ETOH_WIKI,
+    definitions::{Length, TowerType},
+};
 
 /// The wiki tower object containing all the information.
 #[derive(Debug, Clone, Default, Builder)]
@@ -47,9 +58,14 @@ struct WikiData {
 }
 
 struct WikiConverter<'a> {
-    pwb: Bound<'a, PyModule>,
-    site: Bound<'a, PyAny>,
+    api: RestApi,
     wtp: Bound<'a, PyModule>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct PageData {
+    info: PageInfo,
+    text: String,
 }
 
 struct Template<'b> {
@@ -77,21 +93,21 @@ struct ExternalLink {
 /// - Err -> Just some kind of python error.
 pub fn parse_badges(
     badges: &mut [WikiTower],
-) -> Result<(Vec<WikiTower>, Vec<Vec<String>>), pyo3::PyErr> {
+) -> Result<(Vec<WikiTower>, Vec<Vec<String>>), Box<dyn error::Error>> {
+    let api = RestApiBuilder::new(ETOH_WIKI)?.build();
     Python::initialize();
-    Python::attach(|py| -> PyResult<(Vec<WikiTower>, Vec<Vec<String>>)> {
-        // import pywikibot and setup required site data
-        let pwb = py.import("pywikibot")?;
-        let site = pwb.call_method1("Site", ("en", "etoh"))?;
+    Ok(Python::attach(
+        |py| -> PyResult<(Vec<WikiTower>, Vec<Vec<String>>)> {
+            // import pywikibot and setup required site data
+            // import wikitextparser
+            let wtp = py.import("wikitextparser")?;
 
-        // import wikitextparser
-        let wtp = py.import("wikitextparser")?;
+            let data = WikiConverter { api, wtp };
 
-        let data = WikiConverter { pwb, site, wtp };
-
-        // Get all the badges (TODO: return result)
-        Ok(data.process_wiki_towers(badges))
-    })
+            // Get all the badges (TODO: return result)
+            Ok(data.process_wiki_towers(badges))
+        },
+    )?)
 }
 
 impl WikiConverter<'_> {
@@ -140,12 +156,10 @@ impl WikiConverter<'_> {
     }
 
     /// Miniature function for [get_wiki_page] just so we can do the actual python code and cache all responses.
-    fn get_page(&self, page: &str) -> Result<String, PyErr> {
-        Ok(self
-            .pwb
-            .call_method1(intern!(self.pwb.py(), "Page"), (&self.site, page))?
-            .call_method1(intern!(self.pwb.py(), "get"), (false, true))?
-            .extract::<String>()?)
+    async fn get_page(&self, page: &str) -> Result<PageData, RestApiError> {
+        let page = Page::new(page);
+        let value = page.get(&self.api, true).await?;
+        Ok(PageData::from(value))
     }
 
     /// Get the raw data of the wiki page.
@@ -161,11 +175,11 @@ impl WikiConverter<'_> {
     ///     - String -> The raw data of the page
     ///     - String -> The page name, due to redirects potentially being followed.
     /// - Err(dyn Error) -> Any errors that might have happened
-    fn get_wiki_page(
+    async fn get_wiki_page(
         &self,
         page: &str,
         cache: Option<u64>,
-    ) -> Result<(String, String), Box<dyn error::Error>> {
+    ) -> Result<PageData, Box<dyn error::Error>> {
         // gets the page.
         let cache_path = self.cache_path(page);
         // log::debug!("cache path: {:?}", cache_path);
@@ -180,7 +194,7 @@ impl WikiConverter<'_> {
             data
         } else {
             // log::debug!("Making network reqwest");
-            let web_reqwest = self.get_page(page);
+            let web_reqwest = self.get_page(page).await;
             if web_reqwest.is_err() {
                 fs::write(&cache_path, "Errored").ok().unwrap();
                 return Err(web_reqwest.err().unwrap().into());
@@ -192,14 +206,8 @@ impl WikiConverter<'_> {
             web_reqwest
         };
 
-        // if we have a redirect, always follow it.
-        if result.starts_with("#redirect") {
-            let redirect = self.parse_redirect(&result)?;
-            return self.get_wiki_page(&redirect, cache);
-        }
-
         // return the page data, and the none saying we haven't redirected.
-        Ok((result, page.to_owned()))
+        Ok(result)
     }
 
     /// Parse the redirect of the page. Bit over the top but its needed
@@ -229,34 +237,21 @@ impl WikiConverter<'_> {
     /// # Returns
     /// - Ok((String, String)) -> The result of `get_wiki_page` as it contains both title and data already processed
     /// - Err(dyn Error) -> Something went wrong.
-    fn search_wiki(
+    async fn search_wiki(
         &self,
         page: &str,
         search_count: Option<u8>,
-    ) -> Result<(String, String), Box<dyn error::Error>> {
-        let search_args = PyDict::new(self.site.py());
-        search_args.set_item("total", search_count.unwrap_or(3))?;
-        let pages = self
-            .site
-            .call_method("search", (page,), Some(&search_args))?;
-        let iter = match pages.cast::<PyIterator>() {
-            Ok(v) => v.to_owned(),
-            Err(_) => return Err("Failed to cast into iterator".into()),
-        };
-        for search_result in iter {
-            let title = search_result?.call_method0("title")?.extract::<String>()?;
-            if title.contains("/") {
-                // ignore the pages which are sub-pages. these are probably going to be useless anyway.
-                continue;
-            }
-
-            let data = self.get_wiki_page(&title, None)?;
-            let links = ExternalLinks::new(&self.wtp, &data.0)?;
+    ) -> Result<String, Box<dyn error::Error>> {
+        let search =
+            Search::page(page, Some(search_count.unwrap_or(3) as usize), &self.api).await?;
+        for ele in search.pages.iter() {
+            let data = self.get_wiki_page(&ele.title, None).await?;
+            let links = ExternalLinks::new(&self.wtp, &data)?;
             if links.might_contain(page, Some(page)) {
                 return Ok(data);
             }
         }
-        Err("No page found during searching with a link.".into())
+        Err("no link connection".into())
     }
 
     fn process_tower(
@@ -317,7 +312,7 @@ impl WikiConverter<'_> {
     /// # Returns
     /// - OK(()) -> Doesn't actually return anything, just modifies the item itself directly.
     /// - Err(dyn Error) -> Something happened preventing this item from being checked.
-    fn process_item(
+    async fn process_item(
         &self,
         item_obj: &mut WikiTower,
         item_page: &str,
@@ -330,12 +325,12 @@ impl WikiConverter<'_> {
         for link in ExternalLinks::new(&self.wtp, &obtain)?.0 {
             // searching all the pages might not be the most efficient, but eh.
             // at least it'll break early due to failure to pass.
-            let wiki_page = self.get_wiki_page(&link.text, None);
+            let wiki_page = self.get_wiki_page(&link.text, None).await;
             if wiki_page.is_err() {
                 continue;
             }
 
-            let tower = self.process_tower(item_obj, &wiki_page.unwrap().0);
+            let tower = self.process_tower(item_obj, &wiki_page.unwrap());
             if tower.is_ok() {
                 item_obj.has_tower = true;
                 return Ok(());
@@ -386,19 +381,18 @@ impl WikiConverter<'_> {
     ///
     /// # Returns
     /// - WikiData -> The wikidata converted object, run [WikiData::failed()] to check if something failed during getting of data.
-    pub fn get_search(&self, tower: &WikiTower) -> WikiData {
+    pub async fn get_search(&self, tower: &WikiTower) -> WikiData {
         log::debug!("Attempting to get: {:?} by pwb.Page", tower.name);
-        let wiki_data = self.get_wiki_page(&tower.name, None);
+        let wiki_data = self.get_wiki_page(&tower.name, None).await;
         if let Ok(data) = wiki_data {
             log::debug!("Found {:?} by pwb.Page", tower.name);
             return WikiData {
                 wiki_tower: tower.to_owned(),
-                wiki_link: data.1,
-                page_data: data.0,
+                page_data: data,
             };
         }
         log::debug!("Attempting to search for {:?}", tower.name);
-        let search_data = self.search_wiki(&tower.name, None);
+        let search_data = self.search_wiki(&tower.name, None).await;
         if let Ok(data) = search_data {
             log::debug!("Found {:?} by searching", tower.name);
             return WikiData {
@@ -755,5 +749,14 @@ impl WikiData {
     /// Returns if this object has failed to parse.
     pub fn failed(&self) -> bool {
         self.page_data.is_empty()
+    }
+}
+
+impl From<(PageInfo, String)> for PageData {
+    fn from(value: (PageInfo, String)) -> Self {
+        Self {
+            info: value.0,
+            text: value.1,
+        }
     }
 }
