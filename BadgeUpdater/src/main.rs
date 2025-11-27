@@ -4,6 +4,7 @@ mod json;
 mod parse_wikitext;
 mod pywiki;
 mod rust_wiki;
+mod wiki_api;
 
 use std::{collections::HashMap, fs};
 

@@ -18,3 +18,7 @@ lazy-regex = "3.4.2"
 derive_builder = "0.20.2"
 dotenv = "0.15.0"
 mediawiki_rest_api = "0.2.1"
+reqwest-middleware = "0.4.2"
+http-cache-reqwest = { version = "0.16.0", features = ["manager-cacache"] }
+futures = "0.3.31"
+tokio = { version = "1.48.0", features = ["macros"] }
