@@ -6,6 +6,7 @@ mod parse_wikitext;
 mod pywiki;
 mod rust_wiki;
 mod wiki_api;
+mod wikitext;
 
 use std::{collections::HashMap, fs};
 
