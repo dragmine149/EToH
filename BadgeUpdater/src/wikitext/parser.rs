@@ -72,6 +72,70 @@ pub fn parse_templates(input: &str) -> ParseResult {
     res
 }
 
+/// Attempt to parse a redirect target from the provided wikitext.
+///
+/// This looks for a leading "#REDIRECT [[Target]]" (case-insensitive),
+/// using the first non-empty line. Returns the target page title (text
+/// before any pipe) if present.
+fn parse_redirect(input: &str) -> Option<String> {
+    for line in input.lines() {
+        let l = line.trim();
+        if l.is_empty() {
+            continue;
+        }
+        // Check for case-insensitive "#redirect"
+        let low = l.to_lowercase();
+        if low.starts_with("#redirect") {
+            // Prefer forms that include [[...]]
+            if let Some(start) = l.find("[[") {
+                if let Some(rel_end) = l[start + 2..].find("]]") {
+                    let inner = &l[start + 2..start + 2 + rel_end];
+                    let target = inner.split('|').next().unwrap_or("").trim().to_string();
+                    if !target.is_empty() {
+                        return Some(target);
+                    }
+                }
+            }
+            // Fallback: "#REDIRECT: Target page" style (rare)
+            if let Some(colon_pos) = l.find(':') {
+                let rest = l[colon_pos + 1..].trim();
+                if !rest.is_empty() {
+                    return Some(rest.to_string());
+                }
+            }
+            // If we matched #redirect but no target found, return None
+            return None;
+        }
+        // If the first non-empty line isn't a redirect, stop scanning.
+        break;
+    }
+    None
+}
+
+/// Unified in-memory representation for parsed wikitext.
+///
+/// This holds both the template parse results and a parsed redirect target
+/// (if any). Use `WikiText::parse` to produce this object from raw wikitext.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct WikiText {
+    pub parsed: ParseResult,
+    pub redirect: Option<String>,
+}
+
+impl WikiText {
+    /// Parse everything: templates and redirect target.
+    pub fn parse(input: &str) -> Self {
+        let redirect = parse_redirect(input);
+        let parsed = parse_templates(input);
+        WikiText { parsed, redirect }
+    }
+
+    /// Return the redirect target (page name) if the page is a redirect.
+    pub fn get_redirect(&self) -> Option<String> {
+        self.redirect.clone()
+    }
+}
+
 /// Parse a single template body (without outer `{{` `}}`) into a Template
 /// with its arguments parsed into `Argument` items.
 fn parse_single_template(body: &str) -> Option<Template> {
