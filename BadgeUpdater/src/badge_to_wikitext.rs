@@ -1,6 +1,6 @@
-use futures::io::ReadToEnd;
+use async_recursion::async_recursion;
 use serde::{Deserialize, Serialize};
-use std::{error::Error, str::FromStr};
+use std::error::Error;
 use tokio::task::JoinHandle;
 
 use url::Url;
@@ -8,7 +8,7 @@ use url::Url;
 use crate::{
     ETOH_WIKI, clean_badge_name,
     reqwest_client::{RustClient, RustError},
-    wikitext::parser::{ParseResult, WikiText},
+    wikitext::parser::WikiText,
 };
 
 #[derive(Debug, Deserialize, Serialize, Default)]
@@ -75,10 +75,41 @@ impl Default for Data {
     }
 }
 
+#[derive(Debug)]
+pub enum ProcessError {
+    Reqwest(RustError),
+    Process(String),
+}
+impl From<RustError> for ProcessError {
+    fn from(value: RustError) -> Self {
+        Self::Reqwest(value)
+    }
+}
+impl From<reqwest::Error> for ProcessError {
+    fn from(value: reqwest::Error) -> Self {
+        Self::Reqwest(RustError::from(value))
+    }
+}
+impl From<reqwest_middleware::Error> for ProcessError {
+    fn from(value: reqwest_middleware::Error) -> Self {
+        Self::Reqwest(RustError::from(value))
+    }
+}
+impl From<String> for ProcessError {
+    fn from(value: String) -> Self {
+        Self::Process(value)
+    }
+}
+impl From<&str> for ProcessError {
+    fn from(value: &str) -> Self {
+        Self::Process(value.to_owned())
+    }
+}
+
 pub async fn get_badges(
     client: RustClient,
     url: &Url,
-) -> Result<Vec<JoinHandle<Result<WikiText, RustError>>>, Box<dyn Error>> {
+) -> Result<Vec<JoinHandle<Result<WikiText, ProcessError>>>, Box<dyn Error>> {
     let mut data: Data = Data::default();
     let mut tasks = vec![];
     while let Some(next_page_cursor) = data.next_page_cursor {
@@ -89,57 +120,94 @@ pub async fn get_badges(
         data = client.0.get(url).send().await?.json::<Data>().await?;
 
         for badge in data.data {
-            tasks.push(tokio::spawn(process_data(client.clone(), badge.name)))
+            tasks.push(tokio::spawn(process_data(
+                client.clone(),
+                badge.name,
+                badge.id,
+                true,
+            )))
         }
     }
     Ok(tasks)
 }
 
-async fn process_data(client: RustClient, badge: String) -> Result<WikiText, RustError> {
+fn is_page_link(page: WikiText, badge: u64) -> Result<WikiText, String> {
+    if page
+        .external_links
+        .iter()
+        .any(|link| link.as_str().contains(badge.to_string().as_str()))
+    {
+        Ok(page)
+    } else {
+        Err("No links to the specific badge were found.".into())
+    }
+}
+
+#[async_recursion]
+async fn process_data(
+    client: RustClient,
+    badge: String,
+    badge_id: u64,
+    search: bool,
+) -> Result<WikiText, ProcessError> {
     let mut page = WikiText {
-        parsed: ParseResult::new(),
         redirect: Some(clean_badge_name(&badge)),
+        ..Default::default()
     };
+    log::info!("Getting: {:?} ({:?})", page.redirect, badge_id);
 
     let mut clean = false;
-    let mut search = false;
     while let Some(redirect) = page.get_redirect() {
+        // initial response to get data
         let data = client
             .get(format!("{:}wiki/{:}?action=raw", ETOH_WIKI, redirect))
             .send()
             .await?;
 
-        if data.status().is_client_error() {
-            if !clean {
-                page.redirect = Some(
-                    page.redirect
-                        .unwrap_or_default()
-                        .replace("-", " ")
-                        .trim()
-                        .to_string(),
-                );
-                clean = true;
-                continue;
-            }
-
-            if !search {
-                let pages = client
-                    .get(format!(
-                        "{:}api.php?action=query&format=json&list=search&srsearch={:}&srlimit={:}",
-                        ETOH_WIKI, redirect, 3
-                    ))
-                    .send()
-                    .await?
-                    .json::<WikiSearch>()
-                    .await?;
-
-                search = true;
-                continue;
-            }
+        // Process success first as the rest has to loop anyway.
+        // Normally i would do this last, but it's easier here.
+        if data.status().is_success() {
+            return Ok(is_page_link(
+                WikiText::parse(&data.text().await?),
+                badge_id,
+            )?);
         }
 
-        page = WikiText::parse(&data.text().await?);
+        // retry, but clean it if we haven't already cleaned it.
+        if !clean {
+            page.redirect = Some(
+                page.redirect
+                    .unwrap_or_default()
+                    .replace("-", " ")
+                    .trim()
+                    .to_string(),
+            );
+            clean = true;
+            continue;
+        }
+
+        page.redirect = None;
     }
 
-    Ok(page)
+    // Assumption: Failed clean, check so we search.
+
+    if search {
+        let pages = client
+            .get(format!(
+                "{:}api.php?action=query&format=json&list=search&srsearch={:}&srlimit={:}",
+                ETOH_WIKI, badge, 1
+            ))
+            .send()
+            .await?
+            .json::<WikiSearch>()
+            .await?;
+
+        for entry in pages.query.search {
+            let search_page = process_data(client.clone(), entry.title, badge_id, false).await;
+            if search_page.is_ok() {
+                return Ok(search_page?);
+            }
+        }
+    }
+    Err("Failed to find page after searching!".into())
 }

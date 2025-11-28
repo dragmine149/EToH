@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use url::Url;
 
 /// Result of parsing: top-level templates found in the wikitext.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub struct ParseResult {
     pub templates: Vec<Template>,
 }
@@ -117,7 +117,7 @@ fn parse_redirect(input: &str) -> Option<String> {
 /// This holds both the template parse results, a parsed redirect target (if any),
 /// and a collection of all external links found on the page. Use `WikiText::parse`
 /// to produce this object from raw wikitext.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct WikiText {
     pub parsed: ParseResult,
     pub redirect: Option<String>,

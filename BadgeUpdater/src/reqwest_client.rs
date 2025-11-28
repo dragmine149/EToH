@@ -8,6 +8,7 @@ use url::Url;
 #[derive(Debug, Clone)]
 pub struct RustClient(pub ClientWithMiddleware);
 /// Custom error to include all potential reqwest related errors.
+#[derive(Debug)]
 pub enum RustError {
     MiddleWare(reqwest_middleware::Error),
     Underly(reqwest::Error),
