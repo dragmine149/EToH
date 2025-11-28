@@ -4,8 +4,8 @@ mod definitions;
 mod json;
 mod parse_wikitext;
 mod pywiki;
+mod reqwest_client;
 mod rust_wiki;
-mod wiki_api;
 mod wikitext;
 
 use std::{collections::HashMap, fs};
@@ -22,7 +22,7 @@ use crate::rust_wiki::{WikiTower, WikiTowerBuilder};
 pub const BADGE_URL: &str = "https://badges.roblox.com/v1/universes/3264581003/badges?limit=100";
 pub const OLD_BADGE_URL: &str =
     "https://badges.roblox.com/v1/universes/1055653882/badges?limit=100";
-pub const ETOH_WIKI: &str = "https://jtoh.fandom.com/wiki/";
+pub const ETOH_WIKI: &str = "https://jtoh.fandom.com/";
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Mappings {
