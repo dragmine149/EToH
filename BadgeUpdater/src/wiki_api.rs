@@ -5,12 +5,13 @@ use reqwest_middleware::ClientWithMiddleware;
 use url::Url;
 
 /// Custom struct as a wrapper for custom functions
-pub struct RustClient(ClientWithMiddleware);
+pub struct RustClient(pub ClientWithMiddleware);
 /// Custom error to include all potential reqwest related errors.
 pub enum RustError {
     MiddleWare(reqwest_middleware::Error),
     Underly(reqwest::Error),
 }
+pub struct RustURL(Url);
 
 impl RustClient {
     /// Create a new client with middleware which auto caches based on HTTP headers
@@ -47,7 +48,7 @@ impl RustClient {
     /// 	- OK(String) -> The raw text of the page
     /// 	- Err(RustError) -> Custom error enum handing all possible errors.
     pub async fn get_text(&self, urls: Vec<Url>) -> Vec<Result<std::string::String, RustError>> {
-        let responses = request_urls(&self.0, urls).await;
+        let responses = self.request_urls(urls).await;
         future::join_all(responses.into_iter().map(|res| async move {
             match res {
                 Ok(resp) => resp.text().await.map_err(RustError::Underly),
@@ -56,16 +57,15 @@ impl RustClient {
         }))
         .await
     }
-}
 
-/// Internal function to request urls with.
-async fn request_urls(
-    client: &ClientWithMiddleware,
-    urls: Vec<Url>,
-) -> Vec<Result<Response, reqwest_middleware::Error>> {
-    future::join_all(urls.into_iter().map(|url| {
-        let client = client.clone();
-        async move { client.get(url).send().await }
-    }))
-    .await
+    pub async fn request_urls(
+        &self,
+        urls: Vec<Url>,
+    ) -> Vec<Result<Response, reqwest_middleware::Error>> {
+        future::join_all(urls.into_iter().map(|url| {
+            let client = self.0.clone();
+            async move { client.get(url).send().await }
+        }))
+        .await
+    }
 }

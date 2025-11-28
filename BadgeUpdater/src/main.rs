@@ -1,3 +1,4 @@
+mod badge_to_wikitext;
 mod cache;
 mod definitions;
 mod json;
@@ -20,7 +21,7 @@ use crate::rust_wiki::{WikiTower, WikiTowerBuilder};
 pub const BADGE_URL: &str = "https://badges.roblox.com/v1/universes/3264581003/badges?limit=100";
 pub const OLD_BADGE_URL: &str =
     "https://badges.roblox.com/v1/universes/1055653882/badges?limit=100";
-pub const ETOH_WIKI: &str = "https://jtoh.fandom.com/rest.php";
+pub const ETOH_WIKI: &str = "https://jtoh.fandom.com/wiki/";
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Mappings {
