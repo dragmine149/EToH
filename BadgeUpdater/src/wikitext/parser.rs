@@ -114,25 +114,74 @@ fn parse_redirect(input: &str) -> Option<String> {
 
 /// Unified in-memory representation for parsed wikitext.
 ///
-/// This holds both the template parse results and a parsed redirect target
-/// (if any). Use `WikiText::parse` to produce this object from raw wikitext.
+/// This holds both the template parse results, a parsed redirect target (if any),
+/// and a collection of all external links found on the page. Use `WikiText::parse`
+/// to produce this object from raw wikitext.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct WikiText {
     pub parsed: ParseResult,
     pub redirect: Option<String>,
+    pub external_links: Vec<Url>,
 }
 
 impl WikiText {
-    /// Parse everything: templates and redirect target.
+    /// Parse everything: templates, redirect target, and collect external links.
     pub fn parse(input: &str) -> Self {
         let redirect = parse_redirect(input);
         let parsed = parse_templates(input);
-        WikiText { parsed, redirect }
+
+        // Parse the entire page into parts (this will capture free-text links
+        // and nested structures) and collect external links from those parts.
+        let page_parts = parse_parts(input);
+        let mut links = collect_external_links_from_parts(&page_parts);
+
+        // Also traverse parsed templates (in case any nested ArgPart::Template
+        // structures contain external links not reachable via the top-level parts)
+        for tpl in &parsed.templates {
+            collect_external_links_from_template(tpl, &mut links);
+        }
+
+        WikiText {
+            parsed,
+            redirect,
+            external_links: links,
+        }
     }
 
     /// Return the redirect target (page name) if the page is a redirect.
     pub fn get_redirect(&self) -> Option<String> {
         self.redirect.clone()
+    }
+
+    /// Return all external links found on the page as a vector of Urls.
+    pub fn get_external_links(&self) -> Vec<Url> {
+        self.external_links.clone()
+    }
+}
+
+/// Recursively collect external links from a slice of ArgPart values.
+fn collect_external_links_from_parts(parts: &[ArgPart]) -> Vec<Url> {
+    let mut out: Vec<Url> = Vec::new();
+    for part in parts {
+        match part {
+            ArgPart::ExternalLink { url, .. } => out.push(url.clone()),
+            ArgPart::Template(tpl) => collect_external_links_from_template(tpl, &mut out),
+            _ => {}
+        }
+    }
+    out
+}
+
+/// Recursively collect external links from a Template (including nested templates).
+fn collect_external_links_from_template(tpl: &Template, out: &mut Vec<Url>) {
+    for arg in &tpl.args {
+        for part in &arg.value {
+            match part {
+                ArgPart::ExternalLink { url, .. } => out.push(url.clone()),
+                ArgPart::Template(nested) => collect_external_links_from_template(nested, out),
+                _ => {}
+            }
+        }
     }
 }
 
