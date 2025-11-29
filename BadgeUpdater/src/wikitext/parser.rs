@@ -121,7 +121,7 @@ fn parse_redirect(input: &str) -> Option<String> {
 ///
 /// Computation is deferred until the corresponding getter is called.
 /// Caches are protected by a `Mutex` so the type is safe to share across threads.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WikiText {
     /// Raw page text (canonical source of truth)
     pub raw: String,

@@ -147,7 +147,7 @@ async fn process_data(
     search: bool,
 ) -> Result<WikiText, ProcessError> {
     let mut page_title = Some(clean_badge_name(&badge));
-    log::info!("Getting: {:?} ({:?})", page_title, badge_id);
+    log::debug!("Getting: {:?} ({:?})", page_title, badge_id);
 
     let mut clean = false;
     while let Some(ref redirect) = page_title {

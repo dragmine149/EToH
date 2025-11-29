@@ -13,11 +13,12 @@ use std::{collections::HashMap, fs, str::FromStr};
 use definitions::*;
 use dotenv::dotenv;
 use lazy_regex::regex_replace;
-use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::{badge_to_wikitext::get_badges, reqwest_client::RustClient};
+use crate::{
+    badge_to_wikitext::get_badges, reqwest_client::RustClient, wikitext::parser::WikiText,
+};
 
 // use crate::rust_wiki::{WikiTower, WikiTowerBuilder};
 
@@ -123,9 +124,23 @@ async fn main() {
     let client = RustClient::new(None, None);
     let url = Url::from_str(&format!("{:}?limit=100", BADGE_URL)).unwrap();
 
-    for badge in get_badges(client, &url).await.unwrap() {
-        println!("{:#?}", badge.await.unwrap());
+    let mut badges_vec = vec![];
+    let raw = get_badges(client, &url).await.unwrap();
+    for badge_fut in raw {
+        badges_vec.push(badge_fut.await.unwrap());
     }
+    let passed = badges_vec
+        .iter()
+        .filter(|f| f.is_ok())
+        .map(|f| f.as_ref().ok().unwrap().to_owned())
+        .collect::<Vec<WikiText>>();
+    println!("{:#?}", passed);
+    log::info!(
+        "[get_badges] Total: {:?}. Passed: {:?}. Rate: {:.2}%",
+        badges_vec.len(),
+        passed.len(),
+        (passed.len() as f64 / badges_vec.len() as f64) * 100.0
+    )
 
     // let mut badges = get_badges(
     //     &client,
