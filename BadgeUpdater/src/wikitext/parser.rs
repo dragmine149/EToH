@@ -114,62 +114,97 @@ fn parse_redirect(input: &str) -> Option<String> {
 
 /// Unified in-memory representation for parsed wikitext.
 ///
-/// This holds both the template parse results, a parsed redirect target (if any),
-/// and a collection of all external links found on the page. Use `WikiText::parse`
-/// to produce this object from raw wikitext.
-#[derive(Clone, Debug, PartialEq, Eq, Default)]
+/// This holds the raw page text and lazily computed artifacts:
+/// - parsed templates (`ParseResult`)
+/// - redirect target (if any)
+/// - external links found on the page
+///
+/// Computation is deferred until the corresponding getter is called.
+/// Caches are protected by a `Mutex` so the type is safe to share across threads.
+#[derive(Debug)]
 pub struct WikiText {
-    pub parsed: ParseResult,
-    pub redirect: Option<String>,
-    pub external_links: Vec<Url>,
+    /// Raw page text (canonical source of truth)
+    pub raw: String,
+
+    /// Cached parsed templates (set once when computed)
+    parsed_cache: std::sync::OnceLock<ParseResult>,
+
+    /// Cached redirect: OnceLock holds Option<String> (None means no redirect)
+    redirect_cache: std::sync::OnceLock<Option<String>>,
+
+    /// Cached external links
+    external_links_cache: std::sync::OnceLock<Vec<Url>>,
 }
 
 impl WikiText {
-    /// Parse everything: templates, redirect target, and collect external links.
+    /// Create a lazy `WikiText` wrapper around the raw text.
+    /// Nothing is parsed at construction time.
     pub fn parse(input: &str) -> Self {
-        let redirect = parse_redirect(input);
-        let parsed = parse_templates(input);
+        WikiText {
+            raw: input.to_string(),
+            parsed_cache: std::sync::OnceLock::new(),
+            redirect_cache: std::sync::OnceLock::new(),
+            external_links_cache: std::sync::OnceLock::new(),
+        }
+    }
 
-        // Parse the entire page into parts (this will capture free-text links
-        // and nested structures) and collect external links from those parts.
-        let page_parts = parse_parts(input);
-        let mut links = collect_external_links_from_parts(&page_parts);
+    /// Lazily obtain the parsed templates. Parsing is performed at most once and cached.
+    pub fn get_parsed(&self) -> ParseResult {
+        if let Some(parsed_ref) = self.parsed_cache.get() {
+            return parsed_ref.clone();
+        }
+        // Compute and set (set can fail if another thread set it concurrently; ignore result)
+        let parsed = parse_templates(&self.raw);
+        let _ = self.parsed_cache.set(parsed.clone());
+        parsed
+    }
 
-        // Also traverse parsed templates (in case any nested ArgPart::Template
-        // structures contain external links not reachable via the top-level parts)
+    /// Return the redirect target (page name) if the page is a redirect.
+    /// The redirect detection is computed lazily and cached.
+    pub fn get_redirect(&self) -> Option<String> {
+        if let Some(opt) = self.redirect_cache.get() {
+            return opt.clone();
+        }
+        let computed = parse_redirect(&self.raw);
+        let _ = self.redirect_cache.set(computed.clone());
+        computed
+    }
+
+    /// Return all external links found on the page as a vector of Urls.
+    /// This is computed lazily and cached.
+    pub fn get_external_links(&self) -> Vec<Url> {
+        if let Some(links_ref) = self.external_links_cache.get() {
+            return links_ref.clone();
+        }
+
+        // Collect external links from the raw page parts
+        let mut links: Vec<Url> = Vec::new();
+        collect_external_links_from_parts(&parse_parts(&self.raw), &mut links);
+
+        // Also traverse parsed templates (which will be computed lazily by get_parsed)
+        let parsed = self.get_parsed();
         for tpl in &parsed.templates {
             collect_external_links_from_template(tpl, &mut links);
         }
 
-        WikiText {
-            parsed,
-            redirect,
-            external_links: links,
-        }
-    }
+        // Deduplicate while preserving order
+        let mut seen = std::collections::HashSet::new();
+        links.retain(|u| seen.insert(u.as_str().to_string()));
 
-    /// Return the redirect target (page name) if the page is a redirect.
-    pub fn get_redirect(&self) -> Option<String> {
-        self.redirect.clone()
-    }
-
-    /// Return all external links found on the page as a vector of Urls.
-    pub fn get_external_links(&self) -> Vec<Url> {
-        self.external_links.clone()
+        let _ = self.external_links_cache.set(links.clone());
+        links
     }
 }
 
-/// Recursively collect external links from a slice of ArgPart values.
-fn collect_external_links_from_parts(parts: &[ArgPart]) -> Vec<Url> {
-    let mut out: Vec<Url> = Vec::new();
+/// Recursively collect external links from a slice of ArgPart values into `out`.
+fn collect_external_links_from_parts(parts: &[ArgPart], out: &mut Vec<Url>) {
     for part in parts {
         match part {
             ArgPart::ExternalLink { url, .. } => out.push(url.clone()),
-            ArgPart::Template(tpl) => collect_external_links_from_template(tpl, &mut out),
+            ArgPart::Template(tpl) => collect_external_links_from_template(tpl, out),
             _ => {}
         }
     }
-    out
 }
 
 /// Recursively collect external links from a Template (including nested templates).

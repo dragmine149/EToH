@@ -132,11 +132,7 @@ pub async fn get_badges(
 }
 
 fn is_page_link(page: WikiText, badge: u64) -> Result<WikiText, String> {
-    if page
-        .external_links
-        .iter()
-        .any(|link| link.as_str().contains(badge.to_string().as_str()))
-    {
+    if page.raw.as_str().contains(&badge.to_string()) {
         Ok(page)
     } else {
         Err("No links to the specific badge were found.".into())
@@ -150,14 +146,11 @@ async fn process_data(
     badge_id: u64,
     search: bool,
 ) -> Result<WikiText, ProcessError> {
-    let mut page = WikiText {
-        redirect: Some(clean_badge_name(&badge)),
-        ..Default::default()
-    };
-    log::info!("Getting: {:?} ({:?})", page.redirect, badge_id);
+    let mut page_title = Some(clean_badge_name(&badge));
+    log::info!("Getting: {:?} ({:?})", page_title, badge_id);
 
     let mut clean = false;
-    while let Some(redirect) = page.get_redirect() {
+    while let Some(ref redirect) = page_title {
         // initial response to get data
         let data = client
             .get(format!("{:}wiki/{:}?action=raw", ETOH_WIKI, redirect))
@@ -175,8 +168,8 @@ async fn process_data(
 
         // retry, but clean it if we haven't already cleaned it.
         if !clean {
-            page.redirect = Some(
-                page.redirect
+            page_title = Some(
+                page_title
                     .unwrap_or_default()
                     .replace("-", " ")
                     .trim()
@@ -186,7 +179,7 @@ async fn process_data(
             continue;
         }
 
-        page.redirect = None;
+        page_title = None;
     }
 
     // Assumption: Failed clean, check so we search.
