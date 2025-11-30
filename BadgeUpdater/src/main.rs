@@ -8,16 +8,17 @@ mod reqwest_client;
 // mod rust_wiki;
 mod wikitext;
 
-use std::{collections::HashMap, fs, str::FromStr};
+use std::{collections::HashMap, str::FromStr};
 
-use definitions::*;
 use dotenv::dotenv;
 use lazy_regex::regex_replace;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
 use crate::{
-    badge_to_wikitext::get_badges, reqwest_client::RustClient, wikitext::parser::WikiText,
+    badge_to_wikitext::{ErrorDetails, get_badges},
+    reqwest_client::RustClient,
+    wikitext::parser::WikiText,
 };
 
 // use crate::rust_wiki::{WikiTower, WikiTowerBuilder};
@@ -26,11 +27,6 @@ pub const BADGE_URL: &str = "https://badges.roblox.com/v1/universes/3264581003/b
 pub const OLD_BADGE_URL: &str =
     "https://badges.roblox.com/v1/universes/1055653882/badges?limit=100";
 pub const ETOH_WIKI: &str = "https://jtoh.fandom.com/";
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Mappings {
-    mappings: HashMap<String, String>,
-}
 
 // fn get_badges(client: &Client, url: String) -> Result<Vec<Badge>, Box<dyn std::error::Error>> {
 //     let mut badges: Vec<Badge> = vec![];
@@ -134,13 +130,23 @@ async fn main() {
         .filter(|f| f.is_ok())
         .map(|f| f.as_ref().ok().unwrap().to_owned())
         .collect::<Vec<WikiText>>();
+    let failed = badges_vec
+        .iter()
+        .filter(|b| b.is_err())
+        .map(|b| b.as_ref().err().unwrap())
+        .collect::<Vec<&ErrorDetails>>();
     println!("{:#?}", passed);
+    println!("{:#?}", failed);
     log::info!(
         "[get_badges] Total: {:?}. Passed: {:?}. Rate: {:.2}%",
         badges_vec.len(),
         passed.len(),
-        (passed.len() as f64 / badges_vec.len() as f64) * 100.0
-    )
+        if badges_vec.is_empty() {
+            0.0
+        } else {
+            (passed.len() as f64 / badges_vec.len() as f64) * 100.0
+        }
+    );
 
     // let mut badges = get_badges(
     //     &client,

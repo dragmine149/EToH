@@ -106,10 +106,13 @@ impl From<&str> for ProcessError {
     }
 }
 
+#[derive(Debug)]
+pub struct ErrorDetails(ProcessError, Badge);
+
 pub async fn get_badges(
     client: RustClient,
     url: &Url,
-) -> Result<Vec<JoinHandle<Result<WikiText, ProcessError>>>, Box<dyn Error>> {
+) -> Result<Vec<JoinHandle<Result<WikiText, ErrorDetails>>>, Box<dyn Error>> {
     let mut data: Data = Data::default();
     let mut tasks = vec![];
     while let Some(next_page_cursor) = data.next_page_cursor {
@@ -120,12 +123,7 @@ pub async fn get_badges(
         data = client.0.get(url).send().await?.json::<Data>().await?;
 
         for badge in data.data {
-            tasks.push(tokio::spawn(process_data(
-                client.clone(),
-                badge.name,
-                badge.id,
-                true,
-            )))
+            tasks.push(tokio::spawn(pre_process(client.clone(), badge)));
         }
     }
     Ok(tasks)
@@ -139,10 +137,18 @@ fn is_page_link(page: WikiText, badge: u64) -> Result<WikiText, String> {
     }
 }
 
+async fn pre_process(client: RustClient, badge: Badge) -> Result<WikiText, ErrorDetails> {
+    let result = process_data(client.clone(), &badge.name, badge.id, true).await;
+    if result.is_err() {
+        return Err(ErrorDetails(result.err().unwrap(), badge));
+    }
+    Ok(result.ok().unwrap())
+}
+
 #[async_recursion]
 async fn process_data(
     client: RustClient,
-    badge: String,
+    badge: &String,
     badge_id: u64,
     search: bool,
 ) -> Result<WikiText, ProcessError> {
@@ -196,7 +202,7 @@ async fn process_data(
             .await?;
 
         for entry in pages.query.search {
-            let search_page = process_data(client.clone(), entry.title, badge_id, false).await;
+            let search_page = process_data(client.clone(), &entry.title, badge_id, false).await;
             if search_page.is_ok() {
                 return Ok(search_page?);
             }
