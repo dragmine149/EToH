@@ -8,17 +8,23 @@ mod reqwest_client;
 // mod rust_wiki;
 mod wikitext;
 
-use std::{collections::HashMap, str::FromStr};
+use std::{
+    collections::HashMap,
+    fs,
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 
 use dotenv::dotenv;
 use lazy_regex::regex_replace;
+use rayon::iter::{IntoParallelRefIterator, IntoParallelRefMutIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
 use crate::{
     badge_to_wikitext::{ErrorDetails, get_badges},
     reqwest_client::RustClient,
-    wikitext::parser::WikiText,
+    wikitext::{Template, parser::WikiText},
 };
 
 // use crate::rust_wiki::{WikiTower, WikiTowerBuilder};
@@ -112,10 +118,80 @@ fn compress_name(badge: &str) -> String {
 //         .collect::<Vec<WikiTower>>()
 // }
 
+/// Take an object and count how many passed/failed.
+///
+/// # Arguments
+/// - obj -> A vector of objects to list through. (type is dynamic)
+/// - pass_check -> The function to filter out objects which have passed.
+/// - func_name -> Name of the function called before this
+/// - file -> Optional path to store something to.
+///
+/// # Returns
+/// - Vec<&'a K> -> A list to use in other places.
+fn count_processed<'a, K, P>(
+    obj: &'a [K],
+    pass_check: P,
+    func_name: &str,
+    file: Option<PathBuf>,
+) -> Vec<&'a K>
+where
+    P: Fn(&K) -> bool,
+    K: std::fmt::Debug,
+{
+    let mut passed: Vec<&K> = Vec::new();
+    let mut failed: Vec<&K> = Vec::new();
+
+    for item in obj.iter() {
+        if pass_check(item) {
+            passed.push(item);
+        } else {
+            failed.push(item);
+        }
+    }
+
+    if let Some(path) = file {
+        use std::io::Write;
+        match fs::OpenOptions::new().create(true).append(true).open(&path) {
+            Ok(mut fh) => {
+                if let Err(e) = writeln!(fh, "{:#?}\n", passed) {
+                    log::error!("Failed to append passed items to {:?}: {}", path, e);
+                }
+                if let Err(e) = writeln!(fh, "{:#?}\n", failed) {
+                    log::error!("Failed to append failed items to {:?}: {}", path, e);
+                }
+            }
+            Err(e) => {
+                log::error!("Failed to open file {:?} for appending: {}", path, e);
+            }
+        }
+    }
+
+    log::info!(
+        "[{}] Total: {}. Passed: {}. Rate: {:.2}%",
+        func_name,
+        obj.len(),
+        passed.len(),
+        if obj.is_empty() {
+            0.0
+        } else {
+            (passed.len() as f64 / obj.len() as f64) * 100.0
+        }
+    );
+
+    passed
+}
+
+const DEBUG_PATH: &str = "./badges.temp.txt";
+
 #[tokio::main]
 async fn main() {
     env_logger::init();
     dotenv().ok();
+
+    let path = PathBuf::from(DEBUG_PATH);
+    if path.exists() {
+        fs::remove_file(&path).unwrap();
+    }
 
     let client = RustClient::new(None, None);
     let url = Url::from_str(&format!("{:}?limit=100", BADGE_URL)).unwrap();
@@ -125,28 +201,26 @@ async fn main() {
     for badge_fut in raw {
         badges_vec.push(badge_fut.await.unwrap());
     }
-    let passed = badges_vec
-        .iter()
-        .filter(|f| f.is_ok())
-        .map(|f| f.as_ref().ok().unwrap().to_owned())
-        .collect::<Vec<WikiText>>();
-    let failed = badges_vec
-        .iter()
-        .filter(|b| b.is_err())
-        .map(|b| b.as_ref().err().unwrap())
-        .collect::<Vec<&ErrorDetails>>();
-    println!("{:#?}", passed);
-    println!("{:#?}", failed);
-    log::info!(
-        "[get_badges] Total: {:?}. Passed: {:?}. Rate: {:.2}%",
-        badges_vec.len(),
-        passed.len(),
-        if badges_vec.is_empty() {
-            0.0
-        } else {
-            (passed.len() as f64 / badges_vec.len() as f64) * 100.0
-        }
+
+    let passed = count_processed(
+        &badges_vec,
+        |f: &Result<WikiText, ErrorDetails>| f.is_ok(),
+        "get_badges",
+        Some(path),
     );
+
+    // let processed_badges = passed
+    //     .par_iter()
+    //     .map(|badge| {
+    //         badge
+    //             .get_parsed()
+    //             .templates
+    //             .iter()
+    //             .filter(|t| t.name.contains("towerinfobox"))
+    //             .next()
+    //             .unwrap()
+    //     })
+    //     .collect::<Vec<Template>>();
 
     // let mut badges = get_badges(
     //     &client,
