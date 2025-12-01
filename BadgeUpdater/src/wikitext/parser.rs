@@ -14,6 +14,39 @@ impl ParseResult {
             templates: Vec::new(),
         }
     }
+
+    /// Find the first top-level template with the exact `name` (case-insensitive).
+    ///
+    /// Returns a reference into this `ParseResult`'s `templates` vector if found.
+    pub fn get_template_by_name(&self, name: &str) -> Option<&Template> {
+        let target = name.trim().to_lowercase();
+        if target.is_empty() {
+            return None;
+        }
+        for t in &self.templates {
+            if t.name.trim().to_lowercase() == target {
+                return Some(t);
+            }
+        }
+        None
+    }
+
+    /// Find the first top-level template whose name starts with `name` (case-insensitive).
+    ///
+    /// This is useful for fuzzy or prefixed template names such as matching
+    /// `towerinfobox` when templates are named `towerinfobox` or `towerinfobox2`.
+    pub fn get_template_startswith(&self, name: &str) -> Option<&Template> {
+        let target = name.trim().to_lowercase();
+        if target.is_empty() {
+            return None;
+        }
+        for t in &self.templates {
+            if t.name.trim().to_lowercase().starts_with(&target) {
+                return Some(t);
+            }
+        }
+        None
+    }
 }
 
 /// Parse top-level templates from the input wikitext.
@@ -157,6 +190,36 @@ impl WikiText {
         let parsed = parse_templates(&self.raw);
         let _ = self.parsed_cache.set(parsed.clone());
         parsed
+    }
+
+    /// Convenience: return the first top-level template with exact `name`
+    /// (case-insensitive). Returns an owned `Template` (cloned from cached parse)
+    /// so callers can chain calls like:
+    /// `wt.get_template_startswith(\"towerinfobox\")?.get_arg_startswith(\"difficulty\")`
+    pub fn get_template_by_name(&self, name: &str) -> Option<Template> {
+        let parsed = self.get_parsed();
+        let target = name.trim().to_lowercase();
+        if target.is_empty() {
+            return None;
+        }
+        parsed
+            .templates
+            .into_iter()
+            .find(|t| t.name.trim().to_lowercase() == target)
+    }
+
+    /// Convenience: return the first top-level template whose name starts with
+    /// `name` (case-insensitive). Returns an owned `Template`.
+    pub fn get_template_startswith(&self, name: &str) -> Option<Template> {
+        let parsed = self.get_parsed();
+        let target = name.trim().to_lowercase();
+        if target.is_empty() {
+            return None;
+        }
+        parsed
+            .templates
+            .into_iter()
+            .find(|t| t.name.trim().to_lowercase().starts_with(&target))
     }
 
     /// Return the redirect target (page name) if the page is a redirect.

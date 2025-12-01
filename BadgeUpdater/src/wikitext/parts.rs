@@ -150,6 +150,28 @@ impl Template {
         self.get_argument(name)
             .map(|a| a.value_plain().trim().to_string())
     }
+
+    /// Convenience: return the underlying `ArgPart` slice for an argument
+    /// matching `name` (case-insensitive). This makes it simple to access
+    /// structured parts (e.g. nested templates or links) without dealing with
+    /// `Argument` manually. Example:
+    ///
+    /// ```rust,ignore
+    /// // assuming `tpl` is a parsed `Template`
+    /// if let Some(parts) = tpl.get_arg_parts("difficulty") {
+    ///     // parts: &[ArgPart]; you can inspect parts[0] etc.
+    /// }
+    /// ```
+    pub fn get_arg_parts(&self, name: &str) -> Option<&[ArgPart]> {
+        self.get_argument(name).map(|a| a.value.as_slice())
+    }
+
+    /// Like `get_arg_parts` but matches argument names that start with `name`.
+    /// Handy when argument keys use prefixes or variants (e.g. `original_difficulty`).
+    pub fn get_arg_parts_startswith(&self, name: &str) -> Option<&[ArgPart]> {
+        self.get_argument_startswith(name)
+            .map(|a| a.value.as_slice())
+    }
 }
 
 /// Convert a slice of ArgPart into plain text by concatenating `to_plain()` for each part.
