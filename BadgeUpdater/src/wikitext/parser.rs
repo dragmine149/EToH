@@ -1,4 +1,4 @@
-use crate::wikitext::parts::{ArgPart, Argument, Template};
+use crate::wikitext::parts::{ArgPart, Argument, MatchType, Template};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -15,37 +15,39 @@ impl ParseResult {
         }
     }
 
-    /// Find the first top-level template with the exact `name` (case-insensitive).
-    ///
-    /// Returns a reference into this `ParseResult`'s `templates` vector if found.
-    pub fn get_template_by_name(&self, name: &str) -> Option<&Template> {
+    /// Unified lookup: find the first top-level template whose name matches
+    /// `name` according to `mode` (case-insensitive).
+    pub fn get_template_by(&self, name: &str, mode: MatchType) -> Option<&Template> {
         let target = name.trim().to_lowercase();
         if target.is_empty() {
             return None;
         }
         for t in &self.templates {
-            if t.name.trim().to_lowercase() == target {
-                return Some(t);
+            let cand = t.name.trim().to_lowercase();
+            match mode {
+                MatchType::Exact => {
+                    if cand == target {
+                        return Some(t);
+                    }
+                }
+                MatchType::StartsWith => {
+                    if cand.starts_with(&target) {
+                        return Some(t);
+                    }
+                }
             }
         }
         None
     }
 
-    /// Find the first top-level template whose name starts with `name` (case-insensitive).
-    ///
-    /// This is useful for fuzzy or prefixed template names such as matching
-    /// `towerinfobox` when templates are named `towerinfobox` or `towerinfobox2`.
+    /// Backwards-compatible: exact-match lookup.
+    pub fn get_template_by_name(&self, name: &str) -> Option<&Template> {
+        self.get_template_by(name, MatchType::Exact)
+    }
+
+    /// Backwards-compatible: starts-with lookup.
     pub fn get_template_startswith(&self, name: &str) -> Option<&Template> {
-        let target = name.trim().to_lowercase();
-        if target.is_empty() {
-            return None;
-        }
-        for t in &self.templates {
-            if t.name.trim().to_lowercase().starts_with(&target) {
-                return Some(t);
-            }
-        }
-        None
+        self.get_template_by(name, MatchType::StartsWith)
     }
 }
 
@@ -196,34 +198,38 @@ impl WikiText {
         parsed
     }
 
-    /// Convenience: return the first top-level template with exact `name`
-    /// (case-insensitive). Returns an owned `Template` (cloned from cached parse)
-    /// so callers can chain calls like:
-    /// `wt.get_template_startswith(\"towerinfobox\")?.get_arg_startswith(\"difficulty\")`
-    pub fn get_template_by_name(&self, name: &str) -> Option<Template> {
-        let parsed = self.get_parsed();
-        let target = name.trim().to_lowercase();
-        if target.is_empty() {
-            return None;
+    /// Ensure the parsed templates are present and return a reference to the stored ParseResult.
+    /// This returns a borrow into the internal cache (no cloning) and is useful for
+    /// returning `&Template` references from callers.
+    fn ensure_parsed_ref(&self) -> &ParseResult {
+        if let Some(parsed_ref) = self.parsed_cache.get() {
+            return parsed_ref;
         }
-        parsed
-            .templates
-            .into_iter()
-            .find(|t| t.name.trim().to_lowercase() == target)
+        let parsed = parse_templates(&self.raw);
+        // set the cache (ignore Err on concurrent set)
+        let _ = self.parsed_cache.set(parsed);
+        // now it must be present
+        self.parsed_cache.get().expect("parsed_cache should be set")
     }
 
-    /// Convenience: return the first top-level template whose name starts with
-    /// `name` (case-insensitive). Returns an owned `Template`.
-    pub fn get_template_startswith(&self, name: &str) -> Option<Template> {
-        let parsed = self.get_parsed();
-        let target = name.trim().to_lowercase();
-        if target.is_empty() {
+    /// Convenience: return a reference to the first top-level template with exact `name`
+    /// (case-insensitive). This borrows from the cached parsed result so no cloning occurs.
+    pub fn get_template_by_name(&self, name: &str) -> Option<&Template> {
+        if name.trim().is_empty() {
             return None;
         }
-        parsed
-            .templates
-            .into_iter()
-            .find(|t| t.name.trim().to_lowercase().starts_with(&target))
+        let parsed = self.ensure_parsed_ref();
+        parsed.get_template_by_name(name)
+    }
+
+    /// Convenience: return a reference to the first top-level template whose name starts with
+    /// `name` (case-insensitive). Borrows from cached parsed result.
+    pub fn get_template_startswith(&self, name: &str) -> Option<&Template> {
+        if name.trim().is_empty() {
+            return None;
+        }
+        let parsed = self.ensure_parsed_ref();
+        parsed.get_template_startswith(name)
     }
 
     /// Return the redirect target (page name) if the page is a redirect.
@@ -745,7 +751,9 @@ fn s_char_at(s: &str, i: usize) -> char {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::wikitext::parts::{ArgPart, parts_to_plain};
+    use crate::wikitext::parts::{
+        ArgPart, ArgQueryKind, ArgQueryResult, MatchType, parts_to_plain,
+    };
     use url::Url;
 
     #[test]
@@ -755,8 +763,15 @@ mod tests {
         assert_eq!(r.templates.len(), 1);
         let t = &r.templates[0];
         assert_eq!(t.name.to_lowercase(), "infobox");
-        assert_eq!(t.get_arg_value("name").unwrap(), "Tower");
-        assert_eq!(t.get_arg_value("difficulty").unwrap(), "5");
+        // basic value access via query_arg (FirstText) should match old semantics
+        match t.query_arg("name", MatchType::Exact, ArgQueryKind::FirstText) {
+            Some(ArgQueryResult::Text(s)) => assert_eq!(s, "Tower"),
+            _ => panic!("expected name text"),
+        }
+        match t.query_arg("difficulty", MatchType::Exact, ArgQueryKind::FirstText) {
+            Some(ArgQueryResult::Text(s)) => assert_eq!(s, "5"),
+            _ => panic!("expected difficulty text"),
+        }
     }
 
     #[test]
@@ -769,6 +784,15 @@ mod tests {
         let a = t.get_argument("a").expect("expected a");
         // a should contain a nested template as its first part
         assert!(matches!(a.value.first(), Some(ArgPart::Template(_))));
+        // query the nested first positional as text via the unified API
+        match t.query_arg(
+            "a",
+            MatchType::Exact,
+            ArgQueryKind::NestedFirstPositionalText,
+        ) {
+            Some(ArgQueryResult::Text(s)) => assert_eq!(s, "y"),
+            _ => panic!("expected nested first positional text"),
+        }
     }
 
     #[test]
@@ -782,6 +806,15 @@ mod tests {
         let plain = parts_to_plain(&a.value);
         assert!(plain.contains("Label"));
         assert!(plain.contains("Ex"));
+
+        // Also exercise query_arg to fetch parts
+        match t.query_arg("a", MatchType::Exact, ArgQueryKind::Parts) {
+            Some(ArgQueryResult::Parts(ps)) => {
+                let plain2 = parts_to_plain(ps);
+                assert!(plain2.contains("Label"));
+            }
+            _ => panic!("expected parts"),
+        }
     }
 
     #[test]
@@ -799,6 +832,21 @@ mod tests {
             }
             _ => panic!("expected external link"),
         }
+
+        // also via query_arg
+        match t.query_arg("link", MatchType::Exact, ArgQueryKind::Parts) {
+            Some(ArgQueryResult::Parts(ps)) => {
+                assert_eq!(ps.len(), 1);
+                match &ps[0] {
+                    ArgPart::ExternalLink { url, label } => {
+                        assert_eq!(url.as_str(), "https://example.org/");
+                        assert_eq!(label.as_ref().map(String::as_str), Some("foo"));
+                    }
+                    _ => panic!("expected external link"),
+                }
+            }
+            _ => panic!("expected parts"),
+        }
     }
 
     #[test]
@@ -810,5 +858,38 @@ mod tests {
         // plain should include the URL (may not include trailing slash)
         let plain = parts_to_plain(&a.value);
         assert!(plain.contains("http://rust-lang.org"));
+
+        // also ensure query_arg FirstText returns the expected fragment
+        match t.query_arg("u", MatchType::Exact, ArgQueryKind::FirstText) {
+            Some(ArgQueryResult::Text(s)) => assert!(s.contains("http://rust-lang.org")),
+            _ => panic!("expected URL text"),
+        }
+    }
+
+    #[test]
+    fn query_arg_nested_first_positional_text_handles_leading_space() {
+        let s = "{{towerinfobox|difficulty= {{DifficultyNum|4.67}}|original_difficulty = {{DifficultyName|3}}}}";
+        let r = parse_templates(s);
+        let t = &r.templates[0];
+
+        // starts-with match should find 'difficulty' and return nested first positional text "4.67"
+        match t.query_arg(
+            "difficulty",
+            MatchType::StartsWith,
+            ArgQueryKind::NestedFirstPositionalText,
+        ) {
+            Some(ArgQueryResult::Text(s)) => assert!(s.contains("4.67")),
+            other => panic!("expected nested numeric text, got {:?}", other),
+        }
+
+        // exact match on original_difficulty should find nested template too
+        match t.query_arg(
+            "original_difficulty",
+            MatchType::Exact,
+            ArgQueryKind::NestedFirstPositionalText,
+        ) {
+            Some(ArgQueryResult::Text(s)) => assert!(s.contains("3")),
+            other => panic!("expected nested numeric text, got {:?}", other),
+        }
     }
 }

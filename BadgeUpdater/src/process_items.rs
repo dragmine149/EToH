@@ -1,6 +1,10 @@
 use crate::{
     definitions::{Badge, Length, TowerType},
-    wikitext::{Template, parser::WikiText, parts::ArgPart},
+    wikitext::{
+        Template,
+        parser::WikiText,
+        parts::{ArgPart, ArgQueryKind, ArgQueryResult, MatchType, parts_to_plain},
+    },
 };
 
 #[derive(Debug, Default)]
@@ -17,55 +21,63 @@ pub struct WikiTower {
 /// Get the difficulty provided by the template.
 /// `original_difficulty` field is ignored as there can be many difficulties.
 fn get_difficulty(template: &Template) -> Result<f64, String> {
-    let num = match template
-        .get_arg_parts_startswith("difficulty")
-        .ok_or("Failed to get difficulty of the tower")?
-        .get(0)
-    {
-        Some(ArgPart::Template(nested)) => Ok(nested
-            .args
-            .get(0)
-            .ok_or("Failed to get difficultynum arg")?
-            .value_plain()),
-        Some(ArgPart::Text(t)) => Ok(t.to_owned()),
-        _ => Err("Invalid argpart type"),
-    }?;
-    Ok(num.parse::<f64>().map_err(|e| {
+    // Prefer nested template's first positional value, fallback to textual parts
+    let num_text = match template.query_arg(
+        "difficulty",
+        MatchType::StartsWith,
+        ArgQueryKind::NestedFirstPositionalText,
+    ) {
+        Some(ArgQueryResult::Text(s)) => s,
+        Some(ArgQueryResult::Part(p)) => p.to_plain().trim().to_string(),
+        Some(ArgQueryResult::Parts(ps)) => parts_to_plain(ps).trim().to_string(),
+        None => return Err("Failed to get difficulty of the tower".to_string()),
+    };
+
+    num_text.parse::<f64>().map_err(|e| {
         log::debug!("{}", template);
-        format!("Failed to parse number ({} -> {:?})", num, e)
-    })?)
+        format!("Failed to parse number ({} -> {:?})", num_text, e)
+    })
 }
 
 fn get_length(template: &Template) -> Result<Length, String> {
-    Ok(Length::from(
-        match template
-            .get_arg_parts_startswith("length")
-            .ok_or("Failed to get length of the tower")?
-            .get(0)
-        {
-            Some(ArgPart::Template(nested)) => Ok(nested
-                .args
-                .get(0)
-                .ok_or("Failed to get arg of length")?
-                .value_plain()),
-            Some(ArgPart::Text(t)) => Ok(t.to_owned()),
-            _ => Err("Invalid argpart type"),
-        }?
+    let txt = match template.query_arg(
+        "length",
+        MatchType::StartsWith,
+        ArgQueryKind::NestedFirstPositionalText,
+    ) {
+        Some(ArgQueryResult::Text(s)) => s,
+        Some(ArgQueryResult::Part(p)) => p.to_plain().trim().to_string(),
+        Some(ArgQueryResult::Parts(ps)) => parts_to_plain(ps).trim().to_string(),
+        None => return Err("Failed to get length of the tower".to_string()),
+    };
+
+    let v = txt
         .parse::<u16>()
-        .map_err(|e| format!("Failed to parse number ({:?})", e))?,
-    ))
+        .map_err(|e| format!("Failed to parse number ({:?})", e))?;
+    Ok(Length::from(v))
 }
 
 fn get_type(template: &Template) -> Result<TowerType, String> {
-    Ok(TowerType::from(match template
-        .get_arg_parts_startswith("type_of_tower")
-        .ok_or("Failed to get type of tower")?
-        .get(0)
-    {
-        Some(ArgPart::Text(t)) => Ok(t.to_owned()),
-        Some(ArgPart::InternalLink { target, label }) => Ok(target.to_owned()),
-        _ => Err("Invalid argpart type"),
-    }?))
+    // Use parts-level query and inspect first element's variant
+    let first =
+        match template.query_arg("type_of_tower", MatchType::StartsWith, ArgQueryKind::Parts) {
+            Some(ArgQueryResult::Parts(ps)) => {
+                if let Some(p) = ps.get(0) {
+                    p
+                } else {
+                    return Err("Failed to get type of tower".to_string());
+                }
+            }
+            Some(ArgQueryResult::Part(p)) => p,
+            Some(ArgQueryResult::Text(t)) => return Ok(TowerType::from(t)),
+            None => return Err("Failed to get type of tower".to_string()),
+        };
+
+    match first {
+        ArgPart::Text(t) => Ok(TowerType::from(t.to_owned())),
+        ArgPart::InternalLink { target, .. } => Ok(TowerType::from(target.to_owned())),
+        _ => Err("Invalid argpart type".to_string()),
+    }
 }
 
 pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String> {

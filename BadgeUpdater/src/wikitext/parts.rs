@@ -73,13 +73,92 @@ impl Argument {
     pub fn value_plain(&self) -> String {
         parts_to_plain(&self.value)
     }
+
+    /// Return the first meaningful `ArgPart` of this argument's value, skipping
+    /// any leading `Text` parts that are pure whitespace. This is useful to
+    /// handle values like `difficulty= {{DifficultyNum|4.67}}` where a leading
+    /// space becomes a `Text` part; callers usually want the nested template.
+    pub fn first_meaningful_part(&self) -> Option<&ArgPart> {
+        for part in &self.value {
+            match part {
+                ArgPart::Text(t) => {
+                    if !t.trim().is_empty() {
+                        return Some(part);
+                    } else {
+                        // skip pure-whitespace text parts
+                        continue;
+                    }
+                }
+                _ => return Some(part),
+            }
+        }
+        None
+    }
+
+    /// Convenience: return the first meaningful part as plain text. If the
+    /// part is a nested template or link, its `to_plain()` will be used.
+    pub fn first_meaningful_text(&self) -> Option<String> {
+        self.first_meaningful_part()
+            .map(|p| p.to_plain().trim().to_string())
+    }
 }
 
 /// A parsed template (name and arguments).
+///
+/// Examples
+/// ```rust,ignore
+/// // Typical usage (the real entry point for parsing is in `parser::parse_templates`)
+/// use crate::wikitext::parts::{Template, Argument, ArgPart, MatchType, ArgQueryKind};
+///
+/// // Build a small template programatically for demonstration:
+/// let mut nested = Template::new(\"DifficultyNum\");
+/// nested.push_arg(Argument::positional(\"4.67\"));
+///
+/// let mut tpl = Template::new(\"towerinfobox\");
+/// tpl.push_arg(Argument::named(\"difficulty\", vec![ArgPart::Template(nested.clone())]));
+///
+/// // Query the `difficulty` argument for the nested template's first positional value:
+/// if let Some(crate::wikitext::parts::ArgQueryResult::Text(val)) = tpl.query_arg(
+///     \"difficulty\",
+///     MatchType::Exact,
+///     ArgQueryKind::NestedFirstPositionalText,
+/// ) {
+///     assert_eq!(val, \"4.67\"); // demonstrates extracting the inner scalar
+/// }
+/// ```
+///
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Template {
     pub name: String,
     pub args: Vec<Argument>,
+}
+
+/// How to match argument names when querying a template.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum MatchType {
+    Exact,
+    StartsWith,
+}
+
+/// What kind of query to perform against an argument's value.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ArgQueryKind {
+    /// Return the full parts slice (&[ArgPart]).
+    Parts,
+    /// Return the first meaningful part (skips leading whitespace-only Text parts).
+    FirstPart,
+    /// Return the first meaningful part rendered to plain text (String).
+    FirstText,
+    /// If the first meaningful part is a nested template, return that template's
+    /// first positional argument as plain text. Otherwise fallback to FirstText.
+    NestedFirstPositionalText,
+}
+
+/// Result of querying an argument. Borrowed where possible to avoid cloning.
+pub enum ArgQueryResult<'a> {
+    Parts(&'a [ArgPart]),
+    Part(&'a ArgPart),
+    Text(String),
 }
 
 impl Template {
@@ -113,64 +192,140 @@ impl Template {
         format!("{}: {}", self.name, pieces.join(", "))
     }
 
-    /// Get first argument with a matching name (case-insensitive).
-    pub fn get_argument(&self, name: &str) -> Option<&Argument> {
+    /// Internal helper: find an argument by name using the provided `MatchType`.
+    fn find_arg(&self, name: &str, mode: MatchType) -> Option<&Argument> {
         let target = name.trim().to_lowercase();
         if target.is_empty() {
             return None;
         }
         for a in &self.args {
             if let Some(k) = &a.name {
-                if k.trim().to_lowercase() == target {
-                    return Some(a);
+                let key = k.trim().to_lowercase();
+                match mode {
+                    MatchType::Exact => {
+                        if key == target {
+                            return Some(a);
+                        }
+                    }
+                    MatchType::StartsWith => {
+                        if key.starts_with(&target) {
+                            return Some(a);
+                        }
+                    }
                 }
             }
         }
         None
+    }
+
+    /// Unified high-level query API. Returns either a borrowed parts/part or an owned String
+    /// depending on the requested `kind`.
+    pub fn query_arg<'a>(
+        &'a self,
+        name: &str,
+        mode: MatchType,
+        kind: ArgQueryKind,
+    ) -> Option<ArgQueryResult<'a>> {
+        let arg = self.find_arg(name, mode)?;
+        match kind {
+            ArgQueryKind::Parts => Some(ArgQueryResult::Parts(arg.value.as_slice())),
+            ArgQueryKind::FirstPart => arg.first_meaningful_part().map(ArgQueryResult::Part),
+            ArgQueryKind::FirstText => arg
+                .first_meaningful_part()
+                .map(|p| ArgQueryResult::Text(p.to_plain().trim().to_string())),
+            ArgQueryKind::NestedFirstPositionalText => {
+                if let Some(ArgPart::Template(tpl)) = arg.first_meaningful_part() {
+                    if let Some(pos0) = tpl.args.get(0) {
+                        return Some(ArgQueryResult::Text(pos0.value_plain().trim().to_string()));
+                    }
+                }
+                // fallback to FirstText
+                arg.first_meaningful_part()
+                    .map(|p| ArgQueryResult::Text(p.to_plain().trim().to_string()))
+            }
+        }
+    }
+
+    /// Get first argument with a matching name (case-insensitive).
+    pub fn get_argument(&self, name: &str) -> Option<&Argument> {
+        self.find_arg(name, MatchType::Exact)
     }
 
     /// Get first argument which starts with a matching name (case-insensitive).
     pub fn get_argument_startswith(&self, name: &str) -> Option<&Argument> {
-        let target = name.trim().to_lowercase();
-        if target.is_empty() {
-            return None;
-        }
-        for a in &self.args {
-            if let Some(k) = &a.name {
-                if k.trim().to_lowercase().starts_with(&target) {
-                    return Some(a);
-                }
-            }
-        }
-        None
+        self.find_arg(name, MatchType::StartsWith)
     }
 
     /// Convenience: get argument value by name as plain text (if present).
     pub fn get_arg_value(&self, name: &str) -> Option<String> {
-        self.get_argument(name)
-            .map(|a| a.value_plain().trim().to_string())
+        // delegate to query API: return FirstText for exact match
+        match self.query_arg(name, MatchType::Exact, ArgQueryKind::FirstText) {
+            Some(ArgQueryResult::Text(s)) => Some(s),
+            Some(ArgQueryResult::Part(p)) => Some(p.to_plain().trim().to_string()),
+            Some(ArgQueryResult::Parts(ps)) => Some(parts_to_plain(ps).trim().to_string()),
+            None => None,
+        }
     }
 
     /// Convenience: return the underlying `ArgPart` slice for an argument
     /// matching `name` (case-insensitive). This makes it simple to access
     /// structured parts (e.g. nested templates or links) without dealing with
-    /// `Argument` manually. Example:
-    ///
-    /// ```rust,ignore
-    /// // assuming `tpl` is a parsed `Template`
-    /// if let Some(parts) = tpl.get_arg_parts("difficulty") {
-    ///     // parts: &[ArgPart]; you can inspect parts[0] etc.
-    /// }
-    /// ```
+    /// `Argument` manually.
     pub fn get_arg_parts(&self, name: &str) -> Option<&[ArgPart]> {
-        self.get_argument(name).map(|a| a.value.as_slice())
+        match self.query_arg(name, MatchType::Exact, ArgQueryKind::Parts) {
+            Some(ArgQueryResult::Parts(ps)) => Some(ps),
+            _ => None,
+        }
     }
 
     /// Like `get_arg_parts` but matches argument names that start with `name`.
-    /// Handy when argument keys use prefixes or variants (e.g. `original_difficulty`).
     pub fn get_arg_parts_startswith(&self, name: &str) -> Option<&[ArgPart]> {
-        self.get_argument_startswith(name)
-            .map(|a| a.value.as_slice())
+        match self.query_arg(name, MatchType::StartsWith, ArgQueryKind::Parts) {
+            Some(ArgQueryResult::Parts(ps)) => Some(ps),
+            _ => None,
+        }
+    }
+
+    /// (Removed) Use `query_arg(name, mode, ArgQueryKind::FirstPart)` directly.
+    /// This helper was removed in favor of the unified `query_arg` API.
+
+    /// Convenience: return the first meaningful part (exact match).
+    pub fn get_arg_first_part(&self, name: &str) -> Option<&ArgPart> {
+        match self.query_arg(name, MatchType::Exact, ArgQueryKind::FirstPart) {
+            Some(ArgQueryResult::Part(p)) => Some(p),
+            _ => None,
+        }
+    }
+
+    /// Convenience: return the first meaningful part (starts-with match).
+    pub fn get_arg_first_part_startswith(&self, name: &str) -> Option<&ArgPart> {
+        match self.query_arg(name, MatchType::StartsWith, ArgQueryKind::FirstPart) {
+            Some(ArgQueryResult::Part(p)) => Some(p),
+            _ => None,
+        }
+    }
+
+    /// (Removed) Use `query_arg(name, mode, ArgQueryKind::FirstText)` directly.
+    /// The unified `query_arg` API should be used instead of this separate helper.
+
+    /// Convenience: first meaningful text (exact match).
+    pub fn get_arg_first_text(&self, name: &str) -> Option<String> {
+        match self.query_arg(name, MatchType::Exact, ArgQueryKind::FirstText) {
+            Some(ArgQueryResult::Text(s)) => Some(s),
+            Some(ArgQueryResult::Part(p)) => Some(p.to_plain().trim().to_string()),
+            Some(ArgQueryResult::Parts(ps)) => Some(parts_to_plain(ps).trim().to_string()),
+            None => None,
+        }
+    }
+
+    /// Convenience: first meaningful text (starts-with match).
+    pub fn get_arg_first_text_startswith(&self, name: &str) -> Option<String> {
+        match self.query_arg(name, MatchType::StartsWith, ArgQueryKind::FirstText) {
+            Some(ArgQueryResult::Text(s)) => Some(s),
+            Some(ArgQueryResult::Part(p)) => Some(p.to_plain().trim().to_string()),
+            Some(ArgQueryResult::Parts(ps)) => Some(parts_to_plain(ps).trim().to_string()),
+            None => None,
+        }
     }
 }
 
