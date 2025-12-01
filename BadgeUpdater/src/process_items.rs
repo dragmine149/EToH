@@ -17,7 +17,7 @@ pub struct WikiTower {
 /// Get the difficulty provided by the template.
 /// `original_difficulty` field is ignored as there can be many difficulties.
 fn get_difficulty(template: &Template) -> Result<f64, String> {
-    Ok(match template
+    let num = match template
         .get_arg_parts_startswith("difficulty")
         .ok_or("Failed to get difficulty of the tower")?
         .get(0)
@@ -29,9 +29,11 @@ fn get_difficulty(template: &Template) -> Result<f64, String> {
             .value_plain()),
         Some(ArgPart::Text(t)) => Ok(t.to_owned()),
         _ => Err("Invalid argpart type"),
-    }?
-    .parse::<f64>()
-    .map_err(|e| format!("Failed to parse number ({:?})", e))?)
+    }?;
+    Ok(num.parse::<f64>().map_err(|e| {
+        log::debug!("{}", template);
+        format!("Failed to parse number ({} -> {:?})", num, e)
+    })?)
 }
 
 fn get_length(template: &Template) -> Result<Length, String> {
@@ -75,9 +77,27 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
         .get_argument_startswith("found_in")
         .ok_or("Failed to get area of tower")?
         .value_plain();
-    let difficulty = get_difficulty(&template).unwrap_or(100.0);
-    let length = get_length(&template).unwrap_or_default();
-    let tower_type = get_type(&template).unwrap_or_default();
+    let difficulty = match get_difficulty(&template) {
+        Ok(diff) => diff,
+        Err(e) => {
+            log::warn!("[Difficult/{}]: {:?}", badge.display_name, e);
+            100.0
+        }
+    };
+    let length = match get_length(&template) {
+        Ok(len) => len,
+        Err(e) => {
+            log::warn!("[Length/{}]: {:?}", badge.display_name, e);
+            Length::default()
+        }
+    };
+    let tower_type = match get_type(&template) {
+        Ok(tp) => tp,
+        Err(e) => {
+            log::warn!("[Type/{}]: {:?}", badge.display_name, e);
+            TowerType::default()
+        }
+    };
     let page_name = text.page_name.clone().unwrap_or_default().to_owned();
 
     Ok(WikiTower {
