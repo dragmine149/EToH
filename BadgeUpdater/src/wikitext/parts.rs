@@ -129,6 +129,22 @@ impl Template {
         None
     }
 
+    /// Get first argument which starts with a matching name (case-insensitive).
+    pub fn get_argument_startswith(&self, name: &str) -> Option<&Argument> {
+        let target = name.trim().to_lowercase();
+        if target.is_empty() {
+            return None;
+        }
+        for a in &self.args {
+            if let Some(k) = &a.name {
+                if k.trim().to_lowercase().starts_with(&target) {
+                    return Some(a);
+                }
+            }
+        }
+        None
+    }
+
     /// Convenience: get argument value by name as plain text (if present).
     pub fn get_arg_value(&self, name: &str) -> Option<String> {
         self.get_argument(name)

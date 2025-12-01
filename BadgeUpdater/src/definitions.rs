@@ -5,7 +5,7 @@ use std::{
     fmt::Display,
 };
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Deserialize, Serialize, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct BadgeUniverse {
     pub id: u64,
@@ -13,7 +13,7 @@ pub struct BadgeUniverse {
     pub root_place_id: u64,
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Deserialize, Serialize, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct BadgeStatistics {
     pub past_day_awarded_count: u64,
@@ -21,7 +21,7 @@ pub struct BadgeStatistics {
     pub win_rate_percentage: f64,
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Deserialize, Serialize, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Badge {
     pub id: u64,

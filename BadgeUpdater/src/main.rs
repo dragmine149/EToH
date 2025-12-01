@@ -6,6 +6,7 @@ mod definitions;
 // mod pywiki;
 mod reqwest_client;
 // mod rust_wiki;
+mod process_items;
 mod wikitext;
 
 use std::{
