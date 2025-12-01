@@ -7,42 +7,10 @@ use url::Url;
 
 use crate::{
     ETOH_WIKI, clean_badge_name,
+    definitions::Badge,
     reqwest_client::{RustClient, RustError},
     wikitext::parser::WikiText,
 };
-
-#[derive(Debug, Deserialize, Serialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct BadgeUniverse {
-    pub id: u64,
-    pub name: String,
-    pub root_place_id: u64,
-}
-
-#[derive(Debug, Deserialize, Serialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct BadgeStatistics {
-    pub past_day_awarded_count: u64,
-    pub awarded_count: u64,
-    pub win_rate_percentage: f64,
-}
-
-#[derive(Debug, Deserialize, Serialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct Badge {
-    pub id: u64,
-    pub name: String,
-    pub description: Option<String>,
-    pub display_name: String,
-    pub display_description: Option<String>,
-    pub enabled: bool,
-    pub icon_image_id: u64,
-    pub display_icon_image_id: u64,
-    pub created: String,
-    pub updated: String,
-    pub statistics: BadgeStatistics,
-    pub awarding_universe: BadgeUniverse,
-}
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -174,7 +142,8 @@ async fn process_data(
         // Process success first as the rest has to loop anyway.
         // Normally i would do this last, but it's easier here.
         if data.status().is_success() {
-            let page = WikiText::parse(&data.text().await?);
+            let mut page = WikiText::parse(&data.text().await?);
+            page.page_name = Some(redirect.to_owned());
             if search.is_some() && search.unwrap() != redirect {
                 return Ok(is_page_link(page, badge_id)?);
             }

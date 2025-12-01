@@ -159,6 +159,9 @@ pub struct WikiText {
     /// Raw page text (canonical source of truth)
     pub raw: String,
 
+    /// Name of the page for future reference. Optional as we might only parse part of a page sometimes.
+    pub page_name: Option<String>,
+
     /// Cached parsed templates (set once when computed)
     parsed_cache: std::sync::OnceLock<ParseResult>,
 
@@ -175,6 +178,7 @@ impl WikiText {
     pub fn parse(input: &str) -> Self {
         WikiText {
             raw: input.to_string(),
+            page_name: None,
             parsed_cache: std::sync::OnceLock::new(),
             redirect_cache: std::sync::OnceLock::new(),
             external_links_cache: std::sync::OnceLock::new(),

@@ -24,6 +24,7 @@ use url::Url;
 
 use crate::{
     badge_to_wikitext::{ErrorDetails, OkDetails, get_badges},
+    process_items::{WikiTower, process_tower},
     reqwest_client::RustClient,
     wikitext::{Template, parser::WikiText},
 };
@@ -137,7 +138,7 @@ fn count_processed<'a, K, P, E>(
     obj: &'a [Result<K, E>],
     pass_check: P,
     func_name: &str,
-    file: Option<PathBuf>,
+    file: Option<&PathBuf>,
 ) -> Vec<&'a K>
 where
     P: Fn(&Result<K, E>) -> bool,
@@ -155,20 +156,25 @@ where
         }
     }
 
-    if let Some(path) = file {
-        use std::io::Write;
-        match fs::OpenOptions::new().create(true).append(true).open(&path) {
-            Ok(mut fh) => {
-                if let Err(e) = writeln!(fh, "{:#?}\n", passed) {
-                    log::error!("Failed to append passed items to {:?}: {}", path, e);
+    match file {
+        Some(path) => {
+            use std::io::Write;
+            match fs::OpenOptions::new().create(true).append(true).open(&path) {
+                Ok(mut fh) => {
+                    if let Err(e) = writeln!(fh, "{:#?}\n", passed) {
+                        log::error!("Failed to append passed items to {:?}: {}", path, e);
+                    }
+                    if let Err(e) = writeln!(fh, "{:#?}\n", failed) {
+                        log::error!("Failed to append failed items to {:?}: {}", path, e);
+                    }
                 }
-                if let Err(e) = writeln!(fh, "{:#?}\n", failed) {
-                    log::error!("Failed to append failed items to {:?}: {}", path, e);
+                Err(e) => {
+                    log::error!("Failed to open file {:?} for appending: {}", path, e);
                 }
             }
-            Err(e) => {
-                log::error!("Failed to open file {:?} for appending: {}", path, e);
-            }
+        }
+        None => {
+            log::error!("No path passed for appending: {:?}", file);
         }
     }
 
@@ -214,30 +220,20 @@ async fn main() {
         &badges_vec,
         |f: &Result<OkDetails, ErrorDetails>| f.is_ok(),
         "get_badges",
-        Some(path),
+        Some(&path),
     );
 
-    // Extract towerinfobox templates from the parsed results.
-    // Use a regular iterator (not rayon) to avoid Send requirements on error types.
-    let processed_badges = passed
-        .iter()
-        .map(|badge| {
-            let parsed = badge.0.get_parsed();
-            parsed
-                .templates
-                .iter()
-                // .inspect(|x| log::debug!("{:?}", x))
-                .find(|t| t.name.to_lowercase().contains("towerinfobox"))
-                .map(|t| t.to_owned())
-                .ok_or_else(|| String::from("Failed to find towerinfobox"))
-        })
-        .collect::<Vec<Result<Template, String>>>();
+    let tower_data = passed
+        .par_iter()
+        .map(|p| process_tower(&p.0, &p.1))
+        .inspect(|x| println!("{:?}", x))
+        .collect::<Vec<Result<WikiTower, String>>>();
 
     let processed = count_processed(
-        &processed_badges,
-        |r: &Result<Template, String>| r.is_ok(),
-        "extract_templates",
-        None,
+        &tower_data,
+        |r: &Result<WikiTower, String>| r.is_ok(),
+        "process_tower",
+        Some(&path),
     );
 
     // The rest of the original code (commented-out legacy logic) remains unchanged.
