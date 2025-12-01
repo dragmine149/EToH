@@ -107,12 +107,14 @@ impl From<&str> for ProcessError {
 }
 
 #[derive(Debug)]
-pub struct ErrorDetails(ProcessError, Badge);
+pub struct ErrorDetails(pub ProcessError, pub Badge);
+#[derive(Debug)]
+pub struct OkDetails(pub WikiText, pub Badge);
 
 pub async fn get_badges(
     client: RustClient,
     url: &Url,
-) -> Result<Vec<JoinHandle<Result<WikiText, ErrorDetails>>>, Box<dyn Error>> {
+) -> Result<Vec<JoinHandle<Result<OkDetails, ErrorDetails>>>, Box<dyn Error>> {
     let mut data: Data = Data::default();
     let mut tasks = vec![];
     while let Some(next_page_cursor) = data.next_page_cursor {
@@ -137,12 +139,12 @@ fn is_page_link(page: WikiText, badge: u64) -> Result<WikiText, String> {
     }
 }
 
-async fn pre_process(client: RustClient, badge: Badge) -> Result<WikiText, ErrorDetails> {
-    let result = process_data(client.clone(), &badge.name, badge.id, true).await;
+async fn pre_process(client: RustClient, badge: Badge) -> Result<OkDetails, ErrorDetails> {
+    let result = process_data(client.clone(), &badge.name, badge.id, None).await;
     if result.is_err() {
         return Err(ErrorDetails(result.err().unwrap(), badge));
     }
-    Ok(result.ok().unwrap())
+    Ok(OkDetails(result.ok().unwrap(), badge))
 }
 
 #[async_recursion]
@@ -150,7 +152,7 @@ async fn process_data(
     client: RustClient,
     badge: &String,
     badge_id: u64,
-    search: bool,
+    search: Option<&String>,
 ) -> Result<WikiText, ProcessError> {
     let mut page_title = Some(clean_badge_name(&badge));
     log::debug!("Getting: {:?} ({:?})", page_title, badge_id);
@@ -162,14 +164,21 @@ async fn process_data(
             .get(format!("{:}wiki/{:}?action=raw", ETOH_WIKI, redirect))
             .send()
             .await?;
+        println!(
+            "{:?}, {:?}, {:?}",
+            data.url().as_str(),
+            badge_id,
+            data.status().as_str()
+        );
 
         // Process success first as the rest has to loop anyway.
         // Normally i would do this last, but it's easier here.
         if data.status().is_success() {
-            return Ok(is_page_link(
-                WikiText::parse(&data.text().await?),
-                badge_id,
-            )?);
+            let page = WikiText::parse(&data.text().await?);
+            if search.is_some() && search.unwrap() != redirect {
+                return Ok(is_page_link(page, badge_id)?);
+            }
+            return Ok(page);
         }
 
         // retry, but clean it if we haven't already cleaned it.
@@ -178,6 +187,7 @@ async fn process_data(
                 page_title
                     .unwrap_or_default()
                     .replace("-", " ")
+                    .replace("!", "")
                     .trim()
                     .to_string(),
             );
@@ -190,11 +200,11 @@ async fn process_data(
 
     // Assumption: Failed clean, check so we search.
 
-    if search {
+    if search.is_none() {
         let pages = client
             .get(format!(
                 "{:}api.php?action=query&format=json&list=search&srsearch={:}&srlimit={:}",
-                ETOH_WIKI, badge, 1
+                ETOH_WIKI, badge, 3
             ))
             .send()
             .await?
@@ -202,7 +212,12 @@ async fn process_data(
             .await?;
 
         for entry in pages.query.search {
-            let search_page = process_data(client.clone(), &entry.title, badge_id, false).await;
+            // if entry.title.contains("/") {
+            //     continue;
+            // }
+
+            let search_page =
+                process_data(client.clone(), &entry.title, badge_id, Some(badge)).await;
             if search_page.is_ok() {
                 return Ok(search_page?);
             }
