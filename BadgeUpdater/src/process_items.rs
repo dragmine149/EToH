@@ -34,7 +34,7 @@ fn get_difficulty(template: &Template) -> Result<f64, String> {
     };
 
     num_text.parse::<f64>().map_err(|e| {
-        log::debug!("{}", template);
+        // log::debug!("{}", template);
         format!("Failed to parse number ({} -> {:?})", num_text, e)
     })
 }
@@ -48,8 +48,13 @@ fn get_length(template: &Template) -> Result<Length, String> {
         Some(ArgQueryResult::Text(s)) => s,
         Some(ArgQueryResult::Part(p)) => p.to_plain().trim().to_string(),
         Some(ArgQueryResult::Parts(ps)) => parts_to_plain(ps).trim().to_string(),
-        None => return Err("Failed to get length of the tower".to_string()),
+        None => return Err("(warn ignore) Failed to get length of the tower".to_string()),
     };
+
+    // should avoid chases when length is provided but no length is realistically provided.
+    if !txt.chars().any(|c| c.is_numeric()) {
+        return Ok(Length::default());
+    }
 
     let v = txt
         .parse::<u16>()
@@ -99,7 +104,9 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
     let length = match get_length(&template) {
         Ok(len) => len,
         Err(e) => {
-            log::warn!("[Length/{}]: {:?}", badge.display_name, e);
+            if !e.contains("(warn ignore)") {
+                log::warn!("[Length/{}]: {:?}", badge.display_name, e);
+            }
             Length::default()
         }
     };
