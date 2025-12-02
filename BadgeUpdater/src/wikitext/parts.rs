@@ -50,6 +50,7 @@ impl ArgPart {
 pub struct Argument {
     pub name: Option<String>,
     pub value: Vec<ArgPart>,
+    pub raw: Option<String>,
 }
 
 impl Argument {
@@ -58,6 +59,7 @@ impl Argument {
         Argument {
             name: None,
             value: vec![ArgPart::Text(text.into())],
+            raw: None,
         }
     }
 
@@ -66,6 +68,7 @@ impl Argument {
         Argument {
             name: Some(key.into()),
             value: parts,
+            raw: None,
         }
     }
 
@@ -100,6 +103,109 @@ impl Argument {
     pub fn first_meaningful_text(&self) -> Option<String> {
         self.first_meaningful_part()
             .map(|p| p.to_plain().trim().to_string())
+    }
+
+    /// Attempt to interpret this argument value as a list where items are
+    /// prefixed with '*' at the start of a line. Returns None if there are no
+    /// list markers. Each item is represented as a Vec<ArgPart> (cloned).
+    ///
+    /// Example: for the wiki fragment
+    /// "*{{DifficultyNum|7.65}}\n*{{DifficultyName|6}} (Double Jump)"
+    /// this will return a Vec with two entries, each entry being the parts
+    /// representing that list line (templates and text).
+    pub fn as_list(&self) -> Option<Vec<Vec<ArgPart>>> {
+        // First, flatten text parts so that newline boundaries are explicit tokens.
+        let mut tokens: Vec<ArgPart> = Vec::new();
+        for p in &self.value {
+            match p {
+                ArgPart::Text(s) => {
+                    // Split text on '\n', but preserve explicit newline tokens
+                    let mut last = 0usize;
+                    for (idx, ch) in s.char_indices() {
+                        if ch == '\n' {
+                            if idx > last {
+                                tokens.push(ArgPart::Text(s[last..idx].to_string()));
+                            }
+                            tokens.push(ArgPart::Text("\n".to_string()));
+                            last = idx + ch.len_utf8();
+                        }
+                    }
+                    if last < s.len() {
+                        tokens.push(ArgPart::Text(s[last..].to_string()));
+                    }
+                }
+                other => tokens.push(other.clone()),
+            }
+        }
+
+        // Now parse tokens into list items. A list item starts when at the
+        // beginning of input or immediately after a newline, and the first
+        // non-whitespace character is '*'.
+        let mut items: Vec<Vec<ArgPart>> = Vec::new();
+        let mut current: Vec<ArgPart> = Vec::new();
+        let mut at_line_start = true;
+
+        let mut i = 0usize;
+        while i < tokens.len() {
+            match &tokens[i] {
+                ArgPart::Text(s) if s == "\n" => {
+                    // End of line -> next token is line-start
+                    at_line_start = true;
+                    i += 1;
+                }
+                ArgPart::Text(s) if at_line_start => {
+                    // Check for leading whitespace then '*'
+                    let mut chars = s.chars();
+                    let mut idx_in_s = 0usize;
+                    // consume leading whitespace
+                    while let Some(c) = chars.next() {
+                        if c.is_whitespace() && c != '\n' {
+                            idx_in_s += c.len_utf8();
+                            continue;
+                        }
+                        break;
+                    }
+                    // Find first non-space char (if any)
+                    let rest = &s[idx_in_s..];
+                    if rest.starts_with('*') {
+                        // Start of a new list item.
+                        // If current already contains content, push it first.
+                        if !current.is_empty() {
+                            items.push(current);
+                            current = Vec::new();
+                        }
+                        // Determine remaining text after the '*' marker.
+                        let mut after = &rest[1..];
+                        // Trim one leading space after the '*' if present
+                        if after.starts_with(' ') {
+                            after = &after[1..];
+                        }
+                        if !after.is_empty() {
+                            current.push(ArgPart::Text(after.to_string()));
+                        }
+                        at_line_start = false;
+                        i += 1;
+                    } else {
+                        // Not a list marker; treat whole text as regular text
+                        current.push(ArgPart::Text(s.clone()));
+                        at_line_start = false;
+                        i += 1;
+                    }
+                }
+                other => {
+                    // Non-text or mid-line text: append to current item
+                    current.push(other.clone());
+                    at_line_start = false;
+                    i += 1;
+                }
+            }
+        }
+
+        if !current.is_empty() {
+            items.push(current);
+        }
+
+        if items.is_empty() { None } else { Some(items) }
     }
 }
 
@@ -155,6 +261,8 @@ pub enum ArgQueryKind {
 }
 
 /// Result of querying an argument. Borrowed where possible to avoid cloning.
+/// Typed result from `query_arg`.
+#[derive(Debug)]
 pub enum ArgQueryResult<'a> {
     Parts(&'a [ArgPart]),
     Part(&'a ArgPart),
@@ -190,6 +298,26 @@ impl Template {
             }
         }
         format!("{}: {}", self.name, pieces.join(", "))
+    }
+
+    /// Extract all arguments that contain wiki-style '*' list markers and
+    /// return them as a vector of (argument_name, list_of_items). Each item is
+    /// represented as Vec<ArgPart> (cloned) preserving nested templates/links.
+    ///
+    /// Example:
+    /// For an argument `difficulty` whose value contains lines starting with '*',
+    /// calling `tpl.lists()` will include an entry with the key `"difficulty"`
+    /// and value like `vec![ vec![ArgPart::Template(...)] , vec![ArgPart::Template(...), ArgPart::Text(\" (Double Jump)\")] ]`.
+    pub fn lists(&self) -> Vec<(String, Vec<Vec<ArgPart>>)> {
+        let mut out: Vec<(String, Vec<Vec<ArgPart>>)> = Vec::new();
+        for arg in &self.args {
+            if let Some(name) = &arg.name {
+                if let Some(items) = arg.as_list() {
+                    out.push((name.clone(), items));
+                }
+            }
+        }
+        out
     }
 
     /// Internal helper: find an argument by name using the provided `MatchType`.

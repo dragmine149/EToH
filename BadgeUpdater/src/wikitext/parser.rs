@@ -307,12 +307,19 @@ fn parse_single_template(body: &str) -> Option<Template> {
         let (maybe_key, val_str) = split_first_equals_top_level(&raw_arg);
         let value_parts = parse_parts(&val_str);
         if let Some(k) = maybe_key {
-            tpl.push_arg(Argument::named(k.trim().to_string(), value_parts));
+            // store the raw right-hand side in the Argument so callers that need
+            // to inspect raw text (e.g. list parsing) can access it.
+            tpl.push_arg(Argument {
+                name: Some(k.trim().to_string()),
+                value: value_parts,
+                raw: Some(val_str.clone()),
+            });
         } else {
             // positional argument: no name, hold the parsed parts directly
             tpl.push_arg(Argument {
                 name: None,
                 value: value_parts,
+                raw: Some(val_str.clone()),
             });
         }
     }
