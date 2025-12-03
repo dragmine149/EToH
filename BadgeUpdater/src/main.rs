@@ -223,7 +223,7 @@ async fn main() {
     );
 
     let tower_data = passed
-        .par_iter()
+        .iter()
         .map(|p| process_tower(&p.0, &p.1))
         .inspect(|x| println!("{:?}", x))
         .collect::<Vec<Result<WikiTower, String>>>();

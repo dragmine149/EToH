@@ -9,7 +9,7 @@ use crate::{
     ETOH_WIKI, clean_badge_name,
     definitions::Badge,
     reqwest_client::{RustClient, RustError},
-    wikitext::parser::WikiText,
+    wikitext::WikiText,
 };
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -100,7 +100,7 @@ pub async fn get_badges(
 }
 
 fn is_page_link(page: WikiText, badge: u64) -> Result<WikiText, String> {
-    if page.raw.as_str().contains(&badge.to_string()) {
+    if page.text().contains(&badge.to_string()) {
         Ok(page)
     } else {
         Err("No links to the specific badge were found.".into())
@@ -143,7 +143,7 @@ async fn process_data(
         // Normally i would do this last, but it's easier here.
         if data.status().is_success() {
             let mut page = WikiText::parse(&data.text().await?);
-            page.page_name = Some(redirect.to_owned());
+            page.set_page_name(Some(redirect.to_owned()));
             if search.is_some() && search.unwrap() != redirect {
                 return Ok(is_page_link(page, badge_id)?);
             }

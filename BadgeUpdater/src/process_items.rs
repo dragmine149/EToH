@@ -59,13 +59,20 @@ fn get_length(template: &Template) -> Result<Length, String> {
     let length_text = query
         .get(0)
         .ok_or("(warn ignore) No length found in tower")?;
-    let txt = match length_text.elements.get(0).ok_or("No elements in length")? {
-        Argument::Template(template) => {
-            template
-                .get_positional_arg(0)
-                .map_err(|e| format!("failed to get first arg ({})", e))?
-                .raw
-        }
+
+    if length_text.raw.is_empty() {
+        return Ok(Length::default());
+    }
+
+    let txt = match length_text
+        .elements
+        .get(0)
+        .ok_or("No elements in length but not empty? ({:?})")?
+    {
+        Argument::Template(template) => match template.get_positional_arg(0) {
+            Ok(arg) => arg.raw.clone(),
+            Err(_) => return Ok(Length::default()),
+        },
         Argument::Link(_) => return Err(String::from("Somehow a link in Length")),
         Argument::List(_) => {
             return Err(String::from(
@@ -103,12 +110,15 @@ fn get_type(template: &Template) -> Result<TowerType, String> {
 }
 
 pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String> {
-    let template = text
+    // log::debug!("Tower: {:?}", text.page_name());
+    let parsed = text
         .get_parsed()
-        .map_err(|e| format!("Failed to parse wikitext: {:?}", e))?
-        .get_template_query("towerinfobox", QueryType::StartsWith)
-        .get(0)
-        .ok_or("Failed to get towerinfobox")?;
+        .map_err(|e| format!("Failed to parse wikitext: {:?}", e))?;
+    let templates = parsed.get_template_query("towerinfobox", QueryType::StartsWith);
+    let template = templates.get(0).ok_or(format!(
+        "Failed to get towerinfobox ({:?})",
+        text.page_name()
+    ))?;
 
     let area = template
         .get_named_args_query("found_in", QueryType::StartsWith)
