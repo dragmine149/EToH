@@ -18,6 +18,37 @@
 use crate::wikitext::enums::{LinkType, ListType, QueryType};
 use crate::wikitext::errors::WtError;
 
+/// Helper: check whether the byte slice starting at `pos` begins with
+/// ASCII "http" or "https" (case-insensitive). This performs byte-wise
+/// checks and therefore avoids slicing the UTF-8 string at arbitrary
+/// byte offsets which may fall inside a multibyte character.
+fn starts_with_http(bytes: &[u8], pos: usize) -> bool {
+    let len = bytes.len();
+    // check "http" (4 bytes)
+    if pos + 4 <= len {
+        let slice = &bytes[pos..pos + 4];
+        if slice
+            .iter()
+            .map(|b| b.to_ascii_lowercase())
+            .eq(b"http".iter().cloned())
+        {
+            return true;
+        }
+    }
+    // check "https" (5 bytes)
+    if pos + 5 <= len {
+        let slice = &bytes[pos..pos + 5];
+        if slice
+            .iter()
+            .map(|b| b.to_ascii_lowercase())
+            .eq(b"https".iter().cloned())
+        {
+            return true;
+        }
+    }
+    false
+}
+
 /// Raw text node that wasn't parsed into other structures.
 #[derive(Debug, Clone)]
 pub struct Text {
@@ -288,9 +319,8 @@ pub fn parse_wikitext_fragment(input: &str) -> Result<ParsedData, WtError> {
 
         // external link "[http" or "[https"
         if bytes[idx] == b'[' {
-            if (idx + 4 < len && input[idx + 1..idx + 5].to_lowercase().starts_with("http"))
-                || (idx + 5 < len && input[idx + 1..idx + 6].to_lowercase().starts_with("http"))
-            {
+            // Use the helper to check for "http"/"https" safely at byte level.
+            if starts_with_http(bytes, idx + 1) {
                 if !current_text.is_empty() {
                     pd.elements
                         .push(Argument::Text(Text::new(current_text.clone())));

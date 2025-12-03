@@ -2,7 +2,9 @@
 //!
 //! This module implements the small, lazy API described in `spec.md`:
 //! - `WikiText::parse(input) -> WikiText` (lazy parse, cached)
-//! - `WikiText::get_parsed(&mut) -> Result<&ParsedData, WtError>`
+//! - `WikiText::get_parsed(&self) -> Result<Ref<ParsedData>, WtError>` (shared, caches inside)
+//! - `WikiText::get_parsed_mut(&mut) -> Result<&ParsedData, WtError>` (mutable getter)
+//! - `WikiText::into_parsed(self) -> Result<ParsedData, WtError>` (consuming helper)
 //! - `page_name` getter/setter and `text()` accessor
 //!
 //! The implementation keeps ownership of all parsed data internally so callers
@@ -10,6 +12,7 @@
 
 use crate::wikitext::errors::WtError;
 use crate::wikitext::parsed_data::{ParsedData, parse_wikitext_fragment};
+use std::cell::{Ref, RefCell};
 
 /// Wrapper around a wikitext string that lazily parses on demand and caches
 /// the `ParsedData`.
@@ -17,7 +20,7 @@ use crate::wikitext::parsed_data::{ParsedData, parse_wikitext_fragment};
 pub struct WikiText {
     text: String,
     page_name: Option<String>,
-    parsed: Option<ParsedData>,
+    parsed: RefCell<Option<ParsedData>>,
 }
 
 impl WikiText {
@@ -27,7 +30,7 @@ impl WikiText {
         Self {
             text: input.into(),
             page_name: None,
-            parsed: None,
+            parsed: RefCell::new(None),
         }
     }
 
@@ -37,15 +40,40 @@ impl WikiText {
     ///
     /// Note: the method takes `&mut self` because parsing stores the cached
     /// result inside the struct.
-    pub fn get_parsed(&mut self) -> Result<&ParsedData, WtError> {
-        if self.parsed.is_none() {
-            // Delegate to the parser in the parsed_data module. It already
-            // returns a `WtError` on failure.
+    pub fn get_parsed_mut(&mut self) -> Result<&ParsedData, WtError> {
+        // If the parsed cache is empty, parse and populate it.
+        if self.parsed.borrow().is_none() {
             let parsed = parse_wikitext_fragment(&self.text)?;
-            self.parsed = Some(parsed);
+            *self.parsed.borrow_mut() = Some(parsed);
         }
-        // Safe unwrap: parsed is guaranteed to be Some by the code above.
-        Ok(self.parsed.as_ref().unwrap())
+        // Now it's safe to unwrap. We can return a reference by obtaining a mutable
+        // reference to the inner Option because we hold &mut self.
+        let slot = self.parsed.get_mut();
+        Ok(slot.as_ref().unwrap())
+    }
+
+    /// Shared (non-mutable) getter that parses lazily if needed and returns a
+    /// Ref<ParsedData> to the cached parsed data.
+    pub fn get_parsed(&self) -> Result<Ref<'_, ParsedData>, WtError> {
+        if self.parsed.borrow().is_none() {
+            let parsed = parse_wikitext_fragment(&self.text)?;
+            *self.parsed.borrow_mut() = Some(parsed);
+        }
+        let borrowed = self.parsed.borrow();
+        let mapped = std::cell::Ref::map(borrowed, |opt| opt.as_ref().unwrap());
+        Ok(mapped)
+    }
+
+    /// Consume self and return the owned ParsedData. If already parsed, returns
+    /// the cached value; otherwise parses using owned text.
+    pub fn into_parsed(self) -> Result<ParsedData, WtError> {
+        // Attempt to take the cached parsed data
+        let opt = self.parsed.into_inner();
+        if let Some(parsed) = opt {
+            Ok(parsed)
+        } else {
+            parse_wikitext_fragment(&self.text)
+        }
     }
 
     /// Return a clone of the optional page name.
@@ -72,12 +100,12 @@ mod tests {
     fn wiki_text_lazy_parse_and_cache() {
         let mut wt = WikiText::parse("Plain text {{T|x=1}} trailing");
         assert_eq!(wt.page_name(), None);
-        // before parsing, parsed is None internally; calling get_parsed parses it
-        let pd = wt.get_parsed().expect("should parse");
+        // before parsing, parsed is None internally; calling get_parsed_mut parses it
+        let pd = wt.get_parsed_mut().expect("should parse");
         // parsed data should reflect the input (raw field contains original input)
         assert!(pd.raw.contains("Plain text"));
         // second call should return cached reference (no error)
-        let _pd2 = wt.get_parsed().expect("cached");
+        let _pd2 = wt.get_parsed_mut().expect("cached");
     }
 
     #[test]
