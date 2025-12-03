@@ -13,12 +13,11 @@ pub mod parsed_data;
 pub mod wiki_text;
 
 // Re-export commonly used types for ergonomic access.
-pub use enums::{LinkType, ListType, QueryType};
-pub use errors::WtError;
+pub use enums::QueryType;
 
 // Re-export data types implemented inside `parsed_data` (we don't have
 // separate `link`, `list`, or `template` modules; those types live in
 // `parsed_data.rs`).
-pub use parsed_data::{Argument, Link, List, ParsedData, Template};
+pub use parsed_data::{Argument, Template};
 
 pub use wiki_text::WikiText;

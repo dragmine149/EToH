@@ -11,7 +11,7 @@ use std::convert::TryFrom;
 use std::fmt;
 
 use crate::wikitext::errors::WtError;
-use crate::wikitext::parsed_data::{Argument, Link, List, Template, TemplateArgument, Text};
+use crate::wikitext::parsed_data::{Argument, Link, List, Template, Text};
 
 impl Argument {
     /// Returns a short textual kind for the argument.

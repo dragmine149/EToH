@@ -18,10 +18,9 @@ pub struct WikiTower {
 /// `original_difficulty` field is ignored as there can be many difficulties.
 fn get_difficulty(template: &Template) -> Result<f64, String> {
     let query = template.get_named_args_query("difficulty", QueryType::StartsWith);
-    let difficulty_text = query.get(0).ok_or("No difficulty found in tower")?;
+    let difficulty_text = query.first().ok_or("No difficulty found in tower")?;
     match difficulty_text
-        .elements
-        .get(0)
+        .elements.first()
         .ok_or("No elements in difficulty?")?
     {
         Argument::Template(template) => {
@@ -31,7 +30,7 @@ fn get_difficulty(template: &Template) -> Result<f64, String> {
                 .raw
         }
         Argument::Link(_) => return Err(String::from("Somehow a link in difficulty")),
-        Argument::List(list) => match list.entries.get(0).ok_or("List with no entries?")? {
+        Argument::List(list) => match list.entries.first().ok_or("List with no entries?")? {
             Argument::Template(template) => {
                 template
                     .get_positional_arg(0)
@@ -56,8 +55,7 @@ fn get_difficulty(template: &Template) -> Result<f64, String> {
 
 fn get_length(template: &Template) -> Result<Length, String> {
     let query = template.get_named_args_query("length", QueryType::StartsWith);
-    let length_text = query
-        .get(0)
+    let length_text = query.first()
         .ok_or("(warn ignore) No length found in tower")?;
 
     if length_text.raw.is_empty() {
@@ -65,8 +63,7 @@ fn get_length(template: &Template) -> Result<Length, String> {
     }
 
     let txt = match length_text
-        .elements
-        .get(0)
+        .elements.first()
         .ok_or("No elements in length but not empty? ({:?})")?
     {
         Argument::Template(template) => match template.get_positional_arg(0) {
@@ -95,7 +92,7 @@ fn get_length(template: &Template) -> Result<Length, String> {
 
 fn get_type(template: &Template) -> Result<TowerType, String> {
     let query = template.get_named_args_query("type_of_tower", QueryType::StartsWith);
-    let type_text = query.get(0).ok_or("Failed to get type of tower")?;
+    let type_text = query.first().ok_or("Failed to get type of tower")?;
     let txt = match type_text.get(0).map_err(|e| format!("{:?}", e))? {
         Argument::Text(text) => text.raw.clone(),
         Argument::Link(link) => link.label.clone(),
@@ -115,25 +112,24 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
         .get_parsed()
         .map_err(|e| format!("Failed to parse wikitext: {:?}", e))?;
     let templates = parsed.get_template_query("towerinfobox", QueryType::StartsWith);
-    let template = templates.get(0).ok_or(format!(
+    let template = templates.first().ok_or(format!(
         "Failed to get towerinfobox ({:?})",
         text.page_name()
     ))?;
 
     let area = template
-        .get_named_args_query("found_in", QueryType::StartsWith)
-        .get(0)
+        .get_named_args_query("found_in", QueryType::StartsWith).first()
         .ok_or("Failed to get area of tower")?
         .raw
         .clone();
-    let difficulty = match get_difficulty(&template) {
+    let difficulty = match get_difficulty(template) {
         Ok(diff) => diff,
         Err(e) => {
             log::warn!("[Difficult/{}]: {:?}", badge.display_name, e);
             100.0
         }
     };
-    let length = match get_length(&template) {
+    let length = match get_length(template) {
         Ok(len) => len,
         Err(e) => {
             if !e.contains("(warn ignore)") {
@@ -142,7 +138,7 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
             Length::default()
         }
     };
-    let tower_type = match get_type(&template) {
+    let tower_type = match get_type(template) {
         Ok(tp) => tp,
         Err(e) => {
             log::warn!("[Type/{}]: {:?}", badge.display_name, e);
@@ -154,11 +150,11 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
     Ok(WikiTower {
         badge_name: badge.name.to_owned(),
         badge_id: badge.id,
-        area: area,
-        difficulty: difficulty,
-        length: length,
-        tower_type: tower_type,
-        page_name: page_name,
+        area,
+        difficulty,
+        length,
+        tower_type,
+        page_name,
         ..Default::default()
     })
 }

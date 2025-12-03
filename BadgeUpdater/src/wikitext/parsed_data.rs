@@ -110,11 +110,10 @@ impl Template {
     /// Get the first named argument matching `name` (case-insensitive).
     pub fn get_named_arg(&self, name: &str) -> Result<ParsedData, WtError> {
         for arg in &self.arguments {
-            if let Some(ref n) = arg.name {
-                if n.eq_ignore_ascii_case(name) {
+            if let Some(ref n) = arg.name
+                && n.eq_ignore_ascii_case(name) {
                     return Ok(arg.value.clone());
                 }
-            }
         }
         Err(WtError::not_found(format!(
             "Named argument '{}' not found in template '{}'",
@@ -493,9 +492,7 @@ fn split_top_level(s: &str, sep: char) -> Vec<String> {
             i += 2;
             continue;
         } else if ch == '}' && i + 1 < len && bytes[i + 1] == b'}' {
-            if depth_brace > 0 {
-                depth_brace -= 1;
-            }
+            depth_brace = depth_brace.saturating_sub(1);
             cur.push_str("}}");
             i += 2;
             continue;
@@ -505,9 +502,7 @@ fn split_top_level(s: &str, sep: char) -> Vec<String> {
             i += 2;
             continue;
         } else if ch == ']' && i + 1 < len && bytes[i + 1] == b']' {
-            if depth_bracket > 0 {
-                depth_bracket -= 1;
-            }
+            depth_bracket = depth_bracket.saturating_sub(1);
             cur.push_str("]]");
             i += 2;
             continue;
@@ -553,9 +548,7 @@ fn find_top_level_char(s: &str, c: char) -> Option<usize> {
             i += 2;
             continue;
         } else if i + 1 < len && bytes[i] == b'}' && bytes[i + 1] == b'}' {
-            if depth_brace > 0 {
-                depth_brace -= 1;
-            }
+            depth_brace = depth_brace.saturating_sub(1);
             i += 2;
             continue;
         } else if i + 1 < len && bytes[i] == b'[' && bytes[i + 1] == b'[' {
@@ -563,9 +556,7 @@ fn find_top_level_char(s: &str, c: char) -> Option<usize> {
             i += 2;
             continue;
         } else if i + 1 < len && bytes[i] == b']' && bytes[i + 1] == b']' {
-            if depth_bracket > 0 {
-                depth_bracket -= 1;
-            }
+            depth_bracket = depth_bracket.saturating_sub(1);
             i += 2;
             continue;
         } else if bytes[i] as char == '<' {

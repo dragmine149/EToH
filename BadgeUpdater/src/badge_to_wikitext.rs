@@ -54,7 +54,7 @@ async fn process_data(
     badge_id: u64,
     search: Option<&String>,
 ) -> Result<WikiText, ProcessError> {
-    let mut page_title = Some(clean_badge_name(&badge));
+    let mut page_title = Some(clean_badge_name(badge));
     log::debug!("Getting: {:?} ({:?})", page_title, badge_id);
 
     let mut clean = false;
@@ -120,7 +120,7 @@ async fn process_data(
             let search_page =
                 process_data(client.clone(), &entry.title, badge_id, Some(badge)).await;
             if search_page.is_ok() {
-                return Ok(search_page?);
+                return search_page;
             }
         }
     }

@@ -85,7 +85,7 @@ where
     match file {
         Some(path) => {
             use std::io::Write;
-            match fs::OpenOptions::new().create(true).append(true).open(&path) {
+            match fs::OpenOptions::new().create(true).append(true).open(path) {
                 Ok(mut fh) => {
                     if let Err(e) = writeln!(fh, "{:#?}\n", passed) {
                         log::error!("Failed to append passed items to {:?}: {}", path, e);
@@ -127,11 +127,10 @@ async fn main() {
     dotenv().ok();
 
     let path = PathBuf::from(DEBUG_PATH);
-    if path.exists() {
-        if let Err(e) = fs::remove_file(&path) {
+    if path.exists()
+        && let Err(e) = fs::remove_file(&path) {
             log::error!("Failed to remove debug file {:?}: {}", path, e);
         }
-    }
 
     let client = RustClient::new(None, None);
     let url = Url::from_str(&format!("{:}?limit=100", BADGE_URL)).unwrap();
