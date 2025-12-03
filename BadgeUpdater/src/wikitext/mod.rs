@@ -1,23 +1,24 @@
-/*
-Top-level wikitext parser module.
+//! Wikitext module root
+//!
+//! This file is intentionally small: it declares and re-exports the submodules
+//! that implement the wikitext parser according to `spec.md`.
+//!
+//! Implementation details (types and functions) live in submodules so callers
+//! can `use wikitext::...` to access commonly-used items.
 
-This module re-exports parser and parts types. Serialization is provided by
-deriving serde traits on the concrete types in `parts.rs` and `parser.rs`.
-The conversion layer has been removed: the runtime types are expected to
-implement (derive) `Serialize` and `Deserialize` directly.
+pub mod argument;
+pub mod enums;
+pub mod errors;
+pub mod parsed_data;
+pub mod wiki_text;
 
-Credits:
-- GPT 5-mini (Github copilot w/ zed integration)
-*/
+// Re-export commonly used types for ergonomic access.
+pub use enums::{LinkType, ListType, QueryType};
+pub use errors::WtError;
 
-pub mod parser;
-pub mod parts;
+// Re-export data types implemented inside `parsed_data` (we don't have
+// separate `link`, `list`, or `template` modules; those types live in
+// `parsed_data.rs`).
+pub use parsed_data::{Argument, Link, List, ParsedData, Template};
 
-pub use parts::Template;
-
-/// Implement Display for runtime Template by delegating to `to_plain`.
-impl std::fmt::Display for Template {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_plain())
-    }
-}
+pub use wiki_text::WikiText;
