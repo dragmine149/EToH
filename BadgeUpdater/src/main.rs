@@ -1,29 +1,19 @@
 mod badge_to_wikitext;
-// mod cache;
 mod definitions;
 // mod json;
-// mod parse_wikitext;
-// mod pywiki;
-mod reqwest_client;
-// mod rust_wiki;
 mod process_items;
+mod reqwest_client;
 mod wikitext;
 
-use std::{
-    collections::HashMap,
-    fs,
-    path::{Path, PathBuf},
-    str::FromStr,
-};
+use std::{fs, path::PathBuf, str::FromStr};
 
 use dotenv::dotenv;
 use lazy_regex::regex_replace;
-use rayon::iter::{IntoParallelRefIterator, IntoParallelRefMutIterator, ParallelIterator};
-use serde::{Deserialize, Serialize};
 use url::Url;
 
 use crate::{
-    badge_to_wikitext::{ErrorDetails, OkDetails, get_badges},
+    badge_to_wikitext::get_badges,
+    definitions::{ErrorDetails, OkDetails},
     process_items::{WikiTower, process_tower},
     reqwest_client::RustClient,
 };
@@ -34,28 +24,6 @@ pub const BADGE_URL: &str = "https://badges.roblox.com/v1/universes/3264581003/b
 pub const OLD_BADGE_URL: &str =
     "https://badges.roblox.com/v1/universes/1055653882/badges?limit=100";
 pub const ETOH_WIKI: &str = "https://jtoh.fandom.com/";
-
-// fn get_badges(client: &Client, url: String) -> Result<Vec<Badge>, Box<dyn std::error::Error>> {
-//     let mut badges: Vec<Badge> = vec![];
-//     let mut data: Data = Data {
-//         previous_page_cursor: None,
-//         next_page_cursor: Some(String::new()),
-//         data: vec![],
-//     };
-
-//     while let Some(next_page_cursor) = data.next_page_cursor {
-//         let request_url = format!("{}&cursor={}", url, next_page_cursor);
-//         // println!("Fetching badges from {}", request_url);
-//         data = cache::reqwest_with_cache(client, &Url::parse(&request_url)?)?;
-//         // let response = client.get(&request_url).send()?;
-//         // println!("Response status: {}", response.status());
-
-//         // data = response.json::<Data>()?;
-//         badges.extend(data.data);
-//     }
-
-//     Ok(badges)
-// }
 
 fn clean_badge_name(badge: &str) -> String {
     // Start with a trimmed copy
@@ -81,47 +49,6 @@ fn compress_name(badge: &str) -> String {
         .replace("Citadel of ", "")
         .replace("Steeple of ", "")
 }
-
-/// Convert a list of badges to wikitower for later processing.
-///
-/// # Arguments
-/// - badges -> List of badges (mutable) to use
-///
-/// # Returns
-/// - Vec<WikiTower> -> WikiTower::default() pre-made.
-// fn convert_basic_wikitower(badges: &mut [Badge]) -> Vec<WikiTower> {
-//     // mappings for those annoying towers.
-//     let mappings =
-//         serde_json::from_str::<Mappings>(&fs::read_to_string("../mappings.json").unwrap())
-//             .unwrap()
-//             .mappings;
-
-//     // the basic conversion to raw.
-//     let raw = badges.iter_mut().map(|b| {
-//         let name = clean_badge_name(&b.name);
-//         WikiTowerBuilder::default()
-//             .badge_name(b.name.clone())
-//             .name(mappings.get(&name).unwrap_or(&name).to_owned())
-//             .badges(vec![b.id])
-//             .build()
-//             .unwrap()
-//     });
-
-//     // removes those which have more than one and collapses them.
-//     let mut deduped = HashMap::<String, WikiTower>::new();
-//     for mut r in raw {
-//         match deduped.get_mut(&r.name) {
-//             Some(v) => v.badges.append(&mut r.badges),
-//             None => {
-//                 deduped.insert(r.name.to_owned(), r);
-//             }
-//         }
-//     }
-//     deduped
-//         .values()
-//         .map(|v| v.to_owned())
-//         .collect::<Vec<WikiTower>>()
-// }
 
 /// Take an object and count how many passed/failed.
 ///

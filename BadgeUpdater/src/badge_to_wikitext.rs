@@ -1,5 +1,4 @@
 use async_recursion::async_recursion;
-use serde::{Deserialize, Serialize};
 use std::error::Error;
 use tokio::task::JoinHandle;
 
@@ -7,77 +6,10 @@ use url::Url;
 
 use crate::{
     ETOH_WIKI, clean_badge_name,
-    definitions::Badge,
-    reqwest_client::{RustClient, RustError},
+    definitions::{Badge, Data, ErrorDetails, OkDetails, ProcessError, WikiSearch},
+    reqwest_client::RustClient,
     wikitext::WikiText,
 };
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Data {
-    pub previous_page_cursor: Option<String>,
-    pub next_page_cursor: Option<String>,
-    pub data: Vec<Badge>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct WikiSearchEntry {
-    pub title: String,
-}
-#[derive(Debug, Serialize, Deserialize)]
-pub struct WikiSearchList {
-    pub search: Vec<WikiSearchEntry>,
-}
-#[derive(Debug, Serialize, Deserialize)]
-pub struct WikiSearch {
-    pub query: WikiSearchList,
-}
-
-impl Default for Data {
-    fn default() -> Self {
-        Self {
-            previous_page_cursor: None,
-            next_page_cursor: Some(String::new()),
-            data: vec![],
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum ProcessError {
-    Reqwest(RustError),
-    Process(String),
-}
-impl From<RustError> for ProcessError {
-    fn from(value: RustError) -> Self {
-        Self::Reqwest(value)
-    }
-}
-impl From<reqwest::Error> for ProcessError {
-    fn from(value: reqwest::Error) -> Self {
-        Self::Reqwest(RustError::from(value))
-    }
-}
-impl From<reqwest_middleware::Error> for ProcessError {
-    fn from(value: reqwest_middleware::Error) -> Self {
-        Self::Reqwest(RustError::from(value))
-    }
-}
-impl From<String> for ProcessError {
-    fn from(value: String) -> Self {
-        Self::Process(value)
-    }
-}
-impl From<&str> for ProcessError {
-    fn from(value: &str) -> Self {
-        Self::Process(value.to_owned())
-    }
-}
-
-#[derive(Debug)]
-pub struct ErrorDetails(pub ProcessError, pub Badge);
-#[derive(Debug)]
-pub struct OkDetails(pub WikiText, pub Badge);
 
 pub async fn get_badges(
     client: RustClient,

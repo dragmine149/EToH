@@ -5,6 +5,8 @@ use std::{
     fmt::Display,
 };
 
+use crate::{reqwest_client::RustError, wikitext::WikiText};
+
 #[derive(Debug, Deserialize, Serialize, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct BadgeUniverse {
@@ -44,6 +46,16 @@ pub struct Data {
     pub previous_page_cursor: Option<String>,
     pub next_page_cursor: Option<String>,
     pub data: Vec<Badge>,
+}
+
+impl Default for Data {
+    fn default() -> Self {
+        Self {
+            previous_page_cursor: None,
+            next_page_cursor: Some(String::new()),
+            data: vec![],
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -479,3 +491,52 @@ pub struct OtherMap {
     pub data: Vec<OtherData>,
     pub ignored: Vec<u64>,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct WikiSearchEntry {
+    pub title: String,
+}
+#[derive(Debug, Serialize, Deserialize)]
+pub struct WikiSearchList {
+    pub search: Vec<WikiSearchEntry>,
+}
+#[derive(Debug, Serialize, Deserialize)]
+pub struct WikiSearch {
+    pub query: WikiSearchList,
+}
+
+#[derive(Debug)]
+pub enum ProcessError {
+    Reqwest(RustError),
+    Process(String),
+}
+impl From<RustError> for ProcessError {
+    fn from(value: RustError) -> Self {
+        Self::Reqwest(value)
+    }
+}
+impl From<reqwest::Error> for ProcessError {
+    fn from(value: reqwest::Error) -> Self {
+        Self::Reqwest(RustError::from(value))
+    }
+}
+impl From<reqwest_middleware::Error> for ProcessError {
+    fn from(value: reqwest_middleware::Error) -> Self {
+        Self::Reqwest(RustError::from(value))
+    }
+}
+impl From<String> for ProcessError {
+    fn from(value: String) -> Self {
+        Self::Process(value)
+    }
+}
+impl From<&str> for ProcessError {
+    fn from(value: &str) -> Self {
+        Self::Process(value.to_owned())
+    }
+}
+
+#[derive(Debug)]
+pub struct ErrorDetails(pub ProcessError, pub Badge);
+#[derive(Debug)]
+pub struct OkDetails(pub WikiText, pub Badge);
