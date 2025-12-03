@@ -84,6 +84,26 @@ impl Link {
             target: target.into(),
         }
     }
+
+    /// Reconstruct the link as wikitext (internal [[...]] or external [...]).
+    pub fn to_wikitext(&self) -> String {
+        match self.link_type {
+            LinkType::Internal => {
+                if self.label.is_empty() || self.label == self.target {
+                    format!("[[{}]]", self.target)
+                } else {
+                    format!("[[{}|{}]]", self.target, self.label)
+                }
+            }
+            LinkType::External => {
+                if self.label.is_empty() || self.label == self.target {
+                    format!("[{}]", self.target)
+                } else {
+                    format!("[{} {}]", self.target, self.label)
+                }
+            }
+        }
+    }
 }
 
 /// Template argument value - represented as `ParsedData` so it may contain
@@ -92,6 +112,18 @@ impl Link {
 pub struct TemplateArgument {
     pub name: Option<String>,
     pub value: ParsedData,
+}
+
+impl TemplateArgument {
+    /// Reconstruct the argument as wikitext: either `name=value` or a positional value.
+    pub fn to_wikitext(&self) -> String {
+        let val = self.value.to_wikitext();
+        if let Some(ref n) = self.name {
+            format!("{}={}", n, val)
+        } else {
+            val
+        }
+    }
 }
 
 /// Template node.
@@ -152,6 +184,20 @@ impl Template {
             Err(WtError::index_oob(pos, pos_args.len()))
         }
     }
+
+    /// Reconstruct a wikitext representation of this template.
+    /// Produces `{{Name|arg|name=value|...}}` approximating the original.
+    pub fn to_wikitext(&self) -> String {
+        let mut s = String::new();
+        s.push_str("{{");
+        s.push_str(&self.name);
+        for arg in &self.arguments {
+            s.push('|');
+            s.push_str(&arg.to_wikitext());
+        }
+        s.push_str("}}");
+        s
+    }
 }
 
 /// A list node containing entries which are top-level arguments (text/templates/etc).
@@ -159,6 +205,26 @@ impl Template {
 pub struct List {
     pub list_type: ListType,
     pub entries: Vec<Argument>,
+}
+
+impl List {
+    /// Reconstruct the list as wikitext. Uses a marker for list type.
+    pub fn to_wikitext(&self) -> String {
+        let marker = match &self.list_type {
+            ListType::Unordered => "*",
+            ListType::Ordered => "#",
+            ListType::Definition => ";",
+            ListType::Other(s) => s.as_str(),
+        };
+        let mut out = String::new();
+        for entry in &self.entries {
+            out.push_str(marker);
+            out.push(' ');
+            out.push_str(&entry.to_wikitext());
+            out.push('\n');
+        }
+        out
+    }
 }
 
 /// Top-level argument - variant for every kind of parsed component.
@@ -181,6 +247,16 @@ impl Argument {
         match self {
             Argument::Link(l) => Some(l),
             _ => None,
+        }
+    }
+
+    /// Reconstruct this argument into wikitext.
+    pub fn to_wikitext(&self) -> String {
+        match self {
+            Argument::Text(t) => t.raw.clone(),
+            Argument::Link(l) => l.to_wikitext(),
+            Argument::Template(t) => t.to_wikitext(),
+            Argument::List(ls) => ls.to_wikitext(),
         }
     }
 }
@@ -256,6 +332,19 @@ impl ParsedData {
         } else {
             Err(WtError::index_oob(nth, self.elements.len()))
         }
+    }
+
+    /// Reconstruct the wikitext for this ParsedData by concatenating element wikitexts.
+    /// If there are no parsed elements, fall back to the original raw string.
+    pub fn to_wikitext(&self) -> String {
+        if self.elements.is_empty() {
+            return self.raw.clone();
+        }
+        let mut out = String::new();
+        for elem in &self.elements {
+            out.push_str(&elem.to_wikitext());
+        }
+        out
     }
 }
 
