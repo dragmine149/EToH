@@ -8,13 +8,14 @@ mod wikitext;
 use std::{fs, path::PathBuf, str::FromStr};
 
 use dotenv::dotenv;
+use futures::future;
 use lazy_regex::regex_replace;
 use url::Url;
 
 use crate::{
     badge_to_wikitext::get_badges,
     definitions::{ErrorDetails, OkDetails},
-    process_items::{WikiTower, process_tower},
+    process_items::{WikiTower, process_item, process_tower},
     reqwest_client::RustClient,
 };
 
@@ -128,15 +129,16 @@ async fn main() {
 
     let path = PathBuf::from(DEBUG_PATH);
     if path.exists()
-        && let Err(e) = fs::remove_file(&path) {
-            log::error!("Failed to remove debug file {:?}: {}", path, e);
-        }
+        && let Err(e) = fs::remove_file(&path)
+    {
+        log::error!("Failed to remove debug file {:?}: {}", path, e);
+    }
 
     let client = RustClient::new(None, None);
     let url = Url::from_str(&format!("{:}?limit=100", BADGE_URL)).unwrap();
 
     let mut badges_vec = vec![];
-    let raw = get_badges(client, &url).await.unwrap();
+    let raw = get_badges(&client, &url).await.unwrap();
     for badge_fut in raw {
         badges_vec.push(badge_fut.await.unwrap());
     }
@@ -154,12 +156,36 @@ async fn main() {
         .inspect(|x| println!("{:?}", x))
         .collect::<Vec<Result<WikiTower, String>>>();
 
-    let processed = count_processed(
+    let tower_processed = count_processed(
         &tower_data,
         |r: &Result<WikiTower, String>| r.is_ok(),
         "process_tower",
         Some(&path),
     );
+    let tower_names = tower_processed
+        .clone()
+        .iter()
+        .map(|t| t.badge_name.clone())
+        .collect::<Vec<String>>();
 
-    // The rest of the original code (commented-out legacy logic) remains unchanged.
+    let mut items = vec![];
+    for ele in passed.iter().filter(|p| !tower_names.contains(&p.1.name)) {
+        items.push(process_item(&client, &ele.0, &ele.1).await);
+    }
+    let item_processed = count_processed(
+        &items,
+        |i: &Result<WikiTower, String>| i.is_ok(),
+        "process_item",
+        Some(&path),
+    );
+
+    let mut success = vec![];
+    tower_processed.iter().for_each(|i| success.push(i));
+    item_processed.iter().for_each(|i| success.push(i));
+    log::info!(
+        "Total: {}. Passed: {}. Rate: {:.2}%",
+        badges_vec.len(),
+        success.len(),
+        ((success.len() as f64) / (passed.len() as f64)) * 100.0
+    );
 }

@@ -12,7 +12,7 @@ use crate::{
 };
 
 pub async fn get_badges(
-    client: RustClient,
+    client: &RustClient,
     url: &Url,
 ) -> Result<Vec<JoinHandle<Result<OkDetails, ErrorDetails>>>, Box<dyn Error>> {
     let mut data: Data = Data::default();

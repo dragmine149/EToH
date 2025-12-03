@@ -1,6 +1,8 @@
 use crate::{
+    ETOH_WIKI,
     definitions::{Badge, Length, TowerType},
-    wikitext::{Argument, QueryType, Template, WikiText},
+    reqwest_client::{self, RustClient, RustError},
+    wikitext::{Argument, QueryType, Template, WikiText, enums::LinkType},
 };
 
 #[derive(Debug, Default)]
@@ -109,6 +111,7 @@ fn get_type(template: &Template) -> Result<TowerType, String> {
     Ok(TowerType::from(txt))
 }
 
+/// Processes the tower provided into something else.
 pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String> {
     // log::debug!("Tower: {:?}", text.page_name());
     let parsed = text
@@ -160,4 +163,53 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
         tower_type,
         page_name,
     })
+}
+
+async fn get_item_page(client: &RustClient, item: &str) -> Result<String, RustError> {
+    Ok(client
+        .get(format!("{:}wiki/{:}?action=raw", ETOH_WIKI, item))
+        .send()
+        .await?
+        .text()
+        .await?)
+}
+
+pub async fn process_item(
+    client: &RustClient,
+    text: &WikiText,
+    badge: &Badge,
+) -> Result<WikiTower, String> {
+    let page_name = text.page_name();
+    let parsed = text
+        .get_parsed()
+        .map_err(|e| format!("Failed to parse wikitext: {:?}", e))?;
+    let templates = parsed.get_template_query("iteminfobox", QueryType::StartsWith);
+    let template = templates
+        .first()
+        .ok_or(format!("Failed to get iteminfobox ({:?})", page_name))?;
+    let links = template
+        .get_named_arg("method_of_obtaining")
+        .map_err(|e| {
+            format!(
+                "Failed to get method of obtaining on item template ({:?})",
+                e
+            )
+        })?
+        .get_links(Some(LinkType::Internal));
+
+    for link in links {
+        let data = get_item_page(client, &link.target).await;
+        if let Ok(text) = data {
+            let mut wikitext = WikiText::parse(text);
+            wikitext.set_page_name(Some(link.target));
+            let tower = process_tower(&wikitext, badge);
+            if tower.is_ok() {
+                return tower;
+            }
+        }
+    }
+    Err(format!(
+        "Failed to get a valid tower out of the links provided. ({:?})",
+        page_name
+    ))
 }
