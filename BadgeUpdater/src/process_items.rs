@@ -1,10 +1,6 @@
 use crate::{
     definitions::{Badge, Length, TowerType},
-    wikitext::{
-        Template,
-        parser::WikiText,
-        parts::{ArgPart, ArgQueryKind, ArgQueryResult, MatchType, parts_to_plain},
-    },
+    wikitext::{Argument, QueryType, Template, WikiText},
 };
 
 #[derive(Debug, Default)]
@@ -21,34 +17,62 @@ pub struct WikiTower {
 /// Get the difficulty provided by the template.
 /// `original_difficulty` field is ignored as there can be many difficulties.
 fn get_difficulty(template: &Template) -> Result<f64, String> {
-    // Prefer nested template's first positional value, fallback to textual parts
-    let num_text = match template.query_arg(
-        "difficulty",
-        MatchType::StartsWith,
-        ArgQueryKind::NestedFirstPositionalText,
-    ) {
-        Some(ArgQueryResult::Text(s)) => s,
-        Some(ArgQueryResult::Part(p)) => p.to_plain().trim().to_string(),
-        Some(ArgQueryResult::Parts(ps)) => parts_to_plain(ps).trim().to_string(),
-        None => return Err("Failed to get difficulty of the tower".to_string()),
-    };
-
-    num_text.parse::<f64>().map_err(|e| {
+    let query = template.get_named_args_query("difficulty", QueryType::StartsWith);
+    let difficulty_text = query.get(0).ok_or("No difficulty found in tower")?;
+    match difficulty_text
+        .elements
+        .get(0)
+        .ok_or("No elements in difficulty?")?
+    {
+        Argument::Template(template) => {
+            template
+                .get_positional_arg(0)
+                .map_err(|e| format!("failed to get first arg ({})", e))?
+                .raw
+        }
+        Argument::Link(_) => return Err(String::from("Somehow a link in difficulty")),
+        Argument::List(list) => match list.entries.get(0).ok_or("List with no entries?")? {
+            Argument::Template(template) => {
+                template
+                    .get_positional_arg(0)
+                    .map_err(|e| format!("failed to get first arg ({})", e))?
+                    .raw
+            }
+            Argument::Link(_) => return Err(String::from("Somehow a link in difficulty")),
+            Argument::List(_) => return Err(String::from("Who made a list in a list?")),
+            Argument::Text(text) => text.raw.clone(),
+        },
+        Argument::Text(text) => text.raw.clone(),
+    }
+    .parse::<f64>()
+    .map_err(|e| {
         // log::debug!("{}", template);
-        format!("Failed to parse number ({} -> {:?})", num_text, e)
+        format!(
+            "Failed to parse number ({} -> {:?})",
+            difficulty_text.raw, e
+        )
     })
 }
 
 fn get_length(template: &Template) -> Result<Length, String> {
-    let txt = match template.query_arg(
-        "length",
-        MatchType::StartsWith,
-        ArgQueryKind::NestedFirstPositionalText,
-    ) {
-        Some(ArgQueryResult::Text(s)) => s,
-        Some(ArgQueryResult::Part(p)) => p.to_plain().trim().to_string(),
-        Some(ArgQueryResult::Parts(ps)) => parts_to_plain(ps).trim().to_string(),
-        None => return Err("(warn ignore) Failed to get length of the tower".to_string()),
+    let query = template.get_named_args_query("length", QueryType::StartsWith);
+    let length_text = query
+        .get(0)
+        .ok_or("(warn ignore) No length found in tower")?;
+    let txt = match length_text.elements.get(0).ok_or("No elements in length")? {
+        Argument::Template(template) => {
+            template
+                .get_positional_arg(0)
+                .map_err(|e| format!("failed to get first arg ({})", e))?
+                .raw
+        }
+        Argument::Link(_) => return Err(String::from("Somehow a link in Length")),
+        Argument::List(_) => {
+            return Err(String::from(
+                "Somehow a List in Length (never seen this before)",
+            ));
+        }
+        Argument::Text(text) => text.raw.clone(),
     };
 
     // should avoid chases when length is provided but no length is realistically provided.
@@ -63,37 +87,35 @@ fn get_length(template: &Template) -> Result<Length, String> {
 }
 
 fn get_type(template: &Template) -> Result<TowerType, String> {
-    // Use parts-level query and inspect first element's variant
-    let first =
-        match template.query_arg("type_of_tower", MatchType::StartsWith, ArgQueryKind::Parts) {
-            Some(ArgQueryResult::Parts(ps)) => {
-                if let Some(p) = ps.get(0) {
-                    p
-                } else {
-                    return Err("Failed to get type of tower".to_string());
-                }
-            }
-            Some(ArgQueryResult::Part(p)) => p,
-            Some(ArgQueryResult::Text(t)) => return Ok(TowerType::from(t)),
-            None => return Err("Failed to get type of tower".to_string()),
-        };
-
-    match first {
-        ArgPart::Text(t) => Ok(TowerType::from(t.to_owned())),
-        ArgPart::InternalLink { target, .. } => Ok(TowerType::from(target.to_owned())),
-        _ => Err("Invalid argpart type".to_string()),
-    }
+    let query = template.get_named_args_query("type_of_tower", QueryType::StartsWith);
+    let type_text = query.get(0).ok_or("Failed to get type of tower")?;
+    let txt = match type_text.get(0).map_err(|e| format!("{:?}", e))? {
+        Argument::Text(text) => text.raw.clone(),
+        Argument::Link(link) => link.label.clone(),
+        _ => {
+            return Err(format!(
+                "Somehow another type of argument was in type: {:?}",
+                type_text.raw
+            ));
+        }
+    };
+    Ok(TowerType::from(txt))
 }
 
 pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String> {
     let template = text
-        .get_template_startswith("towerinfobox")
-        .ok_or(String::from("Failed to find towerinfobox in template"))?;
+        .get_parsed()
+        .map_err(|e| format!("Failed to parse wikitext: {:?}", e))?
+        .get_template_query("towerinfobox", QueryType::StartsWith)
+        .get(0)
+        .ok_or("Failed to get towerinfobox")?;
 
     let area = template
-        .get_argument_startswith("found_in")
+        .get_named_args_query("found_in", QueryType::StartsWith)
+        .get(0)
         .ok_or("Failed to get area of tower")?
-        .value_plain();
+        .raw
+        .clone();
     let difficulty = match get_difficulty(&template) {
         Ok(diff) => diff,
         Err(e) => {
@@ -117,7 +139,7 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
             TowerType::default()
         }
     };
-    let page_name = text.page_name.clone().unwrap_or_default().to_owned();
+    let page_name = text.page_name().unwrap_or_default();
 
     Ok(WikiTower {
         badge_name: badge.name.to_owned(),

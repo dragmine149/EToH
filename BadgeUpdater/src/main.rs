@@ -26,7 +26,6 @@ use crate::{
     badge_to_wikitext::{ErrorDetails, OkDetails, get_badges},
     process_items::{WikiTower, process_tower},
     reqwest_client::RustClient,
-    wikitext::{Template, parser::WikiText},
 };
 
 // use crate::rust_wiki::{WikiTower, WikiTowerBuilder};
