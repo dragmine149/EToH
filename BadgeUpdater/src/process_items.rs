@@ -20,7 +20,8 @@ fn get_difficulty(template: &Template) -> Result<f64, String> {
     let query = template.get_named_args_query("difficulty", QueryType::StartsWith);
     let difficulty_text = query.first().ok_or("No difficulty found in tower")?;
     match difficulty_text
-        .elements.first()
+        .elements
+        .first()
         .ok_or("No elements in difficulty?")?
     {
         Argument::Template(template) => {
@@ -55,7 +56,8 @@ fn get_difficulty(template: &Template) -> Result<f64, String> {
 
 fn get_length(template: &Template) -> Result<Length, String> {
     let query = template.get_named_args_query("length", QueryType::StartsWith);
-    let length_text = query.first()
+    let length_text = query
+        .first()
         .ok_or("(warn ignore) No length found in tower")?;
 
     if length_text.raw.is_empty() {
@@ -63,7 +65,8 @@ fn get_length(template: &Template) -> Result<Length, String> {
     }
 
     let txt = match length_text
-        .elements.first()
+        .elements
+        .first()
         .ok_or("No elements in length but not empty? ({:?})")?
     {
         Argument::Template(template) => match template.get_positional_arg(0) {
@@ -118,7 +121,8 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
     ))?;
 
     let area = template
-        .get_named_args_query("found_in", QueryType::StartsWith).first()
+        .get_named_args_query("found_in", QueryType::StartsWith)
+        .first()
         .ok_or("Failed to get area of tower")?
         .raw
         .clone();
@@ -155,6 +159,5 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
         length,
         tower_type,
         page_name,
-        ..Default::default()
     })
 }

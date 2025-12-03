@@ -111,9 +111,10 @@ impl Template {
     pub fn get_named_arg(&self, name: &str) -> Result<ParsedData, WtError> {
         for arg in &self.arguments {
             if let Some(ref n) = arg.name
-                && n.eq_ignore_ascii_case(name) {
-                    return Ok(arg.value.clone());
-                }
+                && n.eq_ignore_ascii_case(name)
+            {
+                return Ok(arg.value.clone());
+            }
         }
         Err(WtError::not_found(format!(
             "Named argument '{}' not found in template '{}'",

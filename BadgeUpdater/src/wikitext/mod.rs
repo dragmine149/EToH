@@ -6,6 +6,10 @@
 //! Implementation details (types and functions) live in submodules so callers
 //! can `use wikitext::...` to access commonly-used items.
 
+#![allow(
+    dead_code,
+    reason = "This is a mini-module, it might be used in the future."
+)]
 pub mod argument;
 pub mod enums;
 pub mod errors;

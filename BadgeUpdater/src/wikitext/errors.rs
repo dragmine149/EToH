@@ -6,7 +6,7 @@
 //!
 //! Exported items:
 //! - `WtError` - main error enum with variants for parse failures, missing
-//!    items, index issues and invalid arguments.
+//!   items, index issues and invalid arguments.
 //! - `Result<T>` - convenient alias `std::result::Result<T, WtError>`.
 //!
 //! The error type implements `std::error::Error`, `Debug`, and `Display`.
@@ -22,13 +22,13 @@ pub type Result<T> = std::result::Result<T, WtError>;
 /// Wikitext error with rich variants.
 ///
 /// - `ParseError` - problems encountered while parsing wikitext. Includes an
-///    explanatory message and optionally the byte offset where the problem
-///    occurred (useful for diagnostics).
+///   explanatory message and optionally the byte offset where the problem
+///   occurred (useful for diagnostics).
 /// - `NotFound` - requested item was not present (templates/arguments/links).
 /// - `IndexOutOfBounds` - asked for the Nth element but the collection was
-///    smaller; contains both the requested index and the available length.
+///   smaller; contains both the requested index and the available length.
 /// - `InvalidArgument` - e.g., trying to convert an `Argument` to `Template`
-///    when it's a different kind.
+///   when it's a different kind.
 /// - `Io` - wrapper for underlying I/O errors if relevant to future helpers.
 /// - `Other` - catch-all carrying a message and optional boxed cause.
 #[derive(Debug)]
