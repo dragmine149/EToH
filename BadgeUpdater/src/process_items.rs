@@ -1,8 +1,13 @@
 use crate::{
     ETOH_WIKI,
-    definitions::{Badge, Length, TowerType},
+    badge_to_wikitext::get_page,
+    definitions::{AreaInformation, AreaRequirements, Badge, Length, TowerDifficulties, TowerType},
     reqwest_client::{self, RustClient, RustError},
-    wikitext::{Argument, QueryType, Template, WikiText, enums::LinkType},
+    wikitext::{
+        Argument, QueryType, Template, WikiText,
+        enums::LinkType,
+        parsed_data::{Link, List},
+    },
 };
 
 #[derive(Debug, Default)]
@@ -127,7 +132,10 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
         .get_named_args_query("found_in", QueryType::StartsWith)
         .first()
         .ok_or("Failed to get area of tower")?
-        .raw
+        .get_links(Some(LinkType::Internal))
+        .get(0)
+        .ok_or("Failed to get link of area")?
+        .target
         .clone();
     let difficulty = match get_difficulty(template) {
         Ok(diff) => diff,
@@ -174,6 +182,18 @@ async fn get_item_page(client: &RustClient, item: &str) -> Result<String, RustEr
         .await?)
 }
 
+async fn get_page_data(client: &RustClient, page: &str) -> Result<WikiText, String> {
+    let data = get_page(client, page).await;
+    if let Ok(res) = data {
+        if let Ok(text) = res.text().await {
+            let mut wikitext = WikiText::parse(text);
+            wikitext.set_page_name(Some(page));
+            return Ok(wikitext);
+        }
+    }
+    Err(format!("Failed to get {:?}", page))
+}
+
 pub async fn process_item(
     client: &RustClient,
     text: &WikiText,
@@ -183,10 +203,9 @@ pub async fn process_item(
     let parsed = text
         .get_parsed()
         .map_err(|e| format!("Failed to parse wikitext: {:?}", e))?;
-    let templates = parsed.get_template_query("iteminfobox", QueryType::StartsWith);
-    let template = templates
-        .first()
-        .ok_or(format!("Failed to get iteminfobox ({:?})", page_name))?;
+    let template = parsed
+        .get_template("iteminfobox")
+        .map_err(|e| format!("Failed to get iteminfobox ({:?}) > {:?}", page_name, e))?;
     let links = template
         .get_named_arg("method_of_obtaining")
         .map_err(|e| {
@@ -198,18 +217,110 @@ pub async fn process_item(
         .get_links(Some(LinkType::Internal));
 
     for link in links {
-        let data = get_item_page(client, &link.target).await;
-        if let Ok(text) = data {
-            let mut wikitext = WikiText::parse(text);
-            wikitext.set_page_name(Some(link.target));
-            let tower = process_tower(&wikitext, badge);
-            if tower.is_ok() {
-                return tower;
-            }
+        let wikitext = get_page_data(client, &link.target).await?;
+        let tower = process_tower(&wikitext, badge);
+        if tower.is_ok() {
+            return tower;
         }
     }
     Err(format!(
         "Failed to get a valid tower out of the links provided. ({:?})",
         page_name
     ))
+}
+
+fn parse_area_requirement(text: &str, reqs: &mut AreaRequirements) -> Result<(), String> {
+    let (_, reqtype, count, _, diff) =
+        lazy_regex::regex_captures!(r"(?m)\s?(\w+) (\d+) (\{\{Difficulty\|(\w+))?", text)
+            .ok_or(format!("Invalid info (no matches): {:?}", text))?;
+    let count = count
+        .trim()
+        .parse::<u64>()
+        .map_err(|e| format!("Failed to parse count: {:?} ({:?})", e, count))?;
+    match reqtype {
+        "Obtain" => reqs.points = count,
+        "Beat" => reqs.difficulties.parse_difficulty(diff, count),
+        _ => return Err(format!("Invalid type: {:?}", reqtype)),
+    };
+    Ok(())
+}
+
+fn get_requirements(list: &List) -> Result<AreaRequirements, String> {
+    let mut reqs = AreaRequirements::default();
+    for entry in list.entries.iter() {
+        let text = entry
+            .as_text()
+            .ok_or(format!(
+                "Failed to parse requirement to text ({:?})",
+                entry.to_wikitext()
+            ))?
+            .raw
+            .clone();
+        parse_area_requirement(&text, &mut reqs)?;
+    }
+    Ok(reqs)
+}
+
+pub async fn process_area(client: &RustClient, area: &str) -> Result<AreaInformation, String> {
+    let wikitext = get_page_data(client, area).await?;
+    let parsed = wikitext
+        .get_parsed()
+        .map_err(|e| format!("Failed to parse wikitext: {:?}", e))?;
+    let template = parsed
+        .get_template("ringinfobox")
+        .map_err(|e| format!("Failed to get ringinfobox ({:?}) > {:?}", area, e))?;
+
+    let parent = template
+        .get_named_arg("realm")
+        .map(|area| {
+            area.get_links(Some(LinkType::Internal))
+                .get(0)
+                .unwrap()
+                .label
+                .to_owned()
+        })
+        .ok();
+
+    let requirements = template
+        .get_named_arg("towers_required")
+        .map_err(|e| {
+            format!(
+                "Failed to get towers_required for area (none required?) ({:?}) ({})",
+                e, area
+            )
+        })?
+        .get(0)
+        .map_err(|e| format!("Failed to get elements (how??) ({:?})", e))?;
+
+    let parsed_requirements = match requirements {
+        Argument::List(list) => get_requirements(&list),
+        Argument::Text(text) => {
+            let mut reqs = AreaRequirements::default();
+            let err = parse_area_requirement(&text.raw, &mut reqs);
+            if err.is_err() {
+                log::warn!("{:?}", err);
+            }
+            Ok(reqs)
+        }
+        _ => {
+            return Err(format!(
+                "Failed to get lists (ok... whats wrong here? ({:?})",
+                template.to_wikitext()
+            ));
+        }
+    };
+
+    if parsed_requirements.is_err() && parent.is_none() {
+        log::warn!(
+            "Error in requirements: {:?} ({:?})",
+            parsed_requirements.as_ref().err().unwrap(),
+            area
+        );
+    }
+
+    Ok(AreaInformation {
+        name: area.to_owned(),
+        requirements: parsed_requirements.unwrap_or_default(),
+        sub_area: parent,
+    })
 }

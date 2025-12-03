@@ -210,8 +210,6 @@ pub struct AreaInformation {
     pub requirements: AreaRequirements,
     #[serde(skip_serializing_if = "Option::is_none", rename = "s")]
     pub sub_area: Option<String>,
-    #[serde(rename = "t")]
-    pub towers: Vec<Tower>,
 }
 
 impl Default for AreaInformation {
@@ -220,20 +218,7 @@ impl Default for AreaInformation {
             name: "Unknown area".to_string(),
             requirements: AreaRequirements::default(),
             sub_area: None,
-            towers: vec![],
         }
-    }
-}
-
-impl AreaInformation {
-    pub fn sort(&mut self) {
-        self.towers.sort_by(|a, b| {
-            if a.difficulty >= b.difficulty {
-                Ordering::Greater
-            } else {
-                Ordering::Less
-            }
-        });
     }
 }
 

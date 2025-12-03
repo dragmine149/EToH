@@ -1,4 +1,5 @@
 use async_recursion::async_recursion;
+use reqwest::Response;
 use std::error::Error;
 use tokio::task::JoinHandle;
 
@@ -7,7 +8,7 @@ use url::Url;
 use crate::{
     ETOH_WIKI, clean_badge_name,
     definitions::{Badge, Data, ErrorDetails, OkDetails, ProcessError, WikiSearch},
-    reqwest_client::RustClient,
+    reqwest_client::{RustClient, RustError},
     wikitext::WikiText,
 };
 
@@ -47,6 +48,18 @@ async fn pre_process(client: RustClient, badge: Badge) -> Result<OkDetails, Erro
     Ok(OkDetails(result.ok().unwrap(), badge))
 }
 
+pub async fn get_page(client: &RustClient, page_name: &str) -> Result<Response, RustError> {
+    log::debug!(
+        "Request to \"{:}wiki/{:}?action=raw\"",
+        ETOH_WIKI,
+        page_name
+    );
+    Ok(client
+        .get(format!("{:}wiki/{:}?action=raw", ETOH_WIKI, page_name))
+        .send()
+        .await?)
+}
+
 #[async_recursion]
 async fn process_data(
     client: RustClient,
@@ -60,10 +73,7 @@ async fn process_data(
     let mut clean = false;
     while let Some(ref redirect) = page_title {
         // initial response to get data
-        let data = client
-            .get(format!("{:}wiki/{:}?action=raw", ETOH_WIKI, redirect))
-            .send()
-            .await?;
+        let data = get_page(&client, redirect).await?;
         println!(
             "{:?}, {:?}, {:?}",
             data.url().as_str(),

@@ -9,13 +9,14 @@ use std::{fs, path::PathBuf, str::FromStr};
 
 use dotenv::dotenv;
 use futures::future;
+use itertools::Itertools;
 use lazy_regex::regex_replace;
 use url::Url;
 
 use crate::{
     badge_to_wikitext::get_badges,
-    definitions::{ErrorDetails, OkDetails},
-    process_items::{WikiTower, process_item, process_tower},
+    definitions::{AreaInformation, ErrorDetails, OkDetails},
+    process_items::{WikiTower, process_area, process_item, process_tower},
     reqwest_client::RustClient,
 };
 
@@ -186,6 +187,19 @@ async fn main() {
         "Total: {}. Passed: {}. Rate: {:.2}%",
         badges_vec.len(),
         success.len(),
-        ((success.len() as f64) / (passed.len() as f64)) * 100.0
+        ((success.len() as f64) / (badges_vec.len() as f64)) * 100.0
+    );
+
+    let areas_list = success.clone().into_iter().map(|t| t.area.clone()).unique();
+    let mut areas = vec![];
+    for area in areas_list {
+        areas.push(process_area(&client, &area).await);
+    }
+
+    let area_processed = count_processed(
+        &areas,
+        |a: &Result<AreaInformation, String>| a.is_ok(),
+        "process_area",
+        Some(&path),
     );
 }
