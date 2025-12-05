@@ -65,9 +65,15 @@ pub struct WikiTower {
     pub tower_type: TowerType,
 }
 
+#[derive(Debug, Clone)]
 pub struct EventInfo {
     pub area_name: String,
     pub event_name: String,
+}
+
+pub enum GlobalArea {
+    Area(AreaInformation),
+    Event(EventInfo),
 }
 
 // #[derive(Debug, Clone)]
@@ -131,7 +137,7 @@ pub struct EventInfo {
 //     }
 // }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Deserialize, Serialize, Default, Clone)]
 pub struct TowerDifficulties {
     #[serde(skip_serializing_if = "Option::is_none", rename = "e")]
     pub easy: Option<u64>,
@@ -178,7 +184,7 @@ impl TowerDifficulties {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Deserialize, Serialize, Default, Clone)]
 pub struct AreaRequirements {
     #[serde(rename = "ds")]
     pub difficulties: TowerDifficulties,
@@ -186,7 +192,7 @@ pub struct AreaRequirements {
     pub points: u64,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct AreaInformation {
     #[serde(rename = "n")]
     pub name: String,

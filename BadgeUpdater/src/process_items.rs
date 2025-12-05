@@ -1,8 +1,14 @@
 use crate::{
     badge_to_wikitext::get_page_redirect,
-    definitions::{AreaInformation, AreaRequirements, Badge, Length, TowerType, WikiTower},
+    definitions::{
+        AreaInformation, AreaRequirements, Badge, EventInfo, Length, TowerType, WikiTower,
+    },
     reqwest_client::RustClient,
-    wikitext::{Argument, QueryType, Template, WikiText, enums::LinkType, parsed_data::List},
+    wikitext::{
+        Argument, QueryType, Template, WikiText,
+        enums::LinkType,
+        parsed_data::{List, ParsedData},
+    },
 };
 
 /// Get the difficulty provided by the template.
@@ -347,5 +353,46 @@ pub async fn process_area(client: &RustClient, area: &str) -> Result<AreaInforma
         name: area.to_owned(),
         requirements: parsed_requirements.ok(),
         parent_area: parent,
+    })
+}
+
+fn get_event_template(data: &ParsedData, area: &str) -> Result<Template, String> {
+    let normal = data
+        .get_template("eventinfobox")
+        .map_err(|e| format!("Failed to get eventinfobox ({:?}) > {:?}", area, e));
+    if let Ok(norm) = normal {
+        return Ok(norm);
+    }
+    data.get_template("event infobox")
+        .map_err(|e| format!("Failed to get event infobox ({:?}) > {:?}", area, e))
+}
+
+pub async fn process_event_area(client: &RustClient, area: &str) -> Result<EventInfo, String> {
+    let wikitext = get_page_data(client, area).await?;
+    // println!("{:?}", wikitext);
+    let parsed = wikitext
+        .get_parsed()
+        .map_err(|e| format!("Failed to parse wikitext: {:?}", e))?;
+    let template = get_event_template(&parsed, area)?;
+    let name_text = template
+        .get_named_arg("realm")
+        .map_err(|e| format!("Failed to get realm of area {:?} ({:?})", area, e))?
+        .elements
+        .iter()
+        .filter(|elm| match elm {
+            Argument::Text(_) => true,
+            _ => false,
+        })
+        .next()
+        .ok_or(format!("Failed to get text of realm of {:?}", area))?
+        .as_text()
+        .unwrap()
+        .raw
+        .clone();
+    let name = name_text.split("<br/>").next().unwrap().trim();
+
+    Ok(EventInfo {
+        area_name: name.to_owned(),
+        event_name: area.to_owned(),
     })
 }

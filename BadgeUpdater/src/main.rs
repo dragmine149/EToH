@@ -14,8 +14,8 @@ use url::Url;
 
 use crate::{
     badge_to_wikitext::get_badges,
-    definitions::{AreaInformation, ErrorDetails, OkDetails, WikiTower},
-    process_items::{process_area, process_item, process_tower},
+    definitions::{AreaInformation, ErrorDetails, EventInfo, GlobalArea, OkDetails, WikiTower},
+    process_items::{process_area, process_event_area, process_item, process_tower},
     reqwest_client::RustClient,
 };
 
@@ -176,7 +176,7 @@ async fn main() {
     tower_processed.iter().for_each(|i| success.push(i));
     item_processed.iter().for_each(|i| success.push(i));
     log::info!(
-        "Total: {}. Passed: {}. Rate: {:.2}%",
+        "[badge to tower] Total: {}. Passed: {}. Rate: {:.2}%",
         badges_vec.len(),
         success.len(),
         ((success.len() as f64) / (badges_vec.len() as f64)) * 100.0
@@ -184,7 +184,7 @@ async fn main() {
 
     let areas_list = success.clone().into_iter().map(|t| t.area.clone()).unique();
     let mut areas = vec![];
-    for area in areas_list {
+    for area in areas_list.clone() {
         areas.push(process_area(&client, &area).await);
     }
 
@@ -193,5 +193,37 @@ async fn main() {
         |a: &Result<AreaInformation, String>| a.is_ok(),
         "process_area",
         Some(&path),
+    );
+
+    let area_names = area_processed
+        .clone()
+        .iter()
+        .map(|a| a.name.clone())
+        .collect::<Vec<String>>();
+
+    let mut event_areas = vec![];
+    for ele in areas_list.filter(|a| !area_names.contains(a)) {
+        event_areas.push(process_event_area(&client, &ele).await);
+    }
+
+    let event_processed = count_processed(
+        &event_areas,
+        |a: &Result<EventInfo, String>| a.is_ok(),
+        "process_event_area",
+        Some(&path),
+    );
+
+    let mut area_success: Vec<GlobalArea> = vec![];
+    area_processed
+        .iter()
+        .for_each(|i| area_success.push(GlobalArea::Area((*i).clone())));
+    event_processed
+        .iter()
+        .for_each(|i| area_success.push(GlobalArea::Event((*i).clone())));
+    log::info!(
+        "[area parsing] Total: {}. Passed: {}. Rate: {:.2}%",
+        areas.len(),
+        area_success.len(),
+        ((area_success.len() as f64) / (areas.len() as f64)) * 100.0
     );
 }

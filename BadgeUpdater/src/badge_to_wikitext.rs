@@ -49,15 +49,13 @@ async fn pre_process(client: RustClient, badge: Badge) -> Result<OkDetails, Erro
 }
 
 async fn get_page(client: &RustClient, page_name: &str) -> Result<Response, RustError> {
-    log::debug!(
-        "Request to \"{:}wiki/{:}?action=raw\"",
-        ETOH_WIKI,
-        page_name
-    );
-    Ok(client
-        .get(format!("{:}wiki/{:}?action=raw", ETOH_WIKI, page_name))
-        .send()
-        .await?)
+    let mut page_name =
+        Url::parse(&format!("{:}wiki/{:}", ETOH_WIKI, page_name)).expect("How is url invalid?");
+    page_name.set_fragment(None);
+    page_name.set_query(Some("action=raw"));
+
+    log::debug!("Request to {:?}", page_name.as_str().replace("%20", " "));
+    Ok(client.get(page_name).send().await?)
 }
 
 #[async_recursion]
