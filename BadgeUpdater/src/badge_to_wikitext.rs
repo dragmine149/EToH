@@ -7,7 +7,7 @@ use url::Url;
 
 use crate::{
     ETOH_WIKI, clean_badge_name,
-    definitions::{Badge, Data, ErrorDetails, OkDetails, ProcessError, WikiSearch},
+    definitions::{Badge, Data, ErrorDetails, OkDetails, PageDetails, ProcessError, WikiSearch},
     reqwest_client::{RustClient, RustError},
     wikitext::WikiText,
 };
@@ -61,66 +61,63 @@ pub async fn get_page(client: &RustClient, page_name: &str) -> Result<Response, 
 }
 
 #[async_recursion]
+pub async fn get_page_redirect(
+    client: &RustClient,
+    page_name: &str,
+) -> Result<PageDetails, RustError> {
+    let data = get_page(client, page_name).await?;
+    let text = data.error_for_status()?.text().await?;
+
+    if text.to_lowercase().contains("#redirect") {
+        // if we have #redirect, there will be a match and if there isn't well the page is broken so we fix that externally.
+        // under no circumstance should redirect be empty
+        let matches = lazy_regex::regex_captures!(r"(?mi)#redirect \[\[(.+)\]\]", &text);
+        if matches.is_none() {
+            panic!("No matches for {:?} data: {:?}", page_name, text);
+        }
+        let (_, redirect) = matches.unwrap();
+        log::debug!("Redirecting to {:?}", redirect);
+        let redirect_result = get_page_redirect(client, redirect).await?;
+        return Ok(PageDetails {
+            text: redirect_result.text,
+            name: Some(redirect_result.name.unwrap_or(redirect.to_owned())),
+        });
+    }
+
+    Ok(PageDetails {
+        text,
+        ..Default::default()
+    })
+}
+
+#[async_recursion]
 async fn process_data(
     client: RustClient,
     badge: &String,
     badge_id: u64,
     search: Option<&String>,
 ) -> Result<WikiText, ProcessError> {
-    let mut page_title = Some(clean_badge_name(badge));
-    log::debug!("Getting: {:?} ({:?})", page_title, badge_id);
+    let mut page_title = clean_badge_name(badge);
+    // log::debug!("Getting: {:?} ({:?})", page_title, badge_id);
 
-    let mut clean = false;
-    while let Some(ref redirect) = page_title {
-        // initial response to get data
-        let data = get_page(&client, redirect).await?;
-        println!(
-            "{:?}, {:?}, {:?}",
-            data.url().as_str(),
-            badge_id,
-            data.status().as_str()
-        );
-
-        // Process success first as the rest has to loop anyway.
-        // Normally i would do this last, but it's easier here.
-        if data.status().is_success() {
-            let text = data.text().await?;
-            let mut page = WikiText::parse(&text);
-
-            if text.to_lowercase().contains("#redirect") {
-                let (_, reed) = lazy_regex::regex_captures!(r"(?m)#redirect \[\[(.+)\]\]", &text)
-                    .ok_or("Failed to do regex on input")?;
-                if !reed.is_empty() {
-                    page_title = Some(reed.to_owned());
-                    continue;
-                }
-            }
-
-            page.set_page_name(Some(redirect.to_owned()));
-            if search.is_some() && search.unwrap() != redirect {
-                return Ok(is_page_link(page, badge_id)?);
-            }
-            return Ok(page);
-        }
-
-        // retry, but clean it if we haven't already cleaned it.
-        if !clean {
-            page_title = Some(
-                page_title
-                    .unwrap_or_default()
-                    .replace("-", " ")
-                    .replace("!", "")
-                    .trim()
-                    .to_string(),
-            );
-            clean = true;
-            continue;
-        }
-
-        page_title = None;
+    let mut page_data = get_page_redirect(&client, &page_title).await;
+    if page_data.is_err() {
+        // recheck but with cleaning the input.
+        page_title = page_title
+            .replace("-", " ")
+            .replace("!", "")
+            .trim()
+            .to_string();
+        page_data = get_page_redirect(&client, &page_title).await;
     }
-
-    // Assumption: Failed clean, check so we search.
+    if let Ok(text) = page_data {
+        let mut wikitext = WikiText::parse(text.text);
+        wikitext.set_page_name(Some(text.name.unwrap_or(page_title.clone())));
+        if search.is_some() && *search.unwrap() != page_title {
+            return Ok(is_page_link(wikitext, badge_id)?);
+        }
+        return Ok(wikitext);
+    }
 
     if search.is_none() {
         let pages = client
@@ -134,9 +131,13 @@ async fn process_data(
             .await?;
 
         for entry in pages.query.search {
-            // if entry.title.contains("/") {
-            //     continue;
-            // }
+            if entry.title.contains("/") {
+                continue;
+            }
+            if entry.title == page_title {
+                log::warn!("How entry is title?? {:?}", entry.title);
+                continue;
+            }
 
             let search_page =
                 process_data(client.clone(), &entry.title, badge_id, Some(badge)).await;
@@ -145,5 +146,5 @@ async fn process_data(
             }
         }
     }
-    Err("Failed to find page after searching!".into())
+    Err("Failed to find the page after searching".into())
 }

@@ -65,6 +65,11 @@ pub struct WikiTower {
     pub tower_type: TowerType,
 }
 
+pub struct EventInfo {
+    pub area_name: String,
+    pub event_name: String,
+}
+
 // #[derive(Debug, Clone)]
 // pub struct Tower {
 //     // #[serde(rename = "n")]
@@ -443,3 +448,9 @@ impl From<&str> for ProcessError {
 pub struct ErrorDetails(pub ProcessError, pub Badge);
 #[derive(Debug)]
 pub struct OkDetails(pub WikiText, pub Badge);
+
+#[derive(Debug, Default)]
+pub struct PageDetails {
+    pub text: String,
+    pub name: Option<String>,
+}
