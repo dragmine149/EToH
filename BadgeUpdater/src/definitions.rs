@@ -1,9 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::{
-    cmp::Ordering,
-    collections::{HashMap, HashSet},
-    fmt::Display,
-};
+use std::fmt::Display;
 
 use crate::{reqwest_client::RustError, wikitext::WikiText};
 
@@ -58,66 +54,77 @@ impl Default for Data {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct Tower {
-    // #[serde(rename = "n")]
-    pub name: String,
-    // #[serde(rename = "d")]
+#[derive(Debug, Default)]
+pub struct WikiTower {
+    pub badge_name: String,
+    pub badge_id: u64,
+    pub page_name: String,
     pub difficulty: f64,
-    // #[serde(rename = "b")]
-    pub badges: Vec<u64>,
-    // #[serde(rename = "t")]
-    pub tower_type: Option<TowerType>,
+    pub area: String,
+    pub length: Length,
+    pub tower_type: TowerType,
 }
 
-impl Serialize for Tower {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let mut csv = format!("{},{},{:?}", self.name, self.difficulty, self.badges);
-        if let Some(ttype) = self.tower_type {
-            csv = format!("{csv},{}", ttype as u8);
-        }
+// #[derive(Debug, Clone)]
+// pub struct Tower {
+//     // #[serde(rename = "n")]
+//     pub name: String,
+//     // #[serde(rename = "d")]
+//     pub difficulty: f64,
+//     // #[serde(rename = "b")]
+//     pub badges: Vec<u64>,
+//     // #[serde(rename = "t")]
+//     pub tower_type: Option<TowerType>,
+// }
 
-        serializer.serialize_str(&csv)
-    }
-}
-impl<'de> Deserialize<'de> for Tower {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        let parts: Vec<&str> = s.split(',').collect();
+// impl Serialize for Tower {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: serde::Serializer,
+//     {
+//         let mut csv = format!("{},{},{:?}", self.name, self.difficulty, self.badges);
+//         if let Some(ttype) = self.tower_type {
+//             csv = format!("{csv},{}", ttype as u8);
+//         }
 
-        if parts.len() < 3 {
-            return Err(serde::de::Error::custom("invalid tower format"));
-        }
+//         serializer.serialize_str(&csv)
+//     }
+// }
+// impl<'de> Deserialize<'de> for Tower {
+//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+//     where
+//         D: serde::Deserializer<'de>,
+//     {
+//         let s = String::deserialize(deserializer)?;
+//         let parts: Vec<&str> = s.split(',').collect();
 
-        let name = parts[0].to_string();
-        let difficulty = parts[1].parse().map_err(serde::de::Error::custom)?;
+//         if parts.len() < 3 {
+//             return Err(serde::de::Error::custom("invalid tower format"));
+//         }
 
-        let badges_str = parts[2].trim_start_matches('[').trim_end_matches(']');
-        let badges = badges_str
-            .split_whitespace()
-            .filter_map(|s| s.trim_matches(',').parse().ok())
-            .collect();
+//         let name = parts[0].to_string();
+//         let difficulty = parts[1].parse().map_err(serde::de::Error::custom)?;
 
-        let tower_type = if parts.len() > 3 {
-            Some(TowerType::from(parts[3]))
-        } else {
-            None
-        };
+//         let badges_str = parts[2].trim_start_matches('[').trim_end_matches(']');
+//         let badges = badges_str
+//             .split_whitespace()
+//             .filter_map(|s| s.trim_matches(',').parse().ok())
+//             .collect();
 
-        Ok(Tower {
-            name,
-            difficulty,
-            badges,
-            tower_type,
-        })
-    }
-}
+//         let tower_type = if parts.len() > 3 {
+//             Some(TowerType::from(parts[3]))
+//         } else {
+//             None
+//         };
+
+//         Ok(Tower {
+//             name,
+//             difficulty,
+//             badges,
+//             tower_type,
+//         })
+//     }
+// }
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub struct TowerDifficulties {
@@ -163,34 +170,6 @@ impl TowerDifficulties {
                 println!("Not a valid difficulty! {:?}", inv);
             }
         }
-    }
-
-    pub fn types() -> impl Iterator<Item = String> {
-        vec![
-            String::from("easy"),
-            String::from("medium"),
-            String::from("hard"),
-            String::from("difficult"),
-            String::from("challenging"),
-            String::from("intense"),
-            String::from("remorseless"),
-            String::from("insane"),
-            String::from("extreme"),
-            String::from("terrifying"),
-            String::from("catastrophic"),
-        ]
-        .into_iter()
-    }
-    pub fn find_type(text: &str) -> Option<String> {
-        // get rid of "Difficulty" as this causes some issues.
-        let text = text.replace("Difficulty", "").replace("difficulty", "");
-        for diff in Self::types() {
-            if text.contains(&diff) {
-                return Some(diff.clone());
-            }
-        }
-
-        None
     }
 }
 
@@ -398,72 +377,6 @@ impl From<Length> for u16 {
     }
 }
 
-#[derive(Serialize, Debug, Deserialize)]
-pub struct AreaMap {
-    pub areas: HashMap<String, Vec<String>>,
-}
-
-impl AreaMap {
-    pub fn get_area(&self, area: &str) -> String {
-        for main in self.areas.iter() {
-            println!("{:?}", main);
-            if main
-                .1
-                .iter()
-                .map(|v| v.trim().to_lowercase())
-                .any(|v| v == *area.trim().to_lowercase())
-            {
-                return main.0.to_string();
-            }
-        }
-
-        "other".to_string()
-    }
-
-    pub fn key_loop(&self) -> std::collections::hash_map::Keys<'_, String, Vec<String>> {
-        self.areas.keys()
-    }
-}
-
-#[derive(Serialize, Debug, Deserialize)]
-pub struct BadgeMap {
-    pub badges: HashMap<String, Vec<u64>>,
-    #[serde(skip)]
-    badge_map: HashMap<u64, String>,
-    #[serde(skip)]
-    unused: HashSet<u64>,
-}
-
-impl BadgeMap {
-    pub fn parse(&mut self) {
-        self.badges.iter().for_each(|b| {
-            b.1.iter().for_each(|id| {
-                self.badge_map.insert(*id, b.0.to_owned());
-                self.unused.insert(*id);
-            });
-        });
-    }
-
-    pub fn get_badge(&mut self, id: &u64) -> Option<&String> {
-        self.unused.remove(id);
-        self.badge_map.get(id)
-    }
-
-    pub fn use_unused(&mut self) -> impl Iterator<Item = Badge> {
-        self.unused.clone().into_iter().map(|b| Badge {
-            id: b,
-            name: self.badge_map.get(&b).unwrap().to_owned(),
-            ..Default::default()
-        })
-
-        // self.unused.iter().clone().map(|b| Badge {
-        //     id: *b,
-        //     name: self.get_badge(b).unwrap().to_owned(),
-        //     ..Default::default()
-        // })
-    }
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct OtherData {
     pub name: String,
@@ -491,6 +404,10 @@ pub struct WikiSearch {
 }
 
 #[derive(Debug)]
+#[allow(
+    dead_code,
+    reason = "i use these for debugging, ik i don't use them rust because we don't need to use them and panic is just not worth it"
+)]
 pub enum ProcessError {
     Reqwest(RustError),
     Process(String),
@@ -522,6 +439,7 @@ impl From<&str> for ProcessError {
 }
 
 #[derive(Debug)]
+#[allow(dead_code, reason = "i use these for debugging")]
 pub struct ErrorDetails(pub ProcessError, pub Badge);
 #[derive(Debug)]
 pub struct OkDetails(pub WikiText, pub Badge);

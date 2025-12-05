@@ -6,6 +6,7 @@ use reqwest_middleware::ClientWithMiddleware;
 pub struct RustClient(pub ClientWithMiddleware);
 /// Custom error to include all potential reqwest related errors.
 #[derive(Debug)]
+#[allow(dead_code, reason = "I use this for debugging...")]
 pub enum RustError {
     MiddleWare(reqwest_middleware::Error),
     Underly(reqwest::Error),

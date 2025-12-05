@@ -14,8 +14,8 @@ use url::Url;
 
 use crate::{
     badge_to_wikitext::get_badges,
-    definitions::{AreaInformation, ErrorDetails, OkDetails},
-    process_items::{WikiTower, process_area, process_item, process_tower},
+    definitions::{AreaInformation, ErrorDetails, OkDetails, WikiTower},
+    process_items::{process_area, process_item, process_tower},
     reqwest_client::RustClient,
 };
 
@@ -42,13 +42,6 @@ fn clean_badge_name(badge: &str) -> String {
     // Collapse multiple spaces into one and trim again
     s = regex_replace!(r"\s{2,}", &s, " ").to_string();
     s.trim().to_string()
-}
-
-fn compress_name(badge: &str) -> String {
-    badge
-        .replace("Tower of ", "")
-        .replace("Citadel of ", "")
-        .replace("Steeple of ", "")
 }
 
 /// Take an object and count how many passed/failed.

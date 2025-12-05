@@ -1,25 +1,9 @@
 use crate::{
-    ETOH_WIKI,
     badge_to_wikitext::get_page,
-    definitions::{AreaInformation, AreaRequirements, Badge, Length, TowerDifficulties, TowerType},
-    reqwest_client::{self, RustClient, RustError},
-    wikitext::{
-        self, Argument, QueryType, Template, WikiText,
-        enums::LinkType,
-        parsed_data::{Link, List},
-    },
+    definitions::{AreaInformation, AreaRequirements, Badge, Length, TowerType, WikiTower},
+    reqwest_client::RustClient,
+    wikitext::{Argument, QueryType, Template, WikiText, enums::LinkType, parsed_data::List},
 };
-
-#[derive(Debug, Default)]
-pub struct WikiTower {
-    pub badge_name: String,
-    pub badge_id: u64,
-    pub page_name: String,
-    pub difficulty: f64,
-    pub area: String,
-    pub length: Length,
-    pub tower_type: TowerType,
-}
 
 /// Get the difficulty provided by the template.
 /// `original_difficulty` field is ignored as there can be many difficulties.
@@ -128,10 +112,10 @@ fn get_area(template: &Template, tower_name: &str) -> Result<String, String> {
             // Argument::Template(template) => todo!(),
             Argument::Link(link) => return Ok(link.target.clone()),
             Argument::List(list) => {
-                log::warn!("{:?}", list);
+                log::debug!("{:?}", list);
                 let wt = WikiText::parse(
                     list.entries
-                        .get(0)
+                        .first()
                         .ok_or(format!(
                             "Failed to get first entry of list ({:?}/found_in)",
                             tower_name
@@ -148,7 +132,7 @@ fn get_area(template: &Template, tower_name: &str) -> Result<String, String> {
                     .get_parsed()
                     .map_err(|e| format!("Failed to parse list entry: {:?} ({:?})", e, tower_name))?
                     .get_links(Some(LinkType::Internal))
-                    .get(0)
+                    .first()
                     .ok_or(format!("No links in first list entry ({:?})", tower_name))?
                     .target
                     .clone());
@@ -212,27 +196,22 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
     })
 }
 
-async fn get_item_page(client: &RustClient, item: &str) -> Result<String, RustError> {
-    Ok(client
-        .get(format!("{:}wiki/{:}?action=raw", ETOH_WIKI, item))
-        .send()
-        .await?
-        .text()
-        .await?)
-}
-
 async fn get_page_data(client: &RustClient, page: &str) -> Result<WikiText, String> {
     let data = get_page(client, page).await;
-    if let Ok(res) = data {
-        if let Ok(text) = res.text().await {
-            let mut wikitext = WikiText::parse(text);
-            wikitext.set_page_name(Some(page));
-            return Ok(wikitext);
-        }
+    if let Ok(res) = data
+        && let Ok(text) = res.text().await
+    {
+        let mut wikitext = WikiText::parse(text);
+        wikitext.set_page_name(Some(page));
+        return Ok(wikitext);
     }
     Err(format!("Failed to get {:?}", page))
 }
 
+#[allow(
+    clippy::await_holding_refcell_ref,
+    reason = "we specifically drop it, its fine. We can't do the workaround without complicating the code any further and we don't really need the parsed obj anymore."
+)]
 pub async fn process_item(
     client: &RustClient,
     text: &WikiText,
@@ -255,6 +234,7 @@ pub async fn process_item(
         })?
         .get_links(Some(LinkType::Internal));
 
+    drop(parsed);
     for link in links {
         let wikitext = get_page_data(client, &link.target).await?;
         let tower = process_tower(&wikitext, badge);
@@ -323,12 +303,10 @@ fn get_all_requirements(template: &Template, area: &str) -> Result<AreaRequireme
             }
             Ok(reqs)
         }
-        _ => {
-            return Err(format!(
-                "Failed to get lists (ok... whats wrong here? ({:?})",
-                template.to_wikitext()
-            ));
-        }
+        _ => Err(format!(
+            "Failed to get lists (ok... whats wrong here? ({:?})",
+            template.to_wikitext()
+        )),
     }
 }
 
@@ -349,7 +327,7 @@ pub async fn process_area(client: &RustClient, area: &str) -> Result<AreaInforma
         .get_named_arg("realm")
         .map(|area| {
             area.get_links(Some(LinkType::Internal))
-                .get(0)
+                .first()
                 .unwrap()
                 .label
                 .to_owned()
