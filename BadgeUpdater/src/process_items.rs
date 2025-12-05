@@ -1,5 +1,5 @@
 use crate::{
-    badge_to_wikitext::get_page,
+    badge_to_wikitext::get_page_redirect,
     definitions::{AreaInformation, AreaRequirements, Badge, Length, TowerType, WikiTower},
     reqwest_client::RustClient,
     wikitext::{Argument, QueryType, Template, WikiText, enums::LinkType, parsed_data::List},
@@ -197,12 +197,10 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
 }
 
 async fn get_page_data(client: &RustClient, page: &str) -> Result<WikiText, String> {
-    let data = get_page(client, page).await;
-    if let Ok(res) = data
-        && let Ok(text) = res.text().await
-    {
-        let mut wikitext = WikiText::parse(text);
-        wikitext.set_page_name(Some(page));
+    let data = get_page_redirect(client, page).await;
+    if let Ok(res) = data {
+        let mut wikitext = WikiText::parse(res.text);
+        wikitext.set_page_name(res.name);
         return Ok(wikitext);
     }
     Err(format!("Failed to get {:?}", page))

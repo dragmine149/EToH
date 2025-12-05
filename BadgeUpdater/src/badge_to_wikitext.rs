@@ -48,7 +48,7 @@ async fn pre_process(client: RustClient, badge: Badge) -> Result<OkDetails, Erro
     Ok(OkDetails(result.ok().unwrap(), badge))
 }
 
-pub async fn get_page(client: &RustClient, page_name: &str) -> Result<Response, RustError> {
+async fn get_page(client: &RustClient, page_name: &str) -> Result<Response, RustError> {
     log::debug!(
         "Request to \"{:}wiki/{:}?action=raw\"",
         ETOH_WIKI,
