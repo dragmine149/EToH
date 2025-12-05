@@ -84,7 +84,18 @@ async fn process_data(
         // Process success first as the rest has to loop anyway.
         // Normally i would do this last, but it's easier here.
         if data.status().is_success() {
-            let mut page = WikiText::parse(&data.text().await?);
+            let text = data.text().await?;
+            let mut page = WikiText::parse(&text);
+
+            if text.to_lowercase().contains("#redirect") {
+                let (_, reed) = lazy_regex::regex_captures!(r"(?m)#redirect \[\[(.+)\]\]", &text)
+                    .ok_or("Failed to do regex on input")?;
+                if !reed.is_empty() {
+                    page_title = Some(reed.to_owned());
+                    continue;
+                }
+            }
+
             page.set_page_name(Some(redirect.to_owned()));
             if search.is_some() && search.unwrap() != redirect {
                 return Ok(is_page_link(page, badge_id)?);
