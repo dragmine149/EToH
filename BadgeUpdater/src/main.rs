@@ -8,7 +8,6 @@ mod wikitext;
 use std::{fs, path::PathBuf, str::FromStr};
 
 use dotenv::dotenv;
-use futures::future;
 use itertools::Itertools;
 use lazy_regex::regex_replace;
 use url::Url;

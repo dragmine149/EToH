@@ -116,6 +116,52 @@ fn get_type(template: &Template) -> Result<TowerType, String> {
     Ok(TowerType::from(txt))
 }
 
+fn get_area(template: &Template, tower_name: &str) -> Result<String, String> {
+    let area_obj = template
+        .get_named_args_query("found_in", QueryType::StartsWith)
+        .first()
+        .ok_or(format!("Failed to get area of {:?}", tower_name))?
+        .elements
+        .clone();
+    for elm in area_obj {
+        match elm {
+            // Argument::Template(template) => todo!(),
+            Argument::Link(link) => return Ok(link.target.clone()),
+            Argument::List(list) => {
+                log::warn!("{:?}", list);
+                let wt = WikiText::parse(
+                    list.entries
+                        .get(0)
+                        .ok_or(format!(
+                            "Failed to get first entry of list ({:?}/found_in)",
+                            tower_name
+                        ))?
+                        .as_text()
+                        .ok_or(format!(
+                            "Failed to translate into text (we checked this though...) ({:?})",
+                            tower_name
+                        ))?
+                        .raw
+                        .clone(),
+                );
+                return Ok(wt
+                    .get_parsed()
+                    .map_err(|e| format!("Failed to parse list entry: {:?} ({:?})", e, tower_name))?
+                    .get_links(Some(LinkType::Internal))
+                    .get(0)
+                    .ok_or(format!("No links in first list entry ({:?})", tower_name))?
+                    .target
+                    .clone());
+            }
+            _ => {
+                // log::warn!("Failed to deal with {:?} for {:?}", elm, tower_name);
+                continue;
+            }
+        }
+    }
+    Err(format!("Failed to find a link for {:?}", tower_name))
+}
+
 /// Processes the tower provided into something else.
 pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String> {
     // log::debug!("Tower: {:?}", text.page_name());
@@ -128,15 +174,8 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
         text.page_name()
     ))?;
 
-    let area = template
-        .get_named_args_query("found_in", QueryType::StartsWith)
-        .first()
-        .ok_or("Failed to get area of tower")?
-        .get_links(Some(LinkType::Internal))
-        .get(0)
-        .ok_or("Failed to get link of area")?
-        .target
-        .clone();
+    let area = get_area(template, &badge.name)?;
+
     let difficulty = match get_difficulty(template) {
         Ok(diff) => diff,
         Err(e) => {
