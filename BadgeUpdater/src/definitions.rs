@@ -207,17 +207,17 @@ pub struct AreaInformation {
     #[serde(rename = "n")]
     pub name: String,
     #[serde(rename = "r")]
-    pub requirements: AreaRequirements,
+    pub requirements: Option<AreaRequirements>,
     #[serde(skip_serializing_if = "Option::is_none", rename = "s")]
-    pub sub_area: Option<String>,
+    pub parent_area: Option<String>,
 }
 
 impl Default for AreaInformation {
     fn default() -> Self {
         Self {
             name: "Unknown area".to_string(),
-            requirements: AreaRequirements::default(),
-            sub_area: None,
+            requirements: None,
+            parent_area: None,
         }
     }
 }

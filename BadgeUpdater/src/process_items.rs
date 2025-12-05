@@ -4,7 +4,7 @@ use crate::{
     definitions::{AreaInformation, AreaRequirements, Badge, Length, TowerDifficulties, TowerType},
     reqwest_client::{self, RustClient, RustError},
     wikitext::{
-        Argument, QueryType, Template, WikiText,
+        self, Argument, QueryType, Template, WikiText,
         enums::LinkType,
         parsed_data::{Link, List},
     },
@@ -261,11 +261,47 @@ fn get_requirements(list: &List) -> Result<AreaRequirements, String> {
     Ok(reqs)
 }
 
+fn get_all_requirements(template: &Template, area: &str) -> Result<AreaRequirements, String> {
+    let requirements = template
+        .get_named_arg("towers_required")
+        .map_err(|e| {
+            format!(
+                "Failed to get towers_required for area (none required?) ({:?}) ({})",
+                e, area
+            )
+        })?
+        .get(0)
+        .map_err(|e| format!("Failed to get elements (how??) ({:?})", e))?;
+
+    match requirements {
+        Argument::List(list) => get_requirements(&list),
+        Argument::Text(text) => {
+            let mut reqs = AreaRequirements::default();
+            let err = parse_area_requirement(&text.raw, &mut reqs);
+            if err.is_err() {
+                log::warn!("{:?}", err);
+                return Err(err.err().unwrap());
+            }
+            Ok(reqs)
+        }
+        _ => {
+            return Err(format!(
+                "Failed to get lists (ok... whats wrong here? ({:?})",
+                template.to_wikitext()
+            ));
+        }
+    }
+}
+
 pub async fn process_area(client: &RustClient, area: &str) -> Result<AreaInformation, String> {
     let wikitext = get_page_data(client, area).await?;
     let parsed = wikitext
         .get_parsed()
         .map_err(|e| format!("Failed to parse wikitext: {:?}", e))?;
+    // Garden of eshool has an annoying accent...
+    // if area.to_lowercase().starts_with("garden") {
+    //     log::warn!("{:#?}", wikitext);
+    // }
     let template = parsed
         .get_template("ringinfobox")
         .map_err(|e| format!("Failed to get ringinfobox ({:?}) > {:?}", area, e))?;
@@ -281,35 +317,9 @@ pub async fn process_area(client: &RustClient, area: &str) -> Result<AreaInforma
         })
         .ok();
 
-    let requirements = template
-        .get_named_arg("towers_required")
-        .map_err(|e| {
-            format!(
-                "Failed to get towers_required for area (none required?) ({:?}) ({})",
-                e, area
-            )
-        })?
-        .get(0)
-        .map_err(|e| format!("Failed to get elements (how??) ({:?})", e))?;
+    let parsed_requirements = get_all_requirements(&template, area);
 
-    let parsed_requirements = match requirements {
-        Argument::List(list) => get_requirements(&list),
-        Argument::Text(text) => {
-            let mut reqs = AreaRequirements::default();
-            let err = parse_area_requirement(&text.raw, &mut reqs);
-            if err.is_err() {
-                log::warn!("{:?}", err);
-            }
-            Ok(reqs)
-        }
-        _ => {
-            return Err(format!(
-                "Failed to get lists (ok... whats wrong here? ({:?})",
-                template.to_wikitext()
-            ));
-        }
-    };
-
+    // sub-areas are most likely to contain errors in this stage, hence we ignore them.
     if parsed_requirements.is_err() && parent.is_none() {
         log::warn!(
             "Error in requirements: {:?} ({:?})",
@@ -320,7 +330,7 @@ pub async fn process_area(client: &RustClient, area: &str) -> Result<AreaInforma
 
     Ok(AreaInformation {
         name: area.to_owned(),
-        requirements: parsed_requirements.unwrap_or_default(),
-        sub_area: parent,
+        requirements: parsed_requirements.ok(),
+        parent_area: parent,
     })
 }
