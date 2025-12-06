@@ -5,11 +5,10 @@ mod process_items;
 mod reqwest_client;
 mod wikitext;
 
-use std::{fs, path::PathBuf, str::FromStr};
-
 use dotenv::dotenv;
 use itertools::Itertools;
 use lazy_regex::regex_replace;
+use std::{fs, path::PathBuf, str::FromStr};
 use url::Url;
 
 use crate::{
@@ -18,8 +17,6 @@ use crate::{
     process_items::{process_area, process_event_area, process_item, process_tower},
     reqwest_client::RustClient,
 };
-
-// use crate::rust_wiki::{WikiTower, WikiTowerBuilder};
 
 pub const BADGE_URL: &str = "https://badges.roblox.com/v1/universes/3264581003/badges?limit=100";
 pub const OLD_BADGE_URL: &str =
@@ -46,6 +43,8 @@ fn clean_badge_name(badge: &str) -> String {
 
 /// Take an object and count how many passed/failed.
 ///
+/// We use references as we don't really care about the list and it saves having to reassign just for a debug.
+///
 /// # Arguments
 /// - obj -> A vector of objects to list through. (type is dynamic)
 /// - pass_check -> The function to filter out objects which have passed.
@@ -54,17 +53,25 @@ fn clean_badge_name(badge: &str) -> String {
 ///
 /// # Returns
 /// - Vec<&'a K> -> A list to use in other places.
+///
+/// # Example
+/// ```rs
+/// let mut objs: Vec<Result<u64, String>> = vec![];
+/// populate_vec(objs);
+/// let (passed, failed) = count_processed(&objs, |o| o.is_ok(), "some function", None);
+/// ```
 fn count_processed<'a, K, P, E>(
     obj: &'a [Result<K, E>],
     pass_check: P,
     func_name: &str,
     file: Option<&PathBuf>,
-) -> Vec<&'a K>
+) -> (Vec<&'a K>, Vec<&'a E>)
 where
     P: Fn(&Result<K, E>) -> bool,
     K: std::fmt::Debug,
     E: std::fmt::Debug + 'a,
 {
+    // theses lists are required not just for counting, but for also outputting.
     let mut passed: Vec<&K> = Vec::new();
     let mut failed: Vec<&E> = Vec::new();
 
@@ -76,28 +83,26 @@ where
         }
     }
 
-    match file {
-        Some(path) => {
-            use std::io::Write;
-            match fs::OpenOptions::new().create(true).append(true).open(path) {
-                Ok(mut fh) => {
-                    if let Err(e) = writeln!(fh, "{:#?}\n", passed) {
-                        log::error!("Failed to append passed items to {:?}: {}", path, e);
-                    }
-                    if let Err(e) = writeln!(fh, "{:#?}\n", failed) {
-                        log::error!("Failed to append failed items to {:?}: {}", path, e);
-                    }
+    // output to file.
+    // If we don't have a file, then we don't really care about writing.
+    if let Some(path) = file {
+        use std::io::Write;
+        match fs::OpenOptions::new().create(true).append(true).open(path) {
+            Ok(mut fh) => {
+                if let Err(e) = writeln!(fh, "{:#?}\n", passed) {
+                    log::error!("Failed to append passed items to {:?}: {}", path, e);
                 }
-                Err(e) => {
-                    log::error!("Failed to open file {:?} for appending: {}", path, e);
+                if let Err(e) = writeln!(fh, "{:#?}\n", failed) {
+                    log::error!("Failed to append failed items to {:?}: {}", path, e);
                 }
             }
-        }
-        None => {
-            log::error!("No path passed for appending: {:?}", file);
+            Err(e) => {
+                log::error!("Failed to open file {:?} for appending: {}", path, e);
+            }
         }
     }
 
+    // log the data we wanted to log.
     log::info!(
         "[{}] Total: {}. Passed: {}. Rate: {:.2}%",
         func_name,
@@ -110,16 +115,19 @@ where
         }
     );
 
-    passed
+    // might as well return both lists.
+    (passed, failed)
 }
 
 const DEBUG_PATH: &str = "./badges.temp.txt";
 
 #[tokio::main]
 async fn main() {
+    // setup
     env_logger::init();
     dotenv().ok();
 
+    // file setup
     let path = PathBuf::from(DEBUG_PATH);
     if path.exists()
         && let Err(e) = fs::remove_file(&path)
@@ -127,51 +135,55 @@ async fn main() {
         log::error!("Failed to remove debug file {:?}: {}", path, e);
     }
 
+    // client and original url setup.
     let client = RustClient::new(None, None);
     let url = Url::from_str(&format!("{:}?limit=100", BADGE_URL)).unwrap();
 
+    // get a list of all the badges.
     let mut badges_vec = vec![];
     let raw = get_badges(&client, &url).await.unwrap();
     for badge_fut in raw {
         badges_vec.push(badge_fut.await.unwrap());
     }
 
-    let passed = count_processed(
+    // process the badges to get the passed and failed ones..
+    let (passed, failed) = count_processed(
         &badges_vec,
         |f: &Result<OkDetails, ErrorDetails>| f.is_ok(),
         "get_badges",
         Some(&path),
     );
 
+    // start processing towers.
     let tower_data = passed
         .iter()
         .map(|p| process_tower(&p.0, &p.1))
         .inspect(|x| println!("{:?}", x))
         .collect::<Vec<Result<WikiTower, String>>>();
 
-    let tower_processed = count_processed(
+    let (tower_processed, tower_processed_failed) = count_processed(
         &tower_data,
         |r: &Result<WikiTower, String>| r.is_ok(),
         "process_tower",
         Some(&path),
     );
-    let tower_names = tower_processed
-        .clone()
-        .iter()
-        .map(|t| t.badge_name.clone())
-        .collect::<Vec<String>>();
 
+    // process items now we now which towers have passed.
     let mut items = vec![];
-    for ele in passed.iter().filter(|p| !tower_names.contains(&p.1.name)) {
+    for ele in passed
+        .iter()
+        .filter(|p| !tower_processed_failed.contains(&&&p.1.name))
+    {
         items.push(process_item(&client, &ele.0, &ele.1).await);
     }
-    let item_processed = count_processed(
+    let (item_processed, items_failed) = count_processed(
         &items,
         |i: &Result<WikiTower, String>| i.is_ok(),
         "process_item",
         Some(&path),
     );
 
+    // combine the both
     let mut success = vec![];
     tower_processed.iter().for_each(|i| success.push(i));
     item_processed.iter().for_each(|i| success.push(i));
@@ -182,37 +194,35 @@ async fn main() {
         ((success.len() as f64) / (badges_vec.len() as f64)) * 100.0
     );
 
+    // process areas based off towers.
+    // Unique is here to reduce double area checking
     let areas_list = success.clone().into_iter().map(|t| t.area.clone()).unique();
     let mut areas = vec![];
     for area in areas_list.clone() {
         areas.push(process_area(&client, &area).await);
     }
 
-    let area_processed = count_processed(
+    let (area_processed, area_failed) = count_processed(
         &areas,
         |a: &Result<AreaInformation, String>| a.is_ok(),
         "process_area",
         Some(&path),
     );
 
-    let area_names = area_processed
-        .clone()
-        .iter()
-        .map(|a| a.name.clone())
-        .collect::<Vec<String>>();
-
+    // do the same but for the event based ones.
     let mut event_areas = vec![];
-    for ele in areas_list.filter(|a| !area_names.contains(a)) {
+    for ele in areas_list.filter(|a| !area_failed.contains(&a)) {
         event_areas.push(process_event_area(&client, &ele).await);
     }
 
-    let event_processed = count_processed(
+    let (event_processed, event_failed) = count_processed(
         &event_areas,
         |a: &Result<EventInfo, String>| a.is_ok(),
         "process_event_area",
         Some(&path),
     );
 
+    // combine them.
     let mut area_success: Vec<GlobalArea> = vec![];
     area_processed
         .iter()

@@ -13,9 +13,13 @@ use crate::{
 
 /// Get the difficulty provided by the template.
 /// `original_difficulty` field is ignored as there can be many difficulties.
+///
+/// Also parses the difficulty into a number which we can use.
 fn get_difficulty(template: &Template) -> Result<f64, String> {
     let query = template.get_named_args_query("difficulty", QueryType::StartsWith);
     let difficulty_text = query.first().ok_or("No difficulty found in tower")?;
+
+    // match is required as there is more than one way.
     match difficulty_text
         .elements
         .first()
@@ -51,12 +55,15 @@ fn get_difficulty(template: &Template) -> Result<f64, String> {
     })
 }
 
+/// Get the length field of the specified template.
 fn get_length(template: &Template) -> Result<Length, String> {
     let query = template.get_named_args_query("length", QueryType::StartsWith);
     let length_text = query
         .first()
+        // we have to deal with this, but some by default length is < 20 minutes hence we can ignore it.
         .ok_or("(warn ignore) No length found in tower")?;
 
+    // just catching some loose ones.
     if length_text.raw.is_empty() {
         return Ok(Length::default());
     }
@@ -67,7 +74,9 @@ fn get_length(template: &Template) -> Result<Length, String> {
         .ok_or("No elements in length but not empty? ({:?})")?
     {
         Argument::Template(template) => match template.get_positional_arg(0) {
+            // nice, we have number
             Ok(arg) => arg.raw.clone(),
+            // yeah, sometimes `{{Length}}` exists which defaults to < 20 mins
             Err(_) => return Ok(Length::default()),
         },
         Argument::Link(_) => return Err(String::from("Somehow a link in Length")),
@@ -80,16 +89,20 @@ fn get_length(template: &Template) -> Result<Length, String> {
     };
 
     // should avoid chases when length is provided but no length is realistically provided.
+    // TODO: do we remove? this shouldn't really ever be hit.
     if !txt.chars().any(|c| c.is_numeric()) {
         return Ok(Length::default());
     }
 
+    // parse and return.
     let v = txt
         .parse::<u16>()
         .map_err(|e| format!("Failed to parse number ({:?})", e))?;
     Ok(Length::from(v))
 }
 
+/// The type of tower box is more accurate than from the name.
+/// This also covers for mini-towers and the rare (now removed) case of `Thanos Tower`
 fn get_type(template: &Template) -> Result<TowerType, String> {
     let query = template.get_named_args_query("type_of_tower", QueryType::StartsWith);
     let type_text = query.first().ok_or("Failed to get type of tower")?;
@@ -106,6 +119,7 @@ fn get_type(template: &Template) -> Result<TowerType, String> {
     Ok(TowerType::from(txt))
 }
 
+/// Area is more complicated than it looks.
 fn get_area(template: &Template, tower_name: &str) -> Result<String, String> {
     let area_obj = template
         .get_named_args_query("found_in", QueryType::StartsWith)
@@ -113,12 +127,16 @@ fn get_area(template: &Template, tower_name: &str) -> Result<String, String> {
         .ok_or(format!("Failed to get area of {:?}", tower_name))?
         .elements
         .clone();
+
+    // get the first element which passes our checks.
+    //
     for elm in area_obj {
         match elm {
-            // Argument::Template(template) => todo!(),
             Argument::Link(link) => return Ok(link.target.clone()),
             Argument::List(list) => {
-                log::debug!("{:?}", list);
+                // log::debug!("{:?}", list);
+
+                // yeah, this is annoying. We have to get the first entry as raw text
                 let wt = WikiText::parse(
                     list.entries
                         .first()
@@ -134,6 +152,7 @@ fn get_area(template: &Template, tower_name: &str) -> Result<String, String> {
                         .raw
                         .clone(),
                 );
+                // just to parse it to try and get the internal link on that object.
                 return Ok(wt
                     .get_parsed()
                     .map_err(|e| format!("Failed to parse list entry: {:?} ({:?})", e, tower_name))?
@@ -202,6 +221,8 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
     })
 }
 
+/// get_page_redirect but returns wikitext
+/// TODO: move this?
 async fn get_page_data(client: &RustClient, page: &str) -> Result<WikiText, String> {
     let data = get_page_redirect(client, page).await;
     if let Ok(res) = data {
@@ -212,6 +233,7 @@ async fn get_page_data(client: &RustClient, page: &str) -> Result<WikiText, Stri
     Err(format!("Failed to get {:?}", page))
 }
 
+/// Items have their own specific set of template which we need to deal with.
 #[allow(
     clippy::await_holding_refcell_ref,
     reason = "we specifically drop it, its fine. We can't do the workaround without complicating the code any further and we don't really need the parsed obj anymore."
@@ -228,6 +250,7 @@ pub async fn process_item(
     let template = parsed
         .get_template("iteminfobox")
         .map_err(|e| format!("Failed to get iteminfobox ({:?}) > {:?}", page_name, e))?;
+    // technically it could be found elsewhere but here is most likely.
     let links = template
         .get_named_arg("method_of_obtaining")
         .map_err(|e| {
@@ -239,6 +262,7 @@ pub async fn process_item(
         .get_links(Some(LinkType::Internal));
 
     drop(parsed);
+    // got to check all the links though.
     for link in links {
         let wikitext = get_page_data(client, &link.target).await?;
         let tower = process_tower(&wikitext, badge);
@@ -252,7 +276,11 @@ pub async fn process_item(
     ))
 }
 
+/// Area requirements are semi unique.
+///
+/// NOTE: This affects the object directly instead of returning a new object.
 fn parse_area_requirement(text: &str, reqs: &mut AreaRequirements) -> Result<(), String> {
+    // custom regex to search for us.
     let (_, reqtype, count, _, diff) =
         lazy_regex::regex_captures!(r"(?m)\s?(\w+) (\d+) (\{\{Difficulty\|(\w+))?", text)
             .ok_or(format!("Invalid info (no matches): {:?}", text))?;
@@ -260,6 +288,7 @@ fn parse_area_requirement(text: &str, reqs: &mut AreaRequirements) -> Result<(),
         .trim()
         .parse::<u64>()
         .map_err(|e| format!("Failed to parse count: {:?} ({:?})", e, count))?;
+    // all the possible types.
     match reqtype {
         "Obtain" => reqs.points = count,
         "Beat" => reqs.difficulties.parse_difficulty(diff, count),
@@ -268,6 +297,9 @@ fn parse_area_requirement(text: &str, reqs: &mut AreaRequirements) -> Result<(),
     Ok(())
 }
 
+/// Loop through all requirements in the list as there can be a couple..
+///
+/// This just helps separate code out though
 fn get_requirements(list: &List) -> Result<AreaRequirements, String> {
     let mut reqs = AreaRequirements::default();
     for entry in list.entries.iter() {
@@ -284,6 +316,7 @@ fn get_requirements(list: &List) -> Result<AreaRequirements, String> {
     Ok(reqs)
 }
 
+/// Get all requirements in the template.
 fn get_all_requirements(template: &Template, area: &str) -> Result<AreaRequirements, String> {
     let requirements = template
         .get_named_arg("towers_required")
@@ -298,6 +331,7 @@ fn get_all_requirements(template: &Template, area: &str) -> Result<AreaRequireme
 
     match requirements {
         Argument::List(list) => get_requirements(&list),
+        // If we just have a text object, it's probably just the one requirement hence we can parse that raw.
         Argument::Text(text) => {
             let mut reqs = AreaRequirements::default();
             let err = parse_area_requirement(&text.raw, &mut reqs);
@@ -314,19 +348,18 @@ fn get_all_requirements(template: &Template, area: &str) -> Result<AreaRequireme
     }
 }
 
+// Just like items, areas are also special.
 pub async fn process_area(client: &RustClient, area: &str) -> Result<AreaInformation, String> {
     let wikitext = get_page_data(client, area).await?;
     let parsed = wikitext
         .get_parsed()
         .map_err(|e| format!("Failed to parse wikitext: {:?}", e))?;
-    // Garden of eshool has an annoying accent...
-    // if area.to_lowercase().starts_with("garden") {
-    //     log::warn!("{:#?}", wikitext);
-    // }
     let template = parsed
         .get_template("ringinfobox")
         .map_err(|e| format!("Failed to get ringinfobox ({:?}) > {:?}", area, e))?;
 
+    // parent is the most important one. It's easier to get the parent than the children.
+    // we ignore any error as if it's an error, the wiki is incorrect.
     let parent = template
         .get_named_arg("realm")
         .map(|area| {
@@ -356,6 +389,8 @@ pub async fn process_area(client: &RustClient, area: &str) -> Result<AreaInforma
     })
 }
 
+/// The only template which requires this uniqueness of 2 versions
+/// Parser can't deal with this (yes its two templates). Hence we just get one, return if successful else get the other.
 fn get_event_template(data: &ParsedData, area: &str) -> Result<Template, String> {
     let normal = data
         .get_template("eventinfobox")
@@ -367,6 +402,8 @@ fn get_event_template(data: &ParsedData, area: &str) -> Result<Template, String>
         .map_err(|e| format!("Failed to get event infobox ({:?}) > {:?}", area, e))
 }
 
+/// Events are like areas mostly, but with less data so we only store a way to group them.
+/// And besides, event areas can sometimes not follow convention making it harder to automate. So less work the better.
 pub async fn process_event_area(client: &RustClient, area: &str) -> Result<EventInfo, String> {
     let wikitext = get_page_data(client, area).await?;
     // println!("{:?}", wikitext);
@@ -375,10 +412,13 @@ pub async fn process_event_area(client: &RustClient, area: &str) -> Result<Event
         .map_err(|e| format!("Failed to parse wikitext: {:?}", e))?;
     let template = get_event_template(&parsed, area)?;
     let name_text = template
+        // realm is most likely
         .get_named_arg("realm")
         .map_err(|e| format!("Failed to get realm of area {:?} ({:?})", area, e))?
+        // and because its a mixture of `{{icon template}} area \n (some text)`
         .elements
         .iter()
+        // get the plain text
         .filter(|elm| match elm {
             Argument::Text(_) => true,
             _ => false,
@@ -389,6 +429,7 @@ pub async fn process_event_area(client: &RustClient, area: &str) -> Result<Event
         .unwrap()
         .raw
         .clone();
+    // and ignore any further lines
     let name = name_text.split("<br/>").next().unwrap().trim();
 
     Ok(EventInfo {

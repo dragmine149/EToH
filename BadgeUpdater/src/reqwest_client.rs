@@ -37,6 +37,7 @@ impl RustClient {
         Self(client)
     }
 
+    /// Wrapper for [reqwest.get()].
     pub fn get<U>(&self, url: U) -> reqwest_middleware::RequestBuilder
     where
         U: reqwest::IntoUrl,
