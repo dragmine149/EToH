@@ -444,7 +444,8 @@ pub fn parse_wikitext_fragment(input: &str) -> Result<ParsedData, WtError> {
                 ws += 1;
             }
             if idx + ws < len {
-                let ch = bytes[idx + ws] as char;
+                // Inspect the next Unicode scalar (char) safely instead of taking a raw byte.
+                let ch = input[idx + ws..].chars().next().unwrap();
                 if ch == '*' || ch == '#' || ch == ';' || ch == ':' {
                     if !current_text.is_empty() {
                         pd.elements
@@ -460,9 +461,10 @@ pub fn parse_wikitext_fragment(input: &str) -> Result<ParsedData, WtError> {
             }
         }
 
-        // default: append character to current_text
-        current_text.push(bytes[idx] as char);
-        idx += 1;
+        // default: append next UTF-8 char to current_text
+        let ch = input[idx..].chars().next().unwrap();
+        current_text.push(ch);
+        idx += ch.len_utf8();
     }
 
     if !current_text.is_empty() {
@@ -502,8 +504,9 @@ fn parse_template_at(input: &str, start: usize) -> Option<(usize, Template)> {
                 continue;
             }
         } else {
-            content.push(bytes[idx] as char);
-            idx += 1;
+            let ch = input[idx..].chars().next().unwrap();
+            content.push(ch);
+            idx += ch.len_utf8();
         }
     }
 
@@ -565,34 +568,42 @@ fn parse_template_content(content: &str) -> Result<Template, String> {
 
 /// Split by `sep` only at top level (not inside nested {{ }}, [[ ]], or <...> tags).
 fn split_top_level(s: &str, sep: char) -> Vec<String> {
+    // Operate on char boundaries to be UTF-8 safe. We iterate over the
+    // char_indices so we can both examine characters and still return
+    // byte-accurate positions when needed elsewhere.
     let mut parts = Vec::new();
     let mut cur = String::new();
+
+    let chs: Vec<(usize, char)> = s.char_indices().collect();
     let mut i = 0usize;
-    let bytes = s.as_bytes();
-    let len = bytes.len();
+    let n = chs.len();
     let mut depth_brace = 0usize;
     let mut depth_bracket = 0usize;
     let mut in_tag = false;
 
-    while i < len {
-        let ch = bytes[i] as char;
-        if ch == '{' && i + 1 < len && bytes[i + 1] == b'{' {
+    while i < n {
+        let (_byte_pos, ch) = chs[i];
+        if ch == '{' && i + 1 < n && chs[i + 1].1 == '{' {
             depth_brace += 1;
             cur.push_str("{{");
             i += 2;
             continue;
-        } else if ch == '}' && i + 1 < len && bytes[i + 1] == b'}' {
-            depth_brace = depth_brace.saturating_sub(1);
+        } else if ch == '}' && i + 1 < n && chs[i + 1].1 == '}' {
+            if depth_brace > 0 {
+                depth_brace -= 1;
+            }
             cur.push_str("}}");
             i += 2;
             continue;
-        } else if ch == '[' && i + 1 < len && bytes[i + 1] == b'[' {
+        } else if ch == '[' && i + 1 < n && chs[i + 1].1 == '[' {
             depth_bracket += 1;
             cur.push_str("[[");
             i += 2;
             continue;
-        } else if ch == ']' && i + 1 < len && bytes[i + 1] == b']' {
-            depth_bracket = depth_bracket.saturating_sub(1);
+        } else if ch == ']' && i + 1 < n && chs[i + 1].1 == ']' {
+            if depth_bracket > 0 {
+                depth_bracket -= 1;
+            }
             cur.push_str("]]");
             i += 2;
             continue;
@@ -626,41 +637,51 @@ fn split_top_level(s: &str, sep: char) -> Vec<String> {
 
 /// Find a top-level occurrence of `c` in `s` (not inside nested constructs).
 fn find_top_level_char(s: &str, c: char) -> Option<usize> {
-    let bytes = s.as_bytes();
+    // Use char-aware iteration and return the byte index (from char_indices)
+    // of the top-level occurrence of `c`. This avoids slicing at invalid
+    // UTF-8 boundaries and ensures returned index can be used with split_at.
+    let chs: Vec<(usize, char)> = s.char_indices().collect();
     let mut i = 0usize;
-    let len = bytes.len();
+    let n = chs.len();
     let mut depth_brace = 0usize;
     let mut depth_bracket = 0usize;
     let mut in_tag = false;
-    while i < len {
-        if i + 1 < len && bytes[i] == b'{' && bytes[i + 1] == b'{' {
+
+    while i < n {
+        let (byte_pos, ch) = chs[i];
+        if ch == '{' && i + 1 < n && chs[i + 1].1 == '{' {
             depth_brace += 1;
             i += 2;
             continue;
-        } else if i + 1 < len && bytes[i] == b'}' && bytes[i + 1] == b'}' {
-            depth_brace = depth_brace.saturating_sub(1);
+        } else if ch == '}' && i + 1 < n && chs[i + 1].1 == '}' {
+            if depth_brace > 0 {
+                depth_brace -= 1;
+            }
             i += 2;
             continue;
-        } else if i + 1 < len && bytes[i] == b'[' && bytes[i + 1] == b'[' {
+        } else if ch == '[' && i + 1 < n && chs[i + 1].1 == '[' {
             depth_bracket += 1;
             i += 2;
             continue;
-        } else if i + 1 < len && bytes[i] == b']' && bytes[i + 1] == b']' {
-            depth_bracket = depth_bracket.saturating_sub(1);
+        } else if ch == ']' && i + 1 < n && chs[i + 1].1 == ']' {
+            if depth_bracket > 0 {
+                depth_bracket -= 1;
+            }
             i += 2;
             continue;
-        } else if bytes[i] as char == '<' {
+        } else if ch == '<' {
             in_tag = true;
             i += 1;
             continue;
-        } else if bytes[i] as char == '>' {
+        } else if ch == '>' {
             in_tag = false;
             i += 1;
             continue;
         }
 
-        if (bytes[i] as char) == c && depth_brace == 0 && depth_bracket == 0 && !in_tag {
-            return Some(i);
+        if ch == c && depth_brace == 0 && depth_bracket == 0 && !in_tag {
+            // return the byte index for this character
+            return Some(byte_pos);
         }
         i += 1;
     }
@@ -695,8 +716,9 @@ fn parse_internal_link_at(input: &str, start: usize) -> Option<(usize, Link)> {
                 continue;
             }
         } else {
-            content.push(bytes[idx] as char);
-            idx += 1;
+            let ch = input[idx..].chars().next().unwrap();
+            content.push(ch);
+            idx += ch.len_utf8();
         }
     }
 
@@ -723,13 +745,13 @@ fn parse_external_link_at(input: &str, start: usize) -> Option<(usize, Link)> {
     let mut idx = start + 1;
     let mut content = String::new();
     while idx < len {
-        let ch = bytes[idx] as char;
+        let ch = input[idx..].chars().next().unwrap();
         if ch == ']' {
-            idx += 1;
+            idx += ch.len_utf8();
             break;
         } else {
             content.push(ch);
-            idx += 1;
+            idx += ch.len_utf8();
         }
     }
     if content.is_empty() {
@@ -752,7 +774,8 @@ fn parse_list_at(input: &str, start: usize) -> Option<(usize, List)> {
     if idx >= len {
         return None;
     }
-    let bullet = bytes[idx] as char;
+    // Determine the bullet by reading the next UTF-8 char (handles multibyte chars safely).
+    let bullet = input[idx..].chars().next().unwrap();
     let mut entries: Vec<Argument> = Vec::new();
     let mut consumed = 0usize;
 
@@ -769,15 +792,16 @@ fn parse_list_at(input: &str, start: usize) -> Option<(usize, List)> {
             break;
         }
         line_idx += 1; // consume bullet
+        // capture line content until newline (properly handling UTF-8 chars)
         let mut line = String::new();
         while line_idx < len {
-            let ch = bytes[line_idx] as char;
+            let ch = input[line_idx..].chars().next().unwrap();
             if ch == '\n' {
-                line_idx += 1;
+                line_idx += ch.len_utf8();
                 break;
             } else {
                 line.push(ch);
-                line_idx += 1;
+                line_idx += ch.len_utf8();
             }
         }
         // parse the line content as fragment
@@ -863,5 +887,45 @@ mod tests {
             }
         }
         assert!(found_lists >= 1);
+    }
+
+    #[test]
+    fn unicode_garden_of_eeshol() {
+        // Ensure UTF-8 characters are preserved and parsed as a single Text element.
+        let s = "Garden_of_Eeshöl";
+        let pd = parse_wikitext_fragment(s).expect("parse");
+        assert_eq!(pd.elements.len(), 1);
+        if let Argument::Text(t) = &pd.elements[0] {
+            assert_eq!(t.raw, "Garden_of_Eeshöl");
+        } else {
+            panic!("expected a Text element");
+        }
+    }
+
+    #[test]
+    fn internal_link_unicode_target() {
+        // Ensure internal links with unicode in the target are parsed correctly
+        // and the target/label strings preserve Unicode characters.
+        let s = "[[Garden_of_Eeshöl]]";
+        let pd = parse_wikitext_fragment(s).expect("parse");
+        // should be a single link element
+        assert_eq!(pd.elements.len(), 1);
+        if let Argument::Link(l) = &pd.elements[0] {
+            assert_eq!(l.target, "Garden_of_Eeshöl");
+            assert_eq!(l.label, "Garden_of_Eeshöl");
+        } else {
+            panic!("expected a Link element");
+        }
+
+        // Also test link with explicit label
+        let s2 = "[[Garden_of_Eeshöl|Eeshöl Garden]]";
+        let pd2 = parse_wikitext_fragment(s2).expect("parse2");
+        assert_eq!(pd2.elements.len(), 1);
+        if let Argument::Link(l2) = &pd2.elements[0] {
+            assert_eq!(l2.target, "Garden_of_Eeshöl");
+            assert_eq!(l2.label, "Eeshöl Garden");
+        } else {
+            panic!("expected a Link element with label");
+        }
     }
 }
