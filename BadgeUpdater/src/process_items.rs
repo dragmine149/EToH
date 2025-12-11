@@ -89,7 +89,7 @@ fn get_length(template: &Template) -> Result<Length, String> {
     };
 
     // should avoid chases when length is provided but no length is realistically provided.
-    // TODO: do we remove? this shouldn't really ever be hit.
+    // NOTE: We can't actually remove this as this prevents cases with comments and other stuff failing the parsing even though its valid.
     if !txt.chars().any(|c| c.is_numeric()) {
         return Ok(Length::default());
     }
@@ -281,19 +281,40 @@ pub async fn process_item(
 /// NOTE: This affects the object directly instead of returning a new object.
 fn parse_area_requirement(text: &str, reqs: &mut AreaRequirements) -> Result<(), String> {
     // custom regex to search for us.
-    let (_, reqtype, count, _, diff) =
-        lazy_regex::regex_captures!(r"(?m)\s?(\w+) (\d+) (\{\{Difficulty\|(\w+))?", text)
-            .ok_or(format!("Invalid info (no matches): {:?}", text))?;
+    let (_total, _, _, count, _, diff, towers, _, area) = lazy_regex::regex_captures!(
+        r"(?m)(\*|=|=\*)?(.*) (\d+) (\{\{Difficulty\|(.*)\|.*\|)?(\[?\[?Towers?)? ?(in.*\[\[(.*)\]\])?",
+        text.split("<").next().ok_or("Failed to get first item??")?
+    )
+    .ok_or(format!("Invalid info (no matches): {:?}", text))?;
+    log::info!(
+        "{:?}",
+        lazy_regex::regex_captures!(
+            r"(?m)(\*|=|=\*)?(.*) (\d+) (\{\{Difficulty\|(.*)\|.*\|)?(\[?\[?Towers?)? ?(in.*\[\[(.*)\]\])?",
+            text.split("<").next().ok_or("Failed to get first item??")?
+        )
+    );
     let count = count
         .trim()
         .parse::<u64>()
         .map_err(|e| format!("Failed to parse count: {:?} ({:?})", e, count))?;
     // all the possible types.
-    match reqtype {
-        "Obtain" => reqs.points = count,
-        "Beat" => reqs.difficulties.parse_difficulty(diff, count),
-        _ => return Err(format!("Invalid type: {:?}", reqtype)),
-    };
+
+    if area.len() > 0 {
+        log::warn!("Require area: {:?}", area);
+        reqs.areas.insert(
+            area.to_owned(),
+            AreaRequirements {
+                points: count,
+                ..Default::default()
+            },
+        );
+        return Ok(());
+    }
+    if towers.len() > 0 {
+        reqs.points = count;
+        return Ok(());
+    }
+    reqs.difficulties.parse_difficulty(diff, count);
     Ok(())
 }
 
@@ -302,6 +323,8 @@ fn parse_area_requirement(text: &str, reqs: &mut AreaRequirements) -> Result<(),
 /// This just helps separate code out though
 fn get_requirements(list: &List) -> Result<AreaRequirements, String> {
     let mut reqs = AreaRequirements::default();
+    // TODO: figure out why this is cutting off links.
+    log::debug!("{:?}", list);
     for entry in list.entries.iter() {
         let text = entry
             .as_text()
@@ -329,6 +352,7 @@ fn get_all_requirements(template: &Template, area: &str) -> Result<AreaRequireme
         .get(0)
         .map_err(|e| format!("Failed to get elements (how??) ({:?})", e))?;
 
+    log::debug!("{:?}", requirements);
     match requirements {
         Argument::List(list) => get_requirements(&list),
         // If we just have a text object, it's probably just the one requirement hence we can parse that raw.

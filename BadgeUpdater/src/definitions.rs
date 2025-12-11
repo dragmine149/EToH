@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
 use crate::{reqwest_client::RustError, wikitext::WikiText};
 
@@ -190,6 +190,7 @@ pub struct AreaRequirements {
     pub difficulties: TowerDifficulties,
     #[serde(rename = "p")]
     pub points: u64,
+    pub areas: HashMap<String, AreaRequirements>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
