@@ -154,6 +154,12 @@ impl Template {
         )))
     }
 
+    /// Convenience: return the raw string value (the `ParsedData.raw`) of the
+    /// first named argument matching `name`.
+    pub fn get_named_arg_raw(&self, name: &str) -> Result<String, WtError> {
+        self.get_named_arg(name).map(|pd| pd.raw)
+    }
+
     /// Get all named args matching `query` according to `QueryType`.
     pub fn get_named_args_query(&self, query: &str, qtype: QueryType) -> Vec<ParsedData> {
         let query_lc = query.to_lowercase();
@@ -174,6 +180,14 @@ impl Template {
         out
     }
 
+    /// Convenience: return raw strings of all named args matching `query`.
+    pub fn get_named_args_query_raw(&self, query: &str, qtype: QueryType) -> Vec<String> {
+        self.get_named_args_query(query, qtype)
+            .into_iter()
+            .map(|pd| pd.raw)
+            .collect()
+    }
+
     /// Get positional argument by index (0-based).
     pub fn get_positional_arg(&self, pos: usize) -> Result<ParsedData, WtError> {
         let pos_args: Vec<&TemplateArgument> =
@@ -183,6 +197,11 @@ impl Template {
         } else {
             Err(WtError::index_oob(pos, pos_args.len()))
         }
+    }
+
+    /// Convenience: return the raw string value of the positional argument.
+    pub fn get_positional_arg_raw(&self, pos: usize) -> Result<String, WtError> {
+        self.get_positional_arg(pos).map(|pd| pd.raw)
     }
 
     /// Reconstruct a wikitext representation of this template.
@@ -329,6 +348,24 @@ impl ParsedData {
     pub fn get(&self, nth: usize) -> Result<Argument, WtError> {
         if nth < self.elements.len() {
             Ok(self.elements[nth].clone())
+        } else {
+            Err(WtError::index_oob(nth, self.elements.len()))
+        }
+    }
+
+    /// Return the raw textual wikitext for the nth element. This provides a
+    /// helper to obtain the "raw" value (as a string) rather than the
+    /// structured `Argument`. Useful when caller wants to operate on plain
+    /// wikitext or the original raw content of the argument.
+    pub fn get_raw(&self, nth: usize) -> Result<String, WtError> {
+        if nth < self.elements.len() {
+            let elem = &self.elements[nth];
+            match elem {
+                Argument::Text(t) => Ok(t.raw.clone()),
+                Argument::Link(l) => Ok(l.to_wikitext()),
+                Argument::Template(tpl) => Ok(tpl.to_wikitext()),
+                Argument::List(lst) => Ok(lst.to_wikitext()),
+            }
         } else {
             Err(WtError::index_oob(nth, self.elements.len()))
         }

@@ -211,7 +211,7 @@ async fn main() {
 
     // do the same but for the event based ones.
     let mut event_areas = vec![];
-    for ele in areas_list.filter(|a| !area_failed.contains(&a)) {
+    for ele in areas_list.filter(|a| area_failed.iter().any(|f| f.contains(a))) {
         event_areas.push(process_event_area(&client, &ele).await);
     }
 

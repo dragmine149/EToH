@@ -356,9 +356,14 @@ fn get_all_requirements(template: &Template, area: &str) -> Result<AreaRequireme
     match requirements {
         Argument::List(list) => get_requirements(&list),
         // If we just have a text object, it's probably just the one requirement hence we can parse that raw.
-        Argument::Text(text) => {
+        Argument::Text(_) => {
             let mut reqs = AreaRequirements::default();
-            let err = parse_area_requirement(&text.raw, &mut reqs);
+            let err = parse_area_requirement(
+                &template.get_named_arg_raw("towers_required").map_err(|e| {
+                    format!("Somehow failed to get raw after we just got it... {:?}", e)
+                })?,
+                &mut reqs,
+            );
             if err.is_err() {
                 log::warn!("{:?}", err);
                 return Err(err.err().unwrap());
