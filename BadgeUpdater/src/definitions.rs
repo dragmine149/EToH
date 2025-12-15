@@ -71,6 +71,13 @@ pub struct EventInfo {
     pub event_name: String,
 }
 
+#[derive(Debug, Clone)]
+pub struct EventItem {
+    pub item_name: String,
+    pub event_name: String,
+    pub badge_id: u64,
+}
+
 pub enum GlobalArea {
     Area(AreaInformation),
     Event(EventInfo),

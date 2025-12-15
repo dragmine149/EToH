@@ -13,8 +13,12 @@ use url::Url;
 
 use crate::{
     badge_to_wikitext::get_badges,
-    definitions::{AreaInformation, ErrorDetails, EventInfo, GlobalArea, OkDetails, WikiTower},
-    process_items::{process_area, process_event_area, process_item, process_tower},
+    definitions::{
+        AreaInformation, ErrorDetails, EventInfo, EventItem, GlobalArea, OkDetails, WikiTower,
+    },
+    process_items::{
+        process_area, process_event_area, process_event_item, process_item, process_tower,
+    },
     reqwest_client::RustClient,
 };
 
@@ -139,6 +143,8 @@ async fn main() {
     let client = RustClient::new(None, None);
     let url = Url::from_str(&format!("{:}?limit=100", BADGE_URL)).unwrap();
 
+    log::info!("Setup complete, starting searching");
+
     // get a list of all the badges.
     let mut badges_vec = vec![];
     let raw = get_badges(&client, &url).await.unwrap();
@@ -158,7 +164,7 @@ async fn main() {
     let tower_data = passed
         .iter()
         .map(|p| process_tower(&p.0, &p.1))
-        .inspect(|x| println!("{:?}", x))
+        // .inspect(|x| println!("{:?}", x))
         .collect::<Vec<Result<WikiTower, String>>>();
 
     let (tower_processed, tower_processed_failed) = count_processed(
@@ -236,5 +242,34 @@ async fn main() {
         areas.len(),
         area_success.len(),
         ((area_success.len() as f64) / (areas.len() as f64)) * 100.0
+    );
+
+    println!("[");
+    event_processed.iter().for_each(|x| println!("    {:?}", x));
+    println!("]");
+
+    // println!("{:?}", event_processed);
+    let mut event_items = vec![];
+    for ele in passed
+        .iter()
+        .filter(|p| {
+            !tower_processed
+                .iter()
+                .any(|t| t.badge_name.contains(&p.1.name))
+        })
+        .filter(|p| {
+            !item_processed
+                .iter()
+                .any(|i| i.badge_name.contains(&p.1.name))
+        })
+    {
+        event_items.push(process_event_item(&ele.0, &ele.1, &event_processed));
+    }
+
+    let (event_items_processed, event_items_failed) = count_processed(
+        &event_items,
+        |e: &Result<EventItem, String>| e.is_ok(),
+        "process_event_item",
+        Some(&path),
     );
 }

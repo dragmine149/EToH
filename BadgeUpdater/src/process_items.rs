@@ -1,7 +1,10 @@
+use itertools::Itertools;
+
 use crate::{
     badge_to_wikitext::get_page_redirect,
     definitions::{
-        AreaInformation, AreaRequirements, Badge, EventInfo, Length, TowerType, WikiTower,
+        AreaInformation, AreaRequirements, Badge, EventInfo, EventItem, Length, TowerType,
+        WikiTower,
     },
     reqwest_client::RustClient,
     wikitext::{
@@ -464,5 +467,62 @@ pub async fn process_event_area(client: &RustClient, area: &str) -> Result<Event
     Ok(EventInfo {
         area_name: name.to_owned(),
         event_name: area.to_owned(),
+    })
+}
+
+pub fn process_event_item(
+    text: &WikiText,
+    badge: &Badge,
+    event_areas: &Vec<&EventInfo>,
+) -> Result<EventItem, String> {
+    let links = text
+        .get_parsed()
+        .map_err(|e| format!("Failed to parse wikitext ({:?})", e))?
+        .get_links(Some(LinkType::Internal));
+    println!(
+        "{:?}",
+        links
+            .iter()
+            .filter(|e| e.target.starts_with("Category:"))
+            .collect_vec()
+    );
+    println!(
+        "{:?}",
+        links
+            .iter()
+            .filter(|e| e.target.starts_with("Category:"))
+            .filter(|link| {
+                event_areas.iter().any(|e| {
+                    link.target
+                        .to_lowercase()
+                        .contains(&e.event_name.to_lowercase())
+                })
+            })
+            .collect_vec()
+    );
+    let event = links
+        .iter()
+        .filter(|link| link.target.starts_with("Category"))
+        .filter(|link| {
+            event_areas.iter().any(|e| {
+                link.target
+                    .to_lowercase()
+                    .contains(&e.event_name.to_lowercase())
+            })
+        })
+        .next()
+        .ok_or(format!(
+            "Failed to get event area out of page categories ({:?})",
+            badge.name
+        ))?;
+    Ok(EventItem {
+        item_name: badge.name.to_owned(),
+        event_name: event
+            .target
+            .split(":")
+            .nth(1)
+            .ok_or("Failed to get event name from category split")?
+            .into(),
+        badge_id: badge.id,
     })
 }
