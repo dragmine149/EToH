@@ -14,7 +14,8 @@ use url::Url;
 use crate::{
     badge_to_wikitext::get_badges,
     definitions::{
-        AreaInformation, ErrorDetails, EventInfo, EventItem, GlobalArea, OkDetails, WikiTower,
+        AreaInformation, BadgeOverwrite, ErrorDetails, EventInfo, EventItem, GlobalArea, OkDetails,
+        WikiTower,
     },
     process_items::{
         process_area, process_event_area, process_event_item, process_item, process_tower,
@@ -124,6 +125,7 @@ where
 }
 
 const DEBUG_PATH: &str = "./badges.temp.txt";
+const OVERWRITE_PATH: &str = "./overwrite.jsonc";
 
 #[tokio::main]
 async fn main() {
@@ -142,6 +144,11 @@ async fn main() {
     // client and original url setup.
     let client = RustClient::new(None, None);
     let url = Url::from_str(&format!("{:}?limit=100", BADGE_URL)).unwrap();
+
+    let overwrites = serde_json::from_str::<Vec<BadgeOverwrite>>(
+        &fs::read_to_string(OVERWRITE_PATH).unwrap_or_default(),
+    );
+    println!("{:?}", overwrites);
 
     log::info!("Setup complete, starting searching");
 

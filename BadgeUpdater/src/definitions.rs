@@ -1,5 +1,6 @@
-use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fmt::Display};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde_json::Value;
+use std::{collections::HashMap, error::Error, fmt::Display, hash::Hash};
 
 use crate::{reqwest_client::RustError, wikitext::WikiText};
 
@@ -467,4 +468,158 @@ pub struct OkDetails(pub WikiText, pub Badge);
 pub struct PageDetails {
     pub text: String,
     pub name: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BadgeOverwrite {
+    pub badge_id: u64,
+    pub alt_ids: Vec<u64>,
+    pub category: String,
+    pub name: String,
+}
+
+/// Serialiser and deseriliser for BadgeOverwrite written by GPT-5 mini
+
+/// For nicer error messages when deserializing arrays
+#[derive(Debug)]
+struct BadFormat(&'static str);
+
+impl Display for BadFormat {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "bad format: {}", self.0)
+    }
+}
+
+impl Error for BadFormat {}
+
+impl<'de> Deserialize<'de> for BadgeOverwrite {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        // We expect a map entry like "123": [ "Category", "Name", "456", "789" ]
+        // But serde gives us a whole value. We'll accept either:
+        //  - a map with a single string key mapping to an array (the top-level entry)
+        //  - or directly the array along with an externally provided badge id (not used here)
+        let v = Value::deserialize(deserializer)?;
+
+        match v {
+            Value::Object(map) => {
+                // Expect exactly one key => array value
+                if map.len() != 1 {
+                    return Err(serde::de::Error::custom(
+                        "expected an object with a single badge id entry",
+                    ));
+                }
+                let (k, val) = map.into_iter().next().unwrap();
+                let badge_id = k.parse::<u64>().map_err(|_| {
+                    serde::de::Error::custom(format!("badge id key is not a u64: {}", k))
+                })?;
+                let arr = match val {
+                    Value::Array(a) => a,
+                    _ => {
+                        return Err(serde::de::Error::custom(
+                            "expected badge entry to be an array",
+                        ));
+                    }
+                };
+                parse_array(badge_id, arr).map_err(serde::de::Error::custom)
+            }
+            other => Err(serde::de::Error::custom(format!(
+                "expected top-level object, got {}",
+                other
+            ))),
+        }
+    }
+}
+
+impl Serialize for BadgeOverwrite {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        // serialize as an object with single string key -> array
+        use serde_json::Value as Jv;
+
+        let mut arr: Vec<Jv> = Vec::with_capacity(2 + self.alt_ids.len());
+        arr.push(Jv::String(self.category.clone()));
+        arr.push(Jv::String(self.name.clone()));
+        for id in &self.alt_ids {
+            arr.push(Jv::String(id.to_string()));
+        }
+
+        let mut map = serde_json::map::Map::new();
+        map.insert(self.badge_id.to_string(), Jv::Array(arr));
+        Jv::Object(map).serialize(serializer)
+    }
+}
+
+fn parse_array(
+    badge_id: u64,
+    arr: Vec<Value>,
+) -> Result<BadgeOverwrite, Box<dyn std::error::Error>> {
+    if arr.len() < 2 {
+        return Err(Box::new(BadFormat(
+            "array must contain at least category and name",
+        )));
+    }
+
+    // category and name must be strings
+    let category = match &arr[0] {
+        Value::String(s) => s.clone(),
+        _ => return Err(Box::new(BadFormat("category must be a string"))),
+    };
+    let name = match &arr[1] {
+        Value::String(s) => s.clone(),
+        _ => return Err(Box::new(BadFormat("name must be a string"))),
+    };
+
+    // rest are ids (strings that parse to u64 or numbers)
+    let mut alt_ids = Vec::with_capacity(arr.len().saturating_sub(2));
+    for v in arr.into_iter().skip(2) {
+        match v {
+            Value::String(s) => {
+                let id = s
+                    .parse::<u64>()
+                    .map_err(|_| BadFormat("alt id strings must parse to u64"))?;
+                alt_ids.push(id);
+            }
+            Value::Number(n) => {
+                if let Some(u) = n.as_u64() {
+                    alt_ids.push(u);
+                } else {
+                    return Err(Box::new(BadFormat("alt id number not u64")));
+                }
+            }
+            _ => return Err(Box::new(BadFormat("alt id must be string or number"))),
+        }
+    }
+
+    Ok(BadgeOverwrite {
+        badge_id,
+        alt_ids,
+        category,
+        name,
+    })
+}
+
+// Helper functions to convert a whole map <String, Array> -> Vec<BadgeOverwrite>
+pub fn badges_from_map_value(v: &Value) -> Result<Vec<BadgeOverwrite>, Box<dyn std::error::Error>> {
+    match v {
+        Value::Object(map) => {
+            let mut out = Vec::with_capacity(map.len());
+            for (k, val) in map.iter() {
+                let badge_id = k
+                    .parse::<u64>()
+                    .map_err(|_| BadFormat("map key must be a string representable as u64"))?;
+                let arr = match val {
+                    Value::Array(a) => a.clone(),
+                    _ => return Err(Box::new(BadFormat("map value must be an array"))),
+                };
+                out.push(parse_array(badge_id, arr)?);
+            }
+            Ok(out)
+        }
+        _ => Err(Box::new(BadFormat("expected top-level object/map"))),
+    }
 }
