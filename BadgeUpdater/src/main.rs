@@ -170,10 +170,11 @@ async fn main() {
 
     // process items now we now which towers have passed.
     let mut items = vec![];
-    for ele in passed
-        .iter()
-        .filter(|p| !tower_processed_failed.contains(&&&p.1.name))
-    {
+    for ele in passed.iter().filter(|p| {
+        !tower_processed
+            .iter()
+            .any(|t| t.badge_name.contains(&p.1.name))
+    }) {
         items.push(process_item(&client, &ele.0, &ele.1).await);
     }
     let (item_processed, items_failed) = count_processed(
