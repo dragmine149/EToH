@@ -286,7 +286,7 @@ fn parse_area_requirement(text: &str, reqs: &mut AreaRequirements) -> Result<(),
         text.split("<").next().ok_or("Failed to get first item??")?
     )
     .ok_or(format!("Invalid info (no matches): {:?}", text))?;
-    log::info!(
+    log::debug!(
         "{:?}",
         lazy_regex::regex_captures!(
             r"(?m)(\*|=|=\*)?(.*) (\d+) (\{\{Difficulty\|(.*)\|.*\|)?(\[?\[?Towers?)? ?(in.*\[\[(.*)\]\])?",
@@ -300,7 +300,7 @@ fn parse_area_requirement(text: &str, reqs: &mut AreaRequirements) -> Result<(),
     // all the possible types.
 
     if area.len() > 0 {
-        log::warn!("Require area: {:?}", area);
+        log::debug!("Require area: {:?}", area);
         reqs.areas.insert(
             area.to_owned(),
             AreaRequirements {
