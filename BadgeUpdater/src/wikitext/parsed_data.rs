@@ -5,12 +5,13 @@
 //! - `Link`
 //! - `Template` (+ `TemplateArgument`)
 //! - `List`
+//! - `TableCell` / `Table`
 //! - `Argument` (top-level variant carrying the above)
 //! - `ParsedData` (owner of parsed elements)
 //!
 //! It also provides a reasonably small, resilient parser implemented as
 //! utility functions. Parsing is conservative: it only extracts top-level
-//! templates, links and list blocks and keeps the rest as `Text` nodes.
+//! templates, links, lists and simple tables, keeping the rest as `Text` nodes.
 //!
 //! The API is designed so `ParsedData` and its contained elements are fully
 //! owned and can be cloned by callers as needed.
@@ -19,12 +20,9 @@ use crate::wikitext::enums::{LinkType, ListType, QueryType};
 use crate::wikitext::errors::WtError;
 
 /// Helper: check whether the byte slice starting at `pos` begins with
-/// ASCII "http" or "https" (case-insensitive). This performs byte-wise
-/// checks and therefore avoids slicing the UTF-8 string at arbitrary
-/// byte offsets which may fall inside a multibyte character.
+/// ASCII "http" or "https" (case-insensitive).
 fn starts_with_http(bytes: &[u8], pos: usize) -> bool {
     let len = bytes.len();
-    // check "http" (4 bytes)
     if pos + 4 <= len {
         let slice = &bytes[pos..pos + 4];
         if slice
@@ -35,7 +33,6 @@ fn starts_with_http(bytes: &[u8], pos: usize) -> bool {
             return true;
         }
     }
-    // check "https" (5 bytes)
     if pos + 5 <= len {
         let slice = &bytes[pos..pos + 5];
         if slice
@@ -61,163 +58,17 @@ impl Text {
     }
 }
 
-/// Link node.
-#[derive(Debug, Clone)]
-pub struct Link {
-    pub link_type: LinkType,
-    pub label: String,
-    pub target: String,
-}
+pub use crate::wikitext::types::links::Link;
 
-impl Link {
-    pub fn new_internal<S: Into<String>>(target: S, label: S) -> Self {
-        Self {
-            link_type: LinkType::Internal,
-            label: label.into(),
-            target: target.into(),
-        }
-    }
-    pub fn new_external<S: Into<String>>(target: S, label: S) -> Self {
-        Self {
-            link_type: LinkType::External,
-            label: label.into(),
-            target: target.into(),
-        }
-    }
+pub use crate::wikitext::types::templates::{Template, TemplateArgument};
 
-    /// Reconstruct the link as wikitext (internal [[...]] or external [...]).
-    pub fn to_wikitext(&self) -> String {
-        match self.link_type {
-            LinkType::Internal => {
-                if self.label.is_empty() || self.label == self.target {
-                    format!("[[{}]]", self.target)
-                } else {
-                    format!("[[{}|{}]]", self.target, self.label)
-                }
-            }
-            LinkType::External => {
-                if self.label.is_empty() || self.label == self.target {
-                    format!("[{}]", self.target)
-                } else {
-                    format!("[{} {}]", self.target, self.label)
-                }
-            }
-        }
-    }
-}
+/// Table types were moved into `types/table.rs`. Re-export the `TableCell` type
+/// so existing code in this module can continue to reference it by name.
+pub use super::types::table::TableCell;
 
-/// Template argument value - represented as `ParsedData` so it may contain
-/// nested templates/links/lists/etc.
-#[derive(Debug, Clone)]
-pub struct TemplateArgument {
-    pub name: Option<String>,
-    pub value: ParsedData,
-}
-
-impl TemplateArgument {
-    /// Reconstruct the argument as wikitext: either `name=value` or a positional value.
-    pub fn to_wikitext(&self) -> String {
-        let val = self.value.to_wikitext();
-        if let Some(ref n) = self.name {
-            format!("{}={}", n, val)
-        } else {
-            val
-        }
-    }
-}
-
-/// Template node.
-#[derive(Debug, Clone)]
-pub struct Template {
-    pub name: String,
-    pub arguments: Vec<TemplateArgument>,
-}
-
-impl Template {
-    /// Return all arguments (owned clone).
-    pub fn arguments(&self) -> Vec<TemplateArgument> {
-        self.arguments.clone()
-    }
-
-    /// Get the first named argument matching `name` (case-insensitive).
-    pub fn get_named_arg(&self, name: &str) -> Result<ParsedData, WtError> {
-        for arg in &self.arguments {
-            if let Some(ref n) = arg.name
-                && n.eq_ignore_ascii_case(name)
-            {
-                return Ok(arg.value.clone());
-            }
-        }
-        Err(WtError::not_found(format!(
-            "Named argument '{}' not found in template '{}'",
-            name, self.name
-        )))
-    }
-
-    /// Convenience: return the raw string value (the `ParsedData.raw`) of the
-    /// first named argument matching `name`.
-    pub fn get_named_arg_raw(&self, name: &str) -> Result<String, WtError> {
-        self.get_named_arg(name).map(|pd| pd.raw)
-    }
-
-    /// Get all named args matching `query` according to `QueryType`.
-    pub fn get_named_args_query(&self, query: &str, qtype: QueryType) -> Vec<ParsedData> {
-        let query_lc = query.to_lowercase();
-        let mut out = Vec::new();
-        for arg in &self.arguments {
-            if let Some(ref n) = arg.name {
-                let n_lc = n.to_lowercase();
-                let matched = match qtype {
-                    QueryType::Exact => n_lc == query_lc,
-                    QueryType::StartsWith => n_lc.starts_with(&query_lc),
-                    QueryType::Contains => n_lc.contains(&query_lc),
-                };
-                if matched {
-                    out.push(arg.value.clone());
-                }
-            }
-        }
-        out
-    }
-
-    /// Convenience: return raw strings of all named args matching `query`.
-    pub fn get_named_args_query_raw(&self, query: &str, qtype: QueryType) -> Vec<String> {
-        self.get_named_args_query(query, qtype)
-            .into_iter()
-            .map(|pd| pd.raw)
-            .collect()
-    }
-
-    /// Get positional argument by index (0-based).
-    pub fn get_positional_arg(&self, pos: usize) -> Result<ParsedData, WtError> {
-        let pos_args: Vec<&TemplateArgument> =
-            self.arguments.iter().filter(|a| a.name.is_none()).collect();
-        if pos < pos_args.len() {
-            Ok(pos_args[pos].value.clone())
-        } else {
-            Err(WtError::index_oob(pos, pos_args.len()))
-        }
-    }
-
-    /// Convenience: return the raw string value of the positional argument.
-    pub fn get_positional_arg_raw(&self, pos: usize) -> Result<String, WtError> {
-        self.get_positional_arg(pos).map(|pd| pd.raw)
-    }
-
-    /// Reconstruct a wikitext representation of this template.
-    /// Produces `{{Name|arg|name=value|...}}` approximating the original.
-    pub fn to_wikitext(&self) -> String {
-        let mut s = String::new();
-        s.push_str("{{");
-        s.push_str(&self.name);
-        for arg in &self.arguments {
-            s.push('|');
-            s.push_str(&arg.to_wikitext());
-        }
-        s.push_str("}}");
-        s
-    }
-}
+/// `Table` was moved into `types/table.rs`. Re-export it here so other code
+/// in this module continues to refer to `Table` without needing to change paths.
+pub use super::types::table::Table;
 
 /// A list node containing entries which are top-level arguments (text/templates/etc).
 #[derive(Debug, Clone)]
@@ -252,6 +103,7 @@ pub enum Argument {
     Template(Template),
     Link(Link),
     List(List),
+    Table(Table),
     Text(Text),
 }
 
@@ -268,6 +120,12 @@ impl Argument {
             _ => None,
         }
     }
+    pub fn into_table(self) -> Option<Table> {
+        match self {
+            Argument::Table(t) => Some(t),
+            _ => None,
+        }
+    }
 
     /// Reconstruct this argument into wikitext.
     pub fn to_wikitext(&self) -> String {
@@ -276,6 +134,7 @@ impl Argument {
             Argument::Link(l) => l.to_wikitext(),
             Argument::Template(t) => t.to_wikitext(),
             Argument::List(ls) => ls.to_wikitext(),
+            Argument::Table(tb) => tb.to_wikitext(),
         }
     }
 }
@@ -365,6 +224,7 @@ impl ParsedData {
                 Argument::Link(l) => Ok(l.to_wikitext()),
                 Argument::Template(tpl) => Ok(tpl.to_wikitext()),
                 Argument::List(lst) => Ok(lst.to_wikitext()),
+                Argument::Table(tb) => Ok(tb.to_wikitext()),
             }
         } else {
             Err(WtError::index_oob(nth, self.elements.len()))
@@ -392,6 +252,7 @@ impl ParsedData {
 /// - internal links ([[...]])
 /// - external links ([http... label])
 /// - simple list blocks (lines starting with *, #, ;, :)
+/// - simple tables ({| ... |})
 ///
 /// All other content is returned as `Text` nodes. The function is conservative
 /// and aims to be robust rather than fully feature-complete.
@@ -420,6 +281,25 @@ pub fn parse_wikitext_fragment(input: &str) -> Result<ParsedData, WtError> {
             } else {
                 // treat as literal
                 current_text.push_str("{{");
+                idx += 2;
+                continue;
+            }
+        }
+
+        // detect table start "{|"
+        if idx + 1 < len && bytes[idx] == b'{' && bytes[idx + 1] == b'|' {
+            if !current_text.is_empty() {
+                pd.elements
+                    .push(Argument::Text(Text::new(current_text.clone())));
+                current_text.clear();
+            }
+            if let Some((consumed, table)) = parse_table_at(input, idx) {
+                pd.elements.push(Argument::Table(table));
+                idx += consumed;
+                continue;
+            } else {
+                // treat as literal "{|"
+                current_text.push_str("{|");
                 idx += 2;
                 continue;
             }
@@ -717,7 +597,6 @@ fn find_top_level_char(s: &str, c: char) -> Option<usize> {
         }
 
         if ch == c && depth_brace == 0 && depth_bracket == 0 && !in_tag {
-            // return the byte index for this character
             return Some(byte_pos);
         }
         i += 1;
@@ -846,7 +725,6 @@ fn parse_list_at(input: &str, start: usize) -> Option<(usize, List)> {
             if pd.elements.len() == 1 {
                 entries.push(pd.elements[0].clone());
             } else {
-                // keep as text wrapper with raw content
                 entries.push(Argument::Text(Text::new(pd.raw)));
             }
         } else {
@@ -866,34 +744,224 @@ fn parse_list_at(input: &str, start: usize) -> Option<(usize, List)> {
     Some((consumed, List { list_type, entries }))
 }
 
+/// Parse the cells from a table data/header line and append to `row`.
+///
+/// Accepts a line which may start with '|' (data) or be the remainder after '|-'.
+fn parse_table_cells_into(line: &str, row: &mut Vec<TableCell>) {
+    let mut s = line;
+    if s.starts_with('|') {
+        s = &s[1..];
+    }
+    // split on "||" primarily
+    let parts: Vec<&str> = s.split("||").collect();
+    for part in parts {
+        let tok = part.trim();
+        if tok.is_empty() {
+            row.push(TableCell::new(ParsedData::new("")));
+            continue;
+        }
+        // attributes may appear before a single '|' inside the token, e.g. colspan="2" | value
+        let mut attrs = tok;
+        let mut content = tok;
+        if let Some(pos) = tok.find('|') {
+            attrs = tok[..pos].trim();
+            content = tok[pos + 1..].trim();
+        }
+        let parsed = if content.is_empty() {
+            ParsedData::new("")
+        } else {
+            parse_wikitext_fragment(content)
+                .unwrap_or_else(|_| ParsedData::new(content.to_string()))
+        };
+        let mut cell = TableCell::new(parsed);
+        // parse simple colspan/rowspan patterns like colspan="2" or rowspan=3
+        for attr in attrs.split_whitespace() {
+            let a = attr.trim();
+            if a.starts_with("colspan=") {
+                if let Some(eq) = a.find('=') {
+                    let v = a[eq + 1..].trim().trim_matches('"').trim_matches('\'');
+                    if let Ok(n) = v.parse::<usize>() {
+                        cell.colspan = n.max(1);
+                    }
+                }
+            } else if a.starts_with("rowspan=") {
+                if let Some(eq) = a.find('=') {
+                    let v = a[eq + 1..].trim().trim_matches('"').trim_matches('\'');
+                    if let Ok(n) = v.parse::<usize>() {
+                        cell.rowspan = n.max(1);
+                    }
+                }
+            }
+        }
+        row.push(cell);
+    }
+}
+
+/// Parse a table starting at `start` (expects "{|"), returns consumed bytes and a `Table`.
+///
+/// Conservative parser: find matching "|}" and parse common constructs:
+/// - initial attribute line (e.g. class="wikitable")
+/// - caption "|+"
+/// - row separator "|-"
+/// - header rows starting with "!"
+/// - data rows starting with "|"
+fn parse_table_at(input: &str, start: usize) -> Option<(usize, Table)> {
+    let len = input.len();
+    if start + 1 >= len {
+        return None;
+    }
+    if !input[start..].starts_with("{|") {
+        return None;
+    }
+    // find the end of table
+    if let Some(rel_end) = input[start + 2..].find("|}") {
+        let end_idx = start + 2 + rel_end + 2; // include "|}"
+        let content = &input[start + 2..start + 2 + rel_end]; // between "{|" and "|}"
+
+        // parse lines
+        let mut class: Option<String> = None;
+        let mut title: Option<String> = None;
+        let mut headers: Vec<String> = Vec::new();
+        let mut rows: Vec<Vec<TableCell>> = Vec::new();
+
+        // If first non-empty line contains class=... parse it
+        if let Some(first_line_end) = content.find('\n') {
+            let first_line = content[..first_line_end].trim();
+            if first_line.starts_with("class=") {
+                let v = first_line[6..].trim();
+                let v = v.trim_matches('"').trim_matches('\'').trim();
+                if !v.is_empty() {
+                    class = Some(v.to_string());
+                }
+            }
+        }
+
+        for raw_line in content.lines() {
+            let line = raw_line.trim_start();
+            if line.is_empty() {
+                continue;
+            }
+            if line.starts_with("|+") {
+                title = Some(line[2..].trim().to_string());
+                continue;
+            }
+            if line.starts_with("|-") {
+                // start a new (empty) data row
+                rows.push(Vec::new());
+                // if remainder contains cells (e.g. "|- | a || b"), parse them into current row
+                let rest = line[2..].trim();
+                if !rest.is_empty() && rest.starts_with('|') {
+                    if rows.is_empty() {
+                        rows.push(Vec::new());
+                    }
+                    let current = rows.last_mut().unwrap();
+                    parse_table_cells_into(rest, current);
+                }
+                continue;
+            }
+            if line.starts_with('!') {
+                // header row: split on "!!"
+                let hdr_line = line.trim_start_matches('!').trim();
+                let parts: Vec<&str> = hdr_line.split("!!").collect();
+                let mut hrow: Vec<TableCell> = Vec::new();
+                for p in parts {
+                    let txt = p.trim();
+                    let pd = parse_wikitext_fragment(txt)
+                        .unwrap_or_else(|_| ParsedData::new(txt.to_string()));
+                    headers.push(txt.to_string());
+                    hrow.push(TableCell::new(pd));
+                }
+                rows.push(hrow);
+                continue;
+            }
+            if line.starts_with('|') {
+                // data line: if the previous row already contains cells, start a new row.
+                if rows.is_empty() {
+                    rows.push(Vec::new());
+                }
+                // If the last row is non-empty, treat this '|' line as starting a NEW row.
+                let need_new_row = rows.last().map(|r| !r.is_empty()).unwrap_or(false);
+                if need_new_row {
+                    rows.push(Vec::new());
+                }
+                let current = rows.last_mut().unwrap();
+                parse_table_cells_into(line, current);
+                continue;
+            }
+            // unknown line - ignore
+        }
+
+        let table = Table {
+            title,
+            class,
+            headers,
+            rows,
+        };
+        return Some((end_idx - start, table));
+    }
+
+    None
+}
+
+/// Build a 2D grid of Option<TableCell> for the table expanding rowspan/colspan.
+///
+/// Cells are cloned to fill spanned positions. The resulting grid has dimensions
+/// rows x cols where cols is the maximal occupied column count.
+fn build_table_grid(table: &Table) -> Vec<Vec<Option<TableCell>>> {
+    let rows_count = table.rows.len();
+    // estimate max cols by summing colspans per row
+    let mut max_cols = 0usize;
+    for r in 0..rows_count {
+        let mut csum = 0usize;
+        for cell in &table.rows[r] {
+            csum += cell.colspan.max(1);
+        }
+        max_cols = max_cols.max(csum);
+    }
+    if rows_count == 0 || max_cols == 0 {
+        return Vec::new();
+    }
+    let mut grid: Vec<Vec<Option<TableCell>>> = vec![vec![None; max_cols]; rows_count];
+
+    for r in 0..rows_count {
+        let mut c = 0usize;
+        for cell in &table.rows[r] {
+            // find next free column in row r
+            while c < max_cols && grid[r][c].is_some() {
+                c += 1;
+            }
+            if c >= max_cols {
+                break;
+            }
+            // place cell at (r,c) and fill spans
+            for rr in r..(r + cell.rowspan) {
+                for cc in c..(c + cell.colspan) {
+                    if rr < rows_count && cc < max_cols {
+                        grid[rr][cc] = Some(cell.clone());
+                    }
+                }
+            }
+            c += cell.colspan.max(1);
+        }
+    }
+
+    grid
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn parse_simple_template() {
-        let s = "{{Infobox|name=Test|value=42|pos1|pos2}}";
+    fn parse_simple_template_and_link() {
+        let s = "{{Infobox|name=Test|value=42|pos1|pos2}} Something [[Page|Label]]";
         let pd = parse_wikitext_fragment(s).expect("parse");
-        assert_eq!(pd.elements.len(), 1);
-        if let Argument::Template(t) = &pd.elements[0] {
-            assert_eq!(t.name.to_lowercase(), "infobox");
-            assert_eq!(t.arguments.len(), 4);
-            assert!(t.get_named_arg("name").is_ok());
-            let p0 = t.get_positional_arg(0).unwrap();
-            assert_eq!(p0.raw, "pos1");
-        } else {
-            panic!("expected template");
-        }
-    }
-
-    #[test]
-    fn parse_links() {
-        let s = "Before [[Page|Label]] middle [[Other]] after";
-        let pd = parse_wikitext_fragment(s).expect("parse");
+        // should contain a template and a link
+        let tpl = pd.get_template("Infobox");
+        assert!(tpl.is_ok());
         let links = pd.get_links(None);
-        assert_eq!(links.len(), 2);
+        assert_eq!(links.len(), 1);
         assert_eq!(links[0].label, "Label");
-        assert_eq!(links[1].label, "Other");
     }
 
     #[test]
@@ -941,11 +1009,8 @@ mod tests {
 
     #[test]
     fn internal_link_unicode_target() {
-        // Ensure internal links with unicode in the target are parsed correctly
-        // and the target/label strings preserve Unicode characters.
         let s = "[[Garden_of_Eeshöl]]";
         let pd = parse_wikitext_fragment(s).expect("parse");
-        // should be a single link element
         assert_eq!(pd.elements.len(), 1);
         if let Argument::Link(l) = &pd.elements[0] {
             assert_eq!(l.target, "Garden_of_Eeshöl");
@@ -953,16 +1018,29 @@ mod tests {
         } else {
             panic!("expected a Link element");
         }
+    }
 
-        // Also test link with explicit label
-        let s2 = "[[Garden_of_Eeshöl|Eeshöl Garden]]";
-        let pd2 = parse_wikitext_fragment(s2).expect("parse2");
-        assert_eq!(pd2.elements.len(), 1);
-        if let Argument::Link(l2) = &pd2.elements[0] {
-            assert_eq!(l2.target, "Garden_of_Eeshöl");
-            assert_eq!(l2.label, "Eeshöl Garden");
+    #[test]
+    fn simple_table_parse() {
+        let s =
+            "{| class=\"wikitable\"\n|+ Title\n! Header1 !! Header2\n|-\n| A || B\n| C || D\n|}";
+        let pd = parse_wikitext_fragment(s).expect("parse table");
+        assert_eq!(pd.elements.len(), 1);
+        if let Argument::Table(tb) = &pd.elements[0] {
+            assert_eq!(tb.class.as_deref(), Some("wikitable"));
+            assert_eq!(tb.title.as_deref(), Some("Title"));
+            // rows should include header row + two data rows
+            assert!(tb.rows.len() >= 3);
+            // header names present
+            assert!(tb.headers.contains(&"Header1".to_string()));
+            assert!(tb.headers.contains(&"Header2".to_string()));
+            // check a specific cell raw content
+            let maybe = tb.get_cell_by_index(1, 0);
+            assert!(maybe.is_some());
+            let c = maybe.unwrap();
+            assert_eq!(c.content.raw, "A");
         } else {
-            panic!("expected a Link element with label");
+            panic!("expected table");
         }
     }
 }

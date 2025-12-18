@@ -11,7 +11,8 @@ use std::convert::TryFrom;
 use std::fmt;
 
 use crate::wikitext::errors::WtError;
-use crate::wikitext::parsed_data::{Argument, Link, List, Template, Text};
+#[allow(unused_imports)]
+use crate::wikitext::parsed_data::{Argument, Link, List, Table, Template, Text};
 
 impl Argument {
     /// Returns a short textual kind for the argument.
@@ -22,6 +23,7 @@ impl Argument {
             Argument::Template(_) => "Template",
             Argument::Link(_) => "Link",
             Argument::List(_) => "List",
+            Argument::Table(_) => "Table",
             Argument::Text(_) => "Text",
         }
     }
@@ -90,6 +92,16 @@ impl Argument {
                     parts.push(e.to_text_lossy());
                 }
                 parts.join(" | ")
+            }
+            Argument::Table(tb) => {
+                // Prefer table title, otherwise headers, otherwise a summary.
+                if let Some(ref t) = tb.title {
+                    t.clone()
+                } else if !tb.headers.is_empty() {
+                    tb.headers.join(", ")
+                } else {
+                    format!("Table(rows={})", tb.rows.len())
+                }
             }
         }
     }
@@ -165,6 +177,13 @@ impl fmt::Display for Argument {
             Argument::List(lst) => {
                 write!(f, "List(len={})", lst.entries.len())
             }
+            Argument::Table(tb) => {
+                if let Some(ref title) = tb.title {
+                    write!(f, "Table(\"{}\")", title)
+                } else {
+                    write!(f, "Table(rows={})", tb.rows.len())
+                }
+            }
             Argument::Text(txt) => {
                 let mut s = txt.raw.clone();
                 // short display: collapse newlines for readability
@@ -182,7 +201,8 @@ impl fmt::Display for Argument {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::wikitext::parsed_data::{Link, List, Template, TemplateArgument, Text};
+    #[allow(unused_imports)]
+    use crate::wikitext::parsed_data::{Link, List, Table, Template, TemplateArgument, Text};
 
     #[test]
     fn kind_and_text_lossy() {

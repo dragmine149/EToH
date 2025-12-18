@@ -44,9 +44,11 @@ fn get_difficulty(template: &Template) -> Result<f64, String> {
             }
             Argument::Link(_) => return Err(String::from("Somehow a link in difficulty")),
             Argument::List(_) => return Err(String::from("Who made a list in a list?")),
+            Argument::Table(_) => return Err(String::from("table in list in template!")),
             Argument::Text(text) => text.raw.clone(),
         },
         Argument::Text(text) => text.raw.clone(),
+        Argument::Table(_) => return Err(String::from("Somehow a table in difficulty")),
     }
     .parse::<f64>()
     .map_err(|e| {
@@ -88,6 +90,7 @@ fn get_length(template: &Template) -> Result<Length, String> {
                 "Somehow a List in Length (never seen this before)",
             ));
         }
+        Argument::Table(_) => return Err(String::from("Somehow a table in Length")),
         Argument::Text(text) => text.raw.clone(),
     };
 
