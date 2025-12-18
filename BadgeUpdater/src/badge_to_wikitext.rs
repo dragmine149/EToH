@@ -16,7 +16,7 @@ use crate::{
 ///
 /// # Usage
 /// ```rs
-/// let badges = get_badges(&client, &url).await.unwrap();
+/// let badges = get_badges(&client, &url, &[]).await.unwrap();
 /// for badge in badges {
 ///		// badge can be gotten after awaiting it.
 /// 	println!("{:?}", badge.await);
@@ -25,6 +25,7 @@ use crate::{
 pub async fn get_badges(
     client: &RustClient,
     url: &Url,
+    ignore: &[u64],
 ) -> Result<Vec<JoinHandle<Result<OkDetails, ErrorDetails>>>, Box<dyn Error>> {
     let mut data: Data = Data::default();
     let mut tasks = vec![];
@@ -37,6 +38,9 @@ pub async fn get_badges(
         data = client.0.get(url).send().await?.json::<Data>().await?;
 
         for badge in data.data {
+            if ignore.contains(&badge.id) {
+                continue;
+            }
             tasks.push(tokio::spawn(pre_process(client.clone(), badge)));
         }
     }

@@ -15,7 +15,7 @@ use crate::{
     badge_to_wikitext::get_badges,
     definitions::{
         AreaInformation, BadgeOverwrite, ErrorDetails, EventInfo, EventItem, GlobalArea, OkDetails,
-        WikiTower,
+        WikiTower, badges_from_map_value,
     },
     process_items::{
         process_area, process_event_area, process_event_item, process_item, process_tower,
@@ -125,7 +125,7 @@ where
 }
 
 const DEBUG_PATH: &str = "./badges.temp.txt";
-const OVERWRITE_PATH: &str = "./overwrite.jsonc";
+const OVERWRITE_PATH: &str = "../overwrite.jsonc";
 
 #[tokio::main]
 async fn main() {
@@ -145,20 +145,36 @@ async fn main() {
     let client = RustClient::new(None, None);
     let url = Url::from_str(&format!("{:}?limit=100", BADGE_URL)).unwrap();
 
-    let overwrites = serde_json::from_str::<Vec<BadgeOverwrite>>(
-        &fs::read_to_string(OVERWRITE_PATH).unwrap_or_default(),
-    );
+    let overwrites = badges_from_map_value(
+        &serde_json::from_str(
+            // &fs::read_to_string(OVERWRITE_PATH).expect("Failed to read overwrite path"),
+            &fs::read_to_string(OVERWRITE_PATH).unwrap_or("{}".into()),
+        )
+        .unwrap(),
+    )
+    .unwrap_or_default();
+    let skip_ids = overwrites
+        .iter()
+        .map(|bo| {
+            let mut a = bo.alt_ids.clone();
+            a.push(bo.badge_id);
+            a
+        })
+        .flatten()
+        .collect_vec();
     println!("{:?}", overwrites);
+    println!("{:#?}", skip_ids);
 
     log::info!("Setup complete, starting searching");
 
     // get a list of all the badges.
     let mut badges_vec = vec![];
-    let raw = get_badges(&client, &url).await.unwrap();
+    let raw = get_badges(&client, &url, &skip_ids).await.unwrap();
     for badge_fut in raw {
         badges_vec.push(badge_fut.await.unwrap());
     }
 
+    log::info!("Skipped {:?} badges due to overwrites file", skip_ids.len());
     // process the badges to get the passed and failed ones..
     let (passed, failed) = count_processed(
         &badges_vec,
