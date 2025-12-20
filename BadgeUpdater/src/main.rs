@@ -1,6 +1,7 @@
 mod badge_to_wikitext;
 mod definitions;
 // mod json;
+mod hard_coded;
 mod process_items;
 mod reqwest_client;
 mod wikitext;
@@ -143,156 +144,159 @@ async fn main() {
 
     // client and original url setup.
     let client = RustClient::new(None, None);
-    let url = Url::from_str(&format!("{:}?limit=100", BADGE_URL)).unwrap();
+    // let url = Url::from_str(&format!("{:}?limit=100", BADGE_URL)).unwrap();
 
-    let overwrites = badges_from_map_value(
-        &serde_json::from_str(
-            // &fs::read_to_string(OVERWRITE_PATH).expect("Failed to read overwrite path"),
-            &fs::read_to_string(OVERWRITE_PATH).unwrap_or("{}".into()),
-        )
-        .unwrap(),
-    )
-    .unwrap_or_default();
-    let skip_ids = overwrites
-        .iter()
-        .map(|bo| {
-            let mut a = bo.alt_ids.clone();
-            a.push(bo.badge_id);
-            a
-        })
-        .flatten()
-        .collect_vec();
-    println!("{:?}", overwrites);
-    println!("{:#?}", skip_ids);
+    // let overwrites = badges_from_map_value(
+    //     &serde_json::from_str(
+    //         // &fs::read_to_string(OVERWRITE_PATH).expect("Failed to read overwrite path"),
+    //         &fs::read_to_string(OVERWRITE_PATH).unwrap_or("{}".into()),
+    //     )
+    //     .unwrap(),
+    // )
+    // .unwrap_or_default();
+    // let skip_ids = overwrites
+    //     .iter()
+    //     .map(|bo| {
+    //         let mut a = bo.alt_ids.clone();
+    //         a.push(bo.badge_id);
+    //         a
+    //     })
+    //     .flatten()
+    //     .collect_vec();
+    // println!("{:?}", overwrites);
+    // println!("{:#?}", skip_ids);
 
-    log::info!("Setup complete, starting searching");
+    // log::info!("Setup complete, starting searching");
 
-    // get a list of all the badges.
-    let mut badges_vec = vec![];
-    let raw = get_badges(&client, &url, &skip_ids).await.unwrap();
-    for badge_fut in raw {
-        badges_vec.push(badge_fut.await.unwrap());
-    }
+    // // get a list of all the badges.
+    // let mut badges_vec = vec![];
+    // let raw = get_badges(&client, &url, &skip_ids).await.unwrap();
+    // for badge_fut in raw {
+    //     badges_vec.push(badge_fut.await.unwrap());
+    // }
 
-    log::info!("Skipped {:?} badges due to overwrites file", skip_ids.len());
-    // process the badges to get the passed and failed ones..
-    let (passed, failed) = count_processed(
-        &badges_vec,
-        |f: &Result<OkDetails, ErrorDetails>| f.is_ok(),
-        "get_badges",
-        Some(&path),
-    );
+    // log::info!("Skipped {:?} badges due to overwrites file", skip_ids.len());
+    // // process the badges to get the passed and failed ones..
+    // let (passed, failed) = count_processed(
+    //     &badges_vec,
+    //     |f: &Result<OkDetails, ErrorDetails>| f.is_ok(),
+    //     "get_badges",
+    //     Some(&path),
+    // );
 
-    // start processing towers.
-    let tower_data = passed
-        .iter()
-        .map(|p| process_tower(&p.0, &p.1))
-        // .inspect(|x| println!("{:?}", x))
-        .collect::<Vec<Result<WikiTower, String>>>();
+    // // start processing towers.
+    // let tower_data = passed
+    //     .iter()
+    //     .map(|p| process_tower(&p.0, &p.1))
+    //     // .inspect(|x| println!("{:?}", x))
+    //     .collect::<Vec<Result<WikiTower, String>>>();
 
-    let (tower_processed, tower_processed_failed) = count_processed(
-        &tower_data,
-        |r: &Result<WikiTower, String>| r.is_ok(),
-        "process_tower",
-        Some(&path),
-    );
+    // let (tower_processed, tower_processed_failed) = count_processed(
+    //     &tower_data,
+    //     |r: &Result<WikiTower, String>| r.is_ok(),
+    //     "process_tower",
+    //     Some(&path),
+    // );
 
-    // process items now we now which towers have passed.
-    let mut items = vec![];
-    for ele in passed.iter().filter(|p| {
-        !tower_processed
-            .iter()
-            .any(|t| t.badge_name.contains(&p.1.name))
-    }) {
-        items.push(process_item(&client, &ele.0, &ele.1).await);
-    }
-    let (item_processed, items_failed) = count_processed(
-        &items,
-        |i: &Result<WikiTower, String>| i.is_ok(),
-        "process_item",
-        Some(&path),
-    );
+    // // process items now we now which towers have passed.
+    // let mut items = vec![];
+    // for ele in passed.iter().filter(|p| {
+    //     !tower_processed
+    //         .iter()
+    //         .any(|t| t.badge_name.contains(&p.1.name))
+    // }) {
+    //     items.push(process_item(&client, &ele.0, &ele.1).await);
+    // }
+    // let (item_processed, items_failed) = count_processed(
+    //     &items,
+    //     |i: &Result<WikiTower, String>| i.is_ok(),
+    //     "process_item",
+    //     Some(&path),
+    // );
 
-    // combine the both
-    let mut success = vec![];
-    tower_processed.iter().for_each(|i| success.push(i));
-    item_processed.iter().for_each(|i| success.push(i));
-    log::info!(
-        "[badge to tower] Total: {}. Passed: {}. Rate: {:.2}%",
-        badges_vec.len(),
-        success.len(),
-        ((success.len() as f64) / (badges_vec.len() as f64)) * 100.0
-    );
+    // // combine the both
+    // let mut success = vec![];
+    // tower_processed.iter().for_each(|i| success.push(i));
+    // item_processed.iter().for_each(|i| success.push(i));
+    // log::info!(
+    //     "[badge to tower] Total: {}. Passed: {}. Rate: {:.2}%",
+    //     badges_vec.len(),
+    //     success.len(),
+    //     ((success.len() as f64) / (badges_vec.len() as f64)) * 100.0
+    // );
 
-    // process areas based off towers.
-    // Unique is here to reduce double area checking
-    let areas_list = success.clone().into_iter().map(|t| t.area.clone()).unique();
-    let mut areas = vec![];
-    for area in areas_list.clone() {
-        areas.push(process_area(&client, &area).await);
-    }
+    // // process areas based off towers.
+    // // Unique is here to reduce double area checking
+    // let areas_list = success.clone().into_iter().map(|t| t.area.clone()).unique();
+    // let mut areas = vec![];
+    // for area in areas_list.clone() {
+    //     areas.push(process_area(&client, &area).await);
+    // }
 
-    let (area_processed, area_failed) = count_processed(
-        &areas,
-        |a: &Result<AreaInformation, String>| a.is_ok(),
-        "process_area",
-        Some(&path),
-    );
+    // let (area_processed, area_failed) = count_processed(
+    //     &areas,
+    //     |a: &Result<AreaInformation, String>| a.is_ok(),
+    //     "process_area",
+    //     Some(&path),
+    // );
 
-    // do the same but for the event based ones.
-    let mut event_areas = vec![];
-    for ele in areas_list.filter(|a| area_failed.iter().any(|f| f.contains(a))) {
-        event_areas.push(process_event_area(&client, &ele).await);
-    }
+    // // do the same but for the event based ones.
+    // let mut event_areas = vec![];
+    // for ele in areas_list.filter(|a| area_failed.iter().any(|f| f.contains(a))) {
+    //     event_areas.push(process_event_area(&client, &ele).await);
+    // }
 
-    let (event_processed, event_failed) = count_processed(
-        &event_areas,
-        |a: &Result<EventInfo, String>| a.is_ok(),
-        "process_event_area",
-        Some(&path),
-    );
+    // let (event_processed, event_failed) = count_processed(
+    //     &event_areas,
+    //     |a: &Result<EventInfo, String>| a.is_ok(),
+    //     "process_event_area",
+    //     Some(&path),
+    // );
 
-    // combine them.
-    let mut area_success: Vec<GlobalArea> = vec![];
-    area_processed
-        .iter()
-        .for_each(|i| area_success.push(GlobalArea::Area((*i).clone())));
-    event_processed
-        .iter()
-        .for_each(|i| area_success.push(GlobalArea::Event((*i).clone())));
-    log::info!(
-        "[area parsing] Total: {}. Passed: {}. Rate: {:.2}%",
-        areas.len(),
-        area_success.len(),
-        ((area_success.len() as f64) / (areas.len() as f64)) * 100.0
-    );
+    // // combine them.
+    // let mut area_success: Vec<GlobalArea> = vec![];
+    // area_processed
+    //     .iter()
+    //     .for_each(|i| area_success.push(GlobalArea::Area((*i).clone())));
+    // event_processed
+    //     .iter()
+    //     .for_each(|i| area_success.push(GlobalArea::Event((*i).clone())));
+    // log::info!(
+    //     "[area parsing] Total: {}. Passed: {}. Rate: {:.2}%",
+    //     areas.len(),
+    //     area_success.len(),
+    //     ((area_success.len() as f64) / (areas.len() as f64)) * 100.0
+    // );
 
-    println!("[");
-    event_processed.iter().for_each(|x| println!("    {:?}", x));
-    println!("]");
+    // println!("[");
+    // event_processed.iter().for_each(|x| println!("    {:?}", x));
+    // println!("]");
 
-    // println!("{:?}", event_processed);
-    let mut event_items = vec![];
-    for ele in passed
-        .iter()
-        .filter(|p| {
-            !tower_processed
-                .iter()
-                .any(|t| t.badge_name.contains(&p.1.name))
-        })
-        .filter(|p| {
-            !item_processed
-                .iter()
-                .any(|i| i.badge_name.contains(&p.1.name))
-        })
-    {
-        event_items.push(process_event_item(&ele.0, &ele.1, &event_processed));
-    }
+    // // println!("{:?}", event_processed);
+    // let mut event_items = vec![];
+    // for ele in passed
+    //     .iter()
+    //     .filter(|p| {
+    //         !tower_processed
+    //             .iter()
+    //             .any(|t| t.badge_name.contains(&p.1.name))
+    //     })
+    //     .filter(|p| {
+    //         !item_processed
+    //             .iter()
+    //             .any(|i| i.badge_name.contains(&p.1.name))
+    //     })
+    // {
+    //     event_items.push(process_event_item(&ele.0, &ele.1, &event_processed));
+    // }
 
-    let (event_items_processed, event_items_failed) = count_processed(
-        &event_items,
-        |e: &Result<EventItem, String>| e.is_ok(),
-        "process_event_item",
-        Some(&path),
-    );
+    // let (event_items_processed, event_items_failed) = count_processed(
+    //     &event_items,
+    //     |e: &Result<EventItem, String>| e.is_ok(),
+    //     "process_event_item",
+    //     Some(&path),
+    // );
+
+    // okay, now we have to hard-code some stuff.
+    hard_coded::parse_mini_towers(&client).await;
 }

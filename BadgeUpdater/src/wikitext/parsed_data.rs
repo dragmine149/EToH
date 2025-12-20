@@ -203,6 +203,36 @@ impl ParsedData {
         out
     }
 
+    /// Return top-level tables parsed in this fragment.
+    pub fn get_tables(&self) -> Vec<Table> {
+        let mut out: Vec<Table> = Vec::new();
+        for elem in &self.elements {
+            if let Argument::Table(tb) = elem {
+                out.push(tb.clone());
+            }
+        }
+        out
+    }
+
+    /// Find the first table whose title matches `title` (case-insensitive).
+    /// If the provided title is empty, returns None.
+    pub fn get_table_by_title(&self, title: &str) -> Option<Table> {
+        if title.trim().is_empty() {
+            return None;
+        }
+        let title_lc = title.to_lowercase();
+        for elem in &self.elements {
+            if let Argument::Table(tb) = elem {
+                if let Some(ref t) = tb.title {
+                    if t.to_lowercase() == title_lc {
+                        return Some(tb.clone());
+                    }
+                }
+            }
+        }
+        None
+    }
+
     /// Return nth top-level element (0-based). If out of bounds returns an error.
     pub fn get(&self, nth: usize) -> Result<Argument, WtError> {
         if nth < self.elements.len() {
