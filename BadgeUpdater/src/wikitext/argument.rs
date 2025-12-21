@@ -76,13 +76,16 @@ impl Argument {
             }
             Argument::Template(t) => {
                 // prefer named arguments when available; otherwise join positional
-                if let Ok(v) = t.get_named_arg("1") {
-                    // if template had a named "1" use that as an example
-                    v.raw
-                } else if let Some(first_pos) = t.arguments.iter().find(|a| a.name.is_none()) {
-                    first_pos.value.raw.clone()
-                } else {
-                    format!("{{{{{}}}}}", t.name)
+                // Use an explicit `match` on the Result to avoid inference issues.
+                match t.get_named_arg("1") {
+                    Ok(pd) => pd.raw,
+                    Err(_) => {
+                        if let Some(first_pos) = t.arguments.iter().find(|a| a.name.is_none()) {
+                            first_pos.value.raw.clone()
+                        } else {
+                            format!("{{{{{}}}}}", t.name)
+                        }
+                    }
                 }
             }
             Argument::List(l) => {

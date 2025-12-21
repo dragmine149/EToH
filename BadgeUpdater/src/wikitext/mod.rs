@@ -36,7 +36,7 @@ pub use enums::QueryType;
 // Re-export data types implemented inside submodules.
 // Templates, links, and table-related types were moved into `types/*`.
 pub use types::links::Link;
-pub use types::table::{Table, TableCell, build_table_grid};
+pub use types::table::{Cell, Row, Table, TableCell, build_table_grid};
 pub use types::templates::{Template, TemplateArgument};
 
 // Keep Argument re-exported from parsed_data as the canonical top-level enum

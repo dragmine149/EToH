@@ -40,16 +40,16 @@ impl WikiText {
     ///
     /// Note: the method takes `&mut self` because parsing stores the cached
     /// result inside the struct.
-    pub fn get_parsed_mut(&mut self) -> Result<&ParsedData, WtError> {
+    pub fn get_parsed_mut(&mut self) -> Result<&mut ParsedData, WtError> {
         // If the parsed cache is empty, parse and populate it.
         if self.parsed.borrow().is_none() {
             let parsed = parse_wikitext_fragment(&self.text)?;
             *self.parsed.borrow_mut() = Some(parsed);
         }
-        // Now it's safe to unwrap. We can return a reference by obtaining a mutable
+        // Now it's safe to unwrap. We can return a mutable reference by obtaining a mutable
         // reference to the inner Option because we hold &mut self.
         let slot = self.parsed.get_mut();
-        Ok(slot.as_ref().unwrap())
+        Ok(slot.as_mut().unwrap())
     }
 
     /// Shared (non-mutable) getter that parses lazily if needed and returns a

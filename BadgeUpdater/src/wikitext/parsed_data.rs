@@ -233,6 +233,11 @@ impl ParsedData {
         None
     }
 
+    /// Alias for `get_table_by_title`. Provided for API compatibility (search by name).
+    pub fn get_table_by_name(&self, name: &str) -> Option<Table> {
+        self.get_table_by_title(name)
+    }
+
     /// Return nth top-level element (0-based). If out of bounds returns an error.
     pub fn get(&self, nth: usize) -> Result<Argument, WtError> {
         if nth < self.elements.len() {
@@ -323,7 +328,9 @@ pub fn parse_wikitext_fragment(input: &str) -> Result<ParsedData, WtError> {
                     .push(Argument::Text(Text::new(current_text.clone())));
                 current_text.clear();
             }
-            if let Some((consumed, table)) = parse_table_at(input, idx) {
+            if let Some((consumed, table)) =
+                crate::wikitext::types::table::parse_table_at(input, idx)
+            {
                 pd.elements.push(Argument::Table(table));
                 idx += consumed;
                 continue;
@@ -1072,5 +1079,157 @@ mod tests {
         } else {
             panic!("expected table");
         }
+    }
+
+    #[test]
+    fn table_api_mini_tower_sample() {
+        let s = r#"{| class="sortable mw-collapsible mw-collapsed wikitable" width="100%" style="text-align:center;"
+! colspan="4" |Mini Tower List
+|-
+!Difficulty
+!Name
+!Location
+!Difficulty Num
+|-
+| data-sort-value="3" |{{Difficulty|3}}
+|TNF - [[Tower Not Found]]
+|{{Emblem|R0}} [[Ring 0]]
+|3.11
+|-
+| data-sort-value="1" |{{Difficulty|1}}
+|NEAT - [[Not Even A Tower]]
+|{{Emblem|R1}} [[Ring 1]]
+|1.11
+|-
+| data-sort-value="3" |{{Difficulty|3}}
+|TIPAT - [[This Is Probably A Tower]]
+|{{Emblem|FR}} [[Forgotten Ridge]]
+|3.61
+|-
+| data-sort-value="1" |{{Difficulty|1}}
+|MAT - [[Maybe A Tower]]
+|{{Emblem|R2}} [[Ring 2]]
+|1.07
+|-
+| data-sort-value="5" |{{Difficulty|5}}
+|NEAF - [[Not Even A Flower]]
+|{{Emblem|GoE}} [[Garden of Eeshöl]]
+|5.79
+|}"#;
+
+        let pd = parse_wikitext_fragment(s).expect("parse mini table");
+
+        // ParsedData.get_tables()
+        let tables = pd.get_tables();
+        assert_eq!(tables.len(), 1, "expected a single table parsed");
+
+        // ParsedData.get_table_by_name()
+        let tb = pd
+            .get_table_by_name("Mini Tower List")
+            .expect("table should be findable by name");
+
+        // Table.get_headers()
+        let headers = tb.get_headers();
+        assert_eq!(
+            headers,
+            vec![
+                "Difficulty".to_string(),
+                "Name".to_string(),
+                "Location".to_string(),
+                "Difficulty Num".to_string()
+            ]
+        );
+
+        // Find first data row by locating a Difficulty template in the first column
+        let mut data_row: Option<usize> = None;
+        for (i, _row) in tb.get_rows().iter().enumerate() {
+            if let Some(c) = tb.get_cell_by_index(i, 0) {
+                if c.content.get_template("Difficulty").is_ok() {
+                    data_row = Some(i);
+                    break;
+                }
+            }
+        }
+        let r_idx = data_row.expect("should find a data row with a Difficulty template");
+
+        // Table.get_row() -> Row and Row.raw()
+        let row = tb.get_row(r_idx).expect("row wrapper available");
+        let row_raw = row.raw();
+        assert!(row_raw.contains("{{Difficulty|3}}"));
+        assert!(row_raw.contains("TNF - [[Tower Not Found]]"));
+        assert!(row_raw.contains("{{Emblem|R0}}"));
+        assert!(row_raw.contains("3.11"));
+
+        // Row.get_cell_from_col() -> Cell and Cell.raw
+        let name_cell_row = row
+            .get_cell_from_col("Name")
+            .expect("name cell from row should exist");
+        assert!(name_cell_row.raw().contains("TNF - [[Tower Not Found]]"));
+
+        // Table.get_cell(row, col) -> Cell
+        let name_cell_tbl = tb.get_cell(r_idx, "Name").expect("name cell via table");
+        assert_eq!(name_cell_row.raw(), name_cell_tbl.raw());
+
+        // Cell.get_class() (attributes)
+        let diff_cell = tb.get_cell(r_idx, "Difficulty").expect("difficulty cell");
+        assert_eq!(diff_cell.get_class(), "data-sort-value=\"3\"");
+
+        // Cell.get_parsed() returns ParsedData and contains template + links
+        let loc_cell = tb.get_cell(r_idx, "Location").expect("location cell");
+        assert!(loc_cell.get_parsed().get_template("Emblem").is_ok());
+        let links = loc_cell.get_parsed().get_links(None);
+        assert!(links.iter().any(|l| l.label == "Ring 0"));
+
+        // Ensure direct Table.get_cell_by_index still accessible for low-level checks
+        let maybe = tb.get_cell_by_index(r_idx, 3);
+        assert!(maybe.is_some());
+        let c = maybe.unwrap();
+        assert_eq!(c.content.raw, "3.11");
+    }
+    #[test]
+    fn table_get_cell_numeric_index() {
+        let s = r#"{| class="sortable mw-collapsible mw-collapsed wikitable" width="100%" style="text-align:center;"
+! colspan="4" |Mini Tower List
+|-
+!Difficulty
+!Name
+!Location
+!Difficulty Num
+|-
+| data-sort-value="3" |{{Difficulty|3}}
+|TNF - [[Tower Not Found]]
+|{{Emblem|R0}} [[Ring 0]]
+|3.11
+|}"#;
+
+        let pd = parse_wikitext_fragment(s).expect("parse mini table for numeric index test");
+        let tb = pd
+            .get_table_by_name("Mini Tower List")
+            .expect("table by name");
+
+        // find data row
+        let mut data_row: Option<usize> = None;
+        for (i, _r) in tb.get_rows().iter().enumerate() {
+            if let Some(c) = tb.get_cell_by_index(i, 0) {
+                if c.content.get_template("Difficulty").is_ok() {
+                    data_row = Some(i);
+                    break;
+                }
+            }
+        }
+        let r_idx = data_row.expect("should find a data row");
+
+        // Table.get_cell by numeric string index
+        let c_by_str = tb.get_cell(r_idx, "0").expect("cell by numeric string");
+        let c_by_idx = tb.get_cell_by_index(r_idx, 0).expect("cell by index");
+        assert_eq!(c_by_str.raw(), c_by_idx.content.raw);
+
+        // Row.get_cell_from_col by numeric string index
+        let row = tb.get_row(r_idx).unwrap();
+        let c_row_by_str = row
+            .get_cell_from_col("3")
+            .expect("cell by numeric col on row");
+        let c_by_idx_3 = tb.get_cell_by_index(r_idx, 3).expect("cell by index 3");
+        assert_eq!(c_row_by_str.raw(), c_by_idx_3.content.raw);
     }
 }
