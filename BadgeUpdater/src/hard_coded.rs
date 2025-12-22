@@ -1,33 +1,83 @@
-use crate::{definitions::ProcessError, reqwest_client::RustClient, wikitext::WikiText};
+use crate::{
+    definitions::{Badge, ProcessError, WikiTower},
+    process_items::{get_page_data, process_tower},
+    reqwest_client::RustClient,
+    wikitext::{WikiText, enums::LinkType},
+};
 
-pub async fn parse_mini_towers(client: &RustClient) -> Result<(), String> {
+pub async fn parse_mini_towers(
+    client: &RustClient,
+    badges: &[Badge],
+    ignore: &[String],
+) -> Vec<Result<WikiTower, String>> {
     let mini_towers = client
         .get("https://jtoh.fandom.com/wiki/Mini_Tower?action=raw")
         .send()
         .await
-        .map_err(|e| format!("{:?}", e))?
+        .unwrap()
+        // .map_err(|e| format!("{:?}", e))?
         .text()
         .await
-        .map_err(|e| format!("{:?}", e))?;
+        .unwrap();
+    // .map_err(|e| format!("{:?}", e))?;
 
     let mini_wiki = WikiText::parse(mini_towers);
     let data = mini_wiki
         .get_parsed()
-        .map_err(|e| format!("{:?}", e))?
+        .unwrap()
+        // .map_err(|e| format!("{:?}", e))?
         .get_tables();
-    let table = data
-        .get(0)
-        .ok_or("Failed to find table on mini tower page... (how!!??)")?;
+    let table = data.get(0).unwrap();
+    // .ok_or("Failed to find table on mini tower page... (how!!??)")?;
 
     println!("{:?}", table.get_headers());
 
+    let mut mini_towers = vec![];
     for row_id in 0..table.get_rows().len() {
         let cell = table.get_cell(row_id, "Name");
+        log::debug!("Processing: {:?}", cell);
         println!("row: {:?}, cell: {:?}", row_id, cell);
+        if let Some(data) = cell {
+            let links = data.inner.content.get_links(Some(LinkType::Internal));
+            let target = links.get(0);
+            if target.is_none() {
+                // mini_towers.push(Err(format!("Failed to get link for {:?}", data)));
+                continue;
+            }
+            let target = target.unwrap();
+            if ignore.contains(&target.target) {
+                // no need to push anything as we're ignoring it.
+                log::debug!("Ignoring cell due to already processed");
+                continue;
+            }
+
+            let wikitext = get_page_data(client, &target.target).await;
+
+            if wikitext.is_err() {
+                mini_towers.push(Err(format!("Failed to get wiki data for {:?}", data)));
+                continue;
+            }
+            let mut wikitext = wikitext.ok().unwrap();
+            wikitext.set_page_name(Some(target.target.to_owned()));
+
+            let badge = badges
+                .iter()
+                .filter(|b| {
+                    println!("{:?}", b.id);
+                    wikitext.text().contains(&b.id.to_string())
+                })
+                .next();
+            // .ok_or("Failed to find badge on page")?;
+
+            if badge.is_none() {
+                mini_towers.push(Err(format!("Failed to find badge id for {:?}", data)));
+                println!("{:?}", wikitext.text());
+                continue;
+            }
+
+            mini_towers.push(process_tower(&wikitext, badge.unwrap()));
+        }
     }
 
-    // .get_table_by_title("Mini Tower List");
-    // println!("{:#?}", table);
-
-    Ok(())
+    mini_towers
 }

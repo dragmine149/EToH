@@ -229,7 +229,7 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
 
 /// get_page_redirect but returns wikitext
 /// TODO: move this?
-async fn get_page_data(client: &RustClient, page: &str) -> Result<WikiText, String> {
+pub async fn get_page_data(client: &RustClient, page: &str) -> Result<WikiText, String> {
     let data = get_page_redirect(client, page).await;
     if let Ok(res) = data {
         let mut wikitext = WikiText::parse(res.text);
@@ -430,8 +430,10 @@ fn get_event_template(data: &ParsedData, area: &str) -> Result<Template, String>
     let normal = data
         .get_template("eventinfobox")
         .map_err(|e| format!("Failed to get eventinfobox ({:?}) > {:?}", area, e));
-    if let Ok(norm) = normal {
-        return Ok(norm);
+    // if let Ok(norm) = normal {
+    if normal.is_ok() {
+        return normal;
+        // return Ok(norm);
     }
     data.get_template("event infobox")
         .map_err(|e| format!("Failed to get event infobox ({:?}) > {:?}", area, e))

@@ -95,10 +95,10 @@ where
         use std::io::Write;
         match fs::OpenOptions::new().create(true).append(true).open(path) {
             Ok(mut fh) => {
-                if let Err(e) = writeln!(fh, "{:#?}\n", passed) {
+                if let Err(e) = writeln!(fh, "{:?} passed:\n{:#?}\n", func_name, passed) {
                     log::error!("Failed to append passed items to {:?}: {}", path, e);
                 }
-                if let Err(e) = writeln!(fh, "{:#?}\n", failed) {
+                if let Err(e) = writeln!(fh, "{:?} failed:\n{:#?}\n", func_name, failed) {
                     log::error!("Failed to append failed items to {:?}: {}", path, e);
                 }
             }
@@ -144,59 +144,59 @@ async fn main() {
 
     // client and original url setup.
     let client = RustClient::new(None, None);
-    // let url = Url::from_str(&format!("{:}?limit=100", BADGE_URL)).unwrap();
+    let url = Url::from_str(&format!("{:}?limit=100", BADGE_URL)).unwrap();
 
-    // let overwrites = badges_from_map_value(
-    //     &serde_json::from_str(
-    //         // &fs::read_to_string(OVERWRITE_PATH).expect("Failed to read overwrite path"),
-    //         &fs::read_to_string(OVERWRITE_PATH).unwrap_or("{}".into()),
-    //     )
-    //     .unwrap(),
-    // )
-    // .unwrap_or_default();
-    // let skip_ids = overwrites
-    //     .iter()
-    //     .map(|bo| {
-    //         let mut a = bo.alt_ids.clone();
-    //         a.push(bo.badge_id);
-    //         a
-    //     })
-    //     .flatten()
-    //     .collect_vec();
-    // println!("{:?}", overwrites);
-    // println!("{:#?}", skip_ids);
+    let overwrites = badges_from_map_value(
+        &serde_json::from_str(
+            // &fs::read_to_string(OVERWRITE_PATH).expect("Failed to read overwrite path"),
+            &fs::read_to_string(OVERWRITE_PATH).unwrap_or("{}".into()),
+        )
+        .unwrap(),
+    )
+    .unwrap_or_default();
+    let skip_ids = overwrites
+        .iter()
+        .map(|bo| {
+            let mut a = bo.alt_ids.clone();
+            a.push(bo.badge_id);
+            a
+        })
+        .flatten()
+        .collect_vec();
+    println!("{:?}", overwrites);
+    println!("{:#?}", skip_ids);
 
-    // log::info!("Setup complete, starting searching");
+    log::info!("Setup complete, starting searching");
 
-    // // get a list of all the badges.
-    // let mut badges_vec = vec![];
-    // let raw = get_badges(&client, &url, &skip_ids).await.unwrap();
-    // for badge_fut in raw {
-    //     badges_vec.push(badge_fut.await.unwrap());
-    // }
+    // get a list of all the badges.
+    let mut badges_vec = vec![];
+    let raw = get_badges(&client, &url, &skip_ids).await.unwrap();
+    for badge_fut in raw {
+        badges_vec.push(badge_fut.await.unwrap());
+    }
 
-    // log::info!("Skipped {:?} badges due to overwrites file", skip_ids.len());
-    // // process the badges to get the passed and failed ones..
-    // let (passed, failed) = count_processed(
-    //     &badges_vec,
-    //     |f: &Result<OkDetails, ErrorDetails>| f.is_ok(),
-    //     "get_badges",
-    //     Some(&path),
-    // );
+    log::info!("Skipped {:?} badges due to overwrites file", skip_ids.len());
+    // process the badges to get the passed and failed ones..
+    let (passed, failed) = count_processed(
+        &badges_vec,
+        |f: &Result<OkDetails, ErrorDetails>| f.is_ok(),
+        "get_badges",
+        Some(&path),
+    );
 
-    // // start processing towers.
-    // let tower_data = passed
-    //     .iter()
-    //     .map(|p| process_tower(&p.0, &p.1))
-    //     // .inspect(|x| println!("{:?}", x))
-    //     .collect::<Vec<Result<WikiTower, String>>>();
+    // start processing towers.
+    let tower_data = passed
+        .iter()
+        .map(|p| process_tower(&p.0, &p.1))
+        // .inspect(|x| println!("{:?}", x))
+        .collect::<Vec<Result<WikiTower, String>>>();
 
-    // let (tower_processed, tower_processed_failed) = count_processed(
-    //     &tower_data,
-    //     |r: &Result<WikiTower, String>| r.is_ok(),
-    //     "process_tower",
-    //     Some(&path),
-    // );
+    let (tower_processed, tower_processed_failed) = count_processed(
+        &tower_data,
+        |r: &Result<WikiTower, String>| r.is_ok(),
+        "process_tower",
+        Some(&path),
+    );
 
     // // process items now we now which towers have passed.
     // let mut items = vec![];
@@ -298,5 +298,19 @@ async fn main() {
     // );
 
     // okay, now we have to hard-code some stuff.
-    hard_coded::parse_mini_towers(&client).await;
+    let mini_towers = hard_coded::parse_mini_towers(
+        &client,
+        &failed.iter().map(|p| p.1.clone()).collect_vec(),
+        &tower_processed
+            .iter()
+            .map(|t| t.page_name.clone())
+            .collect_vec(),
+    )
+    .await;
+    let (mini_passed, mini_failed) = count_processed(
+        &mini_towers,
+        |m| m.is_ok(),
+        "hard_coded::parse_mini_towers",
+        Some(&path),
+    );
 }
