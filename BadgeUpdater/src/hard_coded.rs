@@ -38,9 +38,13 @@ pub async fn parse_mini_towers(
     let mut mini_towers = vec![];
     for row_id in 0..table.get_rows().len() {
         let cell = table.get_cell(row_id, "Name");
+        let location = table.get_cell(row_id, "Location");
         log::debug!("Processing: {:?}", cell);
         // println!("row: {:?}, cell: {:?}", row_id, cell);
-        if let Some(data) = cell {
+        if let Some(data) = cell
+            && let Some(loc) = location
+            && loc.raw() != "Cancelled"
+        {
             let links = data.inner.content.get_links(Some(LinkType::Internal));
             let target = links.first();
             if target.is_none() {
