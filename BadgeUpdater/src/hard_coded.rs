@@ -33,13 +33,13 @@ pub async fn parse_mini_towers(
     let table = data.first().unwrap();
     // .ok_or("Failed to find table on mini tower page... (how!!??)")?;
 
-    println!("{:?}", table.get_headers());
+    // println!("{:?}", table.get_headers());
 
     let mut mini_towers = vec![];
     for row_id in 0..table.get_rows().len() {
         let cell = table.get_cell(row_id, "Name");
         log::debug!("Processing: {:?}", cell);
-        println!("row: {:?}, cell: {:?}", row_id, cell);
+        // println!("row: {:?}, cell: {:?}", row_id, cell);
         if let Some(data) = cell {
             let links = data.inner.content.get_links(Some(LinkType::Internal));
             let target = links.first();
@@ -54,10 +54,16 @@ pub async fn parse_mini_towers(
                 continue;
             }
 
-            let wikitext = get_page_data(client, &target.target).await;
+            let wikitext = get_page_data(client, &target.target.replace("?", "%3F")).await;
 
             if wikitext.is_err() {
-                mini_towers.push(Err(format!("Failed to get wiki data for {:?}", data)));
+                // println!("ERR: Failed to get wikidata");
+                // println!("{:?}: {:?}", target.target, data);
+                log::warn!("Failed to get wiki data for {:?}", target.target);
+                mini_towers.push(Err(format!(
+                    "Failed to get wiki data for {:?}",
+                    target.target
+                )));
                 continue;
             }
             let mut wikitext = wikitext.ok().unwrap();
@@ -69,7 +75,10 @@ pub async fn parse_mini_towers(
             });
 
             if badge.is_none() {
-                mini_towers.push(Err(format!("Failed to find badge id for {:?}", data)));
+                mini_towers.push(Err(format!(
+                    "Failed to find badge id for {:?}",
+                    target.target
+                )));
                 println!("{:?}", wikitext.text());
                 continue;
             }

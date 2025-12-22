@@ -20,7 +20,7 @@ use crate::{
 use dotenv::dotenv;
 use itertools::Itertools;
 use lazy_regex::regex_replace;
-use std::{fs, path::PathBuf, str::FromStr, time::SystemTime};
+use std::{fs, path::PathBuf, str::FromStr};
 use url::Url;
 
 pub const BADGE_URL: &str = "https://badges.roblox.com/v1/universes/3264581003/badges?limit=100";
