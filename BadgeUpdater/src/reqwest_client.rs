@@ -1,9 +1,11 @@
+use std::{fs, path::PathBuf, time::SystemTime};
+
 use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache, HttpCacheOptions};
 use reqwest_middleware::ClientWithMiddleware;
 
 /// Custom struct as a wrapper for custom functions
 #[derive(Debug, Clone)]
-pub struct RustClient(pub ClientWithMiddleware);
+pub struct RustClient(pub ClientWithMiddleware, PathBuf);
 /// Custom error to include all potential reqwest related errors.
 #[derive(Debug)]
 #[allow(dead_code, reason = "I use this for debugging...")]
@@ -13,7 +15,7 @@ pub enum RustError {
 }
 
 impl RustClient {
-    /// Create a new client with middleware which auto caches based on HTTP headers
+    /// Create a new client with middleware, cache is forced and only cleared after every day.
     ///
     /// # Arguments
     /// - cache_path -> The path to store the cache. Defaults to `./.cache`
@@ -22,6 +24,7 @@ impl RustClient {
     /// # Returns
     /// - a new client object to use.
     pub fn new(cache_path: Option<&str>, user_agent: Option<&str>) -> Self {
+        let cache = PathBuf::from(cache_path.unwrap_or("./.cache"));
         let client = reqwest_middleware::ClientBuilder::new(
             reqwest::ClientBuilder::new()
                 .user_agent(user_agent.unwrap_or("Some program written in rust..."))
@@ -30,11 +33,52 @@ impl RustClient {
         )
         .with(Cache(HttpCache {
             mode: CacheMode::ForceCache,
-            manager: CACacheManager::new(cache_path.unwrap_or("./.cache").into(), true),
+            manager: CACacheManager::new(cache.clone(), true),
             options: HttpCacheOptions::default(),
         }))
         .build();
-        Self(client)
+        let c = Self(client, cache);
+        c.clear_cache();
+        c
+    }
+
+    /// Clear the cache provided by the middleware.
+    ///
+    /// Only clears cache if:
+    /// - we can get metadata
+    /// - we can get created date
+    /// - created data is > 1 day ago
+    /// - we have permission to delete folder (and everything inside)
+    fn clear_cache(&self) {
+        let meta = self.1.metadata();
+        if let Err(e) = meta {
+            log::error!("Failed to get metadata for cache: {:?}", e);
+            return;
+        }
+
+        let created = meta.unwrap().created();
+        if let Err(e) = created {
+            log::error!("Failed to get created data for cache: {:?}", e);
+            return;
+        }
+
+        let duration = SystemTime::now().duration_since(created.unwrap());
+        if let Err(e) = duration {
+            log::error!("Failed to compare duration times (backwards?): {:?}", e);
+            return;
+        }
+
+        let comp = duration.unwrap().as_secs() > 86400;
+        if !comp {
+            log::info!("Not deleting cache dir due to being < 1d");
+            return;
+        }
+
+        if let Err(e) = fs::remove_dir_all(self.1.to_owned()) {
+            log::error!("Failed to remove cache dir {:?}", e);
+            return;
+        }
+        log::warn!("Deleted cache dir, might take a bit longer to process");
     }
 
     /// Wrapper for [reqwest.get()].

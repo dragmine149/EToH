@@ -249,9 +249,7 @@ pub fn split_top_level(s: &str, sep: char) -> Vec<String> {
             i += 2;
             continue;
         } else if ch == '}' && i + 1 < n && chs[i + 1].1 == '}' {
-            if depth_brace > 0 {
-                depth_brace -= 1;
-            }
+            depth_brace = depth_brace.saturating_sub(1);
             cur.push_str("}}");
             i += 2;
             continue;
@@ -261,9 +259,7 @@ pub fn split_top_level(s: &str, sep: char) -> Vec<String> {
             i += 2;
             continue;
         } else if ch == ']' && i + 1 < n && chs[i + 1].1 == ']' {
-            if depth_bracket > 0 {
-                depth_bracket -= 1;
-            }
+            depth_bracket = depth_bracket.saturating_sub(1);
             cur.push_str("]]");
             i += 2;
             continue;
@@ -313,9 +309,7 @@ pub fn find_top_level_char(s: &str, c: char) -> Option<usize> {
             i += 2;
             continue;
         } else if ch == '}' && i + 1 < n && chs[i + 1].1 == '}' {
-            if depth_brace > 0 {
-                depth_brace -= 1;
-            }
+            depth_brace = depth_brace.saturating_sub(1);
             i += 2;
             continue;
         } else if ch == '[' && i + 1 < n && chs[i + 1].1 == '[' {
@@ -323,9 +317,7 @@ pub fn find_top_level_char(s: &str, c: char) -> Option<usize> {
             i += 2;
             continue;
         } else if ch == ']' && i + 1 < n && chs[i + 1].1 == ']' {
-            if depth_bracket > 0 {
-                depth_bracket -= 1;
-            }
+            depth_bracket = depth_bracket.saturating_sub(1);
             i += 2;
             continue;
         } else if ch == '<' {

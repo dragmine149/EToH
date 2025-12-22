@@ -305,7 +305,7 @@ fn parse_area_requirement(text: &str, reqs: &mut AreaRequirements) -> Result<(),
         .map_err(|e| format!("Failed to parse count: {:?} ({:?})", e, count))?;
     // all the possible types.
 
-    if area.len() > 0 {
+    if !area.is_empty() {
         log::debug!("Require area: {:?}", area);
         reqs.areas.insert(
             area.to_owned(),
@@ -316,7 +316,7 @@ fn parse_area_requirement(text: &str, reqs: &mut AreaRequirements) -> Result<(),
         );
         return Ok(());
     }
-    if towers.len() > 0 {
+    if !towers.is_empty() {
         reqs.points = count;
         return Ok(());
     }
@@ -456,11 +456,7 @@ pub async fn process_event_area(client: &RustClient, area: &str) -> Result<Event
         .elements
         .iter()
         // get the plain text
-        .filter(|elm| match elm {
-            Argument::Text(_) => true,
-            _ => false,
-        })
-        .next()
+        .find(|elm| matches!(elm, Argument::Text(_)))
         .ok_or(format!("Failed to get text of realm of {:?}", area))?
         .as_text()
         .unwrap()
@@ -508,14 +504,13 @@ pub fn process_event_item(
     let event = links
         .iter()
         .filter(|link| link.target.starts_with("Category"))
-        .filter(|link| {
+        .find(|link| {
             event_areas.iter().any(|e| {
                 link.target
                     .to_lowercase()
                     .contains(&e.event_name.to_lowercase())
             })
         })
-        .next()
         .ok_or(format!(
             "Failed to get event area out of page categories ({:?})",
             badge.name

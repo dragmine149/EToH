@@ -1,10 +1,13 @@
 use crate::{
-    definitions::{Badge, ProcessError, WikiTower},
+    definitions::{Badge, WikiTower},
     process_items::{get_page_data, process_tower},
     reqwest_client::RustClient,
     wikitext::{WikiText, enums::LinkType},
 };
 
+/// Minitowers have their own unique page we can fill out when normal stuff fails.
+///
+/// ignore is there so we don't try getting stuff again.
 pub async fn parse_mini_towers(
     client: &RustClient,
     badges: &[Badge],
@@ -27,7 +30,7 @@ pub async fn parse_mini_towers(
         .unwrap()
         // .map_err(|e| format!("{:?}", e))?
         .get_tables();
-    let table = data.get(0).unwrap();
+    let table = data.first().unwrap();
     // .ok_or("Failed to find table on mini tower page... (how!!??)")?;
 
     println!("{:?}", table.get_headers());
@@ -39,7 +42,7 @@ pub async fn parse_mini_towers(
         println!("row: {:?}, cell: {:?}", row_id, cell);
         if let Some(data) = cell {
             let links = data.inner.content.get_links(Some(LinkType::Internal));
-            let target = links.get(0);
+            let target = links.first();
             if target.is_none() {
                 // mini_towers.push(Err(format!("Failed to get link for {:?}", data)));
                 continue;
@@ -60,14 +63,10 @@ pub async fn parse_mini_towers(
             let mut wikitext = wikitext.ok().unwrap();
             wikitext.set_page_name(Some(target.target.to_owned()));
 
-            let badge = badges
-                .iter()
-                .filter(|b| {
-                    println!("{:?}", b.id);
-                    wikitext.text().contains(&b.id.to_string())
-                })
-                .next();
-            // .ok_or("Failed to find badge on page")?;
+            let badge = badges.iter().find(|b| {
+                // println!("{:?}", b.id);
+                wikitext.text().contains(&b.id.to_string())
+            });
 
             if badge.is_none() {
                 mini_towers.push(Err(format!("Failed to find badge id for {:?}", data)));

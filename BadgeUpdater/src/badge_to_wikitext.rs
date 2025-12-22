@@ -18,8 +18,8 @@ use crate::{
 /// ```rs
 /// let badges = get_badges(&client, &url, &[]).await.unwrap();
 /// for badge in badges {
-///		// badge can be gotten after awaiting it.
-/// 	println!("{:?}", badge.await);
+///    // badge can be gotten after awaiting it.
+///    println!("{:?}", badge.await);
 /// }
 /// ```
 pub async fn get_badges(

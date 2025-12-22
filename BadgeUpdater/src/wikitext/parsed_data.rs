@@ -222,12 +222,11 @@ impl ParsedData {
         }
         let title_lc = title.to_lowercase();
         for elem in &self.elements {
-            if let Argument::Table(tb) = elem {
-                if let Some(ref t) = tb.title {
-                    if t.to_lowercase() == title_lc {
-                        return Some(tb.clone());
-                    }
-                }
+            if let Argument::Table(tb) = elem
+                && let Some(ref t) = tb.title
+                && t.to_lowercase() == title_lc
+            {
+                return Some(tb.clone());
             }
         }
         None
@@ -543,9 +542,7 @@ fn split_top_level(s: &str, sep: char) -> Vec<String> {
             i += 2;
             continue;
         } else if ch == '}' && i + 1 < n && chs[i + 1].1 == '}' {
-            if depth_brace > 0 {
-                depth_brace -= 1;
-            }
+            depth_brace = depth_brace.saturating_sub(1);
             cur.push_str("}}");
             i += 2;
             continue;
@@ -555,9 +552,7 @@ fn split_top_level(s: &str, sep: char) -> Vec<String> {
             i += 2;
             continue;
         } else if ch == ']' && i + 1 < n && chs[i + 1].1 == ']' {
-            if depth_bracket > 0 {
-                depth_bracket -= 1;
-            }
+            depth_bracket = depth_bracket.saturating_sub(1);
             cur.push_str("]]");
             i += 2;
             continue;
@@ -608,9 +603,7 @@ fn find_top_level_char(s: &str, c: char) -> Option<usize> {
             i += 2;
             continue;
         } else if ch == '}' && i + 1 < n && chs[i + 1].1 == '}' {
-            if depth_brace > 0 {
-                depth_brace -= 1;
-            }
+            depth_brace = depth_brace.saturating_sub(1);
             i += 2;
             continue;
         } else if ch == '[' && i + 1 < n && chs[i + 1].1 == '[' {
@@ -618,9 +611,7 @@ fn find_top_level_char(s: &str, c: char) -> Option<usize> {
             i += 2;
             continue;
         } else if ch == ']' && i + 1 < n && chs[i + 1].1 == ']' {
-            if depth_bracket > 0 {
-                depth_bracket -= 1;
-            }
+            depth_bracket = depth_bracket.saturating_sub(1);
             i += 2;
             continue;
         } else if ch == '<' {
@@ -779,210 +770,6 @@ fn parse_list_at(input: &str, start: usize) -> Option<(usize, List)> {
     };
 
     Some((consumed, List { list_type, entries }))
-}
-
-/// Parse the cells from a table data/header line and append to `row`.
-///
-/// Accepts a line which may start with '|' (data) or be the remainder after '|-'.
-fn parse_table_cells_into(line: &str, row: &mut Vec<TableCell>) {
-    let mut s = line;
-    if s.starts_with('|') {
-        s = &s[1..];
-    }
-    // split on "||" primarily
-    let parts: Vec<&str> = s.split("||").collect();
-    for part in parts {
-        let tok = part.trim();
-        if tok.is_empty() {
-            row.push(TableCell::new(ParsedData::new("")));
-            continue;
-        }
-        // attributes may appear before a single '|' inside the token, e.g. colspan="2" | value
-        let mut attrs = tok;
-        let mut content = tok;
-        if let Some(pos) = tok.find('|') {
-            attrs = tok[..pos].trim();
-            content = tok[pos + 1..].trim();
-        }
-        let parsed = if content.is_empty() {
-            ParsedData::new("")
-        } else {
-            parse_wikitext_fragment(content)
-                .unwrap_or_else(|_| ParsedData::new(content.to_string()))
-        };
-        let mut cell = TableCell::new(parsed);
-        // parse simple colspan/rowspan patterns like colspan="2" or rowspan=3
-        for attr in attrs.split_whitespace() {
-            let a = attr.trim();
-            if a.starts_with("colspan=") {
-                if let Some(eq) = a.find('=') {
-                    let v = a[eq + 1..].trim().trim_matches('"').trim_matches('\'');
-                    if let Ok(n) = v.parse::<usize>() {
-                        cell.colspan = n.max(1);
-                    }
-                }
-            } else if a.starts_with("rowspan=") {
-                if let Some(eq) = a.find('=') {
-                    let v = a[eq + 1..].trim().trim_matches('"').trim_matches('\'');
-                    if let Ok(n) = v.parse::<usize>() {
-                        cell.rowspan = n.max(1);
-                    }
-                }
-            }
-        }
-        row.push(cell);
-    }
-}
-
-/// Parse a table starting at `start` (expects "{|"), returns consumed bytes and a `Table`.
-///
-/// Conservative parser: find matching "|}" and parse common constructs:
-/// - initial attribute line (e.g. class="wikitable")
-/// - caption "|+"
-/// - row separator "|-"
-/// - header rows starting with "!"
-/// - data rows starting with "|"
-fn parse_table_at(input: &str, start: usize) -> Option<(usize, Table)> {
-    let len = input.len();
-    if start + 1 >= len {
-        return None;
-    }
-    if !input[start..].starts_with("{|") {
-        return None;
-    }
-    // find the end of table
-    if let Some(rel_end) = input[start + 2..].find("|}") {
-        let end_idx = start + 2 + rel_end + 2; // include "|}"
-        let content = &input[start + 2..start + 2 + rel_end]; // between "{|" and "|}"
-
-        // parse lines
-        let mut class: Option<String> = None;
-        let mut title: Option<String> = None;
-        let mut headers: Vec<String> = Vec::new();
-        let mut rows: Vec<Vec<TableCell>> = Vec::new();
-
-        // If first non-empty line contains class=... parse it
-        if let Some(first_line_end) = content.find('\n') {
-            let first_line = content[..first_line_end].trim();
-            if first_line.starts_with("class=") {
-                let v = first_line[6..].trim();
-                let v = v.trim_matches('"').trim_matches('\'').trim();
-                if !v.is_empty() {
-                    class = Some(v.to_string());
-                }
-            }
-        }
-
-        for raw_line in content.lines() {
-            let line = raw_line.trim_start();
-            if line.is_empty() {
-                continue;
-            }
-            if line.starts_with("|+") {
-                title = Some(line[2..].trim().to_string());
-                continue;
-            }
-            if line.starts_with("|-") {
-                // start a new (empty) data row
-                rows.push(Vec::new());
-                // if remainder contains cells (e.g. "|- | a || b"), parse them into current row
-                let rest = line[2..].trim();
-                if !rest.is_empty() && rest.starts_with('|') {
-                    if rows.is_empty() {
-                        rows.push(Vec::new());
-                    }
-                    let current = rows.last_mut().unwrap();
-                    parse_table_cells_into(rest, current);
-                }
-                continue;
-            }
-            if line.starts_with('!') {
-                // header row: split on "!!"
-                let hdr_line = line.trim_start_matches('!').trim();
-                let parts: Vec<&str> = hdr_line.split("!!").collect();
-                let mut hrow: Vec<TableCell> = Vec::new();
-                for p in parts {
-                    let txt = p.trim();
-                    let pd = parse_wikitext_fragment(txt)
-                        .unwrap_or_else(|_| ParsedData::new(txt.to_string()));
-                    headers.push(txt.to_string());
-                    hrow.push(TableCell::new(pd));
-                }
-                rows.push(hrow);
-                continue;
-            }
-            if line.starts_with('|') {
-                // data line: if the previous row already contains cells, start a new row.
-                if rows.is_empty() {
-                    rows.push(Vec::new());
-                }
-                // If the last row is non-empty, treat this '|' line as starting a NEW row.
-                let need_new_row = rows.last().map(|r| !r.is_empty()).unwrap_or(false);
-                if need_new_row {
-                    rows.push(Vec::new());
-                }
-                let current = rows.last_mut().unwrap();
-                parse_table_cells_into(line, current);
-                continue;
-            }
-            // unknown line - ignore
-        }
-
-        let table = Table {
-            title,
-            class,
-            headers,
-            rows,
-        };
-        return Some((end_idx - start, table));
-    }
-
-    None
-}
-
-/// Build a 2D grid of Option<TableCell> for the table expanding rowspan/colspan.
-///
-/// Cells are cloned to fill spanned positions. The resulting grid has dimensions
-/// rows x cols where cols is the maximal occupied column count.
-fn build_table_grid(table: &Table) -> Vec<Vec<Option<TableCell>>> {
-    let rows_count = table.rows.len();
-    // estimate max cols by summing colspans per row
-    let mut max_cols = 0usize;
-    for r in 0..rows_count {
-        let mut csum = 0usize;
-        for cell in &table.rows[r] {
-            csum += cell.colspan.max(1);
-        }
-        max_cols = max_cols.max(csum);
-    }
-    if rows_count == 0 || max_cols == 0 {
-        return Vec::new();
-    }
-    let mut grid: Vec<Vec<Option<TableCell>>> = vec![vec![None; max_cols]; rows_count];
-
-    for r in 0..rows_count {
-        let mut c = 0usize;
-        for cell in &table.rows[r] {
-            // find next free column in row r
-            while c < max_cols && grid[r][c].is_some() {
-                c += 1;
-            }
-            if c >= max_cols {
-                break;
-            }
-            // place cell at (r,c) and fill spans
-            for rr in r..(r + cell.rowspan) {
-                for cc in c..(c + cell.colspan) {
-                    if rr < rows_count && cc < max_cols {
-                        grid[rr][cc] = Some(cell.clone());
-                    }
-                }
-            }
-            c += cell.colspan.max(1);
-        }
-    }
-
-    grid
 }
 
 #[cfg(test)]

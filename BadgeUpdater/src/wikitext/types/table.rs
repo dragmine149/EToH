@@ -126,8 +126,8 @@ impl Table {
         let cols = grid[0].len();
         let mut out: Vec<Vec<TableCell>> = vec![Vec::new(); cols];
         for c in 0..cols {
-            for r in 0..rows {
-                if let Some(cell) = &grid[r][c] {
+            for r in grid.iter().take(rows) {
+                if let Some(cell) = &r[c] {
                     out[c].push(cell.clone());
                 } else {
                     out[c].push(TableCell::new(ParsedData::new("")));
@@ -238,11 +238,9 @@ pub fn build_table_grid(table: &Table) -> Vec<Vec<Option<TableCell>>> {
                 break;
             }
             // place cell at (r,c) and fill spans
-            for rr in r..(r + cell.rowspan) {
-                for cc in c..(c + cell.colspan) {
-                    if rr < rows_count && cc < max_cols {
-                        grid[rr][cc] = Some(cell.clone());
-                    }
+            for rr in grid.iter_mut().skip(r).take(cell.rowspan) {
+                for cc in rr.iter_mut().skip(c).take(cell.colspan) {
+                    *cc = Some(cell.clone());
                 }
             }
             c += cell.colspan.max(1);
@@ -269,9 +267,7 @@ fn find_top_level_char(s: &str, c: char) -> Option<usize> {
             i += 2;
             continue;
         } else if ch == '}' && i + 1 < n && chs[i + 1].1 == '}' {
-            if depth_brace > 0 {
-                depth_brace -= 1;
-            }
+            depth_brace = depth_brace.saturating_sub(1);
             i += 2;
             continue;
         } else if ch == '[' && i + 1 < n && chs[i + 1].1 == '[' {
@@ -279,9 +275,7 @@ fn find_top_level_char(s: &str, c: char) -> Option<usize> {
             i += 2;
             continue;
         } else if ch == ']' && i + 1 < n && chs[i + 1].1 == ']' {
-            if depth_bracket > 0 {
-                depth_bracket -= 1;
-            }
+            depth_bracket = depth_bracket.saturating_sub(1);
             i += 2;
             continue;
         } else if ch == '<' {
@@ -346,12 +340,12 @@ pub fn parse_table_cells_into(line: &str, row: &mut Vec<TableCell>) {
                         cell.colspan = n.max(1);
                     }
                 }
-            } else if a.starts_with("rowspan=") {
-                if let Some(eq) = a.find('=') {
-                    let v = a[eq + 1..].trim().trim_matches('"').trim_matches('\'');
-                    if let Ok(n) = v.parse::<usize>() {
-                        cell.rowspan = n.max(1);
-                    }
+            } else if a.starts_with("rowspan=")
+                && let Some(eq) = a.find('=')
+            {
+                let v = a[eq + 1..].trim().trim_matches('"').trim_matches('\'');
+                if let Ok(n) = v.parse::<usize>() {
+                    cell.rowspan = n.max(1);
                 }
             }
         }
@@ -394,7 +388,7 @@ pub fn parse_table_at(input: &str, start: usize) -> Option<(usize, Table)> {
         if let Some(first_line_end) = content.find('\n') {
             let first_line = content[..first_line_end].trim();
             if let Some(pos) = first_line.find("class=") {
-                let mut rest = first_line[pos + 6..].trim();
+                let rest = first_line[pos + 6..].trim();
                 let class_value = if rest.starts_with('"') || rest.starts_with('\'') {
                     let quote = rest.chars().next().unwrap();
                     let rest_inner = &rest[1..];
@@ -408,12 +402,10 @@ pub fn parse_table_at(input: &str, start: usize) -> Option<(usize, Table)> {
                     } else {
                         rest.trim_matches('"').trim_matches('\'').to_string()
                     }
+                } else if let Some(end2) = rest.find(char::is_whitespace) {
+                    rest[..end2].to_string()
                 } else {
-                    if let Some(end2) = rest.find(char::is_whitespace) {
-                        rest[..end2].to_string()
-                    } else {
-                        rest.to_string()
-                    }
+                    rest.to_string()
                 };
                 if !class_value.is_empty() {
                     class = Some(class_value);
@@ -426,15 +418,15 @@ pub fn parse_table_at(input: &str, start: usize) -> Option<(usize, Table)> {
             if line.is_empty() {
                 continue;
             }
-            if line.starts_with("|+") {
-                title = Some(line[2..].trim().to_string());
+            if let Some(rest) = line.strip_prefix("|+") {
+                title = Some(rest.trim().to_string());
                 continue;
             }
-            if line.starts_with("|-") {
+            if let Some(rest) = line.strip_prefix("|-") {
                 // start a new (empty) data row
                 rows.push(Vec::new());
                 // if remainder contains cells (e.g. "|- | a || b"), parse them into current row
-                let rest = line[2..].trim();
+                let rest = rest.trim();
                 if !rest.is_empty() && rest.starts_with('|') {
                     if rows.is_empty() {
                         rows.push(Vec::new());
@@ -473,12 +465,12 @@ pub fn parse_table_at(input: &str, start: usize) -> Option<(usize, Table)> {
                                     cell.colspan = n.max(1);
                                 }
                             }
-                        } else if a.starts_with("rowspan=") {
-                            if let Some(eq) = a.find('=') {
-                                let v = a[eq + 1..].trim().trim_matches('"').trim_matches('\'');
-                                if let Ok(n) = v.parse::<usize>() {
-                                    cell.rowspan = n.max(1);
-                                }
+                        } else if a.starts_with("rowspan=")
+                            && let Some(eq) = a.find('=')
+                        {
+                            let v = a[eq + 1..].trim().trim_matches('"').trim_matches('\'');
+                            if let Ok(n) = v.parse::<usize>() {
+                                cell.rowspan = n.max(1);
                             }
                         }
                     }
@@ -531,7 +523,7 @@ pub fn parse_table_at(input: &str, start: usize) -> Option<(usize, Table)> {
                         rows.push(tmp);
                     }
                 } else {
-                    // Unknown expected columns: preserve original behavior (start a new row).
+                    // Unknown expected columns: preserve original behaviour (start a new row).
                     rows.push(tmp);
                 }
                 continue;

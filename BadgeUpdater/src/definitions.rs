@@ -1,6 +1,6 @@
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
-use std::{collections::HashMap, error::Error, fmt::Display, hash::Hash};
+use std::{collections::HashMap, error::Error, fmt::Display};
 
 use crate::{reqwest_client::RustError, wikitext::WikiText};
 
@@ -478,7 +478,7 @@ pub struct BadgeOverwrite {
     pub name: String,
 }
 
-/// Serialiser and deseriliser for BadgeOverwrite written by GPT-5 mini
+// Serialiser and deseriliser for BadgeOverwrite written by GPT-5 mini
 
 /// For nicer error messages when deserializing arrays
 #[derive(Debug)]

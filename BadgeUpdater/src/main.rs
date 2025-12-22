@@ -127,39 +127,6 @@ where
 const DEBUG_PATH: &str = "./badges.temp.txt";
 const OVERWRITE_PATH: &str = "../overwrite.jsonc";
 
-fn clear_cache() {
-    let cache = PathBuf::from(".cache");
-    let meta = cache.metadata();
-    if let Err(e) = meta {
-        log::error!("Failed to get metadata for cache: {:?}", e);
-        return;
-    }
-
-    let created = meta.unwrap().created();
-    if let Err(e) = created {
-        log::error!("Failed to get created data for cache: {:?}", e);
-        return;
-    }
-
-    let duration = SystemTime::now().duration_since(created.unwrap());
-    if let Err(e) = duration {
-        log::error!("Failed to compare duration times (backwards?): {:?}", e);
-        return;
-    }
-
-    let comp = duration.unwrap().as_secs() > 86400;
-    if !comp {
-        log::info!("Not deleting cache dir due to being < 1d");
-        return;
-    }
-
-    if let Err(e) = fs::remove_dir_all(cache) {
-        log::error!("Failed to remove cache dir {:?}", e);
-        return;
-    }
-    log::warn!("Deleted cache dir, might take a bit longer to process");
-}
-
 #[tokio::main]
 async fn main() {
     // setup
@@ -174,8 +141,6 @@ async fn main() {
         log::error!("Failed to remove debug file {:?}: {}", path, e);
     }
 
-    clear_cache();
-
     // client and original url setup.
     let client = RustClient::new(None, None);
     let url = Url::from_str(&format!("{:}?limit=100", BADGE_URL)).unwrap();
@@ -188,14 +153,10 @@ async fn main() {
         .unwrap(),
     )
     .unwrap_or_default();
+    // Written by T3 Chat (Gemini 3 Flash)
     let skip_ids = overwrites
         .iter()
-        .map(|bo| {
-            let mut a = bo.alt_ids.clone();
-            a.push(bo.badge_id);
-            a
-        })
-        .flatten()
+        .flat_map(|bo| std::iter::once(bo.badge_id).chain(bo.alt_ids.iter().copied()))
         .collect_vec();
     println!("{:?}", overwrites);
     println!("{:#?}", skip_ids);
@@ -205,10 +166,12 @@ async fn main() {
     main_processing(&client, &url, &skip_ids, &path).await
 }
 
+/// The main processing function which takes in the most basics and gives everything as something usable.
+#[allow(unused_variables, reason = "Will be used later")]
 async fn main_processing(client: &RustClient, url: &Url, skip_ids: &[u64], path: &PathBuf) {
     // get a list of all the badges.
     let mut badges_vec = vec![];
-    let raw = get_badges(&client, &url, &skip_ids).await.unwrap();
+    let raw = get_badges(client, url, skip_ids).await.unwrap();
     for badge_fut in raw {
         badges_vec.push(badge_fut.await.unwrap());
     }
@@ -219,7 +182,7 @@ async fn main_processing(client: &RustClient, url: &Url, skip_ids: &[u64], path:
         &badges_vec,
         |f: &Result<OkDetails, ErrorDetails>| f.is_ok(),
         "get_badges",
-        Some(&path),
+        Some(path),
     );
 
     // start processing towers.
@@ -233,7 +196,7 @@ async fn main_processing(client: &RustClient, url: &Url, skip_ids: &[u64], path:
         &tower_data,
         |r: &Result<WikiTower, String>| r.is_ok(),
         "process_tower",
-        Some(&path),
+        Some(path),
     );
 
     // process items now we now which towers have passed.
@@ -243,13 +206,13 @@ async fn main_processing(client: &RustClient, url: &Url, skip_ids: &[u64], path:
             .iter()
             .any(|t| t.badge_name.contains(&p.1.name))
     }) {
-        items.push(process_item(&client, &ele.0, &ele.1).await);
+        items.push(process_item(client, &ele.0, &ele.1).await);
     }
     let (item_processed, items_failed) = count_processed(
         &items,
         |i: &Result<WikiTower, String>| i.is_ok(),
         "process_item",
-        Some(&path),
+        Some(path),
     );
 
     // combine the both
@@ -268,27 +231,27 @@ async fn main_processing(client: &RustClient, url: &Url, skip_ids: &[u64], path:
     let areas_list = success.clone().into_iter().map(|t| t.area.clone()).unique();
     let mut areas = vec![];
     for area in areas_list.clone() {
-        areas.push(process_area(&client, &area).await);
+        areas.push(process_area(client, &area).await);
     }
 
     let (area_processed, area_failed) = count_processed(
         &areas,
         |a: &Result<AreaInformation, String>| a.is_ok(),
         "process_area",
-        Some(&path),
+        Some(path),
     );
 
     // do the same but for the event based ones.
     let mut event_areas = vec![];
     for ele in areas_list.filter(|a| area_failed.iter().any(|f| f.contains(a))) {
-        event_areas.push(process_event_area(&client, &ele).await);
+        event_areas.push(process_event_area(client, &ele).await);
     }
 
     let (event_processed, event_failed) = count_processed(
         &event_areas,
         |a: &Result<EventInfo, String>| a.is_ok(),
         "process_event_area",
-        Some(&path),
+        Some(path),
     );
 
     // combine them.
@@ -306,9 +269,9 @@ async fn main_processing(client: &RustClient, url: &Url, skip_ids: &[u64], path:
         ((area_success.len() as f64) / (areas.len() as f64)) * 100.0
     );
 
-    println!("[");
-    event_processed.iter().for_each(|x| println!("    {:?}", x));
-    println!("]");
+    // println!("[");
+    // event_processed.iter().for_each(|x| println!("    {:?}", x));
+    // println!("]");
 
     // println!("{:?}", event_processed);
     let mut event_items = vec![];
@@ -332,12 +295,12 @@ async fn main_processing(client: &RustClient, url: &Url, skip_ids: &[u64], path:
         &event_items,
         |e: &Result<EventItem, String>| e.is_ok(),
         "process_event_item",
-        Some(&path),
+        Some(path),
     );
 
     // okay, now we have to hard-code some stuff.
     let mini_towers = hard_coded::parse_mini_towers(
-        &client,
+        client,
         &failed.iter().map(|p| p.1.clone()).collect_vec(),
         &tower_processed
             .iter()
@@ -349,7 +312,7 @@ async fn main_processing(client: &RustClient, url: &Url, skip_ids: &[u64], path:
         &mini_towers,
         |m| m.is_ok(),
         "hard_coded::parse_mini_towers",
-        Some(&path),
+        Some(path),
     );
 
     mini_passed.iter().for_each(|m| success.push(m));
