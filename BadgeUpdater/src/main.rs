@@ -6,23 +6,22 @@ mod process_items;
 mod reqwest_client;
 mod wikitext;
 
-use dotenv::dotenv;
-use itertools::Itertools;
-use lazy_regex::regex_replace;
-use std::{fs, path::PathBuf, str::FromStr};
-use url::Url;
-
 use crate::{
     badge_to_wikitext::get_badges,
     definitions::{
-        AreaInformation, BadgeOverwrite, ErrorDetails, EventInfo, EventItem, GlobalArea, OkDetails,
-        WikiTower, badges_from_map_value,
+        AreaInformation, ErrorDetails, EventInfo, EventItem, GlobalArea, OkDetails, WikiTower,
+        badges_from_map_value,
     },
     process_items::{
         process_area, process_event_area, process_event_item, process_item, process_tower,
     },
     reqwest_client::RustClient,
 };
+use dotenv::dotenv;
+use itertools::Itertools;
+use lazy_regex::regex_replace;
+use std::{fs, path::PathBuf, str::FromStr, time::SystemTime};
+use url::Url;
 
 pub const BADGE_URL: &str = "https://badges.roblox.com/v1/universes/3264581003/badges?limit=100";
 pub const OLD_BADGE_URL: &str =
@@ -128,6 +127,39 @@ where
 const DEBUG_PATH: &str = "./badges.temp.txt";
 const OVERWRITE_PATH: &str = "../overwrite.jsonc";
 
+fn clear_cache() {
+    let cache = PathBuf::from(".cache");
+    let meta = cache.metadata();
+    if let Err(e) = meta {
+        log::error!("Failed to get metadata for cache: {:?}", e);
+        return;
+    }
+
+    let created = meta.unwrap().created();
+    if let Err(e) = created {
+        log::error!("Failed to get created data for cache: {:?}", e);
+        return;
+    }
+
+    let duration = SystemTime::now().duration_since(created.unwrap());
+    if let Err(e) = duration {
+        log::error!("Failed to compare duration times (backwards?): {:?}", e);
+        return;
+    }
+
+    let comp = duration.unwrap().as_secs() > 86400;
+    if !comp {
+        log::info!("Not deleting cache dir due to being < 1d");
+        return;
+    }
+
+    if let Err(e) = fs::remove_dir_all(cache) {
+        log::error!("Failed to remove cache dir {:?}", e);
+        return;
+    }
+    log::warn!("Deleted cache dir, might take a bit longer to process");
+}
+
 #[tokio::main]
 async fn main() {
     // setup
@@ -141,6 +173,8 @@ async fn main() {
     {
         log::error!("Failed to remove debug file {:?}: {}", path, e);
     }
+
+    clear_cache();
 
     // client and original url setup.
     let client = RustClient::new(None, None);
@@ -168,6 +202,10 @@ async fn main() {
 
     log::info!("Setup complete, starting searching");
 
+    main_processing(&client, &url, &skip_ids, &path).await
+}
+
+async fn main_processing(client: &RustClient, url: &Url, skip_ids: &[u64], path: &PathBuf) {
     // get a list of all the badges.
     let mut badges_vec = vec![];
     let raw = get_badges(&client, &url, &skip_ids).await.unwrap();
@@ -198,104 +236,104 @@ async fn main() {
         Some(&path),
     );
 
-    // // process items now we now which towers have passed.
-    // let mut items = vec![];
-    // for ele in passed.iter().filter(|p| {
-    //     !tower_processed
-    //         .iter()
-    //         .any(|t| t.badge_name.contains(&p.1.name))
-    // }) {
-    //     items.push(process_item(&client, &ele.0, &ele.1).await);
-    // }
-    // let (item_processed, items_failed) = count_processed(
-    //     &items,
-    //     |i: &Result<WikiTower, String>| i.is_ok(),
-    //     "process_item",
-    //     Some(&path),
-    // );
+    // process items now we now which towers have passed.
+    let mut items = vec![];
+    for ele in passed.iter().filter(|p| {
+        !tower_processed
+            .iter()
+            .any(|t| t.badge_name.contains(&p.1.name))
+    }) {
+        items.push(process_item(&client, &ele.0, &ele.1).await);
+    }
+    let (item_processed, items_failed) = count_processed(
+        &items,
+        |i: &Result<WikiTower, String>| i.is_ok(),
+        "process_item",
+        Some(&path),
+    );
 
-    // // combine the both
-    // let mut success = vec![];
-    // tower_processed.iter().for_each(|i| success.push(i));
-    // item_processed.iter().for_each(|i| success.push(i));
-    // log::info!(
-    //     "[badge to tower] Total: {}. Passed: {}. Rate: {:.2}%",
-    //     badges_vec.len(),
-    //     success.len(),
-    //     ((success.len() as f64) / (badges_vec.len() as f64)) * 100.0
-    // );
+    // combine the both
+    let mut success = vec![];
+    tower_processed.iter().for_each(|i| success.push(i));
+    item_processed.iter().for_each(|i| success.push(i));
+    log::info!(
+        "[badge to tower] Total: {}. Passed: {}. Rate: {:.2}%",
+        badges_vec.len(),
+        success.len(),
+        ((success.len() as f64) / (badges_vec.len() as f64)) * 100.0
+    );
 
-    // // process areas based off towers.
-    // // Unique is here to reduce double area checking
-    // let areas_list = success.clone().into_iter().map(|t| t.area.clone()).unique();
-    // let mut areas = vec![];
-    // for area in areas_list.clone() {
-    //     areas.push(process_area(&client, &area).await);
-    // }
+    // process areas based off towers.
+    // Unique is here to reduce double area checking
+    let areas_list = success.clone().into_iter().map(|t| t.area.clone()).unique();
+    let mut areas = vec![];
+    for area in areas_list.clone() {
+        areas.push(process_area(&client, &area).await);
+    }
 
-    // let (area_processed, area_failed) = count_processed(
-    //     &areas,
-    //     |a: &Result<AreaInformation, String>| a.is_ok(),
-    //     "process_area",
-    //     Some(&path),
-    // );
+    let (area_processed, area_failed) = count_processed(
+        &areas,
+        |a: &Result<AreaInformation, String>| a.is_ok(),
+        "process_area",
+        Some(&path),
+    );
 
-    // // do the same but for the event based ones.
-    // let mut event_areas = vec![];
-    // for ele in areas_list.filter(|a| area_failed.iter().any(|f| f.contains(a))) {
-    //     event_areas.push(process_event_area(&client, &ele).await);
-    // }
+    // do the same but for the event based ones.
+    let mut event_areas = vec![];
+    for ele in areas_list.filter(|a| area_failed.iter().any(|f| f.contains(a))) {
+        event_areas.push(process_event_area(&client, &ele).await);
+    }
 
-    // let (event_processed, event_failed) = count_processed(
-    //     &event_areas,
-    //     |a: &Result<EventInfo, String>| a.is_ok(),
-    //     "process_event_area",
-    //     Some(&path),
-    // );
+    let (event_processed, event_failed) = count_processed(
+        &event_areas,
+        |a: &Result<EventInfo, String>| a.is_ok(),
+        "process_event_area",
+        Some(&path),
+    );
 
-    // // combine them.
-    // let mut area_success: Vec<GlobalArea> = vec![];
-    // area_processed
-    //     .iter()
-    //     .for_each(|i| area_success.push(GlobalArea::Area((*i).clone())));
-    // event_processed
-    //     .iter()
-    //     .for_each(|i| area_success.push(GlobalArea::Event((*i).clone())));
-    // log::info!(
-    //     "[area parsing] Total: {}. Passed: {}. Rate: {:.2}%",
-    //     areas.len(),
-    //     area_success.len(),
-    //     ((area_success.len() as f64) / (areas.len() as f64)) * 100.0
-    // );
+    // combine them.
+    let mut area_success: Vec<GlobalArea> = vec![];
+    area_processed
+        .iter()
+        .for_each(|i| area_success.push(GlobalArea::Area((*i).clone())));
+    event_processed
+        .iter()
+        .for_each(|i| area_success.push(GlobalArea::Event((*i).clone())));
+    log::info!(
+        "[area parsing] Total: {}. Passed: {}. Rate: {:.2}%",
+        areas.len(),
+        area_success.len(),
+        ((area_success.len() as f64) / (areas.len() as f64)) * 100.0
+    );
 
-    // println!("[");
-    // event_processed.iter().for_each(|x| println!("    {:?}", x));
-    // println!("]");
+    println!("[");
+    event_processed.iter().for_each(|x| println!("    {:?}", x));
+    println!("]");
 
-    // // println!("{:?}", event_processed);
-    // let mut event_items = vec![];
-    // for ele in passed
-    //     .iter()
-    //     .filter(|p| {
-    //         !tower_processed
-    //             .iter()
-    //             .any(|t| t.badge_name.contains(&p.1.name))
-    //     })
-    //     .filter(|p| {
-    //         !item_processed
-    //             .iter()
-    //             .any(|i| i.badge_name.contains(&p.1.name))
-    //     })
-    // {
-    //     event_items.push(process_event_item(&ele.0, &ele.1, &event_processed));
-    // }
+    // println!("{:?}", event_processed);
+    let mut event_items = vec![];
+    for ele in passed
+        .iter()
+        .filter(|p| {
+            !tower_processed
+                .iter()
+                .any(|t| t.badge_name.contains(&p.1.name))
+        })
+        .filter(|p| {
+            !item_processed
+                .iter()
+                .any(|i| i.badge_name.contains(&p.1.name))
+        })
+    {
+        event_items.push(process_event_item(&ele.0, &ele.1, &event_processed));
+    }
 
-    // let (event_items_processed, event_items_failed) = count_processed(
-    //     &event_items,
-    //     |e: &Result<EventItem, String>| e.is_ok(),
-    //     "process_event_item",
-    //     Some(&path),
-    // );
+    let (event_items_processed, event_items_failed) = count_processed(
+        &event_items,
+        |e: &Result<EventItem, String>| e.is_ok(),
+        "process_event_item",
+        Some(&path),
+    );
 
     // okay, now we have to hard-code some stuff.
     let mini_towers = hard_coded::parse_mini_towers(
@@ -312,5 +350,13 @@ async fn main() {
         |m| m.is_ok(),
         "hard_coded::parse_mini_towers",
         Some(&path),
+    );
+
+    mini_passed.iter().for_each(|m| success.push(m));
+    log::info!(
+        "[badge to tower w/hard] Total: {}. Passed: {}. Rate: {:.2}%",
+        badges_vec.len(),
+        success.len(),
+        ((success.len() as f64) / (badges_vec.len() as f64)) * 100.0
     );
 }

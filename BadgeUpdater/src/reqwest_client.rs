@@ -29,7 +29,7 @@ impl RustClient {
                 .unwrap(),
         )
         .with(Cache(HttpCache {
-            mode: CacheMode::Default,
+            mode: CacheMode::ForceCache,
             manager: CACacheManager::new(cache_path.unwrap_or("./.cache").into(), true),
             options: HttpCacheOptions::default(),
         }))
