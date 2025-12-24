@@ -9,8 +9,8 @@ mod wikitext;
 use crate::{
     badge_to_wikitext::get_badges,
     definitions::{
-        AreaInformation, ErrorDetails, EventInfo, EventItem, GlobalArea, OkDetails, WikiTower,
-        badges_from_map_value,
+        AreaInformation, BadgeOverwrite, ErrorDetails, EventInfo, EventItem, GlobalArea, OkDetails,
+        WikiTower, badges_from_map_value,
     },
     process_items::{
         process_area, process_event_area, process_event_item, process_item, process_tower,
@@ -20,7 +20,7 @@ use crate::{
 use dotenv::dotenv;
 use itertools::Itertools;
 use lazy_regex::regex_replace;
-use std::{fs, path::PathBuf, str::FromStr};
+use std::{fs, io::Write, path::PathBuf, str::FromStr};
 use url::Url;
 
 pub const BADGE_URL: &str = "https://badges.roblox.com/v1/universes/3264581003/badges?limit=100";
@@ -91,7 +91,6 @@ where
     // output to file.
     // If we don't have a file, then we don't really care about writing.
     if let Some(path) = file {
-        use std::io::Write;
         match fs::OpenOptions::new().create(true).append(true).open(path) {
             Ok(mut fh) => {
                 if let Err(e) = writeln!(fh, "{:?} passed:\n{:#?}\n", func_name, passed) {
@@ -153,6 +152,20 @@ async fn main() {
         .unwrap(),
     )
     .unwrap_or_default();
+
+    log::info!("Setup complete, starting searching");
+
+    main_processing(&client, &url, &overwrites, &path).await
+}
+
+/// The main processing function which takes in the most basics and gives everything as something usable.
+#[allow(unused_variables, reason = "Will be used later")]
+async fn main_processing(
+    client: &RustClient,
+    url: &Url,
+    overwrites: &[BadgeOverwrite],
+    path: &PathBuf,
+) {
     // Written by T3 Chat (Gemini 3 Flash)
     let skip_ids = overwrites
         .iter()
@@ -161,17 +174,9 @@ async fn main() {
     println!("{:?}", overwrites);
     println!("{:#?}", skip_ids);
 
-    log::info!("Setup complete, starting searching");
-
-    main_processing(&client, &url, &skip_ids, &path).await
-}
-
-/// The main processing function which takes in the most basics and gives everything as something usable.
-#[allow(unused_variables, reason = "Will be used later")]
-async fn main_processing(client: &RustClient, url: &Url, skip_ids: &[u64], path: &PathBuf) {
     // get a list of all the badges.
     let mut badges_vec = vec![];
-    let raw = get_badges(client, url, skip_ids).await.unwrap();
+    let raw = get_badges(client, url, &skip_ids).await.unwrap();
     for badge_fut in raw {
         badges_vec.push(badge_fut.await.unwrap());
     }
@@ -298,10 +303,12 @@ async fn main_processing(client: &RustClient, url: &Url, skip_ids: &[u64], path:
         Some(path),
     );
 
+    let failed_list = &failed.iter().map(|p| p.1.clone()).collect_vec();
+
     // okay, now we have to hard-code some stuff.
     let mini_towers = hard_coded::parse_mini_towers(
         client,
-        &failed.iter().map(|p| p.1.clone()).collect_vec(),
+        failed_list,
         &success.iter().map(|t| t.page_name.clone()).collect_vec(),
     )
     .await;
@@ -319,4 +326,51 @@ async fn main_processing(client: &RustClient, url: &Url, skip_ids: &[u64], path:
         success.len(),
         ((success.len() as f64) / (badges_vec.len() as f64)) * 100.0
     );
+
+    let adventure_towers = hard_coded::area_from_description(failed_list);
+    let (adventure_pass, adventure_fail) = count_processed(
+        &adventure_towers,
+        |a| a.is_ok(),
+        "area_from_description",
+        Some(path),
+    );
+    let adventure_ids = adventure_pass.iter().map(|a| a.badge_id).collect_vec();
+
+    let success_ids = success.iter().map(|s| s.badge_id).collect_vec();
+    let mut unprocessed = badges_vec
+        .iter()
+        .map(|v| {
+            if v.is_ok() {
+                v.as_ref().ok().unwrap().1.id
+            } else {
+                v.as_ref().err().unwrap().1.id
+            }
+        })
+        .filter(|id| !success_ids.contains(id))
+        .filter(|id| !adventure_ids.contains(id))
+        .collect_vec();
+    unprocessed.sort();
+
+    if !unprocessed.is_empty() {
+        log::error!(
+            "There are badges which have failed to been processed (total of: {:?})",
+            unprocessed.len()
+        );
+    } else {
+        log::info!("All badges processed!");
+    }
+
+    match fs::OpenOptions::new().create(true).append(true).open(path) {
+        Ok(mut fh) => {
+            if let Err(e) = writeln!(fh, "Unprocessed badges:") {
+                log::error!("Failed to append passed items to {:?}: {}", path, e);
+            }
+            if let Err(e) = writeln!(fh, "{:#?}", unprocessed) {
+                log::error!("Failed to append failed items to {:?}: {}", path, e);
+            }
+        }
+        Err(e) => {
+            log::error!("Failed to open file {:?} for appending: {}", path, e);
+        }
+    }
 }

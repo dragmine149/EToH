@@ -1,5 +1,7 @@
+use itertools::Itertools;
+
 use crate::{
-    definitions::{Badge, WikiTower},
+    definitions::{Badge, BadgeOverwrite, WikiTower},
     process_items::{get_page_data, process_tower},
     reqwest_client::RustClient,
     wikitext::{WikiText, enums::LinkType},
@@ -92,4 +94,25 @@ pub async fn parse_mini_towers(
     }
 
     mini_towers
+}
+
+pub fn area_from_description(badges: &[Badge]) -> Vec<Result<BadgeOverwrite, String>> {
+    badges
+        .iter()
+        .map(|b| {
+            let description = b.description.clone().unwrap_or_default();
+            let (_, area) = lazy_regex::regex_captures!(
+                r#"(?m)Beat enough towers to (?:de|a)scend to ((?:Ring \d)|(?:Zone \d))."#,
+                &description
+            )
+            .ok_or("Failed to do regex")?;
+
+            Ok(BadgeOverwrite {
+                badge_id: b.id,
+                alt_ids: vec![],
+                category: "Adventure".to_owned(),
+                name: format!("{:?} ({:?})", b.name.replace("\"", ""), area.to_owned()),
+            })
+        })
+        .collect_vec()
 }
