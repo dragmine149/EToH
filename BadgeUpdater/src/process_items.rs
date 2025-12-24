@@ -270,7 +270,8 @@ pub async fn process_item(
     drop(parsed);
     // got to check all the links though.
     for link in links {
-        let wikitext = get_page_data(client, &link.target).await?;
+        let mut wikitext = get_page_data(client, &link.target).await?;
+        wikitext.set_page_name(Some(link.target));
         let tower = process_tower(&wikitext, badge);
         if tower.is_ok() {
             return tower;

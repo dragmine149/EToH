@@ -302,10 +302,7 @@ async fn main_processing(client: &RustClient, url: &Url, skip_ids: &[u64], path:
     let mini_towers = hard_coded::parse_mini_towers(
         client,
         &failed.iter().map(|p| p.1.clone()).collect_vec(),
-        &tower_processed
-            .iter()
-            .map(|t| t.page_name.clone())
-            .collect_vec(),
+        &success.iter().map(|t| t.page_name.clone()).collect_vec(),
     )
     .await;
     let (mini_passed, mini_failed) = count_processed(
