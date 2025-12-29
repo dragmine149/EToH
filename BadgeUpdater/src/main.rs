@@ -335,8 +335,11 @@ async fn main_processing(
         Some(path),
     );
     let adventure_ids = adventure_pass.iter().map(|a| a.badge_id).collect_vec();
-
     let success_ids = success.iter().map(|s| s.badge_id).collect_vec();
+    let event_items_ids = event_items_processed
+        .iter()
+        .map(|e| e.badge_id)
+        .collect_vec();
     let mut unprocessed = badges_vec
         .iter()
         .map(|v| {
@@ -348,6 +351,7 @@ async fn main_processing(
         })
         .filter(|id| !success_ids.contains(id))
         .filter(|id| !adventure_ids.contains(id))
+        .filter(|id| !event_items_ids.contains(id))
         .collect_vec();
     unprocessed.sort();
 
