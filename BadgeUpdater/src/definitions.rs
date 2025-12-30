@@ -1,6 +1,10 @@
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
-use std::{collections::HashMap, error::Error, fmt::Display};
+use std::{
+    collections::HashMap,
+    error::Error,
+    fmt::{Debug, Display},
+};
 
 use crate::{reqwest_client::RustError, wikitext::WikiText};
 
@@ -28,13 +32,13 @@ pub struct Badge {
     pub description: Option<String>,
     pub display_name: String,
     pub display_description: Option<String>,
-    pub enabled: bool,
+    // pub enabled: bool,
     pub icon_image_id: u64,
     pub display_icon_image_id: u64,
     pub created: String,
     pub updated: String,
-    pub statistics: BadgeStatistics,
-    pub awarding_universe: BadgeUniverse,
+    // pub statistics: BadgeStatistics,
+    // pub awarding_universe: BadgeUniverse,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -461,8 +465,24 @@ impl From<&str> for ProcessError {
 #[derive(Debug)]
 #[allow(dead_code, reason = "i use these for debugging")]
 pub struct ErrorDetails(pub ProcessError, pub Badge);
-#[derive(Debug)]
 pub struct OkDetails(pub WikiText, pub Badge);
+
+impl Debug for OkDetails {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "OkDetails(")?;
+        writeln!(
+            f,
+            "\tWikiText {{ text: --ignored--, page_name: {:?} }},",
+            self.0.page_name()
+        )?;
+        for line in format!("{:#?}", self.1).lines() {
+            writeln!(f, "\t{}", line)?;
+        }
+
+        // writeln!(f, "\t{:#?}", self.1)?;
+        write!(f, ")")
+    }
+}
 
 #[derive(Debug, Default)]
 pub struct PageDetails {
