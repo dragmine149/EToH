@@ -46,6 +46,16 @@ fn clean_badge_name(badge: &str) -> String {
     s.trim().to_string()
 }
 
+fn fmt_secs(number: u64) -> String {
+    let (hour, minute, second) = (number / 3600, (number % 3600) / 60, number % 60);
+    [hour, minute, second]
+        .iter()
+        .zip(["h", "min", "s"])
+        .filter_map(|(&v, u)| (v != 0).then_some(format!("{}{}", v, u)))
+        .collect::<Vec<_>>()
+        .join(" + ")
+}
+
 /// Take an object and count how many passed/failed.
 ///
 /// We use references as we don't really care about the list and it saves having to reassign just for a debug.

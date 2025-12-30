@@ -3,6 +3,8 @@ use std::{fs, path::PathBuf, time::SystemTime};
 use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache, HttpCacheOptions};
 use reqwest_middleware::ClientWithMiddleware;
 
+use crate::fmt_secs;
+
 /// Custom struct as a wrapper for custom functions
 #[derive(Debug, Clone)]
 pub struct RustClient(pub ClientWithMiddleware, PathBuf);
@@ -68,9 +70,14 @@ impl RustClient {
             return;
         }
 
-        let comp = duration.unwrap().as_secs() > 86400;
+        let age = duration.unwrap().as_secs();
+        let comp = age > 86400;
         if !comp {
-            log::info!("Not deleting cache dir due to being < 1d");
+            log::info!(
+                "Not deleting cache dir due to being < 1d ({:?}s, aka {:?})",
+                age,
+                fmt_secs(age)
+            );
             return;
         }
 
