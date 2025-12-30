@@ -18,7 +18,7 @@ This branch is not designed to be pushed into main. This will run alongside main
 - Anything in `BadgeUpdater`, this is where the program is.
 - [`ignored.jsonc`](./ignored.jsonc):  This is a file for some badges which aren't worth showing. i might add in the future an option to show these on the UI, but thats a later issue.
 - [`annoying_links.json`](./annoying_links.json):  This is a file for some badges to link them to some pages when fandom can't do it for us.
-- [`overwrite.jsonc`](./overwrite.jsonc):  This is a file for listing some overwrites as for some badges, no matter what we do, we can't auto link.
+- [`overwrite.json`](./overwrite.json):  This is a file for listing some overwrites as for some badges, no matter what we do, we can't auto link.
 
 ## Update Log
 This is seperate as it's not really a "release" and most people won't care how the data is structured.

@@ -128,26 +128,26 @@ async fn process_data(
     badge_id: u64,
     search: Option<&String>,
 ) -> Result<WikiText, ProcessError> {
-    let mut page_title = clean_badge_name(badge);
+    let mut clean_badge = clean_badge_name(badge);
     // log::debug!("Getting: {:?} ({:?})", page_title, badge_id);
 
-    let mut page_data = get_page_redirect(&client, &page_title).await;
+    let mut page_data = get_page_redirect(&client, &clean_badge).await;
     if page_data.is_err() {
         // recheck but with cleaning the input.
-        page_title = page_title
+        clean_badge = clean_badge
             .replace("-", " ")
             .replace("!", "")
             .trim()
             .to_string();
-        page_data = get_page_redirect(&client, &page_title).await;
+        page_data = get_page_redirect(&client, &clean_badge).await;
     }
 
     // cool, we can return early now that we have data.
     if let Ok(text) = page_data {
         let mut wikitext = WikiText::parse(text.text);
-        wikitext.set_page_name(Some(text.name.unwrap_or(page_title.clone())));
+        wikitext.set_page_name(Some(text.name.unwrap_or(clean_badge.clone())));
 
-        if search.is_some() && *search.unwrap() != page_title {
+        if search.is_some() && *search.unwrap() != clean_badge {
             // as we're searching a different page than the badge name, we just need to check to make sure there IS a link.
             return Ok(is_page_link(wikitext, badge_id)?);
         }
@@ -160,12 +160,13 @@ async fn process_data(
         let pages = client
             .get(format!(
                 "{:}api.php?action=query&format=json&list=search&srsearch={:}&srlimit={:}",
-                ETOH_WIKI, badge, 3
+                ETOH_WIKI, clean_badge, 4
             ))
             .send()
             .await?
             .json::<WikiSearch>()
             .await?;
+        println!("{:?} ->\n{:#?}", badge, pages);
 
         // loop through each entry and return the first valid entry.
         // Normally this is the first entry, but there is always a chance it isn't.
@@ -174,7 +175,7 @@ async fn process_data(
             if entry.title.contains("/") {
                 continue;
             }
-            if entry.title == page_title {
+            if entry.title == clean_badge {
                 // something went wrong here
                 log::error!("How entry is title?? {:?}", entry.title);
                 continue;

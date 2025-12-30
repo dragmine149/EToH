@@ -143,6 +143,14 @@
 		"Area Secrets",
 		"Hamburgers (R2)"
 	],
+	"2071778922297966": [
+		"Area Secrets",
+		"Another Secret Obby (R7)"
+	],
+	"2603701654594117": [
+		"Area Secrets",
+		"Soul Seeker (Z1)"
+	],
 	"2125364403": [
 		"Secret Endings",
 		"Beyond the Citadel (CoLS)"
@@ -163,6 +171,10 @@
 		"Secret Endings",
 		"A Bizzarre Secret Ending (ToBaBT)"
 	],
+	"2126168310": [
+		"Secret Endings",
+		"The Actual Final Floor (ToSP)"
+	],
 	"2125364412": [
 		"Ring Select Secrets",
 		"Rare Expectations"
@@ -170,5 +182,13 @@
 	"2125364416": [
 		"Ring Select Secrets",
 		"X Clicker"
+	],
+	"2125435357": [
+		"Challenges",
+		"Complete 8 Challenges in a month"
+	],
+	"2125435360": [
+		"Challenges",
+		"Complete All Challenges in a month"
 	]
 }

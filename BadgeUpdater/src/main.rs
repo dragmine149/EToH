@@ -7,7 +7,7 @@ mod reqwest_client;
 mod wikitext;
 
 use crate::{
-    badge_to_wikitext::{get_annoying, get_badges, get_page_redirect},
+    badge_to_wikitext::{get_annoying, get_badges},
     definitions::{
         AreaInformation, BadgeOverwrite, ErrorDetails, EventInfo, EventItem, GlobalArea, OkDetails,
         WikiTower, badges_from_map_value,
@@ -134,7 +134,7 @@ where
 }
 
 const DEBUG_PATH: &str = "./badges.temp.txt";
-const OVERWRITE_PATH: &str = "../overwrite.jsonc";
+const OVERWRITE_PATH: &str = "../overwrite.json";
 const ANNOYING_LINKS_PATH: &str = "../annoying_links.json";
 const IGNORED_LIST: &str = "../ignored.jsonc";
 
