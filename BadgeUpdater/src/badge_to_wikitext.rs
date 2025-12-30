@@ -1,6 +1,7 @@
 use async_recursion::async_recursion;
+use itertools::Itertools;
 use reqwest::Response;
-use std::error::Error;
+use std::{collections::HashMap, error::Error};
 use tokio::task::JoinHandle;
 
 use url::Url;
@@ -187,4 +188,33 @@ async fn process_data(
         }
     }
     Err("Failed to find the page after searching".into())
+}
+
+pub async fn get_annoying(
+    client: &RustClient,
+    badges: &[&Badge],
+    annoying_links: &HashMap<String, String>,
+) -> Vec<Result<OkDetails, ErrorDetails>> {
+    let mut annoying = Vec::with_capacity(annoying_links.len());
+
+    for (id, url) in annoying_links.iter() {
+        let badge = badges
+            .iter()
+            .find(|b| b.id == id.parse::<u64>().expect("Failed to parse badge id"))
+            .expect("Failed to find badge!")
+            .to_owned();
+
+        let data = get_page_redirect(client, url)
+            .await
+            .map(|ok| {
+                let mut wt = WikiText::parse(ok.text);
+                wt.set_page_name(Some(url));
+                OkDetails(wt, badge.to_owned())
+            })
+            .map_err(|err| ErrorDetails(err.into(), badge.to_owned()));
+
+        annoying.push(data);
+    }
+
+    annoying
 }

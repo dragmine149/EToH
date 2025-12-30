@@ -7,7 +7,7 @@ mod reqwest_client;
 mod wikitext;
 
 use crate::{
-    badge_to_wikitext::get_badges,
+    badge_to_wikitext::{get_annoying, get_badges, get_page_redirect},
     definitions::{
         AreaInformation, BadgeOverwrite, ErrorDetails, EventInfo, EventItem, GlobalArea, OkDetails,
         WikiTower, badges_from_map_value,
@@ -20,7 +20,7 @@ use crate::{
 use dotenv::dotenv;
 use itertools::Itertools;
 use lazy_regex::regex_replace;
-use std::{fs, io::Write, path::PathBuf, str::FromStr};
+use std::{collections::HashMap, fs, io::Write, path::PathBuf, str::FromStr};
 use url::Url;
 
 pub const BADGE_URL: &str = "https://badges.roblox.com/v1/universes/3264581003/badges?limit=100";
@@ -135,6 +135,7 @@ where
 
 const DEBUG_PATH: &str = "./badges.temp.txt";
 const OVERWRITE_PATH: &str = "../overwrite.jsonc";
+const ANNOYING_LINKS_PATH: &str = "../annoying_links.json";
 
 #[tokio::main]
 async fn main() {
@@ -162,10 +163,14 @@ async fn main() {
         .unwrap(),
     )
     .unwrap_or_default();
+    let annoying_links = serde_json::from_str::<HashMap<String, String>>(
+        &fs::read_to_string(ANNOYING_LINKS_PATH).unwrap_or("{}".into()),
+    )
+    .unwrap_or_default();
 
     log::info!("Setup complete, starting searching");
 
-    main_processing(&client, &url, &overwrites, &path).await
+    main_processing(&client, &url, &overwrites, &annoying_links, &path).await
 }
 
 /// The main processing function which takes in the most basics and gives everything as something usable.
@@ -174,6 +179,7 @@ async fn main_processing(
     client: &RustClient,
     url: &Url,
     overwrites: &[BadgeOverwrite],
+    annoying_links: &HashMap<String, String>,
     path: &PathBuf,
 ) {
     // Written by T3 Chat (Gemini 3 Flash)
@@ -200,9 +206,29 @@ async fn main_processing(
         Some(path),
     );
 
+    let annoying = get_annoying(
+        client,
+        &badges_vec
+            .iter()
+            .map(|r| match r {
+                Ok(ok) => &ok.1,
+                Err(err) => &err.1,
+            })
+            .collect_vec(),
+        annoying_links,
+    )
+    .await;
+    let (annoying_pass, annoying_fail) = count_processed(
+        &annoying,
+        |a: &Result<OkDetails, ErrorDetails>| a.is_ok(),
+        "get_annoying",
+        Some(path),
+    );
+
     // start processing towers.
     let tower_data = passed
         .iter()
+        .chain(annoying_pass.iter())
         .map(|p| process_tower(&p.0, &p.1))
         // .inspect(|x| println!("{:?}", x))
         .collect::<Vec<Result<WikiTower, String>>>();
