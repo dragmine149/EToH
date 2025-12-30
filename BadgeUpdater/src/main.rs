@@ -409,11 +409,38 @@ async fn main_processing(
         .filter(|id| !event_items_ids.contains(id))
         .collect_vec();
     unprocessed.sort();
+    // log::warn!("{}", success_ids.len());
+    // log::warn!("{}", adventure_ids.len());
+    // log::warn!("{}", event_items_ids.len());
+    // log::warn!("{}", badges_vec.len());
+    // log::warn!(
+    //     "{}",
+    //     ((success_ids.len() + adventure_ids.len() + event_items_ids.len()) / badges_vec.len())
+    // );
+    // log::warn!("{}", (skip_ids.len() / badges_vec.len()));
+    // log::warn!(
+    //     "{}",
+    //     (success_ids.len()
+    //         + adventure_ids.len()
+    //         + event_items_ids.len()
+    //         + skip_ids.len() / badges_vec.len())
+    // );
+    log::info!(
+        "Badges processed: {} ({:.2}%). Badges Skipped: {} ({:.2}%). Total Processed: {} ({:.2}%). Total Total: {}",
+        badges_vec.len() - unprocessed.len() - skip_ids.len(),
+        ((badges_vec.len() - unprocessed.len()) as f64 / badges_vec.len() as f64) * 100.0,
+        skip_ids.len(),
+        (skip_ids.len() as f64 / badges_vec.len() as f64) * 100.0,
+        badges_vec.len() - unprocessed.len(),
+        ((badges_vec.len() - unprocessed.len()) as f64 / badges_vec.len() as f64) * 100.0,
+        badges_vec.len()
+    );
 
     if !unprocessed.is_empty() {
         log::error!(
-            "There are badges which have failed to been processed (total of: {:?})",
-            unprocessed.len()
+            "There are badges which have failed to been processed (total of: {:?} ({:.2}%))",
+            unprocessed.len(),
+            (unprocessed.len() as f64 / badges_vec.len() as f64) * 100.0
         );
     } else {
         log::info!("All badges processed!");
