@@ -477,6 +477,8 @@ pub fn process_event_item(
     badge: &Badge,
     event_areas: &Vec<&EventInfo>,
 ) -> Result<EventItem, String> {
+    println!("____________________________________________________________");
+    println!("BADGE: {:?}", badge.name);
     let links = text
         .get_parsed()
         .map_err(|e| format!("Failed to parse wikitext ({:?})", e))?
@@ -502,6 +504,8 @@ pub fn process_event_item(
             })
             .collect_vec()
     );
+    println!("{:?}", event_areas);
+    println!("____________________________________________________________");
     let event = links
         .iter()
         .filter(|link| link.target.starts_with("Category"))
@@ -513,8 +517,9 @@ pub fn process_event_item(
             })
         })
         .ok_or(format!(
-            "Failed to get event area out of page categories ({:?})",
-            badge.name
+            "Failed to get event area out of page categories ({:?}) ({:?})",
+            badge.name,
+            links.iter().map(|link| &link.target).collect_vec()
         ))?;
     Ok(EventItem {
         item_name: badge.name.to_owned(),

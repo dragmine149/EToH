@@ -136,6 +136,7 @@ where
 const DEBUG_PATH: &str = "./badges.temp.txt";
 const OVERWRITE_PATH: &str = "../overwrite.jsonc";
 const ANNOYING_LINKS_PATH: &str = "../annoying_links.json";
+const IGNORED_LIST: &str = "../ignored.jsonc";
 
 #[tokio::main]
 async fn main() {
@@ -167,10 +168,26 @@ async fn main() {
         &fs::read_to_string(ANNOYING_LINKS_PATH).unwrap_or("{}".into()),
     )
     .unwrap_or_default();
+    let ignored_list = serde_json::from_str::<HashMap<String, Vec<u64>>>(
+        &fs::read_to_string(IGNORED_LIST)
+            .unwrap_or("{}".into())
+            .lines()
+            .filter(|line| !line.trim_start().contains("//"))
+            .join("\n"),
+    )
+    .unwrap_or_default();
 
     log::info!("Setup complete, starting searching");
 
-    main_processing(&client, &url, &overwrites, &annoying_links, &path).await
+    main_processing(
+        &client,
+        &url,
+        &path,
+        &overwrites,
+        &ignored_list,
+        &annoying_links,
+    )
+    .await
 }
 
 /// The main processing function which takes in the most basics and gives everything as something usable.
@@ -178,14 +195,16 @@ async fn main() {
 async fn main_processing(
     client: &RustClient,
     url: &Url,
+    debug_path: &PathBuf,
     overwrites: &[BadgeOverwrite],
+    ignored: &HashMap<String, Vec<u64>>,
     annoying_links: &HashMap<String, String>,
-    path: &PathBuf,
 ) {
     // Written by T3 Chat (Gemini 3 Flash)
     let skip_ids = overwrites
         .iter()
         .flat_map(|bo| std::iter::once(bo.badge_id).chain(bo.alt_ids.iter().copied()))
+        .chain(ignored.values().flatten().map(|id| *id))
         .collect_vec();
     println!("{:?}", overwrites);
     println!("{:#?}", skip_ids);
@@ -203,7 +222,7 @@ async fn main_processing(
         &badges_vec,
         |f: &Result<OkDetails, ErrorDetails>| f.is_ok(),
         "get_badges",
-        Some(path),
+        Some(debug_path),
     );
 
     let annoying = get_annoying(
@@ -222,7 +241,7 @@ async fn main_processing(
         &annoying,
         |a: &Result<OkDetails, ErrorDetails>| a.is_ok(),
         "get_annoying",
-        Some(path),
+        Some(debug_path),
     );
 
     // start processing towers.
@@ -237,7 +256,7 @@ async fn main_processing(
         &tower_data,
         |r: &Result<WikiTower, String>| r.is_ok(),
         "process_tower",
-        Some(path),
+        Some(debug_path),
     );
 
     // process items now we now which towers have passed.
@@ -253,7 +272,7 @@ async fn main_processing(
         &items,
         |i: &Result<WikiTower, String>| i.is_ok(),
         "process_item",
-        Some(path),
+        Some(debug_path),
     );
 
     // combine the both
@@ -279,7 +298,7 @@ async fn main_processing(
         &areas,
         |a: &Result<AreaInformation, String>| a.is_ok(),
         "process_area",
-        Some(path),
+        Some(debug_path),
     );
 
     // do the same but for the event based ones.
@@ -292,7 +311,7 @@ async fn main_processing(
         &event_areas,
         |a: &Result<EventInfo, String>| a.is_ok(),
         "process_event_area",
-        Some(path),
+        Some(debug_path),
     );
 
     // combine them.
@@ -336,7 +355,7 @@ async fn main_processing(
         &event_items,
         |e: &Result<EventItem, String>| e.is_ok(),
         "process_event_item",
-        Some(path),
+        Some(debug_path),
     );
 
     let failed_list = &failed.iter().map(|p| p.1.clone()).collect_vec();
@@ -352,7 +371,7 @@ async fn main_processing(
         &mini_towers,
         |m| m.is_ok(),
         "hard_coded::parse_mini_towers",
-        Some(path),
+        Some(debug_path),
     );
 
     mini_passed.iter().for_each(|m| success.push(m));
@@ -368,7 +387,7 @@ async fn main_processing(
         &adventure_towers,
         |a| a.is_ok(),
         "area_from_description",
-        Some(path),
+        Some(debug_path),
     );
     let adventure_ids = adventure_pass.iter().map(|a| a.badge_id).collect_vec();
     let success_ids = success.iter().map(|s| s.badge_id).collect_vec();
@@ -400,17 +419,21 @@ async fn main_processing(
         log::info!("All badges processed!");
     }
 
-    match fs::OpenOptions::new().create(true).append(true).open(path) {
+    match fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(debug_path)
+    {
         Ok(mut fh) => {
             if let Err(e) = writeln!(fh, "Unprocessed badges:") {
-                log::error!("Failed to append passed items to {:?}: {}", path, e);
+                log::error!("Failed to append passed items to {:?}: {}", debug_path, e);
             }
             if let Err(e) = writeln!(fh, "{:#?}", unprocessed) {
-                log::error!("Failed to append failed items to {:?}: {}", path, e);
+                log::error!("Failed to append failed items to {:?}: {}", debug_path, e);
             }
         }
         Err(e) => {
-            log::error!("Failed to open file {:?} for appending: {}", path, e);
+            log::error!("Failed to open file {:?} for appending: {}", debug_path, e);
         }
     }
 }
