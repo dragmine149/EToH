@@ -34,6 +34,8 @@ fn clean_badge_name(badge: &str) -> String {
 
     // Remove leading "Beat the" (case-insensitive) variations
     s = regex_replace!(r"(?i)^\s*beat\s+the\s+", &s, "").to_string();
+    // Remove leading "Beat" (case-insensitive) variations (annoying ToXYZ 3109062537716097)
+    s = regex_replace!(r"(?i)^\s*beat\s+", &s, "").to_string();
 
     // Remove any parenthetical content like "(Unobtainable)", "(LE)", etc.
     s = regex_replace!(r"\s*\(.*", &s, "").to_string();
