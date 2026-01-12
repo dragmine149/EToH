@@ -13,7 +13,8 @@ use crate::{
         WikiTower, badges_from_map_value,
     },
     process_items::{
-        process_area, process_event_area, process_event_item, process_item, process_tower,
+        get_event_areas, process_area, process_event_area, process_event_item, process_item,
+        process_tower,
     },
     reqwest_client::RustClient,
 };
@@ -304,10 +305,20 @@ async fn main_processing(
     );
 
     // do the same but for the event based ones.
-    let mut event_areas = vec![];
-    for ele in areas_list.filter(|a| area_failed.iter().any(|f| f.contains(a))) {
-        event_areas.push(process_event_area(client, &ele).await);
-    }
+    // let mut event_areas = vec![];
+    // for ele in areas_list.filter(|a| area_failed.iter().any(|f| f.contains(a))) {
+    //     event_areas.push(process_event_area(client, &ele).await);
+    // }
+    let pre_event_areas = get_event_areas(client).await;
+    let event_areas = if pre_event_areas.is_err() {
+        log::error!(
+            "Failed to get event areas: {:?}",
+            pre_event_areas.err().unwrap()
+        );
+        vec![]
+    } else {
+        pre_event_areas.ok().unwrap()
+    };
 
     let (event_processed, event_failed) = count_processed(
         &event_areas,

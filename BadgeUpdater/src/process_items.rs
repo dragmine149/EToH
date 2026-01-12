@@ -3,8 +3,8 @@ use itertools::Itertools;
 use crate::{
     badge_to_wikitext::get_page_redirect,
     definitions::{
-        AreaInformation, AreaRequirements, Badge, EventInfo, EventItem, Length, TowerType,
-        WikiTower,
+        AreaInformation, AreaRequirements, Badge, EventInfo, EventItem, Length, ProcessError,
+        TowerType, WikiCategory, WikiTower,
     },
     reqwest_client::RustClient,
     wikitext::{
@@ -227,7 +227,7 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
     })
 }
 
-/// get_page_redirect but returns wikitext
+/// [get_page_redirect] but returns wikitext
 /// TODO: move this?
 pub async fn get_page_data(client: &RustClient, page: &str) -> Result<WikiText, String> {
     let data = get_page_redirect(client, page).await;
@@ -438,6 +438,23 @@ fn get_event_template(data: &ParsedData, area: &str) -> Result<Template, String>
     }
     data.get_template("event infobox")
         .map_err(|e| format!("Failed to get event infobox ({:?}) > {:?}", area, e))
+}
+
+pub async fn get_event_areas(
+    client: &RustClient,
+) -> Result<Vec<Result<EventInfo, String>>, ProcessError> {
+    let pages = client.get("https://jtoh.fandom.com/api.php?action=query&format=json&list=categorymembers&titles=Events&formatversion=2&cmtitle=Category%3AEvents&cmlimit=500").send().await?.json::<WikiCategory>().await?;
+    let areas = pages
+        .query
+        .categorymembers
+        .iter()
+        .map(|cm| cm.title.to_owned());
+
+    let mut event_areas = Vec::with_capacity(areas.len());
+    for a in areas {
+        event_areas.push(process_event_area(client, &a).await);
+    }
+    Ok(event_areas)
 }
 
 /// Events are like areas mostly, but with less data so we only store a way to group them.

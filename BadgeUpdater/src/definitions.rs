@@ -59,6 +59,25 @@ impl Default for Data {
     }
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+pub struct WikiCategoryMember {
+    pub pageid: u32,
+    pub ns: usize,
+    pub title: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct WikiCategoryQuery {
+    // pub pages: []
+    pub categorymembers: Vec<WikiCategoryMember>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct WikiCategory {
+    pub batchcomplete: bool,
+    pub query: WikiCategoryQuery,
+}
+
 #[derive(Debug, Default)]
 pub struct WikiTower {
     pub badge_name: String,
