@@ -194,5 +194,10 @@
 	"2125435360": [
 		"Challenges",
 		"Complete All Challenges in a month"
+	],
+	// This is a special badge for area discovery, kinda like the other area discovery ones.
+	"2125771537": [
+		"Terrain World",
+		"Discover Terrain World"
 	]
 }

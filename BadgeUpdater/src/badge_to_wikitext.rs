@@ -199,7 +199,7 @@ pub async fn get_annoying(
         let badge = badges
             .iter()
             .find(|b| b.id == id.parse::<u64>().expect("Failed to parse badge id"))
-            .expect("Failed to find badge!")
+            .expect(&format!("Failed to find badge! {}", id))
             .to_owned();
 
         let data = get_page_redirect(client, url)

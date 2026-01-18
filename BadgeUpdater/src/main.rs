@@ -136,8 +136,16 @@ where
     (passed, failed)
 }
 
+fn read_jsonc(path: &str) -> String {
+    fs::read_to_string(path)
+        .unwrap_or("{}".into())
+        .lines()
+        .filter(|line| !line.trim_start().contains("//"))
+        .join("\n")
+}
+
 const DEBUG_PATH: &str = "./badges.temp.txt";
-const OVERWRITE_PATH: &str = "../overwrite.json";
+const OVERWRITE_PATH: &str = "../overwrite.jsonc";
 const ANNOYING_LINKS_PATH: &str = "../annoying_links.json";
 const IGNORED_LIST: &str = "../ignored.jsonc";
 
@@ -159,26 +167,15 @@ async fn main() {
     let client = RustClient::new(None, None);
     let url = Url::from_str(&format!("{:}?limit=100", BADGE_URL)).unwrap();
 
-    let overwrites = badges_from_map_value(
-        &serde_json::from_str(
-            // &fs::read_to_string(OVERWRITE_PATH).expect("Failed to read overwrite path"),
-            &fs::read_to_string(OVERWRITE_PATH).unwrap_or("{}".into()),
-        )
-        .unwrap(),
-    )
-    .unwrap_or_default();
+    let overwrites =
+        badges_from_map_value(&serde_json::from_str(&read_jsonc(OVERWRITE_PATH)).unwrap())
+            .unwrap_or_default();
     let annoying_links = serde_json::from_str::<HashMap<String, String>>(
         &fs::read_to_string(ANNOYING_LINKS_PATH).unwrap_or("{}".into()),
     )
     .unwrap_or_default();
-    let ignored_list = serde_json::from_str::<HashMap<String, Vec<u64>>>(
-        &fs::read_to_string(IGNORED_LIST)
-            .unwrap_or("{}".into())
-            .lines()
-            .filter(|line| !line.trim_start().contains("//"))
-            .join("\n"),
-    )
-    .unwrap_or_default();
+    let ignored_list = serde_json::from_str::<HashMap<String, Vec<u64>>>(&read_jsonc(IGNORED_LIST))
+        .unwrap_or_default();
 
     log::info!("Setup complete, starting searching");
 
