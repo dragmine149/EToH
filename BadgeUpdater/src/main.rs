@@ -441,7 +441,8 @@ async fn main_processing(
     log::info!(
         "Badges processed: {} ({:.2}%). Badges Skipped: {} ({:.2}%). Total Processed: {} ({:.2}%). Total Total: {}",
         badges_vec.len() - unprocessed.len() - skip_ids.len(),
-        ((badges_vec.len() - unprocessed.len()) as f64 / badges_vec.len() as f64) * 100.0,
+        ((badges_vec.len() - unprocessed.len() - skip_ids.len()) as f64 / badges_vec.len() as f64)
+            * 100.0,
         skip_ids.len(),
         (skip_ids.len() as f64 / badges_vec.len() as f64) * 100.0,
         badges_vec.len() - unprocessed.len(),
