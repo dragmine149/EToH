@@ -134,11 +134,7 @@ async fn process_data(
     let mut page_data = get_page_redirect(&client, &clean_badge).await;
     if page_data.is_err() {
         // recheck but with cleaning the input.
-        clean_badge = clean_badge
-            .replace("-", " ")
-            .replace("!", "")
-            .trim()
-            .to_string();
+        clean_badge = clean_badge.replace("-", " ").trim().to_string();
         page_data = get_page_redirect(&client, &clean_badge).await;
     }
 
@@ -166,12 +162,13 @@ async fn process_data(
             .await?
             .json::<WikiSearch>()
             .await?;
-        println!("{:?} ->\n{:#?}", badge, pages);
+        println!("{:?} ({:?}) ->\n{:#?}", clean_badge, badge, pages);
 
         // loop through each entry and return the first valid entry.
         // Normally this is the first entry, but there is always a chance it isn't.
         for entry in pages.query.search {
-            // TODO: Sort out secret badges
+            // Subpages just don't count at all. They just annoy stuff.
+            // If the wiki has a lot of subpages which we need to check, then we'll deal with it in the future.
             if entry.title.contains("/") {
                 continue;
             }
