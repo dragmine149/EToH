@@ -199,5 +199,34 @@
 	"2125771537": [
 		"Terrain World",
 		"Discover Terrain World"
+	],
+	// The badges below are unique... These are the only ones i couldn't easily categories / automate.
+	// Yes there are similar badges above, but they don't really have a direct tower link compare to these.
+	// This might be annoying in the future, but kinda the best i can think of for right now (2026-01-19) so enjoy...
+	//
+	// I have a feeling we're going to be seeing more multi-tower event based badges hence we kinda do need a more permanet system for this.
+	"2125419117": [
+		"Abyssal Badlands",
+		"Conquer the 3 Steeples"
+	],
+	"2125419152": [
+		"Forsaken Manor",
+		"Revenge Denied!"
+	],
+	"2127933647": [
+		"Eclipsed Headquarters",
+		"A Momentous Duel"
+	],
+	"2127933664": [
+		"Eclipsed Headquarters",
+		"Complex Ascent"
+	],
+	"2153706425": [
+		"Harvest Carnival",
+		"Carnival Fun"
+	],
+	"2153706455": [
+		"Harvest Carnival",
+		"Stage Fright"
 	]
 }

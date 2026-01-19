@@ -474,12 +474,29 @@ pub async fn process_event_area(client: &RustClient, area: &str) -> Result<Event
         .elements
         .iter()
         // get the plain text
-        .find(|elm| matches!(elm, Argument::Text(_)))
-        .ok_or(format!("Failed to get text of realm of {:?}", area))?
-        .as_text()
-        .unwrap()
-        .raw
-        .clone();
+        // .find(|elm| matches!(elm, Argument::Text(_)))
+        .find(|elm| match elm {
+            Argument::List(_) => true,
+            Argument::Text(_) => true,
+            _ => false,
+        })
+        .map(|elm| match elm {
+            Argument::List(list) => list
+                .entries
+                .first()
+                .unwrap()
+                .as_text()
+                .unwrap()
+                .raw
+                .split_once("}}")
+                .unwrap()
+                .1
+                .trim()
+                .to_owned(),
+            Argument::Text(text) => text.raw.clone(),
+            _ => "??? How is this very weird edge case returned?".into(), // this shouldn't be returned...
+        })
+        .ok_or(format!("Failed to get text of realm of {:?}", area))?;
     // and ignore any further lines
     let name = name_text.split("<br/>").next().unwrap().trim();
 
