@@ -21,7 +21,7 @@ This branch is not designed to be pushed into main. This will run alongside main
 - [`overwrite.json`](./overwrite.json):  This is a file for listing some overwrites as for some badges, no matter what we do, we can't auto link.
 
 ## Update Log
-This is seperate as it's not really a "release" and most people won't care how the data is structured.
+This is separate as it's not really a "release" and most people won't care how the data is structured.
 
 ### Data V2 (brief overview)
 - better wiki parsing (like way way better)

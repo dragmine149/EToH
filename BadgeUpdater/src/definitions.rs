@@ -8,21 +8,21 @@ use std::{
 
 use crate::{reqwest_client::RustError, wikitext::WikiText};
 
-#[derive(Debug, Deserialize, Serialize, Default, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct BadgeUniverse {
-    pub id: u64,
-    pub name: String,
-    pub root_place_id: u64,
-}
+// #[derive(Debug, Deserialize, Serialize, Default, Clone)]
+// #[serde(rename_all = "camelCase")]
+// pub struct BadgeUniverse {
+//     pub id: u64,
+//     pub name: String,
+//     pub root_place_id: u64,
+// }
 
-#[derive(Debug, Deserialize, Serialize, Default, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct BadgeStatistics {
-    pub past_day_awarded_count: u64,
-    pub awarded_count: u64,
-    pub win_rate_percentage: f64,
-}
+// #[derive(Debug, Deserialize, Serialize, Default, Clone)]
+// #[serde(rename_all = "camelCase")]
+// pub struct BadgeStatistics {
+//     pub past_day_awarded_count: u64,
+//     pub awarded_count: u64,
+//     pub win_rate_percentage: f64,
+// }
 
 #[derive(Debug, Deserialize, Serialize, Default, Clone)]
 #[serde(rename_all = "camelCase")]

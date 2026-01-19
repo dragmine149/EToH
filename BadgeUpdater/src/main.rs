@@ -13,8 +13,7 @@ use crate::{
         WikiTower, badges_from_map_value,
     },
     process_items::{
-        get_event_areas, process_area, process_event_area, process_event_item, process_item,
-        process_tower,
+        get_event_areas, process_area, process_event_item, process_item, process_tower,
     },
     reqwest_client::RustClient,
 };
@@ -204,7 +203,7 @@ async fn main_processing(
     let skip_ids = overwrites
         .iter()
         .flat_map(|bo| std::iter::once(bo.badge_id).chain(bo.alt_ids.iter().copied()))
-        .chain(ignored.values().flatten().map(|id| *id))
+        .chain(ignored.values().flatten().copied())
         .collect_vec();
     println!("{:?}", overwrites);
     println!("{:#?}", skip_ids);

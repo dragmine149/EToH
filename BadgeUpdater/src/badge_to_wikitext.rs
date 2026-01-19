@@ -1,5 +1,4 @@
 use async_recursion::async_recursion;
-use itertools::Itertools;
 use reqwest::Response;
 use std::{collections::HashMap, error::Error};
 use tokio::task::JoinHandle;
@@ -199,7 +198,7 @@ pub async fn get_annoying(
         let badge = badges
             .iter()
             .find(|b| b.id == id.parse::<u64>().expect("Failed to parse badge id"))
-            .expect(&format!("Failed to find badge! {}", id))
+            .unwrap_or_else(|| panic!("Failed to find badge! {}", id))
             .to_owned();
 
         let data = get_page_redirect(client, url)

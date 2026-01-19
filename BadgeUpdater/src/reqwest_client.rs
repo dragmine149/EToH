@@ -81,7 +81,7 @@ impl RustClient {
             return;
         }
 
-        if let Err(e) = fs::remove_dir_all(self.1.to_owned()) {
+        if let Err(e) = fs::remove_dir_all(&self.1) {
             log::error!("Failed to remove cache dir {:?}", e);
             return;
         }

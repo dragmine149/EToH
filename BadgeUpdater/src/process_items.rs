@@ -475,11 +475,7 @@ pub async fn process_event_area(client: &RustClient, area: &str) -> Result<Event
         .iter()
         // get the plain text
         // .find(|elm| matches!(elm, Argument::Text(_)))
-        .find(|elm| match elm {
-            Argument::List(_) => true,
-            Argument::Text(_) => true,
-            _ => false,
-        })
+        .find(|elm| matches!(elm, Argument::List(_) | Argument::Text(_)))
         .map(|elm| match elm {
             Argument::List(list) => list
                 .entries
