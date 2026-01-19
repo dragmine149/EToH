@@ -1,7 +1,7 @@
 mod badge_to_wikitext;
 mod definitions;
-// mod json;
 mod hard_coded;
+mod json;
 mod process_items;
 mod reqwest_client;
 mod wikitext;
@@ -12,6 +12,7 @@ use crate::{
         AreaInformation, BadgeOverwrite, ErrorDetails, EventInfo, EventItem, GlobalArea, OkDetails,
         WikiTower, badges_from_map_value,
     },
+    json::Jsonify,
     process_items::{
         get_event_areas, process_area, process_event_item, process_item, process_tower,
     },
@@ -178,7 +179,7 @@ async fn main() {
 
     log::info!("Setup complete, starting searching");
 
-    main_processing(
+    let mut result = main_processing(
         &client,
         &url,
         &path,
@@ -186,11 +187,15 @@ async fn main() {
         &ignored_list,
         &annoying_links,
     )
-    .await
+    .await;
+    result.parse_skipped(&overwrites, &annoying_links);
+    println!("{:?}", result);
+
+    ()
 }
 
 /// The main processing function which takes in the most basics and gives everything as something usable.
-#[allow(unused_variables, reason = "Will be used later")]
+// #[allow(unused_variables, reason = "Will be used later")]
 async fn main_processing(
     client: &RustClient,
     url: &Url,
@@ -198,7 +203,7 @@ async fn main_processing(
     overwrites: &[BadgeOverwrite],
     ignored: &HashMap<String, Vec<u64>>,
     annoying_links: &HashMap<String, String>,
-) {
+) -> Jsonify {
     // Written by T3 Chat (Gemini 3 Flash)
     let skip_ids = overwrites
         .iter()
@@ -473,4 +478,15 @@ async fn main_processing(
             log::error!("Failed to open file {:?} for appending: {}", debug_path, e);
         }
     }
+
+    Jsonify::parse(
+        &skip_ids,
+        &tower_processed,
+        &item_processed,
+        &area_processed,
+        &event_processed,
+        &event_items_processed,
+        &mini_passed,
+        &adventure_pass,
+    )
 }

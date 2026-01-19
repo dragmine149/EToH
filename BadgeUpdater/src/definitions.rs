@@ -107,67 +107,6 @@ pub enum GlobalArea {
     Event(EventInfo),
 }
 
-// #[derive(Debug, Clone)]
-// pub struct Tower {
-//     // #[serde(rename = "n")]
-//     pub name: String,
-//     // #[serde(rename = "d")]
-//     pub difficulty: f64,
-//     // #[serde(rename = "b")]
-//     pub badges: Vec<u64>,
-//     // #[serde(rename = "t")]
-//     pub tower_type: Option<TowerType>,
-// }
-
-// impl Serialize for Tower {
-//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-//     where
-//         S: serde::Serializer,
-//     {
-//         let mut csv = format!("{},{},{:?}", self.name, self.difficulty, self.badges);
-//         if let Some(ttype) = self.tower_type {
-//             csv = format!("{csv},{}", ttype as u8);
-//         }
-
-//         serializer.serialize_str(&csv)
-//     }
-// }
-// impl<'de> Deserialize<'de> for Tower {
-//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-//     where
-//         D: serde::Deserializer<'de>,
-//     {
-//         let s = String::deserialize(deserializer)?;
-//         let parts: Vec<&str> = s.split(',').collect();
-
-//         if parts.len() < 3 {
-//             return Err(serde::de::Error::custom("invalid tower format"));
-//         }
-
-//         let name = parts[0].to_string();
-//         let difficulty = parts[1].parse().map_err(serde::de::Error::custom)?;
-
-//         let badges_str = parts[2].trim_start_matches('[').trim_end_matches(']');
-//         let badges = badges_str
-//             .split_whitespace()
-//             .filter_map(|s| s.trim_matches(',').parse().ok())
-//             .collect();
-
-//         let tower_type = if parts.len() > 3 {
-//             Some(TowerType::from(parts[3]))
-//         } else {
-//             None
-//         };
-
-//         Ok(Tower {
-//             name,
-//             difficulty,
-//             badges,
-//             tower_type,
-//         })
-//     }
-// }
-
 #[derive(Debug, Deserialize, Serialize, Default, Clone)]
 pub struct TowerDifficulties {
     #[serde(skip_serializing_if = "Option::is_none", rename = "e")]
@@ -345,7 +284,7 @@ impl From<TowerType> for u8 {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 pub enum Length {
     /// <= 20 mins
     #[default]
