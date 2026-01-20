@@ -13,9 +13,7 @@ use crate::{
         WikiTower, badges_from_map_value,
     },
     json::Jsonify,
-    process_items::{
-        get_event_areas, process_area, process_event_item, process_item, process_tower,
-    },
+    process_items::{get_event_areas, process_all_items, process_area, process_tower},
     reqwest_client::RustClient,
 };
 use dotenv::dotenv;
@@ -190,12 +188,10 @@ async fn main() {
     .await;
     result.parse_skipped(&overwrites, &annoying_links);
     println!("{:?}", result);
-
-    ()
 }
 
 /// The main processing function which takes in the most basics and gives everything as something usable.
-// #[allow(unused_variables, reason = "Will be used later")]
+#[allow(unused_variables, reason = "Will be used later")]
 async fn main_processing(
     client: &RustClient,
     url: &Url,
@@ -263,38 +259,10 @@ async fn main_processing(
         Some(debug_path),
     );
 
-    // process items now we now which towers have passed.
-    let mut items = vec![];
-    for ele in passed.iter().filter(|p| {
-        !tower_processed
-            .iter()
-            .any(|t| t.badge_name.contains(&p.1.name))
-    }) {
-        items.push(process_item(client, &ele.0, &ele.1).await);
-    }
-    let (item_processed, items_failed) = count_processed(
-        &items,
-        |i: &Result<WikiTower, String>| i.is_ok(),
-        "process_item",
-        Some(debug_path),
-    );
-
-    // combine the both
-    let mut success = vec![];
-    tower_processed.iter().for_each(|i| success.push(i));
-    item_processed.iter().for_each(|i| success.push(i));
-    log::info!(
-        "[badge to tower] Total: {}. Passed: {}. Rate: {:.2}%",
-        badges_vec.len(),
-        success.len(),
-        ((success.len() as f64) / (badges_vec.len() as f64)) * 100.0
-    );
-
     // process areas based off towers.
     // Unique is here to reduce double area checking
-    let areas_list = success.clone().into_iter().map(|t| t.area.clone()).unique();
     let mut areas = vec![];
-    for area in areas_list.clone() {
+    for area in tower_processed.iter().map(|t| t.area.clone()).unique() {
         areas.push(process_area(client, &area).await);
     }
 
@@ -306,10 +274,6 @@ async fn main_processing(
     );
 
     // do the same but for the event based ones.
-    // let mut event_areas = vec![];
-    // for ele in areas_list.filter(|a| area_failed.iter().any(|f| f.contains(a))) {
-    //     event_areas.push(process_event_area(client, &ele).await);
-    // }
     let pre_event_areas = get_event_areas(client).await;
     let event_areas = if pre_event_areas.is_err() {
         log::error!(
@@ -343,32 +307,21 @@ async fn main_processing(
         ((area_success.len() as f64) / (areas.len() as f64)) * 100.0
     );
 
-    // println!("[");
-    // event_processed.iter().for_each(|x| println!("    {:?}", x));
-    // println!("]");
-
+    // Process the items that we have by avoid any of the towers we processed so far.
     // println!("{:?}", event_processed);
-    let mut event_items = vec![];
-    for ele in passed
-        .iter()
-        .filter(|p| {
-            !tower_processed
-                .iter()
-                .any(|t| t.badge_name.contains(&p.1.name))
-        })
-        .filter(|p| {
-            !item_processed
-                .iter()
-                .any(|i| i.badge_name.contains(&p.1.name))
-        })
-    {
-        event_items.push(process_event_item(&ele.0, &ele.1, &event_processed));
+    let mut items = vec![];
+    for ele in passed.iter().filter(|p| {
+        !tower_processed
+            .iter()
+            .any(|t| t.badge_name.contains(&p.1.name))
+    }) {
+        items.push(process_all_items(&client, &ele.0, &ele.1, &event_processed).await);
     }
 
-    let (event_items_processed, event_items_failed) = count_processed(
-        &event_items,
-        |e: &Result<EventItem, String>| e.is_ok(),
-        "process_event_item",
+    let (all_items_processed, all_items_failed) = count_processed(
+        &items,
+        |e: &Result<(EventItem, Option<WikiTower>), String>| e.is_ok(),
+        "process_all_items",
         Some(debug_path),
     );
 
@@ -378,7 +331,10 @@ async fn main_processing(
     let mini_towers = hard_coded::parse_mini_towers(
         client,
         failed_list,
-        &success.iter().map(|t| t.page_name.clone()).collect_vec(),
+        &tower_processed
+            .iter()
+            .map(|t| t.page_name.clone())
+            .collect_vec(),
     )
     .await;
     let (mini_passed, mini_failed) = count_processed(
@@ -386,14 +342,6 @@ async fn main_processing(
         |m| m.is_ok(),
         "hard_coded::parse_mini_towers",
         Some(debug_path),
-    );
-
-    mini_passed.iter().for_each(|m| success.push(m));
-    log::info!(
-        "[badge to tower w/hard] Total: {}. Passed: {}. Rate: {:.2}%",
-        badges_vec.len(),
-        success.len(),
-        ((success.len() as f64) / (badges_vec.len() as f64)) * 100.0
     );
 
     let adventure_towers = hard_coded::area_from_description(failed_list);
@@ -404,10 +352,15 @@ async fn main_processing(
         Some(debug_path),
     );
     let adventure_ids = adventure_pass.iter().map(|a| a.badge_id).collect_vec();
-    let success_ids = success.iter().map(|s| s.badge_id).collect_vec();
-    let event_items_ids = event_items_processed
+    let success_ids = tower_processed
         .iter()
-        .map(|e| e.badge_id)
+        .map(|s| s.badge_id)
+        .chain(all_items_processed.iter().map(|ei| ei.0.badge_id))
+        .chain(mini_passed.iter().map(|mini| mini.badge_id))
+        .collect_vec();
+    let event_items_ids = all_items_processed
+        .iter()
+        .map(|e| e.0.badge_id)
         .collect_vec();
     let mut unprocessed = badges_vec
         .iter()
@@ -482,10 +435,9 @@ async fn main_processing(
     Jsonify::parse(
         &skip_ids,
         &tower_processed,
-        &item_processed,
         &area_processed,
         &event_processed,
-        &event_items_processed,
+        &all_items_processed,
         &mini_passed,
         &adventure_pass,
     )

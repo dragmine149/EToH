@@ -59,10 +59,9 @@ impl Jsonify {
     pub fn parse(
         skip_ids: &[u64],
         towers: &[&WikiTower],
-        items: &[&WikiTower],
         areas: &[&AreaInformation],
         events: &[&EventInfo],
-        event_items: &[&EventItem],
+        event_items: &[&(EventItem, Option<WikiTower>)],
         mini: &[&WikiTower],
         adventure: &[&BadgeOverwrite],
     ) -> Self {

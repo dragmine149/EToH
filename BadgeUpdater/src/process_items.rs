@@ -239,47 +239,71 @@ pub async fn get_page_data(client: &RustClient, page: &str) -> Result<WikiText, 
     Err(format!("Failed to get {:?}", page))
 }
 
-/// Items have their own specific set of template which we need to deal with.
-#[allow(
-    clippy::await_holding_refcell_ref,
-    reason = "we specifically drop it, its fine. We can't do the workaround without complicating the code any further and we don't really need the parsed obj anymore."
-)]
-pub async fn process_item(
+/// Items are special, ever since the purgatory update you no longer get items from normal towers. Or well, key items.
+/// Henceforth, we can assume everything will be linked to an event.
+///
+/// If this changes in the future, well... whatever deal with it then (thats half this codebase).
+pub async fn process_all_items(
     client: &RustClient,
     text: &WikiText,
     badge: &Badge,
-) -> Result<WikiTower, String> {
-    let page_name = text.page_name();
+    areas: &[&EventInfo],
+) -> Result<(EventItem, Option<WikiTower>), String> {
     let parsed = text
         .get_parsed()
-        .map_err(|e| format!("Failed to parse wikitext: {:?}", e))?;
-    let template = parsed
-        .get_template("iteminfobox")
-        .map_err(|e| format!("Failed to get iteminfobox ({:?}) > {:?}", page_name, e))?;
-    // technically it could be found elsewhere but here is most likely.
-    let links = template
-        .get_named_arg("method_of_obtaining")
-        .map_err(|e| {
-            format!(
-                "Failed to get method of obtaining on item template ({:?})",
-                e
-            )
-        })?
-        .get_links(Some(LinkType::Internal));
+        .map_err(|e| format!("Failed to parse wikitext ({:?})", e))?;
+    let links = parsed.get_links(Some(LinkType::Internal));
 
-    drop(parsed);
-    // got to check all the links though.
-    for link in links {
-        let mut wikitext = get_page_data(client, &link.target).await?;
-        wikitext.set_page_name(Some(link.target));
-        let tower = process_tower(&wikitext, badge);
-        if tower.is_ok() {
-            return tower;
+    // Got to be a valid event based page first. A Err(String) is returned if it is not.
+    let event_link = links
+        .iter()
+        .filter(|link| link.target.starts_with("Category"))
+        .find(|link| {
+            areas.iter().any(|e| {
+                link.target
+                    .to_lowercase()
+                    .contains(&e.event_name.to_lowercase())
+            })
+        })
+        .ok_or(format!(
+            "Failed to get event area out of page categories ({:?}) ({:?})",
+            badge.name,
+            links.iter().map(|link| &link.target).collect_vec()
+        ))?;
+
+    // Templates are nice, because we can link a tower.
+    let mut tower_link = None;
+    if let Ok(template) = parsed.get_template("iteminfobox") {
+        if let Ok(obtain) = template.get_named_arg("method_of_obtaining") {
+            for link in obtain.get_links(Some(LinkType::Internal)) {
+                // If this fails, then the rest will probably fail.
+                let mut wikitext = get_page_data(client, &link.target).await?;
+                wikitext.set_page_name(Some(link.target.to_owned()));
+                let tower = process_tower(&wikitext, badge);
+                if tower.is_ok() {
+                    tower_link = tower.ok();
+                    break;
+                    // } else {
+                    //     log::error!(
+                    //         "Failed to get link tower: {:?} err: {:?}",
+                    //         link,
+                    //         tower.err()
+                    //     );
+                }
+            }
         }
-    }
-    Err(format!(
-        "Failed to get a valid tower out of the links provided. ({:?})",
-        page_name
+    };
+    // Get an owned reference to the tower name for our link.
+    let tower_name = tower_link.as_ref().map(|t| t.page_name.to_owned());
+
+    Ok((
+        EventItem {
+            item_name: badge.name.to_owned(),
+            event_name: event_link.target.to_owned(),
+            badge_id: badge.id.to_owned(),
+            tower_name,
+        },
+        tower_link,
     ))
 }
 
@@ -499,66 +523,5 @@ pub async fn process_event_area(client: &RustClient, area: &str) -> Result<Event
     Ok(EventInfo {
         area_name: name.to_owned(),
         event_name: area.to_owned(),
-    })
-}
-
-pub fn process_event_item(
-    text: &WikiText,
-    badge: &Badge,
-    event_areas: &Vec<&EventInfo>,
-) -> Result<EventItem, String> {
-    println!("____________________________________________________________");
-    println!("BADGE: {:?}", badge.name);
-    let links = text
-        .get_parsed()
-        .map_err(|e| format!("Failed to parse wikitext ({:?})", e))?
-        .get_links(Some(LinkType::Internal));
-    println!(
-        "{:?}",
-        links
-            .iter()
-            .filter(|e| e.target.starts_with("Category:"))
-            .collect_vec()
-    );
-    println!(
-        "{:?}",
-        links
-            .iter()
-            .filter(|e| e.target.starts_with("Category:"))
-            .filter(|link| {
-                event_areas.iter().any(|e| {
-                    link.target
-                        .to_lowercase()
-                        .contains(&e.event_name.to_lowercase())
-                })
-            })
-            .collect_vec()
-    );
-    println!("{:?}", event_areas);
-    println!("____________________________________________________________");
-    let event = links
-        .iter()
-        .filter(|link| link.target.starts_with("Category"))
-        .find(|link| {
-            event_areas.iter().any(|e| {
-                link.target
-                    .to_lowercase()
-                    .contains(&e.event_name.to_lowercase())
-            })
-        })
-        .ok_or(format!(
-            "Failed to get event area out of page categories ({:?}) ({:?})",
-            badge.name,
-            links.iter().map(|link| &link.target).collect_vec()
-        ))?;
-    Ok(EventItem {
-        item_name: badge.name.to_owned(),
-        event_name: event
-            .target
-            .split(":")
-            .nth(1)
-            .ok_or("Failed to get event name from category split")?
-            .into(),
-        badge_id: badge.id,
     })
 }
