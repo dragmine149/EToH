@@ -100,7 +100,7 @@ pub struct EventItem {
     pub item_name: String,
     pub event_name: String,
     // badge id is still required when there is no tower_name.
-    pub badge_id: u64,
+    pub badges: [u64; 2],
     pub tower_name: Option<String>,
 }
 

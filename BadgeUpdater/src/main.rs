@@ -145,7 +145,8 @@ fn read_jsonc(path: &str) -> String {
 const DEBUG_PATH: &str = "./badges.temp.txt";
 const OVERWRITE_PATH: &str = "../overwrite.jsonc";
 const ANNOYING_LINKS_PATH: &str = "../annoying_links.json";
-const IGNORED_LIST: &str = "../ignored.jsonc";
+const IGNORED_LIST_PATH: &str = "../ignored.jsonc";
+const OUTPUT_PATH: &str = "../badges.json";
 
 #[tokio::main]
 async fn main() {
@@ -172,8 +173,9 @@ async fn main() {
         &fs::read_to_string(ANNOYING_LINKS_PATH).unwrap_or("{}".into()),
     )
     .unwrap_or_default();
-    let ignored_list = serde_json::from_str::<HashMap<String, Vec<u64>>>(&read_jsonc(IGNORED_LIST))
-        .unwrap_or_default();
+    let ignored_list =
+        serde_json::from_str::<HashMap<String, Vec<u64>>>(&read_jsonc(IGNORED_LIST_PATH))
+            .unwrap_or_default();
 
     log::info!("Setup complete, starting searching");
 
@@ -186,8 +188,10 @@ async fn main() {
         &annoying_links,
     )
     .await;
-    result.parse_skipped(&overwrites, &annoying_links);
+    result.parse_skipped(&overwrites);
     println!("{:?}", result);
+
+    fs::write(OUTPUT_PATH, serde_json::to_string_pretty(&result).unwrap()).unwrap();
 }
 
 /// The main processing function which takes in the most basics and gives everything as something usable.
@@ -200,7 +204,6 @@ async fn main_processing(
     ignored: &HashMap<String, Vec<u64>>,
     annoying_links: &HashMap<String, String>,
 ) -> Jsonify {
-    // Written by T3 Chat (Gemini 3 Flash)
     let skip_ids = overwrites
         .iter()
         .flat_map(|bo| std::iter::once(bo.badge_id).chain(bo.alt_ids.iter().copied()))
@@ -355,12 +358,13 @@ async fn main_processing(
     let success_ids = tower_processed
         .iter()
         .map(|s| s.badge_id)
-        .chain(all_items_processed.iter().map(|ei| ei.0.badge_id))
+        .chain(all_items_processed.iter().flat_map(|ei| ei.0.badges))
         .chain(mini_passed.iter().map(|mini| mini.badge_id))
         .collect_vec();
     let event_items_ids = all_items_processed
         .iter()
-        .map(|e| e.0.badge_id)
+        .map(|e| e.0.badges)
+        .flatten()
         .collect_vec();
     let mut unprocessed = badges_vec
         .iter()
@@ -433,7 +437,6 @@ async fn main_processing(
     }
 
     Jsonify::parse(
-        &skip_ids,
         &tower_processed,
         &area_processed,
         &event_processed,

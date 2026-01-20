@@ -3,6 +3,7 @@ use crate::definitions::{
     WikiTower,
 };
 use chrono::{DateTime, Utc};
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -41,12 +42,27 @@ pub struct Item {
     pub tower_name: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Category {
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ExtendedArea {
     requirements: AreaRequirements,
     parent: Option<String>,
     towers: Vec<Tower>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     items: Option<Vec<Item>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    event_area_name: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OtherData {
+    name: String,
+    ids: Vec<u64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum Category {
+    Area(ExtendedArea),
+    Other(Vec<OtherData>),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -57,21 +73,55 @@ pub struct Jsonify {
 
 impl Jsonify {
     pub fn parse(
-        skip_ids: &[u64],
         towers: &[&WikiTower],
         areas: &[&AreaInformation],
         events: &[&EventInfo],
-        event_items: &[&(EventItem, Option<WikiTower>)],
+        all_items: &[&(EventItem, Option<WikiTower>)],
         mini: &[&WikiTower],
         adventure: &[&BadgeOverwrite],
     ) -> Self {
-        let categories = areas
+        let mut categories = areas
             .iter()
             .map(|area| {
-                let category = Category::from(area.to_owned());
-                (area.name.to_owned(), category)
+                let mut category = ExtendedArea::from(area.to_owned());
+                category.towers = towers
+                    .iter()
+                    .filter(|t| t.area == area.name)
+                    .chain(mini.iter().filter(|m| m.area == area.name))
+                    .map(Tower::from)
+                    .collect_vec();
+
+                (area.name.to_owned(), Category::Area(category))
             })
-            .collect();
+            .collect::<HashMap<String, Category>>();
+
+        categories.extend(adventure.iter().map(|a| {
+            (
+                a.category.to_owned(),
+                Category::Other(vec![OtherData::from(a)]),
+            )
+        }));
+        categories.extend(events.iter().map(|event| {
+            let area = ExtendedArea {
+                event_area_name: Some(event.area_name.to_owned()),
+                items: Some(
+                    all_items
+                        .iter()
+                        .map(|(item, _)| Item::from(item))
+                        .collect_vec(),
+                ),
+                towers: all_items
+                    .iter()
+                    .filter(|t| t.1.is_some())
+                    .map(|t| t.1.as_ref().unwrap().to_owned())
+                    .filter(|t| t.area == event.area_name)
+                    .map(Tower::from)
+                    .collect_vec(),
+                ..Default::default()
+            };
+
+            (event.event_name.to_owned(), Category::Area(area))
+        }));
 
         Self {
             modify_date: Utc::now(),
@@ -79,12 +129,33 @@ impl Jsonify {
         }
     }
 
-    pub fn parse_skipped(
-        &mut self,
-        overwrite: &[BadgeOverwrite],
-        annoyed: &HashMap<String, String>,
-    ) -> &mut Self {
-        todo!();
+    pub fn parse_skipped(&mut self, overwrite: &[BadgeOverwrite]) -> &mut Self {
+        for badge in overwrite {
+            let mut badge_ids = vec![badge.badge_id];
+            badge.alt_ids.iter().for_each(|id| badge_ids.push(*id));
+
+            let cat = self.categories.get_mut(&badge.category);
+            if let Some(category) = cat {
+                match category {
+                    Category::Area(extended_area) => unreachable!("..."),
+                    Category::Other(other_data) => {
+                        other_data.push(OtherData {
+                            name: badge.name.to_owned(),
+                            ids: badge_ids,
+                        });
+                    }
+                }
+            } else {
+                self.categories.insert(
+                    badge.category.to_owned(),
+                    Category::Other(vec![OtherData {
+                        name: badge.name.to_owned(),
+                        ids: badge_ids,
+                    }]),
+                );
+            }
+        }
+
         self
     }
 
@@ -92,17 +163,17 @@ impl Jsonify {
         todo!()
     }
 
-    pub fn stringify(&self) -> String {
-        serde_json::to_string(self).expect("Failed to convert jsonify to string!")
-    }
+    pub fn compare(&self, previous: &Self) -> Option<Vec<String>> {
+        if self.modify_date == previous.modify_date {
+            return None;
+        }
 
-    pub fn compare(&self, previous: &Self) -> Self {
         todo!()
     }
 }
 
-impl From<&WikiTower> for Tower {
-    fn from(tower: &WikiTower) -> Self {
+impl From<&&WikiTower> for Tower {
+    fn from(tower: &&WikiTower) -> Self {
         Tower {
             name: tower.page_name.to_owned(),
             badges: [tower.badge_id, 0],
@@ -112,14 +183,40 @@ impl From<&WikiTower> for Tower {
         }
     }
 }
+impl From<&WikiTower> for Tower {
+    fn from(value: &WikiTower) -> Self {
+        Self::from(&value)
+    }
+}
 
-impl From<&AreaInformation> for Category {
+impl From<&AreaInformation> for ExtendedArea {
     fn from(value: &AreaInformation) -> Self {
         Self {
             requirements: value.requirements.to_owned().unwrap_or_default(),
             parent: value.parent_area.to_owned(),
-            towers: vec![],
-            items: None,
+            ..Default::default()
+        }
+    }
+}
+
+impl From<&&BadgeOverwrite> for OtherData {
+    fn from(value: &&BadgeOverwrite) -> Self {
+        let mut ids = vec![value.badge_id];
+        ids.extend(value.alt_ids.iter());
+
+        Self {
+            name: value.name.to_owned(),
+            ids,
+        }
+    }
+}
+
+impl From<&EventItem> for Item {
+    fn from(value: &EventItem) -> Self {
+        Self {
+            name: value.item_name.to_owned(),
+            badges: value.badges,
+            tower_name: value.tower_name.to_owned(),
         }
     }
 }
