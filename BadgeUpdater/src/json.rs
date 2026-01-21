@@ -2,7 +2,7 @@ use crate::definitions::{
     AreaInformation, AreaRequirements, BadgeOverwrite, EventInfo, EventItem, Length, TowerType,
     WikiTower,
 };
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, FixedOffset, Utc};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -51,6 +51,8 @@ pub struct ExtendedArea {
     items: Option<Vec<Item>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     event_area_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    until: Option<DateTime<FixedOffset>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -126,6 +128,7 @@ impl Jsonify {
                     .filter(|t| t.area == event.area_name)
                     .map(Tower::from)
                     .collect_vec(),
+                until: event.until,
                 ..Default::default()
             };
 
@@ -146,7 +149,7 @@ impl Jsonify {
             let cat = self.categories.get_mut(&badge.category);
             if let Some(category) = cat {
                 match category {
-                    Category::Area(extended_area) => unreachable!("..."),
+                    Category::Area(_) => unreachable!("..."),
                     Category::Other(other_data) => {
                         other_data.push(OtherData {
                             name: badge.name.to_owned(),
@@ -166,10 +169,6 @@ impl Jsonify {
         }
 
         self
-    }
-
-    pub fn shrink(&self) -> Self {
-        todo!()
     }
 
     pub fn compare(&self, previous: &Self) -> Option<Vec<String>> {

@@ -1,3 +1,4 @@
+use chrono::DateTime;
 use itertools::Itertools;
 
 use crate::{
@@ -520,8 +521,55 @@ pub async fn process_event_area(client: &RustClient, area: &str) -> Result<Event
     // and ignore any further lines
     let name = name_text.split("<br/>").next().unwrap().trim();
 
+    let countdown = parsed.get_template("Countdown");
+    let until = if let Ok(count) = countdown {
+        let end_date = count
+            .get_named_arg("enddate")
+            .map_err(|e| format!("Invalid countdown template ({}): {:}", area, e))?
+            .raw;
+        let end_time = count.get_named_arg("endtime");
+        let endyear = count
+            .get_named_arg("endyear")
+            .map_err(|e| format!("Invalid countdown template ({}): {:}", area, e))?
+            .raw;
+        let timezone_offset = count
+            .get_named_arg("timezone")
+            .map(|t| t.raw)
+            .map(|t| {
+                let split = t.split_once(":").unwrap();
+                let start = if split.0.len() < 3 {
+                    let mut chars = split.0.chars();
+                    format!("{}0{}", chars.next().unwrap(), chars.next().unwrap())
+                } else {
+                    split.0.to_string()
+                };
+                format!("{}:{}", start, split.1)
+            })
+            .unwrap_or("-06:00".into());
+
+        let timestamp = format!(
+            "{} {} {} {}",
+            end_time.map(|t| t.raw).unwrap_or("00:00:00".into()),
+            endyear,
+            end_date,
+            timezone_offset
+        );
+
+        let dt = DateTime::parse_from_str(&timestamp, "%H:%M:%S %Y %B %-d %:z").map_err(|e| {
+            format!(
+                "Failed to convert {} countdown! ({}) {:?}",
+                area, timestamp, e
+            )
+        })?;
+
+        Some(dt)
+    } else {
+        None
+    };
+
     Ok(EventInfo {
         area_name: name.to_owned(),
         event_name: area.to_owned(),
+        until,
     })
 }

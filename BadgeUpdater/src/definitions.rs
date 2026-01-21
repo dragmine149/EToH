@@ -1,3 +1,4 @@
+use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
 use std::{
@@ -93,6 +94,7 @@ pub struct WikiTower {
 pub struct EventInfo {
     pub area_name: String,
     pub event_name: String,
+    pub until: Option<DateTime<FixedOffset>>,
 }
 
 #[derive(Debug, Clone)]
