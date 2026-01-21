@@ -244,6 +244,10 @@ pub async fn get_page_data(client: &RustClient, page: &str) -> Result<WikiText, 
 /// Henceforth, we can assume everything will be linked to an event.
 ///
 /// If this changes in the future, well... whatever deal with it then (thats half this codebase).
+#[allow(
+    clippy::await_holding_refcell_ref,
+    reason = "We do drop it though.. kinda"
+)]
 pub async fn process_all_items(
     client: &RustClient,
     text: &WikiText,
@@ -274,26 +278,27 @@ pub async fn process_all_items(
 
     // Templates are nice, because we can link a tower.
     let mut tower_link = None;
-    if let Ok(template) = parsed.get_template("iteminfobox") {
-        if let Ok(obtain) = template.get_named_arg("method_of_obtaining") {
-            for link in obtain.get_links(Some(LinkType::Internal)) {
-                // If this fails, then the rest will probably fail.
-                let mut wikitext = get_page_data(client, &link.target).await?;
-                wikitext.set_page_name(Some(link.target.to_owned()));
-                let tower = process_tower(&wikitext, badge);
-                if tower.is_ok() {
-                    tower_link = tower.ok();
-                    break;
-                    // } else {
-                    //     log::error!(
-                    //         "Failed to get link tower: {:?} err: {:?}",
-                    //         link,
-                    //         tower.err()
-                    //     );
-                }
+    if let Ok(template) = parsed.get_template("iteminfobox")
+        && let Ok(obtain) = template.get_named_arg("method_of_obtaining")
+    {
+        drop(parsed);
+        for link in obtain.get_links(Some(LinkType::Internal)) {
+            // If this fails, then the rest will probably fail.
+            let mut wikitext = get_page_data(client, &link.target).await?;
+            wikitext.set_page_name(Some(link.target.to_owned()));
+            let tower = process_tower(&wikitext, badge);
+            if tower.is_ok() {
+                tower_link = tower.ok();
+                break;
+                // } else {
+                //     log::error!(
+                //         "Failed to get link tower: {:?} err: {:?}",
+                //         link,
+                //         tower.err()
+                //     );
             }
         }
-    };
+    }
     // Get an owned reference to the tower name for our link.
     let tower_name = tower_link.as_ref().map(|t| t.page_name.to_owned());
 

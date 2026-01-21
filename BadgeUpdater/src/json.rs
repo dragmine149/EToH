@@ -63,10 +63,12 @@ pub struct OtherData {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Category {
-    Area(ExtendedArea),
+    Area(Box<ExtendedArea>),
     Other(Vec<OtherData>),
 }
 
+/// Store information about everything we've been collecting.
+/// Also allows for the data to be serialized/deserialized to and from json.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Jsonify {
     modify_date: DateTime<Utc>,
@@ -74,6 +76,7 @@ pub struct Jsonify {
 }
 
 impl Jsonify {
+    /// Parse all the information we've been gathering and store it in a massive struct.
     pub fn parse(
         towers: &[&WikiTower],
         areas: &[&AreaInformation],
@@ -93,7 +96,7 @@ impl Jsonify {
                     .map(Tower::from)
                     .collect_vec();
 
-                (area.name.to_owned(), Category::Area(category))
+                (area.name.to_owned(), Category::Area(Box::new(category)))
             })
             .collect::<HashMap<String, Category>>();
 
@@ -132,7 +135,7 @@ impl Jsonify {
                 ..Default::default()
             };
 
-            (event.event_name.to_owned(), Category::Area(area))
+            (event.event_name.to_owned(), Category::Area(Box::new(area)))
         }));
 
         Self {
@@ -141,6 +144,7 @@ impl Jsonify {
         }
     }
 
+    /// Parse the skipped badges, this is done separately because... just because.
     pub fn parse_skipped(&mut self, overwrite: &[BadgeOverwrite]) -> &mut Self {
         for badge in overwrite {
             let mut badge_ids = vec![badge.badge_id];
@@ -171,6 +175,8 @@ impl Jsonify {
         self
     }
 
+    /// Compare the current data structure to the old one.
+    /// If changes have occurred, then list them.
     pub fn compare(&self, previous: &Self) -> Vec<String> {
         if self.modify_date == previous.modify_date {
             return vec![];

@@ -106,11 +106,6 @@ pub struct EventItem {
     pub tower_name: Option<String>,
 }
 
-pub enum GlobalArea {
-    Area(AreaInformation),
-    Event(EventInfo),
-}
-
 #[derive(Debug, Deserialize, Serialize, Default, Clone)]
 pub struct TowerDifficulties {
     #[serde(skip_serializing_if = "Option::is_none", rename = "e")]
@@ -361,19 +356,6 @@ impl From<Length> for u16 {
             Length::Inhumanely => u16::MAX,
         }
     }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct OtherData {
-    pub name: String,
-    pub category: String,
-    pub badges: Vec<u64>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct OtherMap {
-    pub data: Vec<OtherData>,
-    pub ignored: Vec<u64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

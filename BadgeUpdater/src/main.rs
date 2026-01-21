@@ -9,8 +9,8 @@ mod wikitext;
 use crate::{
     badge_to_wikitext::{get_annoying, get_badges},
     definitions::{
-        AreaInformation, BadgeOverwrite, ErrorDetails, EventInfo, EventItem, GlobalArea, OkDetails,
-        WikiTower, badges_from_map_value,
+        AreaInformation, BadgeOverwrite, ErrorDetails, EventInfo, EventItem, OkDetails, WikiTower,
+        badges_from_map_value,
     },
     json::Jsonify,
     process_items::{get_event_areas, process_all_items, process_area, process_tower},
@@ -202,7 +202,7 @@ async fn main() {
 }
 
 /// The main processing function which takes in the most basics and gives everything as something usable.
-#[allow(unused_variables, reason = "Will be used later")]
+// #[allow(unused_variables, reason = "Will be used later")]
 async fn main_processing(
     client: &RustClient,
     url: &Url,
@@ -247,7 +247,7 @@ async fn main_processing(
         annoying_links,
     )
     .await;
-    let (annoying_pass, annoying_fail) = count_processed(
+    let (annoying_pass, _annoying_fail) = count_processed(
         &annoying,
         |a: &Result<OkDetails, ErrorDetails>| a.is_ok(),
         "get_annoying",
@@ -262,7 +262,7 @@ async fn main_processing(
         // .inspect(|x| println!("{:?}", x))
         .collect::<Vec<Result<WikiTower, String>>>();
 
-    let (tower_processed, tower_processed_failed) = count_processed(
+    let (tower_processed, _tower_processed_failed) = count_processed(
         &tower_data,
         |r: &Result<WikiTower, String>| r.is_ok(),
         "process_tower",
@@ -276,7 +276,7 @@ async fn main_processing(
         areas.push(process_area(client, &area).await);
     }
 
-    let (area_processed, area_failed) = count_processed(
+    let (area_processed, _area_failed) = count_processed(
         &areas,
         |a: &Result<AreaInformation, String>| a.is_ok(),
         "process_area",
@@ -295,26 +295,19 @@ async fn main_processing(
         pre_event_areas.ok().unwrap()
     };
 
-    let (event_processed, event_failed) = count_processed(
+    let (event_processed, _event_failed) = count_processed(
         &event_areas,
         |a: &Result<EventInfo, String>| a.is_ok(),
         "process_event_area",
         Some(debug_path),
     );
 
-    // combine them.
-    let mut area_success: Vec<GlobalArea> = vec![];
-    area_processed
-        .iter()
-        .for_each(|i| area_success.push(GlobalArea::Area((*i).clone())));
-    event_processed
-        .iter()
-        .for_each(|i| area_success.push(GlobalArea::Event((*i).clone())));
+    let success_area_count = area_processed.len() + event_processed.len();
     log::info!(
         "[area parsing] Total: {}. Passed: {}. Rate: {:.2}%",
         areas.len(),
-        area_success.len(),
-        ((area_success.len() as f64) / (areas.len() as f64)) * 100.0
+        success_area_count,
+        ((success_area_count as f64) / (areas.len() as f64)) * 100.0
     );
 
     // Process the items that we have by avoid any of the towers we processed so far.
@@ -325,10 +318,10 @@ async fn main_processing(
             .iter()
             .any(|t| t.badge_name.contains(&p.1.name))
     }) {
-        items.push(process_all_items(&client, &ele.0, &ele.1, &event_processed).await);
+        items.push(process_all_items(client, &ele.0, &ele.1, &event_processed).await);
     }
 
-    let (all_items_processed, all_items_failed) = count_processed(
+    let (all_items_processed, _all_items_failed) = count_processed(
         &items,
         |e: &Result<(EventItem, Option<WikiTower>), String>| e.is_ok(),
         "process_all_items",
@@ -347,7 +340,7 @@ async fn main_processing(
             .collect_vec(),
     )
     .await;
-    let (mini_passed, mini_failed) = count_processed(
+    let (mini_passed, _mini_failed) = count_processed(
         &mini_towers,
         |m| m.is_ok(),
         "hard_coded::parse_mini_towers",
@@ -355,7 +348,7 @@ async fn main_processing(
     );
 
     let adventure_towers = hard_coded::area_from_description(failed_list);
-    let (adventure_pass, adventure_fail) = count_processed(
+    let (adventure_pass, _adventure_fail) = count_processed(
         &adventure_towers,
         |a| a.is_ok(),
         "area_from_description",
@@ -370,8 +363,7 @@ async fn main_processing(
         .collect_vec();
     let event_items_ids = all_items_processed
         .iter()
-        .map(|e| e.0.badges)
-        .flatten()
+        .flat_map(|e| e.0.badges)
         .collect_vec();
     let mut unprocessed = badges_vec
         .iter()
