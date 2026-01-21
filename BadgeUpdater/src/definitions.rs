@@ -288,7 +288,7 @@ impl From<TowerType> for u8 {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
 pub enum Length {
     /// <= 20 mins
     #[default]

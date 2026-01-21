@@ -147,6 +147,7 @@ const OVERWRITE_PATH: &str = "../overwrite.jsonc";
 const ANNOYING_LINKS_PATH: &str = "../annoying_links.json";
 const IGNORED_LIST_PATH: &str = "../ignored.jsonc";
 const OUTPUT_PATH: &str = "../badges.json";
+const CHANGELOG_PATH: &str = "../changelog.md";
 
 #[tokio::main]
 async fn main() {
@@ -191,7 +192,13 @@ async fn main() {
     result.parse_skipped(&overwrites);
     // println!("{:?}", result);
 
+    let previous =
+        serde_json::from_str::<Jsonify>(&fs::read_to_string(OUTPUT_PATH).unwrap_or("{}".into()))
+            .unwrap_or_default();
+
     fs::write(OUTPUT_PATH, serde_json::to_string(&result).unwrap()).unwrap();
+    let change_log = result.compare(&previous);
+    fs::write(CHANGELOG_PATH, change_log.join("\n")).unwrap();
 }
 
 /// The main processing function which takes in the most basics and gives everything as something usable.
