@@ -191,7 +191,7 @@ async fn main() {
     result.parse_skipped(&overwrites);
     // println!("{:?}", result);
 
-    fs::write(OUTPUT_PATH, serde_json::to_string_pretty(&result).unwrap()).unwrap();
+    fs::write(OUTPUT_PATH, serde_json::to_string(&result).unwrap()).unwrap();
 }
 
 /// The main processing function which takes in the most basics and gives everything as something usable.
