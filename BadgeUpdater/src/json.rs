@@ -102,11 +102,20 @@ impl Jsonify {
             )
         }));
         categories.extend(events.iter().map(|event| {
+            // println!(
+            //     "{}///\n{:#?}\n",
+            //     event.event_name,
+            //     all_items
+            //         .iter()
+            //         .filter(|(item, _)| item.event_name == event.event_name)
+            // );
+
             let area = ExtendedArea {
                 event_area_name: Some(event.area_name.to_owned()),
                 items: Some(
                     all_items
                         .iter()
+                        .filter(|(item, _)| item.event_name == event.event_name)
                         .map(|(item, _)| Item::from(item))
                         .collect_vec(),
                 ),

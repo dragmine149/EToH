@@ -189,7 +189,7 @@ async fn main() {
     )
     .await;
     result.parse_skipped(&overwrites);
-    println!("{:?}", result);
+    // println!("{:?}", result);
 
     fs::write(OUTPUT_PATH, serde_json::to_string_pretty(&result).unwrap()).unwrap();
 }

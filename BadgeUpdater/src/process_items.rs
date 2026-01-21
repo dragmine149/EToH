@@ -299,7 +299,7 @@ pub async fn process_all_items(
     Ok((
         EventItem {
             item_name: badge.name.to_owned(),
-            event_name: event_link.target.to_owned(),
+            event_name: event_link.label.replace("Category:", "").trim().to_owned(),
             badges: [badge.id.to_owned(), 0],
             tower_name,
         },
