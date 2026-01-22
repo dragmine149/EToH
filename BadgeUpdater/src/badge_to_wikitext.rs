@@ -163,11 +163,11 @@ async fn process_data(
     // log::debug!("Getting: {:?} ({:?})", page_title, badge_id);
 
     // initial search of the page.
-    let mut page_data = get_page_redirect(&client, &clean_badge).await;
+    let mut page_data = get_page_redirect(client, &clean_badge).await;
     if page_data.is_err() {
         // recheck directly after a failed attempt, but replace some of the separators with other separators.
         clean_badge = clean_badge.replace("-", " ").trim().to_string();
-        page_data = get_page_redirect(&client, &clean_badge).await;
+        page_data = get_page_redirect(client, &clean_badge).await;
     }
 
     // cool, we can return early now that we have data.

@@ -16,9 +16,9 @@ use itertools::Itertools;
 /// # Arguments
 /// * client: Normal client to perform network reqwests
 /// * badges: List of badges to search through once we get page data.
-///     This means we can link them instead of the reverse.
+///   This means we can link them instead of the reverse.
 /// * Ignore: List of mini tower names which we have already got a match before.
-///     If we have a match, no point in trying to process it again, so we just ignore it.
+///   If we have a match, no point in trying to process it again, so we just ignore it.
 pub async fn parse_mini_towers(
     client: &RustClient,
     badges: &[Badge],

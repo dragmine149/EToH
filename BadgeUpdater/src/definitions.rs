@@ -585,11 +585,11 @@ impl Serialize for BadgeOverwrite {
         S: Serializer,
     {
         // serialize as an object with single string key -> array        use serde_json::Value as Jv;
-
-        let mut arr: Vec<Value> = Vec::with_capacity(2);
-        arr.push(Value::String(self.category.clone()));
-        arr.push(Value::String(self.name.clone()));
-        arr.push(Value::String(self.badge_ids[1].to_string()));
+        let arr = vec![
+            Value::String(self.category.clone()),
+            Value::String(self.name.clone()),
+            Value::String(self.badge_ids[1].to_string()),
+        ];
 
         let mut map = serde_json::map::Map::new();
         map.insert(self.badge_ids[0].to_string(), Value::Array(arr));

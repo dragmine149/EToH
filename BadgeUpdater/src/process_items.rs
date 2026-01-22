@@ -55,7 +55,7 @@ pub fn get_difficulty(template: &Template) -> Result<f64, String> {
             Argument::Table(_) => return Err(String::from("table in list in template!")),
             Argument::Text(text) => text.raw.clone(),
         },
-        /// easy, raw text.
+        // easy, raw text.
         Argument::Text(text) => text.raw.clone(),
         // never seen these
         Argument::Link(_) => return Err(String::from("Somehow a link in difficulty")),
@@ -141,7 +141,7 @@ pub fn get_type(template: &Template) -> Result<TowerType, String> {
 
 /// Area is more complicated than it looks. As towers have been moved between areas, and some events rely on towers instead of event-area specific.
 pub fn get_area(template: &Template, tower_name: &str) -> Result<String, String> {
-    /// basic area get function.
+    // basic area get function.
     let area_obj = template
         .get_named_args_query("found_in", QueryType::StartsWith)
         .first()

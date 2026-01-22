@@ -165,7 +165,7 @@ pub const IGNORED_LIST_PATH: &str = "../ignored.jsonc";
 pub const OUTPUT_PATH: &str = "../badges.json";
 /// The path to store any changes between this version and the previous days[^1] version
 ///
-/// [^1] days could be just yesterday or from weeks ago if nothing got updated.
+/// [^1]: days could be just yesterday or from weeks ago if nothing got updated.
 pub const CHANGELOG_PATH: &str = "../changelog.md";
 
 /// The main function of the program to call every other function like always.
