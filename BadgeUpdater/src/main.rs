@@ -31,6 +31,7 @@ pub const OLD_BADGE_URL: &str =
     "https://badges.roblox.com/v1/universes/1055653882/badges?limit=100";
 /// Link to the wiki to append to pretty nmuch every single URL.
 pub const ETOH_WIKI: &str = "https://jtoh.fandom.com/";
+pub const ETOH_WIKI_API: &str = "https://jtoh.fandom.com/api.php";
 
 /// Some badges have unwanted data which either messes with fandom search or just breaks other things.
 ///

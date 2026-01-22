@@ -20,7 +20,7 @@ pub struct RustClient(pub ClientWithMiddleware, PathBuf);
 #[derive(Debug)]
 #[allow(dead_code, reason = "I use this for debugging...")]
 pub enum RustError {
-    /// Something happened with the middlewar layer, aka the cache layer.
+    /// Something happened with the middleware layer, aka the cache layer.
     MiddleWare(reqwest_middleware::Error),
     /// Something happened within the reqwest layer, or the reqwest itself.
     Underly(reqwest::Error),
@@ -98,9 +98,9 @@ impl RustClient {
         log::warn!("Deleted cache dir, might take a bit longer to process");
     }
 
-    /// Wrapper for [reqwest.get()].
+    /// Wrapper for [reqwest::get()].
     ///
-    /// Just returns the middlewar instead as that is required.
+    /// Just returns the middleware instead as that is required.
     pub fn get<U>(&self, url: U) -> reqwest_middleware::RequestBuilder
     where
         U: reqwest::IntoUrl,

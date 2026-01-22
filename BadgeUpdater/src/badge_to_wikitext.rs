@@ -3,7 +3,7 @@
 //! Everything here is related to the retrieval of data. Processing said data is done elsewhere.
 
 use crate::{
-    ETOH_WIKI, clean_badge_name,
+    ETOH_WIKI, ETOH_WIKI_API, clean_badge_name,
     definitions::{
         Badge, ErrorDetails, OkDetails, PageDetails, ProcessError, RobloxBadgeData, WikiResult,
         WikiResultEnum,
@@ -187,8 +187,8 @@ async fn process_data(
         // search the next X entries.
         let pages = client
             .get(format!(
-                "{:}api.php?action=query&format=json&list=search&srsearch={:}&srlimit={:}",
-                ETOH_WIKI, clean_badge, 4
+                "{:}?action=query&format=json&list=search&srsearch={:}&srlimit={:}",
+                ETOH_WIKI_API, clean_badge, 4
             ))
             .send()
             .await?

@@ -3,6 +3,7 @@
 //! As much as 99% of this is hard coded, i've tried to keep it semi-dynamic by not referencing any specific names where possible.
 //! But here, we need to be a bit more strict with what we do in order for it to work.
 use crate::{
+    ETOH_WIKI,
     badge_to_wikitext::get_page_data,
     definitions::{Badge, BadgeOverwrite, WikiTower},
     process_items::process_tower,
@@ -26,7 +27,7 @@ pub async fn parse_mini_towers(
 ) -> Vec<Result<WikiTower, String>> {
     // get a list of mini towers.
     let mini_towers = client
-        .get("https://jtoh.fandom.com/wiki/Mini_Tower?action=raw")
+        .get(format!("{}wiki/Mini_Tower?action=raw", ETOH_WIKI))
         .send()
         .await
         .unwrap()

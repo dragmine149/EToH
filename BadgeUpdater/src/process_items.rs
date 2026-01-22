@@ -1,12 +1,12 @@
 //! Every single function (bar those in [crate::hard_coded]) which help with processing the data provided by the wiki.
 //!
-//! As much as this could be structed, not worth it. Also 90% of the actuall processing happens here.
+//! As much as this could be structured, not worth it. Also 90% of the processing happens here.
 
 use chrono::DateTime;
 use itertools::Itertools;
 
 use crate::{
-    ETOH_WIKI,
+    ETOH_WIKI_API,
     badge_to_wikitext::get_page_data,
     definitions::{
         AreaInformation, AreaRequirements, Badge, EventInfo, EventItem, Length, ProcessError,
@@ -504,7 +504,14 @@ pub async fn get_event_areas(
     client: &RustClient,
 ) -> Result<Vec<Result<EventInfo, String>>, ProcessError> {
     // and yes, this url params are hardcoded like that. it's kinda not fun to make this url.
-    let pages = client.get(format!("{}?action=query&format=json&list=categorymembers&titles=Events&formatversion=2&cmtitle=Category%3AEvents&cmlimit=500", ETOH_WIKI)).send().await?.json::<WikiResult>().await?;
+    log::debug!(
+        "URL: {}",
+        format!(
+            "{}?action=query&format=json&list=categorymembers&titles=Events&formatversion=2&cmtitle=Category%3AEvents&cmlimit=500",
+            ETOH_WIKI_API
+        )
+    );
+    let pages = client.get(format!("{}?action=query&format=json&list=categorymembers&titles=Events&formatversion=2&cmtitle=Category%3AEvents&cmlimit=500", ETOH_WIKI_API)).send().await?.json::<WikiResult>().await?;
     let areas = match pages.query {
         WikiResultEnum::Search(_) => {
             Err("Somehow wiki api returned a search list instead of a category list.")
