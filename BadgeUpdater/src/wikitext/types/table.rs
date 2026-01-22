@@ -207,7 +207,7 @@ impl Table {
     }
 }
 
-/// Build a 2D grid of Option<TableCell> for the table expanding rowspan/colspan.
+/// Build a 2D grid of `Option<TableCell>` for the table expanding rowspan/colspan.
 ///
 /// Cells are cloned to fill spanned positions. The resulting grid has dimensions
 /// rows x cols where cols is the maximal occupied column count.

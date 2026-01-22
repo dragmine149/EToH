@@ -27,3 +27,6 @@ This is separate as it's not really a "release" and most people won't care how t
 - better wiki parsing (like way way better)
 - more data storage (so more information)
 - ~90% automated (exact values... questionable), so i don't have to do stuff half the time.
+
+## Todos?
+- [ ] Make into workspaces? Basically split out [`wikitext`](./BadgeUpdater/src/wikitext) somehow.

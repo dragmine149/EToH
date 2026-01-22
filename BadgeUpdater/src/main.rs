@@ -1,10 +1,10 @@
-mod badge_to_wikitext;
-mod definitions;
-mod hard_coded;
-mod json;
-mod process_items;
-mod reqwest_client;
-mod wikitext;
+pub mod badge_to_wikitext;
+pub mod definitions;
+pub mod hard_coded;
+pub mod json;
+pub mod process_items;
+pub mod reqwest_client;
+pub mod wikitext;
 
 use crate::{
     badge_to_wikitext::{get_annoying, get_badges},
@@ -12,7 +12,7 @@ use crate::{
         AreaInformation, BadgeOverwrite, ErrorDetails, EventInfo, EventItem, OkDetails, WikiTower,
         badges_from_map_value,
     },
-    json::Jsonify,
+    json::{Jsonify, read_jsonc},
     process_items::{get_event_areas, process_all_items, process_area, process_tower},
     reqwest_client::RustClient,
 };
@@ -22,12 +22,26 @@ use lazy_regex::regex_replace;
 use std::{collections::HashMap, fs, io::Write, path::PathBuf, str::FromStr};
 use url::Url;
 
+// TODO: like we're doing for badges, make this a vector or something.
+
+/// Link to the badge list of the new game.
 pub const BADGE_URL: &str = "https://badges.roblox.com/v1/universes/3264581003/badges?limit=100";
+/// Link to the badge list of the old game.
 pub const OLD_BADGE_URL: &str =
     "https://badges.roblox.com/v1/universes/1055653882/badges?limit=100";
+/// Link to the wiki to append to pretty nmuch every single URL.
 pub const ETOH_WIKI: &str = "https://jtoh.fandom.com/";
 
-fn clean_badge_name(badge: &str) -> String {
+/// Some badges have unwanted data which either messes with fandom search or just breaks other things.
+///
+/// Here we clean it up, If possible, all badges should go through this function.
+///
+/// # Arguments
+/// * badge: The name of the badge to clean up.
+///
+/// # Returns
+/// * String: A brand new owned string element to do anything with.
+pub fn clean_badge_name(badge: &str) -> String {
     // Start with a trimmed copy
     let mut s = badge.trim().to_string();
 
@@ -47,7 +61,10 @@ fn clean_badge_name(badge: &str) -> String {
     s.trim().to_string()
 }
 
-fn fmt_secs(number: u64) -> String {
+/// Special one-off function for formating a datetime into a certain string.
+///
+/// TODO: Switch to something chorno::Datetime based?
+pub fn fmt_secs(number: u64) -> String {
     let (hour, minute, second) = (number / 3600, (number % 3600) / 60, number % 60);
     [hour, minute, second]
         .iter()
@@ -62,21 +79,23 @@ fn fmt_secs(number: u64) -> String {
 /// We use references as we don't really care about the list and it saves having to reassign just for a debug.
 ///
 /// # Arguments
-/// - obj -> A vector of objects to list through. (type is dynamic)
-/// - pass_check -> The function to filter out objects which have passed.
-/// - func_name -> Name of the function called before this
-/// - file -> Optional path to store something to.
+/// * obj: A vector of objects to list through. (type is dynamic)
+/// * pass_check: The function to filter out objects which have passed.
+/// * func_name: Name of the function called before this
+/// * file: Optional path to store something to.
 ///
 /// # Returns
-/// - Vec<&'a K> -> A list to use in other places.
+/// * `Vec<&'a K>`: A list of borrowed entries where they have passed the check
+/// * `Vec<&'a E>`: A list of borrowed entries where they have failed the check.
 ///
 /// # Example
-/// ```rs
+/// ```
 /// let mut objs: Vec<Result<u64, String>> = vec![];
-/// populate_vec(objs);
+/// // some random function
+/// populate_vec(&mut objs);
 /// let (passed, failed) = count_processed(&objs, |o| o.is_ok(), "some function", None);
 /// ```
-fn count_processed<'a, K, P, E>(
+pub fn count_processed<'a, K, P, E>(
     obj: &'a [Result<K, E>],
     pass_check: P,
     func_name: &str,
@@ -134,21 +153,22 @@ where
     (passed, failed)
 }
 
-fn read_jsonc(path: &str) -> String {
-    fs::read_to_string(path)
-        .unwrap_or("{}".into())
-        .lines()
-        .filter(|line| !line.trim_start().contains("//"))
-        .join("\n")
-}
+/// The path to store the debug information, includes all towers passed and the errors.
+pub const DEBUG_PATH: &str = "./badges.temp.txt";
+/// The path where we store individual badges we have manually overwritten to make work.
+pub const OVERWRITE_PATH: &str = "../overwrite.jsonc";
+/// The path where we store those few badges which fandom won't search for us.
+pub const ANNOYING_LINKS_PATH: &str = "../annoying_links.json";
+/// The path where we store all the badges we just straight up ignore and never deal with.
+pub const IGNORED_LIST_PATH: &str = "../ignored.jsonc";
+/// The path of the final output, the result will always be written here pre-end-panic.
+pub const OUTPUT_PATH: &str = "../badges.json";
+/// The path to store any changes between this version and the previous days[^1] version
+///
+/// [^1] days could be just yesterday or from weeks ago if nothing got updated.
+pub const CHANGELOG_PATH: &str = "../changelog.md";
 
-const DEBUG_PATH: &str = "./badges.temp.txt";
-const OVERWRITE_PATH: &str = "../overwrite.jsonc";
-const ANNOYING_LINKS_PATH: &str = "../annoying_links.json";
-const IGNORED_LIST_PATH: &str = "../ignored.jsonc";
-const OUTPUT_PATH: &str = "../badges.json";
-const CHANGELOG_PATH: &str = "../changelog.md";
-
+/// The main function of the program to call every other function like always.
 #[tokio::main]
 async fn main() {
     // setup
@@ -202,6 +222,8 @@ async fn main() {
 }
 
 /// The main processing function which takes in the most basics and gives everything as something usable.
+///
+/// Seperating this from main allows us to move it around easier and means main is smaller.
 // #[allow(unused_variables, reason = "Will be used later")]
 async fn main_processing(
     client: &RustClient,
@@ -213,7 +235,7 @@ async fn main_processing(
 ) -> Jsonify {
     let skip_ids = overwrites
         .iter()
-        .flat_map(|bo| std::iter::once(bo.badge_id).chain(bo.alt_ids.iter().copied()))
+        .flat_map(|bo| bo.badge_ids)
         .chain(ignored.values().flatten().copied())
         .collect_vec();
     println!("{:?}", overwrites);
@@ -354,7 +376,10 @@ async fn main_processing(
         "area_from_description",
         Some(debug_path),
     );
-    let adventure_ids = adventure_pass.iter().map(|a| a.badge_id).collect_vec();
+    let adventure_ids = adventure_pass
+        .iter()
+        .flat_map(|a| a.badge_ids)
+        .collect_vec();
     let success_ids = tower_processed
         .iter()
         .map(|s| s.badge_id)

@@ -1,18 +1,28 @@
-use std::{fs, path::PathBuf, time::SystemTime};
-
-use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache, HttpCacheOptions};
-use reqwest_middleware::ClientWithMiddleware;
+//! An extension to the default reqwest client but with caching support.
+//!
+//! It's done like this just to make it easier to make new versions / have a centrialised location for the client.
 
 use crate::fmt_secs;
+use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache, HttpCacheOptions};
+use reqwest_middleware::ClientWithMiddleware;
+use std::{fs, path::PathBuf, time::SystemTime};
 
 /// Custom struct as a wrapper for custom functions
+///
+/// # Usage
+/// ```
+/// RustClient::new(Some("a path".into()), None)
+/// ```
+/// You could make it from the struct but it's just easier that way.
 #[derive(Debug, Clone)]
 pub struct RustClient(pub ClientWithMiddleware, PathBuf);
 /// Custom error to include all potential reqwest related errors.
 #[derive(Debug)]
 #[allow(dead_code, reason = "I use this for debugging...")]
 pub enum RustError {
+    /// Something happened with the middlewar layer, aka the cache layer.
     MiddleWare(reqwest_middleware::Error),
+    /// Something happened within the reqwest layer, or the reqwest itself.
     Underly(reqwest::Error),
 }
 
@@ -89,6 +99,8 @@ impl RustClient {
     }
 
     /// Wrapper for [reqwest.get()].
+    ///
+    /// Just returns the middlewar instead as that is required.
     pub fn get<U>(&self, url: U) -> reqwest_middleware::RequestBuilder
     where
         U: reqwest::IntoUrl,

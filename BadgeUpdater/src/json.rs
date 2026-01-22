@@ -1,82 +1,34 @@
+//! The final module, convert everything to a json de/serializable struct
+
 use crate::definitions::{
-    AreaInformation, AreaRequirements, BadgeOverwrite, EventInfo, EventItem, Length, TowerType,
-    WikiTower,
+    AreaInformation, BadgeOverwrite, Category, EventInfo, EventItem, ExtendedArea, Item, OtherData,
+    Tower, WikiTower,
 };
-use chrono::{DateTime, FixedOffset, Utc};
+use chrono::{DateTime, Utc};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-
-/*
- * {
- * 	 "modified": String,
- *   "categories": {
- * 	   "some-area": {
- *       "requirements": AreaRequirements,
- *       "parent": Option<String>,
- *       "towers": Tower[],
- * 		 // we can only have items if we it's an event area. As such, event area will be determined by items
- *       "items": Option<Tower[]>,
- *     }
- * 	 }
- * }
- *
- *
- */
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Tower {
-    /// The wiki name of the tower. We could go badge, but wiki will be easier i hope.
-    pub name: String,
-    /// First badge is primary badge
-    pub badges: [u64; 2],
-    pub difficulty: f64,
-    pub length: Length,
-    pub tower_type: TowerType,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Item {
-    pub name: String,
-    pub badges: [u64; 2],
-    pub tower_name: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct ExtendedArea {
-    requirements: AreaRequirements,
-    parent: Option<String>,
-    towers: Vec<Tower>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    items: Option<Vec<Item>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    event_area_name: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    until: Option<DateTime<FixedOffset>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct OtherData {
-    name: String,
-    ids: Vec<u64>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum Category {
-    Area(Box<ExtendedArea>),
-    Other(Vec<OtherData>),
-}
+use std::{collections::HashMap, fs};
 
 /// Store information about everything we've been collecting.
 /// Also allows for the data to be serialized/deserialized to and from json.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Jsonify {
+    /// The data of last modification.
     modify_date: DateTime<Utc>,
+    /// The actual data we store.
     categories: HashMap<String, Category>,
 }
 
 impl Jsonify {
     /// Parse all the information we've been gathering and store it in a massive struct.
+    ///
+    /// # Arguments
+    /// * towers: List of towers which have passed
+    /// * areas: List of every single area we've gotten from the towers.
+    /// * events: List of every single event.
+    /// * all_items: List of every single item and a potential tower relationship
+    /// * mini: List of all mini towers which didn't get added in the towers list.
+    /// * adventure: List of badge overwrites classififed as "adventure", aka those gotten from description via `[crate::hard_coded::area_from_description]`
     pub fn parse(
         towers: &[&WikiTower],
         areas: &[&AreaInformation],
@@ -145,30 +97,28 @@ impl Jsonify {
     }
 
     /// Parse the skipped badges, this is done separately because... just because.
+    ///
+    /// # Arguments
+    /// * &mut self: Link to itself for writing
+    /// * overwrite: List of badges which we manually assign.
     pub fn parse_skipped(&mut self, overwrite: &[BadgeOverwrite]) -> &mut Self {
         for badge in overwrite {
-            let mut badge_ids = vec![badge.badge_id];
-            badge.alt_ids.iter().for_each(|id| badge_ids.push(*id));
-
             let cat = self.categories.get_mut(&badge.category);
+            let data = OtherData {
+                name: badge.name.to_owned(),
+                ids: badge.badge_ids,
+            };
+
             if let Some(category) = cat {
                 match category {
                     Category::Area(_) => unreachable!("..."),
                     Category::Other(other_data) => {
-                        other_data.push(OtherData {
-                            name: badge.name.to_owned(),
-                            ids: badge_ids,
-                        });
+                        other_data.push(data);
                     }
                 }
             } else {
-                self.categories.insert(
-                    badge.category.to_owned(),
-                    Category::Other(vec![OtherData {
-                        name: badge.name.to_owned(),
-                        ids: badge_ids,
-                    }]),
-                );
+                self.categories
+                    .insert(badge.category.to_owned(), Category::Other(vec![data]));
             }
         }
 
@@ -345,51 +295,13 @@ impl Jsonify {
     }
 }
 
-impl From<&&WikiTower> for Tower {
-    fn from(tower: &&WikiTower) -> Self {
-        Tower {
-            name: tower.page_name.to_owned(),
-            badges: [tower.badge_id, 0],
-            difficulty: tower.difficulty,
-            length: tower.length,
-            tower_type: tower.tower_type,
-        }
-    }
-}
-impl From<&WikiTower> for Tower {
-    fn from(value: &WikiTower) -> Self {
-        Self::from(&value)
-    }
-}
-
-impl From<&AreaInformation> for ExtendedArea {
-    fn from(value: &AreaInformation) -> Self {
-        Self {
-            requirements: value.requirements.to_owned().unwrap_or_default(),
-            parent: value.parent_area.to_owned(),
-            ..Default::default()
-        }
-    }
-}
-
-impl From<&&BadgeOverwrite> for OtherData {
-    fn from(value: &&BadgeOverwrite) -> Self {
-        let mut ids = vec![value.badge_id];
-        ids.extend(value.alt_ids.iter());
-
-        Self {
-            name: value.name.to_owned(),
-            ids,
-        }
-    }
-}
-
-impl From<&EventItem> for Item {
-    fn from(value: &EventItem) -> Self {
-        Self {
-            name: value.item_name.to_owned(),
-            badges: value.badges,
-            tower_name: value.tower_name.to_owned(),
-        }
-    }
+/// Helper function for reading a `jsonc` file as `serde_json` doesn't work by default.
+///
+/// This is just an extension of [fs::read_to_string] but removes any lines starting with `//`
+pub fn read_jsonc(path: &str) -> String {
+    fs::read_to_string(path)
+        .unwrap_or("{}".into())
+        .lines()
+        .filter(|line| !line.trim_start().contains("//"))
+        .join("\n")
 }

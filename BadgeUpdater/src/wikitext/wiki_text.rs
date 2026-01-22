@@ -53,7 +53,7 @@ impl WikiText {
     }
 
     /// Shared (non-mutable) getter that parses lazily if needed and returns a
-    /// Ref<ParsedData> to the cached parsed data.
+    /// `Ref<ParsedData>` to the cached parsed data.
     pub fn get_parsed(&self) -> Result<Ref<'_, ParsedData>, WtError> {
         if self.parsed.borrow().is_none() {
             let parsed = parse_wikitext_fragment(&self.text)?;

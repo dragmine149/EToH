@@ -1,21 +1,31 @@
+//! Get badges and convert them to wikitext
+//!
+//! Everything here is related to the retrieval of data. Processing said data is done elsewhere.
+
+use crate::{
+    ETOH_WIKI, clean_badge_name,
+    definitions::{
+        Badge, ErrorDetails, OkDetails, PageDetails, ProcessError, RobloxBadgeData, WikiResult,
+        WikiResultEnum,
+    },
+    reqwest_client::{RustClient, RustError},
+    wikitext::WikiText,
+};
 use async_recursion::async_recursion;
 use reqwest::Response;
 use std::{collections::HashMap, error::Error};
 use tokio::task::JoinHandle;
-
 use url::Url;
-
-use crate::{
-    ETOH_WIKI, clean_badge_name,
-    definitions::{Badge, Data, ErrorDetails, OkDetails, PageDetails, ProcessError, WikiSearch},
-    reqwest_client::{RustClient, RustError},
-    wikitext::WikiText,
-};
 
 /// Returns a list of new threads which contain information on every single badge.
 ///
+/// # Arguments
+///   * client: The client to use for web requests
+///   * url: The URL to request the badges from
+///   * ignore: A list of badge ids to ignore ass they have already been processed.
+///
 /// # Usage
-/// ```rs
+/// ```
 /// let badges = get_badges(&client, &url, &[]).await.unwrap();
 /// for badge in badges {
 ///    // badge can be gotten after awaiting it.
@@ -27,7 +37,7 @@ pub async fn get_badges(
     url: &Url,
     ignore: &[u64],
 ) -> Result<Vec<JoinHandle<Result<OkDetails, ErrorDetails>>>, Box<dyn Error>> {
-    let mut data: Data = Data::default();
+    let mut data: RobloxBadgeData = RobloxBadgeData::default();
     let mut tasks = vec![];
     // keep going until we run out of cursor to check.
     while let Some(next_page_cursor) = data.next_page_cursor {
@@ -35,13 +45,21 @@ pub async fn get_badges(
         url.query_pairs_mut()
             .append_pair("cursor", &next_page_cursor);
 
-        data = client.0.get(url).send().await?.json::<Data>().await?;
+        data = client
+            .get(url)
+            .send()
+            .await?
+            .json::<RobloxBadgeData>()
+            .await?;
 
         for badge in data.data {
             if ignore.contains(&badge.id) {
                 continue;
             }
-            tasks.push(tokio::spawn(pre_process(client.clone(), badge)));
+
+            // we have to clone the client here so that each thread has their own client.
+            let client = client.clone();
+            tasks.push(tokio::spawn(pre_process(client, badge)));
         }
     }
     Ok(tasks)
@@ -59,8 +77,14 @@ fn is_page_link(page: WikiText, badge: u64) -> Result<WikiText, String> {
 }
 
 /// Wrapper for [process_data] just so we can handle the return type easier.
-async fn pre_process(client: RustClient, badge: Badge) -> Result<OkDetails, ErrorDetails> {
-    let result = process_data(client.clone(), &badge.name, badge.id, None).await;
+///
+/// also attaches details about the badge to the return type.
+///
+/// # Arguments
+/// * client: An owned version of the client, used to get data from the wiki.
+/// * badge: An owned version of the badge, used to find the page and confirm it.
+pub async fn pre_process(client: RustClient, badge: Badge) -> Result<OkDetails, ErrorDetails> {
+    let result = process_data(&client, &badge.name, badge.id, None).await;
     if result.is_err() {
         return Err(ErrorDetails(result.err().unwrap(), badge));
     }
@@ -83,11 +107,18 @@ async fn get_page(client: &RustClient, page_name: &str) -> Result<Response, Rust
 }
 
 /// Gets the page by following every single (wiki) redirect that we come across.
+///
+/// Note: Use [get_page_data] instead. This will provide better return types and support.
+///
+/// # Arguments
+/// * client: A reference to the client.
+/// * page_name: The page to get information for.
+///
+/// # Returns
+/// * Ok(PageDetails): Information about the page after all redirects.
+/// * Err(RustError): Information about errors.
 #[async_recursion]
-pub async fn get_page_redirect(
-    client: &RustClient,
-    page_name: &str,
-) -> Result<PageDetails, RustError> {
+async fn get_page_redirect(client: &RustClient, page_name: &str) -> Result<PageDetails, RustError> {
     let data = get_page(client, page_name).await?;
     let text = data.error_for_status()?.text().await?;
 
@@ -95,44 +126,46 @@ pub async fn get_page_redirect(
     if text.to_lowercase().contains("#redirect") {
         // if we have #redirect, there will be a match and if there isn't well the page is broken so we fix that externally.
         // under no circumstance should redirect be empty
-        let matches = lazy_regex::regex_captures!(r"(?mi)#redirect \[\[(.+)\]\]", &text);
-        if matches.is_none() {
-            panic!("No matches for {:?} data: {:?}", page_name, text);
-        }
-        let (_, redirect) = matches.unwrap();
+        //
+        // Technically, `#redirect` can be commented out but eh, thats a very rare issue.
+        let (_, redirect) = lazy_regex::regex_captures!(r"(?mi)#redirect \[\[(.+)\]\]", &text)
+            .unwrap_or_else(|| panic!("No matches for {:?} data: {:?}", page_name, text));
         log::debug!("Redirecting to {:?}", redirect);
         let redirect_result = get_page_redirect(client, redirect).await?;
+        // returns the redirect version. Page name is included although we pioritise the redirect as thats more useful for back-tracking.
         return Ok(PageDetails {
             text: redirect_result.text,
             name: Some(redirect_result.name.unwrap_or(redirect.to_owned())),
         });
     }
 
+    // just return the bog standard text. Thats all we need to worry about.
     Ok(PageDetails {
         text,
         ..Default::default()
     })
 }
 
-/// Attempts to:
-/// - get the badge
-/// - get the badge but cleaner
-/// - get the badge but searching
+/// Attempts to get the badge and if that fails attempts again but just with some slightly different options.
+///
+/// Recommendation: Use [pre-process] instead as that has less parameters and better returns.
 ///
 /// Badge link is important and not always as simple to get, especially with some weird stuff in names sometimes.
 #[async_recursion]
 async fn process_data(
-    client: RustClient,
+    client: &RustClient,
     badge: &String,
     badge_id: u64,
     search: Option<&String>,
 ) -> Result<WikiText, ProcessError> {
+    // clean the badge name, this does pre-processing and make it actually usable.
     let mut clean_badge = clean_badge_name(badge);
     // log::debug!("Getting: {:?} ({:?})", page_title, badge_id);
 
+    // initial search of the page.
     let mut page_data = get_page_redirect(&client, &clean_badge).await;
     if page_data.is_err() {
-        // recheck but with cleaning the input.
+        // recheck directly after a failed attempt, but replace some of the separators with other separators.
         clean_badge = clean_badge.replace("-", " ").trim().to_string();
         page_data = get_page_redirect(&client, &clean_badge).await;
     }
@@ -149,9 +182,9 @@ async fn process_data(
         return Ok(wikitext);
     }
 
-    // if we aren't already in search mode
+    // We can only search once per loop, searching more would just end up stuck in infinite loop.
     if search.is_none() {
-        // search the next 3 entries.
+        // search the next X entries.
         let pages = client
             .get(format!(
                 "{:}api.php?action=query&format=json&list=search&srsearch={:}&srlimit={:}",
@@ -159,48 +192,68 @@ async fn process_data(
             ))
             .send()
             .await?
-            .json::<WikiSearch>()
+            .json::<WikiResult>()
             .await?;
         println!("{:?} ({:?}) ->\n{:#?}", clean_badge, badge, pages);
 
+        let search_list = match pages.query {
+            WikiResultEnum::Search(wiki_search_list) => Ok(wiki_search_list.search),
+            WikiResultEnum::Category(_) => {
+                Err("Somehow api returned back a category list instead of a search list!")
+            }
+        }?;
+
         // loop through each entry and return the first valid entry.
         // Normally this is the first entry, but there is always a chance it isn't.
-        for entry in pages.query.search {
+        for entry in search_list {
             // Subpages just don't count at all. They just annoy stuff.
             // If the wiki has a lot of subpages which we need to check, then we'll deal with it in the future.
             if entry.title.contains("/") {
+                // This could be useful for secret routes, but half of them don't follow convention.
                 continue;
             }
             if entry.title == clean_badge {
                 // something went wrong here
+                // If entry title is badge, we should have already got it earlier in a direct attack.
                 log::error!("How entry is title?? {:?}", entry.title);
                 continue;
             }
 
-            let search_page =
-                process_data(client.clone(), &entry.title, badge_id, Some(badge)).await;
+            // run this function again but with our search entry.
+            let search_page = process_data(client, &entry.title, badge_id, Some(badge)).await;
             if search_page.is_ok() {
                 return search_page;
             }
         }
     }
+
+    // if all else fails, we just have to admit defeat.
     Err("Failed to find the page after searching".into())
 }
 
+/// There are some (rare) badges where fandom just does not want to link the search for us.
+/// Hence we have to do it ourselves.
+///
+/// Compared to other functions though, we need to insert the return data back into the main list (as this is basically a search bypass).
+/// So its slightly more annoying. as per the name...
 pub async fn get_annoying(
     client: &RustClient,
     badges: &[&Badge],
     annoying_links: &HashMap<String, String>,
 ) -> Vec<Result<OkDetails, ErrorDetails>> {
+    // pre-make vector. Easier to make new than having to worry about lifetime and hashmap.
     let mut annoying = Vec::with_capacity(annoying_links.len());
 
     for (id, url) in annoying_links.iter() {
+        // we just need to make sure its a valid badge.
+        // we could just not worry about invalid ones but eh, easier.
         let badge = badges
             .iter()
             .find(|b| b.id == id.parse::<u64>().expect("Failed to parse badge id"))
             .unwrap_or_else(|| panic!("Failed to find badge! {}", id))
             .to_owned();
 
+        // now we get the data. And map the ok and err separately. It's mostly just adding the badge though.
         let data = get_page_redirect(client, url)
             .await
             .map(|ok| {
@@ -214,4 +267,15 @@ pub async fn get_annoying(
     }
 
     annoying
+}
+
+/// Wrapper for [get_page_redirect] but returns a more favourable `Result<WikiText, String>` instead.
+pub async fn get_page_data(client: &RustClient, page: &str) -> Result<WikiText, String> {
+    let data = get_page_redirect(client, page).await;
+    if let Ok(res) = data {
+        let mut wikitext = WikiText::parse(res.text);
+        wikitext.set_page_name(res.name);
+        return Ok(wikitext);
+    }
+    Err(format!("Failed to get {:?}", page))
 }

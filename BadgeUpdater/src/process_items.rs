@@ -1,11 +1,16 @@
+//! Every single function (bar those in [crate::hard_coded]) which help with processing the data provided by the wiki.
+//!
+//! As much as this could be structed, not worth it. Also 90% of the actuall processing happens here.
+
 use chrono::DateTime;
 use itertools::Itertools;
 
 use crate::{
-    badge_to_wikitext::get_page_redirect,
+    ETOH_WIKI,
+    badge_to_wikitext::get_page_data,
     definitions::{
         AreaInformation, AreaRequirements, Badge, EventInfo, EventItem, Length, ProcessError,
-        TowerType, WikiCategory, WikiTower,
+        TowerType, WikiResult, WikiResultEnum, WikiTower,
     },
     reqwest_client::RustClient,
     wikitext::{
@@ -19,7 +24,7 @@ use crate::{
 /// `original_difficulty` field is ignored as there can be many difficulties.
 ///
 /// Also parses the difficulty into a number which we can use.
-fn get_difficulty(template: &Template) -> Result<f64, String> {
+pub fn get_difficulty(template: &Template) -> Result<f64, String> {
     let query = template.get_named_args_query("difficulty", QueryType::StartsWith);
     let difficulty_text = query.first().ok_or("No difficulty found in tower")?;
 
@@ -29,13 +34,15 @@ fn get_difficulty(template: &Template) -> Result<f64, String> {
         .first()
         .ok_or("No elements in difficulty?")?
     {
+        // assume format is like {{difficulty|`some difficulty`}}
         Argument::Template(template) => {
             template
                 .get_positional_arg(0)
                 .map_err(|e| format!("failed to get first arg ({})", e))?
                 .raw
         }
-        Argument::Link(_) => return Err(String::from("Somehow a link in difficulty")),
+        // some towers have more than one listed difficulty, an old difficulty or two different versions.
+        // we just care about the first one as thats probably accurate.
         Argument::List(list) => match list.entries.first().ok_or("List with no entries?")? {
             Argument::Template(template) => {
                 template
@@ -48,7 +55,10 @@ fn get_difficulty(template: &Template) -> Result<f64, String> {
             Argument::Table(_) => return Err(String::from("table in list in template!")),
             Argument::Text(text) => text.raw.clone(),
         },
+        /// easy, raw text.
         Argument::Text(text) => text.raw.clone(),
+        // never seen these
+        Argument::Link(_) => return Err(String::from("Somehow a link in difficulty")),
         Argument::Table(_) => return Err(String::from("Somehow a table in difficulty")),
     }
     .parse::<f64>()
@@ -62,11 +72,11 @@ fn get_difficulty(template: &Template) -> Result<f64, String> {
 }
 
 /// Get the length field of the specified template.
-fn get_length(template: &Template) -> Result<Length, String> {
+pub fn get_length(template: &Template) -> Result<Length, String> {
     let query = template.get_named_args_query("length", QueryType::StartsWith);
     let length_text = query
         .first()
-        // we have to deal with this, but some by default length is < 20 minutes hence we can ignore it.
+        // we have to deal with this, but by default length is < 20 minutes hence we can ignore it.
         .ok_or("(warn ignore) No length found in tower")?;
 
     // just catching some loose ones.
@@ -85,17 +95,20 @@ fn get_length(template: &Template) -> Result<Length, String> {
             // yeah, sometimes `{{Length}}` exists which defaults to < 20 mins
             Err(_) => return Ok(Length::default()),
         },
-        Argument::Link(_) => return Err(String::from("Somehow a link in Length")),
         Argument::List(_) => {
             return Err(String::from(
                 "Somehow a List in Length (never seen this before)",
             ));
         }
-        Argument::Table(_) => return Err(String::from("Somehow a table in Length")),
         Argument::Text(text) => text.raw.clone(),
+        // never seen these
+        Argument::Link(_) => return Err(String::from("Somehow a link in Length")),
+        Argument::Table(_) => return Err(String::from("Somehow a table in Length")),
     };
 
     // should avoid chases when length is provided but no length is realistically provided.
+    // i haven't seen length being defined as the name itself, just the time (20/30/45/etc). Hence we should be fine.
+    //
     // NOTE: We can't actually remove this as this prevents cases with comments and other stuff failing the parsing even though its valid.
     if !txt.chars().any(|c| c.is_numeric()) {
         return Ok(Length::default());
@@ -109,8 +122,8 @@ fn get_length(template: &Template) -> Result<Length, String> {
 }
 
 /// The type of tower box is more accurate than from the name.
-/// This also covers for mini-towers and the rare (now removed) case of `Thanos Tower`
-fn get_type(template: &Template) -> Result<TowerType, String> {
+/// This also covers for mini-towers and the rare case of `Thanos Tower` (or similar mixed up tower names)
+pub fn get_type(template: &Template) -> Result<TowerType, String> {
     let query = template.get_named_args_query("type_of_tower", QueryType::StartsWith);
     let type_text = query.first().ok_or("Failed to get type of tower")?;
     let txt = match type_text.get(0).map_err(|e| format!("{:?}", e))? {
@@ -126,8 +139,9 @@ fn get_type(template: &Template) -> Result<TowerType, String> {
     Ok(TowerType::from(txt))
 }
 
-/// Area is more complicated than it looks.
-fn get_area(template: &Template, tower_name: &str) -> Result<String, String> {
+/// Area is more complicated than it looks. As towers have been moved between areas, and some events rely on towers instead of event-area specific.
+pub fn get_area(template: &Template, tower_name: &str) -> Result<String, String> {
+    /// basic area get function.
     let area_obj = template
         .get_named_args_query("found_in", QueryType::StartsWith)
         .first()
@@ -136,12 +150,12 @@ fn get_area(template: &Template, tower_name: &str) -> Result<String, String> {
         .clone();
 
     // get the first element which passes our checks.
-    //
     for elm in area_obj {
         match elm {
+            // link has the most likely to work.
             Argument::Link(link) => return Ok(link.target.clone()),
             Argument::List(list) => {
-                // log::debug!("{:?}", list);
+                //log::debug!("{:?}", list);
 
                 // yeah, this is annoying. We have to get the first entry as raw text
                 let wt = WikiText::parse(
@@ -170,7 +184,7 @@ fn get_area(template: &Template, tower_name: &str) -> Result<String, String> {
                     .clone());
             }
             _ => {
-                // log::warn!("Failed to deal with {:?} for {:?}", elm, tower_name);
+                //log::warn!("Failed to deal with {:?} for {:?}", elm, tower_name);
                 continue;
             }
         }
@@ -179,8 +193,12 @@ fn get_area(template: &Template, tower_name: &str) -> Result<String, String> {
 }
 
 /// Processes the tower provided into something else.
+///
+/// Aka, a function which does many things in one.
 pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String> {
-    // log::debug!("Tower: {:?}", text.page_name());
+    //log::debug!("Tower: {:?}", text.page_name());
+
+    // Got to get the tower first.
     let parsed = text
         .get_parsed()
         .map_err(|e| format!("Failed to parse wikitext: {:?}", e))?;
@@ -190,12 +208,13 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
         text.page_name()
     ))?;
 
+    // these are solved in their own function, so we just have to deal with any errors.
     let area = get_area(template, &badge.name)?;
 
     let difficulty = match get_difficulty(template) {
         Ok(diff) => diff,
         Err(e) => {
-            log::warn!("[Difficult/{}]: {:?}", badge.display_name, e);
+            log::warn!("[Difficult/{}]: {:?}", badge.name, e);
             100.0
         }
     };
@@ -203,7 +222,7 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
         Ok(len) => len,
         Err(e) => {
             if !e.contains("(warn ignore)") {
-                log::warn!("[Length/{}]: {:?}", badge.display_name, e);
+                log::warn!("[Length/{}]: {:?}", badge.name, e);
             }
             Length::default()
         }
@@ -211,7 +230,7 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
     let tower_type = match get_type(template) {
         Ok(tp) => tp,
         Err(e) => {
-            log::warn!("[Type/{}]: {:?}", badge.display_name, e);
+            log::warn!("[Type/{}]: {:?}", badge.name, e);
             TowerType::default()
         }
     };
@@ -228,25 +247,13 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
     })
 }
 
-/// [get_page_redirect] but returns wikitext
-/// TODO: move this?
-pub async fn get_page_data(client: &RustClient, page: &str) -> Result<WikiText, String> {
-    let data = get_page_redirect(client, page).await;
-    if let Ok(res) = data {
-        let mut wikitext = WikiText::parse(res.text);
-        wikitext.set_page_name(res.name);
-        return Ok(wikitext);
-    }
-    Err(format!("Failed to get {:?}", page))
-}
-
 /// Items are special, ever since the purgatory update you no longer get items from normal towers. Or well, key items.
 /// Henceforth, we can assume everything will be linked to an event.
 ///
 /// If this changes in the future, well... whatever deal with it then (thats half this codebase).
 #[allow(
     clippy::await_holding_refcell_ref,
-    reason = "We do drop it though.. kinda"
+    reason = "We do drop it though.. kinda. Point being, it's dropped its fine. hopefully..."
 )]
 pub async fn process_all_items(
     client: &RustClient,
@@ -260,6 +267,7 @@ pub async fn process_all_items(
     let links = parsed.get_links(Some(LinkType::Internal));
 
     // Got to be a valid event based page first. A Err(String) is returned if it is not.
+    // checking the linked categories is kinda the easiest way to find if it's an event, even if it might be unneseccary.
     let event_link = links
         .iter()
         .filter(|link| link.target.starts_with("Category"))
@@ -282,6 +290,8 @@ pub async fn process_all_items(
         && let Ok(obtain) = template.get_named_arg("method_of_obtaining")
     {
         drop(parsed);
+
+        // check all our links for the tower. As there are many links in one box.
         for link in obtain.get_links(Some(LinkType::Internal)) {
             // If this fails, then the rest will probably fail.
             let mut wikitext = get_page_data(client, &link.target).await?;
@@ -313,11 +323,19 @@ pub async fn process_all_items(
     ))
 }
 
-/// Area requirements are semi unique.
+/// Area requirements are semi unique...
 ///
-/// NOTE: This affects the object directly instead of returning a new object.
-fn parse_area_requirement(text: &str, reqs: &mut AreaRequirements) -> Result<(), String> {
-    // custom regex to search for us.
+/// We simultaneously got to deal with:
+/// * single line requirements
+/// * list requirements
+/// * semi-different wording
+/// * and the rare occasion of the extra message.
+///
+/// # Notes
+/// * This affects the object directly instead of returning a new object.
+/// * Even if the towers required is a list, we only process one line at a time. The regex would get too complex otherwise. If you want to do multiple, use [get_requirements]
+pub fn parse_area_requirement(text: &str, reqs: &mut AreaRequirements) -> Result<(), String> {
+    // custom regex to search for us. See https://regex101.com/r/UHVWCZ/3 for test data and details on regex.
     let (_total, _, _, count, _, diff, towers, _, area) = lazy_regex::regex_captures!(
         r"(?m)(\*|=|=\*)?(.*) (\d+) (\{\{Difficulty\|(.*)\|.*\|)?(\[?\[?Towers?)? ?(in.*\[\[(.*)\]\])?",
         text.split("<").next().ok_or("Failed to get first item??")?
@@ -330,12 +348,14 @@ fn parse_area_requirement(text: &str, reqs: &mut AreaRequirements) -> Result<(),
             text.split("<").next().ok_or("Failed to get first item??")?
         )
     );
+    // if we can't process the count, we can't do much.
     let count = count
         .trim()
         .parse::<u64>()
         .map_err(|e| format!("Failed to parse count: {:?} ({:?})", e, count))?;
-    // all the possible types.
 
+    // If towers are required in a specific area to be beaten.
+    // Rare, but with purgatorio still a thing.
     if !area.is_empty() {
         log::debug!("Require area: {:?}", area);
         reqs.areas.insert(
@@ -347,6 +367,7 @@ fn parse_area_requirement(text: &str, reqs: &mut AreaRequirements) -> Result<(),
         );
         return Ok(());
     }
+    // if we find the word `Towers` then it's not going to be a difficulty.
     if !towers.is_empty() {
         reqs.points = count;
         return Ok(());
@@ -356,11 +377,8 @@ fn parse_area_requirement(text: &str, reqs: &mut AreaRequirements) -> Result<(),
 }
 
 /// Loop through all requirements in the list as there can be a couple..
-///
-/// This just helps separate code out though
-fn get_requirements(list: &List) -> Result<AreaRequirements, String> {
+pub fn get_requirements(list: &List) -> Result<AreaRequirements, String> {
     let mut reqs = AreaRequirements::default();
-    // TODO: figure out why this is cutting off links.
     log::debug!("{:?}", list);
     for entry in list.entries.iter() {
         let text = entry
@@ -377,7 +395,9 @@ fn get_requirements(list: &List) -> Result<AreaRequirements, String> {
 }
 
 /// Get all requirements in the template.
-fn get_all_requirements(template: &Template, area: &str) -> Result<AreaRequirements, String> {
+///
+/// Compared to [get_requirements]. This takes in an even higher level object for processing.
+pub fn get_all_requirements(template: &Template, area: &str) -> Result<AreaRequirements, String> {
     let requirements = template
         .get_named_arg("towers_required")
         .map_err(|e| {
@@ -391,6 +411,7 @@ fn get_all_requirements(template: &Template, area: &str) -> Result<AreaRequireme
 
     log::debug!("{:?}", requirements);
     match requirements {
+        // got to go through the whole list...
         Argument::List(list) => get_requirements(&list),
         // If we just have a text object, it's probably just the one requirement hence we can parse that raw.
         Argument::Text(_) => {
@@ -408,14 +429,15 @@ fn get_all_requirements(template: &Template, area: &str) -> Result<AreaRequireme
             Ok(reqs)
         }
         _ => Err(format!(
-            "Failed to get lists (ok... whats wrong here? ({:?})",
+            "Failed to get something useful for requirements (ok... whats wrong here? ({:?})",
             template.to_wikitext()
         )),
     }
 }
 
-// Just like items, areas are also special.
+/// Areas are special with their data, jusst like towers and items.
 pub async fn process_area(client: &RustClient, area: &str) -> Result<AreaInformation, String> {
+    // typical fetch from wiki and then get the specific template.
     let wikitext = get_page_data(client, area).await?;
     let parsed = wikitext
         .get_parsed()
@@ -437,9 +459,12 @@ pub async fn process_area(client: &RustClient, area: &str) -> Result<AreaInforma
         })
         .ok();
 
+    // offloaded*
     let parsed_requirements = get_all_requirements(&template, area);
 
     // sub-areas are most likely to contain errors in this stage, hence we ignore them.
+    // Aka, sub areas don't really have requirements as they are normally unlocked with the parent. Yes the route there might be unique but
+    // thats not our problem.
     if parsed_requirements.is_err() && parent.is_none() {
         log::warn!(
             "Error in requirements: {:?} ({:?})",
@@ -457,6 +482,8 @@ pub async fn process_area(client: &RustClient, area: &str) -> Result<AreaInforma
 
 /// The only template which requires this uniqueness of 2 versions
 /// Parser can't deal with this (yes its two templates). Hence we just get one, return if successful else get the other.
+///
+/// This isn't meant to be used outside of [process_event_area]
 fn get_event_template(data: &ParsedData, area: &str) -> Result<Template, String> {
     let normal = data
         .get_template("eventinfobox")
@@ -470,25 +497,31 @@ fn get_event_template(data: &ParsedData, area: &str) -> Result<Template, String>
         .map_err(|e| format!("Failed to get event infobox ({:?}) > {:?}", area, e))
 }
 
+/// Ping the category API to get all of the events.
+///
+/// Due to naming, links, targets and other factors. It's kinda hard to get a reliable list of all the events without going at it directly.
 pub async fn get_event_areas(
     client: &RustClient,
 ) -> Result<Vec<Result<EventInfo, String>>, ProcessError> {
-    let pages = client.get("https://jtoh.fandom.com/api.php?action=query&format=json&list=categorymembers&titles=Events&formatversion=2&cmtitle=Category%3AEvents&cmlimit=500").send().await?.json::<WikiCategory>().await?;
-    let areas = pages
-        .query
-        .categorymembers
-        .iter()
-        .map(|cm| cm.title.to_owned());
+    // and yes, this url params are hardcoded like that. it's kinda not fun to make this url.
+    let pages = client.get(format!("{}?action=query&format=json&list=categorymembers&titles=Events&formatversion=2&cmtitle=Category%3AEvents&cmlimit=500", ETOH_WIKI)).send().await?.json::<WikiResult>().await?;
+    let areas = match pages.query {
+        WikiResultEnum::Search(_) => {
+            Err("Somehow wiki api returned a search list instead of a category list.")
+        }
+        WikiResultEnum::Category(wiki_category_query) => Ok(wiki_category_query.categorymembers),
+    }?;
 
+    // we only have as many areas as we have items, but we need await to do stuff so...
     let mut event_areas = Vec::with_capacity(areas.len());
-    for a in areas {
+    for a in areas.iter().map(|cm| cm.title.to_owned()) {
         event_areas.push(process_event_area(client, &a).await);
     }
     Ok(event_areas)
 }
 
 /// Events are like areas mostly, but with less data so we only store a way to group them.
-/// And besides, event areas can sometimes not follow convention making it harder to automate. So less work the better.
+/// And besides, event areas can sometimes not follow convention making it harder to automate.
 pub async fn process_event_area(client: &RustClient, area: &str) -> Result<EventInfo, String> {
     let wikitext = get_page_data(client, area).await?;
     // println!("{:?}", wikitext);
@@ -526,8 +559,10 @@ pub async fn process_event_area(client: &RustClient, area: &str) -> Result<Event
     // and ignore any further lines
     let name = name_text.split("<br/>").next().unwrap().trim();
 
+    // if we have a countdown template, the event is ongoing. we can use this to our advantage.
     let countdown = parsed.get_template("Countdown");
     let until = if let Ok(count) = countdown {
+        // i've tried to follow what was said in the countdown template, but that isn't the truth so some small adjustments (hopefully not breaking) had to be made.
         let end_date = count
             .get_named_arg("enddate")
             .map_err(|e| format!("Invalid countdown template ({}): {:}", area, e))?
@@ -537,6 +572,8 @@ pub async fn process_event_area(client: &RustClient, area: &str) -> Result<Event
             .get_named_arg("endyear")
             .map_err(|e| format!("Invalid countdown template ({}): {:}", area, e))?
             .raw;
+        // this is weird and probably a quirk of js `Date()` object...
+        // we just try our best to deal with it. Would love to not deal with it, but then have to offset other things and can't confirm stuff..
         let timezone_offset = count
             .get_named_arg("timezone")
             .map(|t| t.raw)
@@ -552,6 +589,7 @@ pub async fn process_event_area(client: &RustClient, area: &str) -> Result<Event
             })
             .unwrap_or("-06:00".into());
 
+        // format a string, our way.
         let timestamp = format!(
             "{} {} {} {}",
             end_time.map(|t| t.raw).unwrap_or("00:00:00".into()),
@@ -560,6 +598,7 @@ pub async fn process_event_area(client: &RustClient, area: &str) -> Result<Event
             timezone_offset
         );
 
+        // and then try to parse it correctly.
         let dt = DateTime::parse_from_str(&timestamp, "%H:%M:%S %Y %B %-d %:z").map_err(|e| {
             format!(
                 "Failed to convert {} countdown! ({}) {:?}",

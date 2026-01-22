@@ -1,9 +1,10 @@
+//! A list of pretty much every struct, impl From methods for use in the rest of the program.
+
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
 use std::{
     collections::HashMap,
-    error::Error,
     fmt::{Debug, Display},
 };
 
@@ -25,87 +26,117 @@ use crate::{reqwest_client::RustError, wikitext::WikiText};
 //     pub win_rate_percentage: f64,
 // }
 
+/// Store information about the badge which we get from roblox.
+///
+/// Note: Roblox actually gives us way more data, we just drop it as we don't use it.
 #[derive(Debug, Deserialize, Serialize, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Badge {
+    /// The id of the badge and the identifier.
     pub id: u64,
+    /// The name of the badge, used most often.
     pub name: String,
+    /// The description of the badge as that can be semi-useful.
     pub description: Option<String>,
-    pub display_name: String,
-    pub display_description: Option<String>,
+    // pub display_name: String,
+    // pub display_description: Option<String>,
     // pub enabled: bool,
-    pub icon_image_id: u64,
-    pub display_icon_image_id: u64,
-    pub created: String,
-    pub updated: String,
+    // pub icon_image_id: u64,
+    // pub display_icon_image_id: u64,
+    // pub created: String,
+    // pub updated: String,
     // pub statistics: BadgeStatistics,
     // pub awarding_universe: BadgeUniverse,
 }
 
+/// Store information about the overview of the data roblox gives us.
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Data {
-    pub previous_page_cursor: Option<String>,
+pub struct RobloxBadgeData {
+    // pub previous_page_cursor: Option<String>,
+    /// The key to getting the next set of badges
     pub next_page_cursor: Option<String>,
+    /// All of the badges and their data which roblox provides.
     pub data: Vec<Badge>,
 }
 
-impl Default for Data {
+impl Default for RobloxBadgeData {
     fn default() -> Self {
         Self {
-            previous_page_cursor: None,
+            // previous_page_cursor: None,
             next_page_cursor: Some(String::new()),
             data: vec![],
         }
     }
 }
 
+/// Information about the particular member from the search.
+///
+/// NOTE: There are more fields, just not used. So we drop them.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct WikiCategoryMember {
-    pub pageid: u32,
-    pub ns: usize,
+    // pub pageid: u32,
+    // pub ns: usize,
+    /// The title of the page (we want this!)
     pub title: String,
 }
 
+/// A struct of everything fandom gives us from category search
+///
+/// NOTE: There are more fields, just not used. So we drop them.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct WikiCategoryQuery {
     // pub pages: []
+    /// The specific pages that have this category. Aka a member
     pub categorymembers: Vec<WikiCategoryMember>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct WikiCategory {
-    pub batchcomplete: bool,
-    pub query: WikiCategoryQuery,
-}
-
+/// Everything the wikitext for a specific page can give us for a tower.
 #[derive(Debug, Default)]
 pub struct WikiTower {
+    /// The name of the badge related.
     pub badge_name: String,
+    /// The badge id related to this tower.
     pub badge_id: u64,
+    /// The name of the related page.
     pub page_name: String,
+    /// The difficulty of the tower. (as `1?X.YZ`)
     pub difficulty: f64,
+    /// The area this tower belongs to.
     pub area: String,
+    /// The "average" length of the tower.
     pub length: Length,
+    /// The type this tower is.
     pub tower_type: TowerType,
 }
 
+/// Information about the event.
 #[derive(Debug, Clone)]
 pub struct EventInfo {
+    /// The name of the custom area where the event is taking place.
     pub area_name: String,
+    /// The codename of the event, normally just the season and year.
     pub event_name: String,
+    /// When the event will finish, if it's ongoing.
     pub until: Option<DateTime<FixedOffset>>,
 }
 
+/// Information about a specific item gotten from the event.
 #[derive(Debug, Clone)]
 pub struct EventItem {
+    /// The name of the item received
     pub item_name: String,
+    /// The name of the event the item was gained from
     pub event_name: String,
-    // badge id is still required when there is no tower_name.
+    /// The badges linking to the item. (as not every item has a tower)
     pub badges: [u64; 2],
+    /// The tower (if any) that is required to be completed for this item.
+    ///
+    /// TODO: NOTE: This does not yet include multi-tower items. It's a todo at some point.
     pub tower_name: Option<String>,
 }
 
+/// A list of every single difficulty and how many towers of that difficulty area required to be completed before the area is unlocked.
 #[derive(Debug, Deserialize, Serialize, Default, Clone)]
 pub struct TowerDifficulties {
     #[serde(skip_serializing_if = "Option::is_none", rename = "e")]
@@ -133,6 +164,7 @@ pub struct TowerDifficulties {
 }
 
 impl TowerDifficulties {
+    /// Convert the difficulty provided to the corresponding member.
     pub fn parse_difficulty(&mut self, difficulty: &str, count: u64) {
         match difficulty.to_lowercase().trim() {
             "easy" => self.easy = Some(count),
@@ -146,28 +178,38 @@ impl TowerDifficulties {
             "extreme" => self.extreme = Some(count),
             "terrifying" => self.terrifying = Some(count),
             "catastrophic" => self.catastrophic = Some(count),
-            inv => {
-                println!("Not a valid difficulty! {:?}", inv);
+            not_a_valid_difficulty => {
+                println!("Not a valid difficulty! {:?}", not_a_valid_difficulty);
             }
         }
     }
 }
 
+/// Stores information about the requirements for getting to the area.
 #[derive(Debug, Deserialize, Serialize, Default, Clone)]
 pub struct AreaRequirements {
+    /// The difficulties required.
     #[serde(rename = "ds")]
     pub difficulties: TowerDifficulties,
+    /// How many towers
     #[serde(rename = "p")]
     pub points: u64,
+    /// Any specific areas that require for this area to be unlocked, and the requirements in that area.
     pub areas: HashMap<String, AreaRequirements>,
 }
 
+/// Store basic information about a certain area.
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct AreaInformation {
+    /// The name of the area
     #[serde(rename = "n")]
     pub name: String,
     #[serde(rename = "r")]
+    /// The requirements to access this area. Is optional as some areas don't need anything.
     pub requirements: Option<AreaRequirements>,
+    /// If this area is a sub area, and if so what parent area does it come under.
+    ///
+    /// This is better and easier than trying to keep a list of sub areas.
     #[serde(skip_serializing_if = "Option::is_none", rename = "s")]
     pub parent_area: Option<String>,
 }
@@ -194,6 +236,7 @@ impl Default for AreaInformation {
 //     pub data: Vec<OtherBadge>,
 // }
 
+/// The type of the tower.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum TowerType {
     MiniTower,
@@ -283,6 +326,9 @@ impl From<TowerType> for u8 {
     }
 }
 
+/// How long does the tower take to complete for an average player in one-shot (no major failures)
+///
+/// True lengths aren't used as otherwise all towers would be like Cakewalk length.
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
 pub enum Length {
     /// <= 20 mins
@@ -298,7 +344,7 @@ pub enum Length {
     Long,
     /// 90+ mins
     VeryLong,
-    /// INHUMANELY
+    /// INHUMANELY (very very rare and kinda like way too long...)
     Inhumanely,
 }
 
@@ -358,26 +404,48 @@ impl From<Length> for u16 {
     }
 }
 
+/// Stores information about the individual search entry we recieved from the api.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WikiSearchEntry {
+    /// The title of the page this entry points to.
     pub title: String,
 }
+/// Stores the whole list of entries the api gave.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WikiSearchList {
+    /// That said list.
     pub search: Vec<WikiSearchEntry>,
 }
+
+/// An enum containing different types the query might respond.
 #[derive(Debug, Serialize, Deserialize)]
-pub struct WikiSearch {
-    pub query: WikiSearchList,
+pub enum WikiResultEnum {
+    /// This was from a search request.
+    Search(WikiSearchList),
+    /// This was from a category request.
+    Category(WikiCategoryQuery),
 }
 
+/// Global object of data received from fandom api.
+///
+/// NOTE: There are more fields, just not used. So we drop them.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct WikiResult {
+    // pub batchcomplete: bool,
+    /// The data recieved from the query on the api we did.
+    pub query: WikiResultEnum,
+}
+
+/// Extra information about what happened whilst we were trying to process the wikitext.
 #[derive(Debug)]
 #[allow(
     dead_code,
     reason = "i use these for debugging, ik i don't use them rust because we don't need to use them and panic is just not worth it"
 )]
 pub enum ProcessError {
+    /// Was this a network reqwest error (or related)
     Reqwest(RustError),
+    /// Or was it an error in our code, or the page data itself?
     Process(String),
 }
 impl From<RustError> for ProcessError {
@@ -406,12 +474,27 @@ impl From<&str> for ProcessError {
     }
 }
 
+/// Struct used for containing error details
 #[derive(Debug)]
 #[allow(dead_code, reason = "i use these for debugging")]
-pub struct ErrorDetails(pub ProcessError, pub Badge);
-pub struct OkDetails(pub WikiText, pub Badge);
+pub struct ErrorDetails(
+    /// Information, aka reason of why the error happened.
+    pub ProcessError,
+    /// The badge we were processing at the time.
+    pub Badge,
+);
+/// Struct used for when things go correct.
+pub struct OkDetails(
+    /// The wikitext, aka data returned
+    pub WikiText,
+    /// The full details of the badge to keep them together.
+    pub Badge,
+);
 
 impl Debug for OkDetails {
+    /// Custom debug formatter function to reduce output.
+    ///
+    /// Raw Wikitext is kinda big, some pages being > 100kb, hence we just ignore that so we aren't filling up the debug file with too much waste.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "OkDetails(")?;
         writeln!(
@@ -428,40 +511,39 @@ impl Debug for OkDetails {
     }
 }
 
+/// Wrapper for raw wikitext of the page.
+///
+/// Used when continuously redirecting to get the page.
 #[derive(Debug, Default)]
 pub struct PageDetails {
+    /// The text of the page we just got.
     pub text: String,
+    /// The name of the page after redirects.
     pub name: Option<String>,
 }
 
+/// Any badges which we can't find we have to overwrite ourselves. This keeps track of that.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BadgeOverwrite {
-    pub badge_id: u64,
-    pub alt_ids: Vec<u64>,
+    /// The badge ids related in format of `[old_game, new_gaame]`.
+    ///
+    /// If we have to overwrite we'll probably have to overwrite both.
+    pub badge_ids: [u64; 2],
+    /// The category the badge belongs to.
     pub category: String,
+    /// Our custom name, we could link it to the actual badge, but that requires rework of some other system.
+    ///
+    /// And besides, this allows us to provide a mini reminder to the user.
     pub name: String,
 }
 
 // Serialiser and deseriliser for BadgeOverwrite written by GPT-5 mini
-
-/// For nicer error messages when deserializing arrays
-#[derive(Debug)]
-struct BadFormat(&'static str);
-
-impl Display for BadFormat {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "bad format: {}", self.0)
-    }
-}
-
-impl Error for BadFormat {}
-
 impl<'de> Deserialize<'de> for BadgeOverwrite {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        // We expect a map entry like "123": [ "Category", "Name", "456", "789" ]
+        // We expect a map entry like "123": [ "Category", "Name", "456" ]
         // But serde gives us a whole value. We'll accept either:
         //  - a map with a single string key mapping to an array (the top-level entry)
         //  - or directly the array along with an externally provided badge id (not used here)
@@ -502,72 +584,57 @@ impl Serialize for BadgeOverwrite {
     where
         S: Serializer,
     {
-        // serialize as an object with single string key -> array
-        use serde_json::Value as Jv;
+        // serialize as an object with single string key -> array        use serde_json::Value as Jv;
 
-        let mut arr: Vec<Jv> = Vec::with_capacity(2 + self.alt_ids.len());
-        arr.push(Jv::String(self.category.clone()));
-        arr.push(Jv::String(self.name.clone()));
-        for id in &self.alt_ids {
-            arr.push(Jv::String(id.to_string()));
-        }
+        let mut arr: Vec<Value> = Vec::with_capacity(2);
+        arr.push(Value::String(self.category.clone()));
+        arr.push(Value::String(self.name.clone()));
+        arr.push(Value::String(self.badge_ids[1].to_string()));
 
         let mut map = serde_json::map::Map::new();
-        map.insert(self.badge_id.to_string(), Jv::Array(arr));
-        Jv::Object(map).serialize(serializer)
+        map.insert(self.badge_ids[0].to_string(), Value::Array(arr));
+        Value::Object(map).serialize(serializer)
     }
 }
 
-fn parse_array(
-    badge_id: u64,
-    arr: Vec<Value>,
-) -> Result<BadgeOverwrite, Box<dyn std::error::Error>> {
+/// parse the array provided by serde_json `overwrite.jsonc` for storage.
+fn parse_array(badge_id: u64, arr: Vec<Value>) -> Result<BadgeOverwrite, String> {
     if arr.len() < 2 {
-        return Err(Box::new(BadFormat(
-            "array must contain at least category and name",
-        )));
+        return Err("array must contain at least category and name".into());
     }
+    // println!("arr: {:?}", arr);
 
-    // category and name must be strings
+    // convert each individual values.
     let category = match &arr[0] {
         Value::String(s) => s.clone(),
-        _ => return Err(Box::new(BadFormat("category must be a string"))),
+        _ => return Err("category must be a string".into()),
     };
     let name = match &arr[1] {
         Value::String(s) => s.clone(),
-        _ => return Err(Box::new(BadFormat("name must be a string"))),
+        _ => return Err("name must be a string".into()),
+    };
+    let old_id = if arr.len() > 2 {
+        match &arr[2] {
+            Value::Number(number) => number
+                .as_u64()
+                .ok_or("Failed to convert third value into number")?,
+            Value::String(num) => num
+                .parse::<u64>()
+                .map_err(|e| format!("old_id must be a number {}", e))?,
+            _ => return Err("old_id must be a number or a string parsable to a number".into()),
+        }
+    } else {
+        0
     };
 
-    // rest are ids (strings that parse to u64 or numbers)
-    let mut alt_ids = Vec::with_capacity(arr.len().saturating_sub(2));
-    for v in arr.into_iter().skip(2) {
-        match v {
-            Value::String(s) => {
-                let id = s
-                    .parse::<u64>()
-                    .map_err(|_| BadFormat("alt id strings must parse to u64"))?;
-                alt_ids.push(id);
-            }
-            Value::Number(n) => {
-                if let Some(u) = n.as_u64() {
-                    alt_ids.push(u);
-                } else {
-                    return Err(Box::new(BadFormat("alt id number not u64")));
-                }
-            }
-            _ => return Err(Box::new(BadFormat("alt id must be string or number"))),
-        }
-    }
-
     Ok(BadgeOverwrite {
-        badge_id,
-        alt_ids,
+        badge_ids: [old_id, badge_id],
         category,
         name,
     })
 }
 
-// Helper functions to convert a whole map <String, Array> -> Vec<BadgeOverwrite>
+/// Helper functions to convert a whole map <String, Array> -> `Vec<BadgeOverwrite>`
 pub fn badges_from_map_value(v: &Value) -> Result<Vec<BadgeOverwrite>, Box<dyn std::error::Error>> {
     match v {
         Value::Object(map) => {
@@ -575,15 +642,132 @@ pub fn badges_from_map_value(v: &Value) -> Result<Vec<BadgeOverwrite>, Box<dyn s
             for (k, val) in map.iter() {
                 let badge_id = k
                     .parse::<u64>()
-                    .map_err(|_| BadFormat("map key must be a string representable as u64"))?;
+                    .map_err(|e| format!("map key must be a string representable as u64 {}", e))?;
                 let arr = match val {
                     Value::Array(a) => a.clone(),
-                    _ => return Err(Box::new(BadFormat("map value must be an array"))),
+                    _ => return Err("map value must be an array".into()),
                 };
                 out.push(parse_array(badge_id, arr)?);
             }
             Ok(out)
         }
-        _ => Err(Box::new(BadFormat("expected top-level object/map"))),
+        _ => Err("expected top-level object/map".into()),
+    }
+}
+
+/// Custom tower object we use when turning the data into json.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Tower {
+    /// The wiki name of the tower. We could go badge, but wiki will be easier i hope.
+    pub name: String,
+    /// Badges linked to the tower `[Old Badge, New Badge]`
+    pub badges: [u64; 2],
+    /// The difficutlty of the tower.
+    pub difficulty: f64,
+    /// How long it takes to complete the tower.
+    pub length: Length,
+    /// The type the tower is.
+    pub tower_type: TowerType,
+    /// A link to the wiki, used if the page != name.
+    pub wiki_page: Option<String>,
+}
+
+/// Custom item object we use when turning the data into json.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Item {
+    /// The name of the item.
+    pub name: String,
+    /// Badges linked to the item `[old badge, new badge]`
+    pub badges: [u64; 2],
+    /// The name of the related tower... if we have a related tower.
+    pub tower_name: Option<String>,
+}
+
+/// [AreaInformation] just with some additional information
+///
+/// Name is not included as thats part of the key, this is the value.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ExtendedArea {
+    /// Requirements for the area
+    pub requirements: AreaRequirements,
+    /// Is this area a sub-area, and if so what area is the parent.
+    pub parent: Option<String>,
+    /// The towers contained in this sub area.
+    pub towers: Vec<Tower>,
+    /// A list of items in this sub area. Also confirms it's an event.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub items: Option<Vec<Item>>,
+    /// The name of the event if not the sub area name.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub event_area_name: Option<String>,
+    /// If the event is ongoing, when will it finish.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub until: Option<DateTime<FixedOffset>>,
+}
+
+/// Store information about badges which we can't categories elsewhere.
+///
+/// Data normally from [overwrite.jsonc]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OtherData {
+    /// Our custom name of the badge
+    pub name: String,
+    /// the ids, `[old badge, new badge]`
+    pub ids: [u64; 2],
+}
+
+/// An enum to contain both the area info and the data info.
+///
+/// They are all a category even if something different sometimes.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum Category {
+    Area(Box<ExtendedArea>),
+    Other(Vec<OtherData>),
+}
+
+impl From<&&WikiTower> for Tower {
+    fn from(tower: &&WikiTower) -> Self {
+        Tower {
+            name: tower.badge_name.to_owned(),
+            badges: [tower.badge_id, 0],
+            difficulty: tower.difficulty,
+            length: tower.length,
+            tower_type: tower.tower_type,
+            wiki_page: Some(tower.page_name.to_owned()),
+        }
+    }
+}
+impl From<&WikiTower> for Tower {
+    fn from(value: &WikiTower) -> Self {
+        Self::from(&value)
+    }
+}
+
+impl From<&AreaInformation> for ExtendedArea {
+    fn from(value: &AreaInformation) -> Self {
+        Self {
+            requirements: value.requirements.to_owned().unwrap_or_default(),
+            parent: value.parent_area.to_owned(),
+            ..Default::default()
+        }
+    }
+}
+
+impl From<&&BadgeOverwrite> for OtherData {
+    fn from(value: &&BadgeOverwrite) -> Self {
+        Self {
+            name: value.name.to_owned(),
+            ids: value.badge_ids.to_owned(),
+        }
+    }
+}
+
+impl From<&EventItem> for Item {
+    fn from(value: &EventItem) -> Self {
+        Self {
+            name: value.item_name.to_owned(),
+            badges: value.badges,
+            tower_name: value.tower_name.to_owned(),
+        }
     }
 }
