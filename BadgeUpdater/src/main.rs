@@ -4,6 +4,7 @@ pub mod hard_coded;
 pub mod json;
 pub mod process_items;
 pub mod reqwest_client;
+pub mod shrink_json_defs;
 pub mod wikitext;
 
 use crate::{
@@ -168,6 +169,8 @@ pub const OUTPUT_PATH: &str = "../badges.json";
 ///
 /// [^1]: days could be just yesterday or from weeks ago if nothing got updated.
 pub const CHANGELOG_PATH: &str = "../changelog.md";
+/// The path of the final output, after shrinking.
+pub const SHRINK_PATH: &str = "../shrunk.json";
 
 /// The main function of the program to call every other function like always.
 #[tokio::main]
@@ -213,6 +216,8 @@ async fn main() {
     result.parse_skipped(&overwrites);
     // println!("{:?}", result);
 
+    log::info!("Parsing completed, storing...");
+
     let previous =
         serde_json::from_str::<Jsonify>(&fs::read_to_string(OUTPUT_PATH).unwrap_or("{}".into()))
             .unwrap_or_default();
@@ -220,6 +225,13 @@ async fn main() {
     fs::write(OUTPUT_PATH, serde_json::to_string(&result).unwrap()).unwrap();
     let change_log = result.compare(&previous);
     fs::write(CHANGELOG_PATH, change_log.join("\n")).unwrap();
+    fs::write(
+        SHRINK_PATH,
+        serde_json::to_string(&result.shrinkfy()).unwrap(),
+    )
+    .unwrap();
+
+    log::info!("Data stored, panicking if left overs then stopping.");
 
     if !unprocessed.is_empty() {
         panic!("There are still some items left in the list to process!");
@@ -343,7 +355,7 @@ async fn main_processing(
     for ele in passed.iter().filter(|p| {
         !tower_processed
             .iter()
-            .any(|t| t.badge_name.contains(&p.1.name))
+            .any(|t| t.page_name.contains(&p.1.name))
     }) {
         items.push(process_all_items(client, &ele.0, &ele.1, &event_processed).await);
     }

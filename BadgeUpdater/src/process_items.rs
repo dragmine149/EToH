@@ -236,7 +236,6 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
     let page_name = text.page_name().unwrap_or_default();
 
     Ok(WikiTower {
-        badge_name: badge.name.to_owned(),
         badge_id: badge.id,
         area,
         difficulty,

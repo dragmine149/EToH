@@ -1,8 +1,11 @@
 //! The final module, convert everything to a json de/serializable struct
 
-use crate::definitions::{
-    AreaInformation, BadgeOverwrite, Category, EventInfo, EventItem, ExtendedArea, Item, OtherData,
-    Tower, WikiTower,
+use crate::{
+    definitions::{
+        AreaInformation, BadgeOverwrite, Category, EventInfo, EventItem, ExtendedArea, Item,
+        OtherData, Tower, WikiTower,
+    },
+    shrink_json_defs::ShrinkJson,
 };
 use chrono::{DateTime, Utc};
 use itertools::Itertools;
@@ -14,9 +17,9 @@ use std::{collections::HashMap, fs};
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Jsonify {
     /// The data of last modification.
-    modify_date: DateTime<Utc>,
+    pub modify_date: DateTime<Utc>,
     /// The actual data we store.
-    categories: HashMap<String, Category>,
+    pub categories: HashMap<String, Category>,
 }
 
 impl Jsonify {
@@ -292,6 +295,10 @@ impl Jsonify {
         }
 
         changes
+    }
+
+    pub fn shrinkfy(self) -> ShrinkJson {
+        ShrinkJson::from(self)
     }
 }
 

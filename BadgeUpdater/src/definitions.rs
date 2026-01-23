@@ -135,10 +135,10 @@ pub struct PageDetails {
 //=================================================
 
 /// Everything the wikitext for a specific page can give us for a tower.
+///
+/// As much as we could also store the badge name, decided against that as page name gives us more accurate details.
 #[derive(Debug, Default)]
 pub struct WikiTower {
-    /// The name of the badge related.
-    pub badge_name: String,
     /// The badge id related to this tower.
     pub badge_id: u64,
     /// The name of the related page.
@@ -182,27 +182,16 @@ pub struct EventItem {
 /// A list of every single difficulty and how many towers of that difficulty area required to be completed before the area is unlocked.
 #[derive(Debug, Deserialize, Serialize, Default, Clone)]
 pub struct TowerDifficulties {
-    #[serde(skip_serializing_if = "Option::is_none", rename = "e")]
     pub easy: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "m")]
     pub medium: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "h")]
     pub hard: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "d")]
     pub difficult: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "c")]
     pub challenging: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "i")]
     pub intense: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "r")]
     pub remorseless: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "s")]
     pub insane: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "x")]
     pub extreme: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "t")]
     pub terrifying: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "a")]
     pub catastrophic: Option<u64>,
 }
 
@@ -232,10 +221,8 @@ impl TowerDifficulties {
 #[derive(Debug, Deserialize, Serialize, Default, Clone)]
 pub struct AreaRequirements {
     /// The difficulties required.
-    #[serde(rename = "ds")]
     pub difficulties: TowerDifficulties,
     /// How many towers
-    #[serde(rename = "p")]
     pub points: u64,
     /// Any specific areas that require for this area to be unlocked, and the requirements in that area.
     pub areas: HashMap<String, AreaRequirements>,
@@ -723,7 +710,10 @@ pub enum Category {
 impl From<&&WikiTower> for Tower {
     fn from(tower: &&WikiTower) -> Self {
         Tower {
-            name: tower.badge_name.to_owned(),
+            // The page name is most likely the tower name. Yes this does mean we don't have the badge name,
+            // but eh that wasn't very useful to begin with.
+            // Other badges are different though...
+            name: tower.page_name.to_owned(),
             badges: [tower.badge_id, 0],
             difficulty: tower.difficulty,
             length: tower.length,
