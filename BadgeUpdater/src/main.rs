@@ -62,7 +62,7 @@ pub fn clean_badge_name(badge: &str) -> String {
     s.trim().to_string()
 }
 
-/// Special one-off function for formating a datetime into a certain string.
+/// Special one-off function for formatting a datetime into a certain string.
 ///
 /// TODO: Switch to something chorno::Datetime based?
 pub fn fmt_secs(number: u64) -> String {
@@ -224,7 +224,7 @@ async fn main() {
 
 /// The main processing function which takes in the most basics and gives everything as something usable.
 ///
-/// Seperating this from main allows us to move it around easier and means main is smaller.
+/// Separating this from main allows us to move it around easier and means main is smaller.
 // #[allow(unused_variables, reason = "Will be used later")]
 async fn main_processing(
     client: &RustClient,

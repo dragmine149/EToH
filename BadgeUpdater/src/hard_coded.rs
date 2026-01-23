@@ -76,7 +76,7 @@ pub async fn parse_mini_towers(
             }
 
             // and then basically get the page data like normal.
-            // TODO: Seperate this out into a new function? I fell like we kinda reuse this code.
+            // TODO: Separate this out into a new function? I fell like we kinda reuse this code.
             let wikitext = get_page_data(client, &target.target.replace("?", "%3F")).await;
 
             if wikitext.is_err() {

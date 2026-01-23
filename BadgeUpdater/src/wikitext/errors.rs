@@ -1,6 +1,6 @@
 //! Rich error types for the wikitext module.
 //!
-//! This module centralizes all error kinds used by the wikitext parser and its
+//! This module centralises all error kinds used by the wikitext parser and its
 //! helper APIs. Errors are designed to be informative (they carry messages and
 //!, where appropriate, offsets into the source text).
 //!
