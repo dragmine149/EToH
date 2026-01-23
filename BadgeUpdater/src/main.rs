@@ -201,7 +201,7 @@ async fn main() {
 
     log::info!("Setup complete, starting searching");
 
-    let mut result = main_processing(
+    let (mut result, unprocessed) = main_processing(
         &client,
         &url,
         &path,
@@ -220,6 +220,10 @@ async fn main() {
     fs::write(OUTPUT_PATH, serde_json::to_string(&result).unwrap()).unwrap();
     let change_log = result.compare(&previous);
     fs::write(CHANGELOG_PATH, change_log.join("\n")).unwrap();
+
+    if !unprocessed.is_empty() {
+        panic!("There are still some items left in the list to process!");
+    }
 }
 
 /// The main processing function which takes in the most basics and gives everything as something usable.
@@ -233,7 +237,7 @@ async fn main_processing(
     overwrites: &[BadgeOverwrite],
     ignored: &HashMap<String, Vec<u64>>,
     annoying_links: &HashMap<String, String>,
-) -> Jsonify {
+) -> (Jsonify, Vec<u64>) {
     let skip_ids = overwrites
         .iter()
         .flat_map(|bo| bo.badge_ids)
@@ -461,12 +465,15 @@ async fn main_processing(
         }
     }
 
-    Jsonify::parse(
-        &tower_processed,
-        &area_processed,
-        &event_processed,
-        &all_items_processed,
-        &mini_passed,
-        &adventure_pass,
+    (
+        Jsonify::parse(
+            &tower_processed,
+            &area_processed,
+            &event_processed,
+            &all_items_processed,
+            &mini_passed,
+            &adventure_pass,
+        ),
+        unprocessed,
     )
 }
