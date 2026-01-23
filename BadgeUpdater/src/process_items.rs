@@ -6,11 +6,10 @@ use chrono::DateTime;
 use itertools::Itertools;
 
 use crate::{
-    ETOH_WIKI_API,
     badge_to_wikitext::get_page_data,
     definitions::{
         AreaInformation, AreaRequirements, Badge, EventInfo, EventItem, Length, ProcessError,
-        TowerType, WikiResult, WikiResultEnum, WikiTower,
+        TowerType, WikiAPI, WikiTower, category_url,
     },
     reqwest_client::RustClient,
     wikitext::{
@@ -504,20 +503,16 @@ pub async fn get_event_areas(
     client: &RustClient,
 ) -> Result<Vec<Result<EventInfo, String>>, ProcessError> {
     // and yes, this url params are hardcoded like that. it's kinda not fun to make this url.
-    log::debug!(
-        "URL: {}",
-        format!(
-            "{}?action=query&format=json&list=categorymembers&titles=Events&formatversion=2&cmtitle=Category%3AEvents&cmlimit=500",
-            ETOH_WIKI_API
-        )
-    );
-    let pages = client.get(format!("{}?action=query&format=json&list=categorymembers&titles=Events&formatversion=2&cmtitle=Category%3AEvents&cmlimit=500", ETOH_WIKI_API)).send().await?.json::<WikiResult>().await?;
-    let areas = match pages.query {
-        WikiResultEnum::Search(_) => {
-            Err("Somehow wiki api returned a search list instead of a category list.")
-        }
-        WikiResultEnum::Category(wiki_category_query) => Ok(wiki_category_query.categorymembers),
-    }?;
+    let pages = client
+        .get(category_url("Events"))
+        .send()
+        .await?
+        .json::<WikiAPI>()
+        .await?;
+    let areas = pages
+        .query
+        .categorymembers
+        .ok_or("A Category object was not returned by the API.")?;
 
     // we only have as many areas as we have items, but we need await to do stuff so...
     let mut event_areas = Vec::with_capacity(areas.len());

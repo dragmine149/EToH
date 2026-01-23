@@ -8,7 +8,11 @@ use std::{
     fmt::{Debug, Display},
 };
 
-use crate::{reqwest_client::RustError, wikitext::WikiText};
+use crate::{ETOH_WIKI_API, reqwest_client::RustError, wikitext::WikiText};
+
+//=================================================
+// Roblox Badge API results
+//=================================================
 
 // #[derive(Debug, Deserialize, Serialize, Default, Clone)]
 // #[serde(rename_all = "camelCase")]
@@ -69,6 +73,33 @@ impl Default for RobloxBadgeData {
         }
     }
 }
+//=================================================
+// Wiki API Results
+//=================================================
+
+pub fn category_url(category_name: &str) -> String {
+    let url = format!(
+        "{}?action=query&format=json&list=categorymembers&titles={}&formatversion=2&cmtitle=Category%3A{}&cmlimit=500",
+        ETOH_WIKI_API, category_name, category_name
+    );
+    log::debug!("Build url: {}", url);
+    url
+}
+
+/// The wrapper for anything returned by the wiki api.
+#[derive(Debug, Deserialize)]
+pub struct WikiAPI {
+    pub query: WikiQuery,
+}
+
+/// The results of the api reqwest to the wiki..
+#[derive(Debug, Deserialize)]
+pub struct WikiQuery {
+    /// Is this a category request? If so, these are the members
+    pub categorymembers: Option<Vec<WikiCategoryMember>>,
+    /// Is this a search request? If so, these are the results
+    pub search: Option<Vec<WikiSearchEntry>>,
+}
 
 /// Information about the particular member from the search.
 ///
@@ -81,15 +112,27 @@ pub struct WikiCategoryMember {
     pub title: String,
 }
 
-/// A struct of everything fandom gives us from category search
-///
-/// NOTE: There are more fields, just not used. So we drop them.
-#[derive(Debug, Deserialize, Serialize)]
-pub struct WikiCategoryQuery {
-    // pub pages: []
-    /// The specific pages that have this category. Aka a member
-    pub categorymembers: Vec<WikiCategoryMember>,
+/// Stores information about the individual search entry we received from the api.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct WikiSearchEntry {
+    /// The title of the page this entry points to.
+    pub title: String,
 }
+
+/// Wrapper for raw wikitext of the page.
+///
+/// Used when continuously redirecting to get the page.
+#[derive(Debug, Default)]
+pub struct PageDetails {
+    /// The text of the page we just got.
+    pub text: String,
+    /// The name of the page after redirects.
+    pub name: Option<String>,
+}
+
+//=================================================
+// Collection of information from processing.
+//=================================================
 
 /// Everything the wikitext for a specific page can give us for a tower.
 #[derive(Debug, Default)]
@@ -223,18 +266,6 @@ impl Default for AreaInformation {
         }
     }
 }
-
-// #[derive(Serialize, Deserialize, Debug)]
-// pub struct OtherBadge {
-//     pub name: String,
-//     pub category: String,
-//     pub badges: Vec<u64>,
-// }
-
-// #[derive(Serialize, Deserialize, Debug)]
-// pub struct OtherSchema {
-//     pub data: Vec<OtherBadge>,
-// }
 
 /// The type of the tower.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -403,38 +434,10 @@ impl From<Length> for u16 {
         }
     }
 }
-
-/// Stores information about the individual search entry we recieved from the api.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct WikiSearchEntry {
-    /// The title of the page this entry points to.
-    pub title: String,
-}
-/// Stores the whole list of entries the api gave.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct WikiSearchList {
-    /// That said list.
-    pub search: Vec<WikiSearchEntry>,
-}
-
-/// An enum containing different types the query might respond.
-#[derive(Debug, Serialize, Deserialize)]
-pub enum WikiResultEnum {
-    /// This was from a search request.
-    Search(WikiSearchList),
-    /// This was from a category request.
-    Category(WikiCategoryQuery),
-}
-
-/// Global object of data received from fandom api.
-///
-/// NOTE: There are more fields, just not used. So we drop them.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct WikiResult {
-    // pub batchcomplete: bool,
-    /// The data recieved from the query on the api we did.
-    pub query: WikiResultEnum,
-}
+//=================================================
+// Information to do with stuff hapapened during
+// processing.
+//=================================================
 
 /// Extra information about what happened whilst we were trying to process the wikitext.
 #[derive(Debug)]
@@ -510,17 +513,9 @@ impl Debug for OkDetails {
         write!(f, ")")
     }
 }
-
-/// Wrapper for raw wikitext of the page.
-///
-/// Used when continuously redirecting to get the page.
-#[derive(Debug, Default)]
-pub struct PageDetails {
-    /// The text of the page we just got.
-    pub text: String,
-    /// The name of the page after redirects.
-    pub name: Option<String>,
-}
+//=================================================
+// Data in a more suitable format for jsonification.
+//=================================================
 
 /// Any badges which we can't find we have to overwrite ourselves. This keeps track of that.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -771,3 +766,5 @@ impl From<&EventItem> for Item {
         }
     }
 }
+
+//=================================================

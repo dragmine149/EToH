@@ -5,8 +5,7 @@
 use crate::{
     ETOH_WIKI, ETOH_WIKI_API, clean_badge_name,
     definitions::{
-        Badge, ErrorDetails, OkDetails, PageDetails, ProcessError, RobloxBadgeData, WikiResult,
-        WikiResultEnum,
+        Badge, ErrorDetails, OkDetails, PageDetails, ProcessError, RobloxBadgeData, WikiAPI,
     },
     reqwest_client::{RustClient, RustError},
     wikitext::WikiText,
@@ -192,16 +191,14 @@ async fn process_data(
             ))
             .send()
             .await?
-            .json::<WikiResult>()
+            .json::<WikiAPI>()
             .await?;
         println!("{:?} ({:?}) ->\n{:#?}", clean_badge, badge, pages);
 
-        let search_list = match pages.query {
-            WikiResultEnum::Search(wiki_search_list) => Ok(wiki_search_list.search),
-            WikiResultEnum::Category(_) => {
-                Err("Somehow api returned back a category list instead of a search list!")
-            }
-        }?;
+        let search_list = pages
+            .query
+            .search
+            .ok_or("A search object was not returned by the API!")?;
 
         // loop through each entry and return the first valid entry.
         // Normally this is the first entry, but there is always a chance it isn't.
