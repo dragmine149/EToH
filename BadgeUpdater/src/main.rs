@@ -344,7 +344,7 @@ async fn main_processing(
     let success_area_count = area_processed.len() + event_processed.len();
     log::info!(
         "[area parsing] Total: {}. Passed: {}. Rate: {:.2}%",
-        areas.len(),
+        areas.len() + event_areas.len(),
         success_area_count,
         ((success_area_count as f64) / (areas.len() as f64)) * 100.0
     );

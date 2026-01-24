@@ -55,13 +55,21 @@ impl Jsonify {
             })
             .collect::<HashMap<String, Category>>();
 
-        // TODO: fix this??
-        categories.extend(adventure.iter().map(|a| {
-            (
-                a.category.to_owned(),
-                Category::Other(vec![OtherData::from(a)]),
-            )
-        }));
+        adventure.iter().for_each(|a| {
+            let cat = categories.get_mut(&a.category);
+            if let Some(category) = cat {
+                match category {
+                    Category::Other(other) => other.push(OtherData::from(a)),
+                    _ => unreachable!("Adventure should never be anything but other."),
+                }
+            } else {
+                categories.insert(
+                    a.category.to_owned(),
+                    Category::Other(vec![OtherData::from(a)]),
+                );
+            }
+        });
+
         categories.extend(events.iter().map(|event| {
             // println!(
             //     "{}///\n{:#?}\n",

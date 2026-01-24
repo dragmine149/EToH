@@ -143,7 +143,7 @@ pub fn area_from_description(badges: &[Badge]) -> Vec<Result<BadgeOverwrite, Str
             Ok(BadgeOverwrite {
                 badge_ids: [0, b.id],
                 category: "Adventure".to_owned(),
-                name: format!("{:?} ({:?})", b.name.replace("\"", ""), area.to_owned()),
+                name: format!("{} ({})", b.name.replace("\"", ""), area.to_owned()),
             })
         })
         .collect_vec()
