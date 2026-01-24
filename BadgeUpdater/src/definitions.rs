@@ -702,6 +702,7 @@ pub struct OtherData {
 ///
 /// They are all a category even if something different sometimes.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum Category {
     Area(Box<ExtendedArea>),
     Other(Vec<OtherData>),

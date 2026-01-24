@@ -213,7 +213,7 @@ async fn main() {
         &annoying_links,
     )
     .await;
-    result.parse_skipped(&overwrites);
+    result.parse_skipped(&overwrites).clean_up();
     // println!("{:?}", result);
 
     log::info!("Parsing completed, storing...");

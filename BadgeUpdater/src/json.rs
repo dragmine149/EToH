@@ -137,6 +137,23 @@ impl Jsonify {
         self
     }
 
+    /// Clean up the hashmap by removing any category with no badge data at all.
+    ///
+    /// Even if it's an event category, if it has no badges we don't care.
+    pub fn clean_up(&mut self) -> &mut Self {
+        self.categories.retain(|_, cat| match cat {
+            Category::Area(extended_area) => {
+                if let Some(items) = &extended_area.items {
+                    return !(items.is_empty() && extended_area.towers.is_empty());
+                }
+                !extended_area.towers.is_empty()
+            }
+            Category::Other(other_data) => !other_data.is_empty(),
+        });
+
+        self
+    }
+
     /// Compare the current data structure to the old one.
     /// If changes have occurred, then list them.
     pub fn compare(&self, previous: &Self) -> Vec<String> {
