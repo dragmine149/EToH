@@ -715,7 +715,7 @@ impl From<&&WikiTower> for Tower {
             // but eh that wasn't very useful to begin with.
             // Other badges are different though...
             name: tower.page_name.to_owned(),
-            badges: [tower.badge_id, 0],
+            badges: [0, tower.badge_id],
             difficulty: tower.difficulty,
             length: tower.length,
             tower_type: tower.tower_type,
