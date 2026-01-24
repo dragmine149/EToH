@@ -390,7 +390,7 @@ async fn main_processing(
     let (adventure_pass, _adventure_fail) = count_processed(
         &adventure_towers,
         |a| a.is_ok(),
-        "area_from_description",
+        "hard_coded::area_from_description",
         Some(debug_path),
     );
     let adventure_ids = adventure_pass

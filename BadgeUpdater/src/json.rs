@@ -55,6 +55,7 @@ impl Jsonify {
             })
             .collect::<HashMap<String, Category>>();
 
+        // TODO: fix this??
         categories.extend(adventure.iter().map(|a| {
             (
                 a.category.to_owned(),
