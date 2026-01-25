@@ -17,7 +17,6 @@ use crate::{
     process_items::{get_event_areas, process_all_items, process_area, process_tower},
     reqwest_client::RustClient,
 };
-use dotenv::dotenv;
 use itertools::Itertools;
 use lazy_regex::regex_replace;
 use std::{collections::HashMap, fs, io::Write, path::PathBuf, str::FromStr};
@@ -32,6 +31,7 @@ pub const OLD_BADGE_URL: &str =
     "https://badges.roblox.com/v1/universes/1055653882/badges?limit=100";
 /// Link to the wiki to append to pretty nmuch every single URL.
 pub const ETOH_WIKI: &str = "https://jtoh.fandom.com/";
+/// Link to the wiki API as it's slightly different and can't just use the same URL...
 pub const ETOH_WIKI_API: &str = "https://jtoh.fandom.com/api.php";
 
 /// Some badges have unwanted data which either messes with fandom search or just breaks other things.
@@ -177,7 +177,6 @@ pub const SHRINK_PATH: &str = "../shrunk.json";
 async fn main() {
     // setup
     env_logger::init();
-    dotenv().ok();
 
     // file setup
     let path = PathBuf::from(DEBUG_PATH);
