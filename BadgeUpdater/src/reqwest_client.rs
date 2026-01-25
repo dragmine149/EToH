@@ -125,15 +125,19 @@ impl RustClient {
     where
         U: reqwest::IntoUrl,
     {
+        // Make a new unique hash for each item. (not worth building on itself as threads)
         let mut hasher = DefaultHasher::new();
         url.as_str().hash(&mut hasher);
         let hashrl = hasher.finish();
+        // make our cache.
         let cache_path = self.1.join(hashrl.to_string());
 
+        // check our cache for previous entries
         log::debug!("Checking cache: {:?}", cache_path);
         let bytes = ResponseBytes::read_from_file(&cache_path);
         if let Ok(b) = bytes {
             if b.0 == b"error" {
+                // special case for error entries
                 return Err(RustError::CacheError("Status error from api...".into()));
             }
 
@@ -142,12 +146,15 @@ impl RustClient {
             return Ok(b);
         }
 
+        // send a network response
         log::debug!("Cache miss, sending API reqwest.");
         let response = self.0.get(url).send().await?.error_for_status();
         if response.is_err() {
+            // special network error entry
             ResponseBytes::write_error(&cache_path)?;
             return Err(response.unwrap_err().into());
         }
+        // process it and return the result after saving.
         let response = response.unwrap();
         let bytes = ResponseBytes::from_response(response).await?;
         bytes.write_to_file(&cache_path)?;
@@ -158,6 +165,9 @@ impl RustClient {
 /// Custom storage of the bytes from the response.
 pub struct ResponseBytes(Vec<u8>);
 impl ResponseBytes {
+    /// Turns a reqwest::Response into bytes we can use.
+    ///
+    /// NOTE: If the response fails, this will still save bytes no matter what. Unless there is no bytes.
     pub async fn from_response(response: Response) -> Result<ResponseBytes, reqwest::Error> {
         Ok(Self(response.bytes().await?.to_vec()))
     }
@@ -189,7 +199,6 @@ impl ResponseBytes {
     pub fn text(&self) -> Result<&str, std::str::Utf8Error> {
         str::from_utf8(&self.0)
     }
-
     /// Write an error to the file to tell future stuff not to worry about this.
     pub fn write_error(path: &PathBuf) -> Result<(), std::io::Error> {
         fs::write(&path, b"error")
