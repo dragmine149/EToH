@@ -504,10 +504,8 @@ pub async fn get_event_areas(
     // and yes, this url params are hardcoded like that. it's kinda not fun to make this url.
     let pages = client
         .get(category_url("Events"))
-        .send()
         .await?
-        .json::<WikiAPI>()
-        .await?;
+        .json::<WikiAPI>()?;
     let areas = pages
         .query
         .categorymembers

@@ -448,11 +448,6 @@ impl From<reqwest::Error> for ProcessError {
         Self::Reqwest(RustError::from(value))
     }
 }
-impl From<reqwest_middleware::Error> for ProcessError {
-    fn from(value: reqwest_middleware::Error) -> Self {
-        Self::Reqwest(RustError::from(value))
-    }
-}
 impl From<String> for ProcessError {
     fn from(value: String) -> Self {
         Self::Process(value)
@@ -461,6 +456,11 @@ impl From<String> for ProcessError {
 impl From<&str> for ProcessError {
     fn from(value: &str) -> Self {
         Self::Process(value.to_owned())
+    }
+}
+impl From<serde_json::Error> for ProcessError {
+    fn from(value: serde_json::Error) -> Self {
+        Self::Process(value.to_string())
     }
 }
 

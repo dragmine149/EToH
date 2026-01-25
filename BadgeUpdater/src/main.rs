@@ -188,7 +188,10 @@ async fn main() {
     }
 
     // client and original url setup.
-    let client = RustClient::new(None, None);
+    let client = RustClient::new(
+        None,
+        Some("Data2/BadgeUpdater (https://github.com/dragmine149/Etoh)"),
+    );
     let url = Url::from_str(&format!("{:}?limit=100", BADGE_URL)).unwrap();
 
     let overwrites =
@@ -260,7 +263,9 @@ async fn main_processing(
 
     // get a list of all the badges.
     let mut badges_vec = vec![];
-    let raw = get_badges(client, url, &skip_ids).await.unwrap();
+    let raw = get_badges(client, url, &skip_ids)
+        .await
+        .expect("Failed to get badges from roblox api...");
     for badge_fut in raw {
         badges_vec.push(badge_fut.await.unwrap());
     }

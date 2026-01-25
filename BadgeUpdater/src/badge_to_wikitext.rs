@@ -7,12 +7,11 @@ use crate::{
     definitions::{
         Badge, ErrorDetails, OkDetails, PageDetails, ProcessError, RobloxBadgeData, WikiAPI,
     },
-    reqwest_client::{RustClient, RustError},
+    reqwest_client::{ResponseBytes, RustClient, RustError},
     wikitext::WikiText,
 };
 use async_recursion::async_recursion;
-use reqwest::Response;
-use std::{collections::HashMap, error::Error};
+use std::collections::HashMap;
 use tokio::task::JoinHandle;
 use url::Url;
 
@@ -35,7 +34,7 @@ pub async fn get_badges(
     client: &RustClient,
     url: &Url,
     ignore: &[u64],
-) -> Result<Vec<JoinHandle<Result<OkDetails, ErrorDetails>>>, Box<dyn Error>> {
+) -> Result<Vec<JoinHandle<Result<OkDetails, ErrorDetails>>>, ProcessError> {
     let mut data: RobloxBadgeData = RobloxBadgeData::default();
     let mut tasks = vec![];
     // keep going until we run out of cursor to check.
@@ -44,12 +43,7 @@ pub async fn get_badges(
         url.query_pairs_mut()
             .append_pair("cursor", &next_page_cursor);
 
-        data = client
-            .get(url)
-            .send()
-            .await?
-            .json::<RobloxBadgeData>()
-            .await?;
+        data = client.get(url).await?.json::<RobloxBadgeData>()?;
 
         for badge in data.data {
             if ignore.contains(&badge.id) {
@@ -95,14 +89,14 @@ pub async fn pre_process(client: RustClient, badge: Badge) -> Result<OkDetails, 
 /// # Notes
 /// - Will always return the raw text when possible with `?action=raw`
 /// - Any form of fragments will be removed `#some_fragment` -> ``
-async fn get_page(client: &RustClient, page_name: &str) -> Result<Response, RustError> {
+async fn get_page(client: &RustClient, page_name: &str) -> Result<ResponseBytes, RustError> {
     let mut page_name =
         Url::parse(&format!("{:}wiki/{:}", ETOH_WIKI, page_name)).expect("How is url invalid?");
     page_name.set_fragment(None);
     page_name.set_query(Some("action=raw"));
 
     log::debug!("Request to {:?}", page_name.as_str().replace("%20", " "));
-    Ok(client.get(page_name).send().await?)
+    client.get(page_name).await
 }
 
 /// Gets the page by following every single (wiki) redirect that we come across.
@@ -119,7 +113,7 @@ async fn get_page(client: &RustClient, page_name: &str) -> Result<Response, Rust
 #[async_recursion]
 async fn get_page_redirect(client: &RustClient, page_name: &str) -> Result<PageDetails, RustError> {
     let data = get_page(client, page_name).await?;
-    let text = data.error_for_status()?.text().await?;
+    let text = data.text()?;
 
     // got to have a redirect.
     if text.to_lowercase().contains("#redirect") {
@@ -140,7 +134,7 @@ async fn get_page_redirect(client: &RustClient, page_name: &str) -> Result<PageD
 
     // just return the bog standard text. Thats all we need to worry about.
     Ok(PageDetails {
-        text,
+        text: text.to_owned(),
         ..Default::default()
     })
 }
@@ -189,10 +183,8 @@ async fn process_data(
                 "{:}?action=query&format=json&list=search&srsearch={:}&srlimit={:}",
                 ETOH_WIKI_API, clean_badge, 4
             ))
-            .send()
             .await?
-            .json::<WikiAPI>()
-            .await?;
+            .json::<WikiAPI>()?;
         println!("{:?} ({:?}) ->\n{:#?}", clean_badge, badge, pages);
 
         let search_list = pages

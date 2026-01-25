@@ -26,16 +26,11 @@ pub async fn parse_mini_towers(
     ignore: &[String],
 ) -> Vec<Result<WikiTower, String>> {
     // get a list of mini towers.
-    let mini_towers = client
+    let response = client
         .get(format!("{}wiki/Mini_Tower?action=raw", ETOH_WIKI))
-        .send()
-        .await
-        .unwrap()
-        // .map_err(|e| format!("{:?}", e))?
-        .text()
         .await
         .unwrap();
-    // .map_err(|e| format!("{:?}", e))?;
+    let mini_towers = response.text().unwrap();
 
     let mini_wiki = WikiText::parse(mini_towers);
     let data = mini_wiki
