@@ -2,6 +2,8 @@
 //!
 //! As much as 99% of this is hard coded, i've tried to keep it semi-dynamic by not referencing any specific names where possible.
 //! But here, we need to be a bit more strict with what we do in order for it to work.
+use std::fmt::format;
+
 use crate::{
     ETOH_WIKI,
     badge_to_wikitext::get_page_data,
@@ -139,6 +141,21 @@ pub fn area_from_description(badges: &[Badge]) -> Vec<Result<BadgeOverwrite, Str
                 badge_ids: [0, b.id],
                 category: "Adventure".to_owned(),
                 name: format!("{} ({})", b.name.replace("\"", ""), area.to_owned()),
+            })
+        })
+        .collect_vec()
+}
+
+pub fn progression(badges: &[Badge]) -> Vec<Result<BadgeOverwrite, String>> {
+    badges
+        .iter()
+        .map(|b| {
+            let (_, total) = lazy_regex::regex_captures!(r#"(?m)Beat (\d\d\d?) Towers"#, &b.name)
+                .ok_or("Failed to regex name for progression")?;
+            Ok(BadgeOverwrite {
+                badge_ids: [0, b.id],
+                category: "Progression".to_owned(),
+                name: format!("{} Towers Completed!", total),
             })
         })
         .collect_vec()

@@ -42,7 +42,7 @@ impl Jsonify {
         events: &[&EventInfo],
         all_items: &[&(EventItem, Option<WikiTower>)],
         mini: &[&WikiTower],
-        adventure: &[&BadgeOverwrite],
+        hard: &[&&BadgeOverwrite],
     ) -> Self {
         let mut categories = HashMap::<String, Category>::new();
 
@@ -55,7 +55,7 @@ impl Jsonify {
                 Some(ei) => (ei.area_name.to_owned(), Some(ei.event_name.to_owned())),
                 None => (tower.area.to_owned(), None),
             };
-            log::warn!("old: {}, new: {}", tower.area, area_name);
+            log::debug!("old: {}, new: {}", tower.area, area_name);
 
             match categories.get_mut(&area_name) {
                 Some(area) => match area {
@@ -92,16 +92,16 @@ impl Jsonify {
                 }
             };
         });
-        adventure.iter().for_each(|a| {
+        hard.iter().for_each(|a| {
             match categories.get_mut(&a.category) {
                 Some(cat) => match cat {
-                    Category::Other(other) => other.push(OtherData::from(a)),
+                    Category::Other(other) => other.push(OtherData::from(*a)),
                     _ => unreachable!("Adventure should never be anything but other."),
                 },
                 None => {
                     categories.insert(
                         a.category.to_owned(),
-                        Category::Other(vec![OtherData::from(a)]),
+                        Category::Other(vec![OtherData::from(*a)]),
                     );
                 }
             };

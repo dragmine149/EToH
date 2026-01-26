@@ -397,10 +397,18 @@ async fn main_processing(
         "hard_coded::area_from_description",
         Some(debug_path),
     );
-    let adventure_ids = adventure_pass
-        .iter()
-        .flat_map(|a| a.badge_ids)
-        .collect_vec();
+
+    let progression = hard_coded::progression(failed_list);
+    let (progress_passed, _progress_failed) = count_processed(
+        &progression,
+        |p| p.is_ok(),
+        "hard_coded::progression",
+        Some(debug_path),
+    );
+
+    let hard_pass = Vec::from_iter(adventure_pass.iter().chain(progress_passed.iter()));
+
+    let hard_ids = hard_pass.iter().flat_map(|b| b.badge_ids).collect_vec();
     let success_ids = tower_processed
         .iter()
         .map(|s| s.badge_id)
@@ -421,7 +429,7 @@ async fn main_processing(
             }
         })
         .filter(|id| !success_ids.contains(id))
-        .filter(|id| !adventure_ids.contains(id))
+        .filter(|id| !hard_ids.contains(id))
         .filter(|id| !event_items_ids.contains(id))
         .collect_vec();
     unprocessed.sort();
@@ -488,7 +496,7 @@ async fn main_processing(
             &event_processed,
             &all_items_processed,
             &mini_passed,
-            &adventure_pass,
+            &hard_pass,
         ),
         unprocessed,
     )

@@ -1,5 +1,5 @@
 {
-	"modify_date": 1769450952,
+	"modify_date": 1769461395,
 	"categories": {
 		"100M Replay": {
 			"requirements": {
@@ -2163,34 +2163,6 @@
 		],
 		"Progression": [
 			{
-				"name": "250 Towers Completed!",
-				"ids": [
-					0,
-					1458381480723664
-				]
-			},
-			{
-				"name": "300 Towers Completed!",
-				"ids": [
-					0,
-					1718977824567396
-				]
-			},
-			{
-				"name": "Played the game",
-				"ids": [
-					0,
-					2125364252
-				]
-			},
-			{
-				"name": "First Tower Completed!",
-				"ids": [
-					0,
-					2125419210
-				]
-			},
-			{
 				"name": "10 Towers Completed!",
 				"ids": [
 					0,
@@ -2254,10 +2226,17 @@
 				]
 			},
 			{
-				"name": "400 Towers Completed!",
+				"name": "250 Towers Completed!",
 				"ids": [
 					0,
-					2952022436006599
+					1458381480723664
+				]
+			},
+			{
+				"name": "300 Towers Completed!",
+				"ids": [
+					0,
+					1718977824567396
 				]
 			},
 			{
@@ -2265,6 +2244,27 @@
 				"ids": [
 					0,
 					4327148760354511
+				]
+			},
+			{
+				"name": "400 Towers Completed!",
+				"ids": [
+					0,
+					2952022436006599
+				]
+			},
+			{
+				"name": "Played the game",
+				"ids": [
+					0,
+					2125364252
+				]
+			},
+			{
+				"name": "First Tower Completed!",
+				"ids": [
+					0,
+					2125419210
 				]
 			}
 		],
@@ -3988,6 +3988,17 @@
 					"wiki_page": "Wasn't Really A Tower, Honestly"
 				},
 				{
+					"name": "Tower of Webbed Palace",
+					"badges": [
+						0,
+						200142521415421
+					],
+					"difficulty": 3.75,
+					"length": "CakeWalk",
+					"tower_type": 2,
+					"wiki_page": "Tower of Webbed Palace"
+				},
+				{
 					"name": "Steeple of Fear of Ghosts",
 					"badges": [
 						0,
@@ -4008,17 +4019,6 @@
 					"length": "CakeWalk",
 					"tower_type": 1,
 					"wiki_page": "Steeple of Velvet Delirium"
-				},
-				{
-					"name": "Tower of Webbed Palace",
-					"badges": [
-						0,
-						200142521415421
-					],
-					"difficulty": 3.75,
-					"length": "CakeWalk",
-					"tower_type": 2,
-					"wiki_page": "Tower of Webbed Palace"
 				}
 			],
 			"event_area_name": "Halloween Event 2025"
