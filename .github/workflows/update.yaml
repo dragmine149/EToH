@@ -36,6 +36,12 @@ jobs:
           git commit -m "Automated daily data updating" || echo "No changes to commit"
           git push
 
+      - name: Upload Logs
+        uses: actions/upload-artifact@v6
+        with:
+          name: Logs.txt
+          path: BadgeUpdater/badges.temp.txt
+
       - name: Fail workflow if previous steps failed
         if: ${{ failure() }}
         run: |
