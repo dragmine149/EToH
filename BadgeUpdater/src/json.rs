@@ -178,10 +178,16 @@ impl Jsonify {
 
             if let Some(category) = cat {
                 match category {
-                    Category::Area(_) => unreachable!(
-                        "... `{}` is of type area. id: ({:?})",
-                        badge.category, badge.badge_ids
-                    ),
+                    // Category::Area(_) => unreachable!(
+                    //     "... `{}` is of type area. id: ({:?})",
+                    //     badge.category, badge.badge_ids
+                    // ),
+                    Category::Area(area) => {
+                        match &mut area.other {
+                            Some(other_data) => other_data.push(data),
+                            None => area.other = Some(vec![data]),
+                        };
+                    }
                     Category::Other(other_data) => {
                         other_data.push(data);
                     } // _ => {}

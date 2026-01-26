@@ -1,5 +1,5 @@
 {
-	"modify_date": 1769446962,
+	"modify_date": 1769449862,
 	"categories": {
 		"100M Replay": {
 			"requirements": {
@@ -56,6 +56,13 @@
 			]
 		},
 		"Abyssal Badlands": [
+			{
+				"name": "Beat The Totem from Hell",
+				"ids": [
+					0,
+					2125419112
+				]
+			},
 			{
 				"name": "Conquer the 3 Steeples",
 				"ids": [
@@ -705,6 +712,22 @@
 					"tower_type": 1,
 					"wiki_page": "ETOH TYCOON TYCOON TYCOON TYCOON"
 				}
+			],
+			"other": [
+				{
+					"name": "Advanced Adventurer",
+					"ids": [
+						0,
+						636455601311934
+					]
+				},
+				{
+					"name": "Soul Crushing Adventurer",
+					"ids": [
+						0,
+						985606617596736
+					]
+				}
 			]
 		},
 		"Borealis Reach": {
@@ -1336,6 +1359,13 @@
 		},
 		"Forsaken Manor": [
 			{
+				"name": "A Grave Mistake",
+				"ids": [
+					0,
+					2125419144
+				]
+			},
+			{
 				"name": "Revenge Denied!",
 				"ids": [
 					0,
@@ -1743,6 +1773,15 @@
 				"ids": [
 					0,
 					2153706455
+				]
+			}
+		],
+		"Heccfire Depths": [
+			{
+				"name": "Beat The Janitor from Hell",
+				"ids": [
+					0,
+					2125419089
 				]
 			}
 		],
@@ -4401,6 +4440,15 @@
 			],
 			"event_area_name": "Snowmetropolis"
 		},
+		"Something Otherwordly...": [
+			{
+				"name": "Discovered Something Otherworldly",
+				"ids": [
+					0,
+					2143262050
+				]
+			}
+		],
 		"Steelspire Horizon": {
 			"requirements": {
 				"difficulties": {},

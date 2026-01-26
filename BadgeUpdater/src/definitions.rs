@@ -690,6 +690,9 @@ pub struct ExtendedArea {
     /// A list of items in this sub area. Also confirms it's an event.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub items: Option<Vec<Item>>,
+    /// A list of other badges related, but aren't towers of items.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub other: Option<Vec<OtherData>>,
     /// The name of the event if not the sub area name.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub event_area_name: Option<String>,

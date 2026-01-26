@@ -311,6 +311,8 @@ pub struct ShrinkExtendedArea {
     pub towers: Vec<ShrinkTower>,
     #[serde(skip_serializing_if = "is_default_or_none", rename = "i")]
     pub items: Option<Vec<ShrinkItem>>,
+    #[serde(skip_serializing_if = "is_default_or_none", rename = "o")]
+    pub other: Option<Vec<ShrinkOtherData>>,
     #[serde(skip_serializing_if = "is_default_or_none", rename = "e")]
     pub event_area_name: Option<String>,
     #[serde(skip_serializing_if = "is_default_or_none", rename = "u")]
@@ -329,6 +331,10 @@ impl From<&Box<ExtendedArea>> for ShrinkExtendedArea {
                 .map(|v| v.iter().map(ShrinkItem::from).collect_vec()),
             event_area_name: value.event_area_name.to_owned(),
             until: value.until.to_owned(),
+            other: value
+                .other
+                .as_ref()
+                .map(|v| v.iter().map(ShrinkOtherData::from).collect_vec()),
         }
     }
 }
@@ -489,7 +495,7 @@ impl From<TowerDifficulties> for ShrunkTowerDifficulties {
 /// Store information about badges which we can't categories elsewhere.
 ///
 /// Data normally from [overwrite.jsonc]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ShrinkOtherData {
     /// Our custom name of the badge
     pub name: String,
