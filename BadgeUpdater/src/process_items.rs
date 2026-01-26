@@ -284,29 +284,33 @@ pub async fn process_all_items(
 
     // Templates are nice, because we can link a tower.
     let mut tower_link = None;
-    if let Ok(template) = parsed.get_template("iteminfobox")
-        && let Ok(obtain) = template.get_named_arg("method_of_obtaining")
-    {
-        drop(parsed);
+    match parsed.get_template("iteminfobox") {
+        Ok(template) => {
+            if let Ok(obtain) = template.get_named_arg("method_of_obtaining") {
+                drop(parsed);
 
-        // check all our links for the tower. As there are many links in one box.
-        for link in obtain.get_links(Some(LinkType::Internal)) {
-            // If this fails, then the rest will probably fail.
-            let mut wikitext = get_page_data(client, &link.target).await?;
-            wikitext.set_page_name(Some(link.target.to_owned()));
-            let tower = process_tower(&wikitext, badge);
-            if tower.is_ok() {
-                tower_link = tower.ok();
-                break;
-                // } else {
-                //     log::error!(
-                //         "Failed to get link tower: {:?} err: {:?}",
-                //         link,
-                //         tower.err()
-                //     );
+                // check all our links for the tower. As there are many links in one box.
+                for link in obtain.get_links(Some(LinkType::Internal)) {
+                    // If this fails, then the rest will probably fail.
+                    let mut wikitext = get_page_data(client, &link.target).await?;
+                    wikitext.set_page_name(Some(link.target.to_owned()));
+                    let tower = process_tower(&wikitext, badge);
+                    if tower.is_ok() {
+                        tower_link = tower.ok();
+                        break;
+                        // } else {
+                        //     log::error!(
+                        //         "Failed to get link tower: {:?} err: {:?}",
+                        //         link,
+                        //         tower.err()
+                        //     );
+                    }
+                }
             }
         }
+        Err(e) => return Err(format!("Failed to get item of tower ({})", e)),
     }
+
     // Get an owned reference to the tower name for our link.
     let tower_name = tower_link.as_ref().map(|t| t.page_name.to_owned());
 
@@ -314,7 +318,7 @@ pub async fn process_all_items(
         EventItem {
             item_name: badge.name.to_owned(),
             event_name: event_link.label.replace("Category:", "").trim().to_owned(),
-            badges: [badge.id.to_owned(), 0],
+            badges: [0, badge.id.to_owned()],
             tower_name,
         },
         tower_link,

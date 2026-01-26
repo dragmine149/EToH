@@ -23,6 +23,9 @@ fn is_default<T: Default + PartialEq>(value: &T) -> bool {
     *value == T::default()
 }
 
+/// Helper function for serde as we can't have multiple skip_ifs.
+///
+/// If [is_default] or [Option::None] skip.
 fn is_default_or_none<T: Default + PartialEq>(value: &Option<T>) -> bool {
     if let Some(v) = value {
         return is_default(v);

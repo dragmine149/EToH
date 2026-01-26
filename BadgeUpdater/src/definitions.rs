@@ -649,7 +649,7 @@ pub fn badges_from_map_value(v: &Value) -> Result<Vec<BadgeOverwrite>, Box<dyn s
 }
 
 /// Custom tower object we use when turning the data into json.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Tower {
     /// The wiki name of the tower. We could go badge, but wiki will be easier i hope.
     pub name: String,

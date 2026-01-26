@@ -44,67 +44,118 @@ impl Jsonify {
         mini: &[&WikiTower],
         adventure: &[&BadgeOverwrite],
     ) -> Self {
-        let mut categories = areas
+        let mut categories = HashMap::<String, Category>::new();
+
+        // pioritise towers first then everything else.
+        towers
             .iter()
-            .map(|area| {
-                let mut category = ExtendedArea::from(area.to_owned());
-                category.towers = towers
-                    .iter()
-                    .filter(|t| t.area == area.name)
-                    .chain(mini.iter().filter(|m| m.area == area.name))
-                    .map(Tower::from)
-                    .collect_vec();
+            .chain(mini.iter())
+            .for_each(|tower| match categories.get_mut(&tower.area) {
+                Some(area) => match area {
+                    Category::Area(extended_area) => extended_area.towers.push(Tower::from(tower)),
+                    Category::Other(_) => {
+                        unreachable!("Area from towers should not be of type other.")
+                    }
+                },
+                None => {
+                    let mut area = ExtendedArea::default();
+                    area.towers = vec![Tower::from(tower)];
+                    categories.insert(tower.area.clone(), Category::Area(Box::new(area)));
+                }
+            });
+        areas.iter().for_each(|area| {
+            match categories.get_mut(&area.name) {
+                Some(area_info) => match area_info {
+                    Category::Area(extended_area) => {
+                        extended_area.requirements =
+                            area.requirements.to_owned().unwrap_or_default();
+                        extended_area.parent = area.parent_area.to_owned();
+                    }
+                    Category::Other(_) => unreachable!("Areas should not be of type other!"),
+                },
+                None => {
+                    // we'll let other part of the code insert them if we need to.
 
-                (area.name.to_owned(), Category::Area(Box::new(category)))
-            })
-            .collect::<HashMap<String, Category>>();
-
+                    // categories.insert(
+                    //     area.name.clone(),
+                    //     Category::Area(Box::new(ExtendedArea::from(*area))),
+                    // );
+                }
+            };
+        });
         adventure.iter().for_each(|a| {
-            let cat = categories.get_mut(&a.category);
-            if let Some(category) = cat {
-                match category {
+            match categories.get_mut(&a.category) {
+                Some(cat) => match cat {
                     Category::Other(other) => other.push(OtherData::from(a)),
                     _ => unreachable!("Adventure should never be anything but other."),
+                },
+                None => {
+                    categories.insert(
+                        a.category.to_owned(),
+                        Category::Other(vec![OtherData::from(a)]),
+                    );
                 }
-            } else {
-                categories.insert(
-                    a.category.to_owned(),
-                    Category::Other(vec![OtherData::from(a)]),
-                );
-            }
+            };
         });
-
-        categories.extend(events.iter().map(|event| {
-            // println!(
-            //     "{}///\n{:#?}\n",
-            //     event.event_name,
-            //     all_items
-            //         .iter()
-            //         .filter(|(item, _)| item.event_name == event.event_name)
-            // );
-
-            let area = ExtendedArea {
-                event_area_name: Some(event.area_name.to_owned()),
-                items: Some(
-                    all_items
+        events
+            .iter()
+            .for_each(|event| match categories.get_mut(&event.event_name) {
+                Some(event_info) => match event_info {
+                    Category::Area(extended_area) => {
+                        extended_area.event_area_name = Some(event.area_name.clone());
+                        extended_area.items = Some(
+                            all_items
+                                .iter()
+                                .filter(|(item, _)| item.event_name == event.event_name)
+                                .map(|(item, _)| Item::from(item))
+                                .collect_vec(),
+                        );
+                        all_items
+                            .iter()
+                            .filter(|t| t.1.is_some())
+                            .map(|t| t.1.as_ref().unwrap().to_owned())
+                            .filter(|t| t.area == event.area_name)
+                            .map(Tower::from)
+                            .for_each(|t| {
+                                if !extended_area.towers.contains(&t) {
+                                    extended_area.towers.push(t);
+                                }
+                            });
+                        extended_area.until = event.until;
+                    }
+                    Category::Other(_) => unreachable!("Event info shouldn't be of type other."),
+                },
+                None => {
+                    let items = all_items
                         .iter()
                         .filter(|(item, _)| item.event_name == event.event_name)
                         .map(|(item, _)| Item::from(item))
-                        .collect_vec(),
-                ),
-                towers: all_items
-                    .iter()
-                    .filter(|t| t.1.is_some())
-                    .map(|t| t.1.as_ref().unwrap().to_owned())
-                    .filter(|t| t.area == event.area_name)
-                    .map(Tower::from)
-                    .collect_vec(),
-                until: event.until,
-                ..Default::default()
-            };
+                        .collect_vec();
+                    let towers = all_items
+                        .iter()
+                        .filter(|t| t.1.is_some())
+                        .map(|t| t.1.as_ref().unwrap().to_owned())
+                        .filter(|t| t.area == event.area_name)
+                        .map(Tower::from)
+                        .collect_vec();
 
-            (event.event_name.to_owned(), Category::Area(Box::new(area)))
-        }));
+                    if items.is_empty() && towers.is_empty() {
+                        // don't add it if we have nothing of worth to add.
+                        return;
+                    }
+
+                    categories.insert(
+                        event.area_name.clone(),
+                        Category::Area(Box::new(ExtendedArea {
+                            event_area_name: Some(event.area_name.to_owned()),
+                            items: Some(items),
+                            towers: towers,
+                            until: event.until,
+                            ..Default::default()
+                        })),
+                    );
+                }
+            });
 
         Self {
             modify_date: Utc::now(),
@@ -127,10 +178,13 @@ impl Jsonify {
 
             if let Some(category) = cat {
                 match category {
-                    Category::Area(_) => unreachable!("..."),
+                    Category::Area(_) => unreachable!(
+                        "... `{}` is of type area. id: ({:?})",
+                        badge.category, badge.badge_ids
+                    ),
                     Category::Other(other_data) => {
                         other_data.push(data);
-                    }
+                    } // _ => {}
                 }
             } else {
                 self.categories
@@ -145,6 +199,8 @@ impl Jsonify {
     ///
     /// Even if it's an event category, if it has no badges we don't care.
     pub fn clean_up(&mut self) -> &mut Self {
+        // return self;
+
         self.categories.retain(|_, cat| match cat {
             Category::Area(extended_area) => {
                 if let Some(items) = &extended_area.items {
@@ -318,8 +374,19 @@ impl Jsonify {
                         ));
                     }
                 }
-                _ => {
-                    changes.push(format!("Category '{}' type changed", common_key));
+                (from, to) => {
+                    changes.push(format!(
+                        "Category '{}' type changed from {} to {}",
+                        common_key,
+                        match from {
+                            Category::Area(_) => "Area",
+                            Category::Other(_) => "Other",
+                        },
+                        match to {
+                            Category::Area(_) => "Area",
+                            Category::Other(_) => "Other",
+                        },
+                    ));
                 }
             }
         }
