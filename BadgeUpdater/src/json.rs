@@ -47,10 +47,17 @@ impl Jsonify {
         let mut categories = HashMap::<String, Category>::new();
 
         // pioritise towers first then everything else.
-        towers
-            .iter()
-            .chain(mini.iter())
-            .for_each(|tower| match categories.get_mut(&tower.area) {
+        towers.iter().chain(mini.iter()).for_each(|tower| {
+            let (area_name, event_area) = match events
+                .iter()
+                .find(|e| e.area_name == tower.area || e.event_name == tower.area)
+            {
+                Some(ei) => (ei.area_name.to_owned(), Some(ei.event_name.to_owned())),
+                None => (tower.area.to_owned(), None),
+            };
+            log::warn!("old: {}, new: {}", tower.area, area_name);
+
+            match categories.get_mut(&area_name) {
                 Some(area) => match area {
                     Category::Area(extended_area) => extended_area.towers.push(Tower::from(tower)),
                     Category::Other(_) => {
@@ -60,9 +67,11 @@ impl Jsonify {
                 None => {
                     let mut area = ExtendedArea::default();
                     area.towers = vec![Tower::from(tower)];
-                    categories.insert(tower.area.clone(), Category::Area(Box::new(area)));
+                    area.event_area_name = event_area;
+                    categories.insert(area_name, Category::Area(Box::new(area)));
                 }
-            });
+            }
+        });
         areas.iter().for_each(|area| {
             match categories.get_mut(&area.name) {
                 Some(area_info) => match area_info {
@@ -380,7 +389,7 @@ impl Jsonify {
                         ));
                     }
                 }
-                (from, to) => {
+                (to, from) => {
                     changes.push(format!(
                         "Category '{}' type changed from {} to {}",
                         common_key,

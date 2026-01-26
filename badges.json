@@ -1,5 +1,5 @@
 {
-	"modify_date": 1769449862,
+	"modify_date": 1769450952,
 	"categories": {
 		"100M Replay": {
 			"requirements": {
@@ -199,176 +199,6 @@
 				]
 			}
 		],
-		"April Fools 2021": {
-			"requirements": {
-				"difficulties": {},
-				"points": 0,
-				"areas": {}
-			},
-			"parent": null,
-			"towers": [
-				{
-					"name": "Tower of Round Platforms",
-					"badges": [
-						0,
-						2125427110
-					],
-					"difficulty": 5.76,
-					"length": "CakeWalk",
-					"tower_type": 2,
-					"wiki_page": "Tower of Round Platforms"
-				}
-			],
-			"items": [],
-			"event_area_name": "Fool's Ring 9"
-		},
-		"April Fools 2022": {
-			"requirements": {
-				"difficulties": {},
-				"points": 0,
-				"areas": {}
-			},
-			"parent": null,
-			"towers": [
-				{
-					"name": "Goobie's",
-					"badges": [
-						0,
-						2125771615
-					],
-					"difficulty": 5.66,
-					"length": "CakeWalk",
-					"tower_type": 2,
-					"wiki_page": "Goobie's"
-				},
-				{
-					"name": "Tower of High Quality Fishing Boat",
-					"badges": [
-						0,
-						2125771541
-					],
-					"difficulty": 100.0,
-					"length": "CakeWalk",
-					"tower_type": 2,
-					"wiki_page": "Tower of High Quality Fishing Boat"
-				}
-			],
-			"items": [],
-			"event_area_name": "Terrain World"
-		},
-		"April Fools 2023": {
-			"requirements": {
-				"difficulties": {},
-				"points": 0,
-				"areas": {}
-			},
-			"parent": null,
-			"towers": [
-				{
-					"name": "Lemonade Luh Luh Lemonade",
-					"badges": [
-						0,
-						2143262068
-					],
-					"difficulty": 2.88,
-					"length": "CakeWalk",
-					"tower_type": 2,
-					"wiki_page": "Lemonade Luh Luh Lemonade"
-				},
-				{
-					"name": "Citadel of \"A Bug's Life!\"",
-					"badges": [
-						0,
-						2143262085
-					],
-					"difficulty": 6.94,
-					"length": "VeryShort",
-					"tower_type": 3,
-					"wiki_page": "Citadel of \"A Bug's Life!\""
-				}
-			],
-			"items": [],
-			"event_area_name": "Something Otherworldly..."
-		},
-		"April Fools 2024": {
-			"requirements": {
-				"difficulties": {},
-				"points": 0,
-				"areas": {}
-			},
-			"parent": null,
-			"towers": [
-				{
-					"name": "Tower Of Generation Retro",
-					"badges": [
-						0,
-						4239462281273883
-					],
-					"difficulty": 4.81,
-					"length": "CakeWalk",
-					"tower_type": 2,
-					"wiki_page": "Tower Of Generation Retro"
-				},
-				{
-					"name": "Tower of Quick, Brown Fox!",
-					"badges": [
-						0,
-						3137780606603721
-					],
-					"difficulty": 6.02,
-					"length": "CakeWalk",
-					"tower_type": 2,
-					"wiki_page": "Tower of Quick, Brown Fox!"
-				},
-				{
-					"name": "Tower of Sparkling Rainbow Water",
-					"badges": [
-						0,
-						1903648881097858
-					],
-					"difficulty": 7.29,
-					"length": "CakeWalk",
-					"tower_type": 2,
-					"wiki_page": "Tower of Sparkling Rainbow Water"
-				}
-			],
-			"items": [],
-			"event_area_name": "The Doghouse"
-		},
-		"April Fools 2025": {
-			"requirements": {
-				"difficulties": {},
-				"points": 0,
-				"areas": {}
-			},
-			"parent": null,
-			"towers": [
-				{
-					"name": "Tower of Vesi Leikki",
-					"badges": [
-						0,
-						3516710902749261
-					],
-					"difficulty": 3.5,
-					"length": "CakeWalk",
-					"tower_type": 2,
-					"wiki_page": "Tower of Vesi Leikki"
-				},
-				{
-					"name": "Mush Stepl",
-					"badges": [
-						0,
-						1675378900956293
-					],
-					"difficulty": 5.44,
-					"length": "CakeWalk",
-					"tower_type": 1,
-					"wiki_page": "Mush Stepl"
-				}
-			],
-			"items": [],
-			"event_area_name": "BIOUMS"
-		},
 		"Arcane Area": {
 			"requirements": {
 				"difficulties": {},
@@ -702,6 +532,17 @@
 			"parent": null,
 			"towers": [
 				{
+					"name": "Tower of Vesi Leikki",
+					"badges": [
+						0,
+						3516710902749261
+					],
+					"difficulty": 3.5,
+					"length": "CakeWalk",
+					"tower_type": 2,
+					"wiki_page": "Tower of Vesi Leikki"
+				},
+				{
 					"name": "ETOH TYCOON TYCOON TYCOON TYCOON",
 					"badges": [
 						0,
@@ -711,6 +552,17 @@
 					"length": "Long",
 					"tower_type": 1,
 					"wiki_page": "ETOH TYCOON TYCOON TYCOON TYCOON"
+				},
+				{
+					"name": "Mush Stepl",
+					"badges": [
+						0,
+						1675378900956293
+					],
+					"difficulty": 5.44,
+					"length": "CakeWalk",
+					"tower_type": 1,
+					"wiki_page": "Mush Stepl"
 				}
 			],
 			"other": [
@@ -728,7 +580,8 @@
 						985606617596736
 					]
 				}
-			]
+			],
+			"event_area_name": "April Fools 2025"
 		},
 		"Borealis Reach": {
 			"requirements": {
@@ -1048,22 +901,44 @@
 				]
 			}
 		],
-		"Eclipsed Headquarters": [
-			{
-				"name": "A Momentous Duel",
-				"ids": [
-					0,
-					2127933647
-				]
+		"Eclipsed Headquarters": {
+			"requirements": {
+				"difficulties": {},
+				"points": 0,
+				"areas": {}
 			},
-			{
-				"name": "Complex Ascent",
-				"ids": [
-					0,
-					2127933664
-				]
-			}
-		],
+			"parent": null,
+			"towers": [
+				{
+					"name": "Steeple of Treacherous Toxins",
+					"badges": [
+						0,
+						2127933694
+					],
+					"difficulty": 7.08,
+					"length": "CakeWalk",
+					"tower_type": 1,
+					"wiki_page": "Steeple of Treacherous Toxins"
+				}
+			],
+			"other": [
+				{
+					"name": "A Momentous Duel",
+					"ids": [
+						0,
+						2127933647
+					]
+				},
+				{
+					"name": "Complex Ascent",
+					"ids": [
+						0,
+						2127933664
+					]
+				}
+			],
+			"event_area_name": "Halloween Event 2022"
+		},
 		"Festive Cliffside": {
 			"requirements": {
 				"difficulties": {},
@@ -1159,6 +1034,28 @@
 				}
 			],
 			"event_area_name": "Festive Cliffside"
+		},
+		"Fool's Ring 9": {
+			"requirements": {
+				"difficulties": {},
+				"points": 0,
+				"areas": {}
+			},
+			"parent": null,
+			"towers": [
+				{
+					"name": "Tower of Round Platforms",
+					"badges": [
+						0,
+						2125427110
+					],
+					"difficulty": 5.76,
+					"length": "CakeWalk",
+					"tower_type": 2,
+					"wiki_page": "Tower of Round Platforms"
+				}
+			],
+			"event_area_name": "April Fools 2021"
 		},
 		"Forgotten Ridge": {
 			"requirements": {
@@ -1357,22 +1254,44 @@
 				}
 			]
 		},
-		"Forsaken Manor": [
-			{
-				"name": "A Grave Mistake",
-				"ids": [
-					0,
-					2125419144
-				]
+		"Forsaken Manor": {
+			"requirements": {
+				"difficulties": {},
+				"points": 0,
+				"areas": {}
 			},
-			{
-				"name": "Revenge Denied!",
-				"ids": [
-					0,
-					2125419152
-				]
-			}
-		],
+			"parent": null,
+			"towers": [
+				{
+					"name": "Steeple of Cosmic Terror",
+					"badges": [
+						0,
+						2125419148
+					],
+					"difficulty": 6.56,
+					"length": "CakeWalk",
+					"tower_type": 1,
+					"wiki_page": "Steeple of Cosmic Terror"
+				}
+			],
+			"other": [
+				{
+					"name": "A Grave Mistake",
+					"ids": [
+						0,
+						2125419144
+					]
+				},
+				{
+					"name": "Revenge Denied!",
+					"ids": [
+						0,
+						2125419152
+					]
+				}
+			],
+			"event_area_name": "Halloween Event 2020"
+		},
 		"Garden of Eeshöl": {
 			"requirements": {
 				"difficulties": {},
@@ -1624,53 +1543,7 @@
 			],
 			"event_area_name": "Glacial Outpost"
 		},
-		"Halloween Event 2020": {
-			"requirements": {
-				"difficulties": {},
-				"points": 0,
-				"areas": {}
-			},
-			"parent": null,
-			"towers": [
-				{
-					"name": "Steeple of Cosmic Terror",
-					"badges": [
-						0,
-						2125419148
-					],
-					"difficulty": 6.56,
-					"length": "CakeWalk",
-					"tower_type": 1,
-					"wiki_page": "Steeple of Cosmic Terror"
-				}
-			],
-			"items": [],
-			"event_area_name": "Forsaken Manor"
-		},
-		"Halloween Event 2022": {
-			"requirements": {
-				"difficulties": {},
-				"points": 0,
-				"areas": {}
-			},
-			"parent": null,
-			"towers": [
-				{
-					"name": "Steeple of Treacherous Toxins",
-					"badges": [
-						0,
-						2127933694
-					],
-					"difficulty": 7.08,
-					"length": "CakeWalk",
-					"tower_type": 1,
-					"wiki_page": "Steeple of Treacherous Toxins"
-				}
-			],
-			"items": [],
-			"event_area_name": "Eclipsed Headquarters"
-		},
-		"Halloween Event 2023": {
+		"Harvest Carnival": {
 			"requirements": {
 				"difficulties": {},
 				"points": 0,
@@ -1701,81 +1574,24 @@
 					"wiki_page": "Citadel of Treats and Tricks"
 				}
 			],
-			"items": [],
-			"event_area_name": "Harvest Carnival"
-		},
-		"Halloween Event 2025": {
-			"requirements": {
-				"difficulties": {},
-				"points": 0,
-				"areas": {}
-			},
-			"parent": null,
-			"towers": [
+			"other": [
 				{
-					"name": "Wasn't Really A Tower, Honestly",
-					"badges": [
+					"name": "Carnival Fun",
+					"ids": [
 						0,
-						1545859739398010
-					],
-					"difficulty": 6.97,
-					"length": "CakeWalk",
-					"tower_type": 0,
-					"wiki_page": "Wasn't Really A Tower, Honestly"
+						2153706425
+					]
 				},
 				{
-					"name": "Tower of Webbed Palace",
-					"badges": [
+					"name": "Stage Fright",
+					"ids": [
 						0,
-						200142521415421
-					],
-					"difficulty": 3.75,
-					"length": "CakeWalk",
-					"tower_type": 2,
-					"wiki_page": "Tower of Webbed Palace"
-				},
-				{
-					"name": "Steeple of Fear of Ghosts",
-					"badges": [
-						0,
-						2066357764635831
-					],
-					"difficulty": 4.2,
-					"length": "CakeWalk",
-					"tower_type": 1,
-					"wiki_page": "Steeple of Fear of Ghosts"
-				},
-				{
-					"name": "Steeple of Velvet Delirium",
-					"badges": [
-						0,
-						4019679002407690
-					],
-					"difficulty": 3.89,
-					"length": "CakeWalk",
-					"tower_type": 1,
-					"wiki_page": "Steeple of Velvet Delirium"
+						2153706455
+					]
 				}
 			],
-			"items": [],
-			"event_area_name": "Saint Venoma"
+			"event_area_name": "Halloween Event 2023"
 		},
-		"Harvest Carnival": [
-			{
-				"name": "Carnival Fun",
-				"ids": [
-					0,
-					2153706425
-				]
-			},
-			{
-				"name": "Stage Fright",
-				"ids": [
-					0,
-					2153706455
-				]
-			}
-		],
 		"Heccfire Depths": [
 			{
 				"name": "Beat The Janitor from Hell",
@@ -4152,6 +3968,61 @@
 				]
 			}
 		],
+		"Saint Venoma": {
+			"requirements": {
+				"difficulties": {},
+				"points": 0,
+				"areas": {}
+			},
+			"parent": null,
+			"towers": [
+				{
+					"name": "Wasn't Really A Tower, Honestly",
+					"badges": [
+						0,
+						1545859739398010
+					],
+					"difficulty": 6.97,
+					"length": "CakeWalk",
+					"tower_type": 0,
+					"wiki_page": "Wasn't Really A Tower, Honestly"
+				},
+				{
+					"name": "Steeple of Fear of Ghosts",
+					"badges": [
+						0,
+						2066357764635831
+					],
+					"difficulty": 4.2,
+					"length": "CakeWalk",
+					"tower_type": 1,
+					"wiki_page": "Steeple of Fear of Ghosts"
+				},
+				{
+					"name": "Steeple of Velvet Delirium",
+					"badges": [
+						0,
+						4019679002407690
+					],
+					"difficulty": 3.89,
+					"length": "CakeWalk",
+					"tower_type": 1,
+					"wiki_page": "Steeple of Velvet Delirium"
+				},
+				{
+					"name": "Tower of Webbed Palace",
+					"badges": [
+						0,
+						200142521415421
+					],
+					"difficulty": 3.75,
+					"length": "CakeWalk",
+					"tower_type": 2,
+					"wiki_page": "Tower of Webbed Palace"
+				}
+			],
+			"event_area_name": "Halloween Event 2025"
+		},
 		"Secret Endings": [
 			{
 				"name": "Beyond the Citadel (CoLS)",
@@ -4449,6 +4320,39 @@
 				]
 			}
 		],
+		"Something Otherworldly...": {
+			"requirements": {
+				"difficulties": {},
+				"points": 0,
+				"areas": {}
+			},
+			"parent": null,
+			"towers": [
+				{
+					"name": "Lemonade Luh Luh Lemonade",
+					"badges": [
+						0,
+						2143262068
+					],
+					"difficulty": 2.88,
+					"length": "CakeWalk",
+					"tower_type": 2,
+					"wiki_page": "Lemonade Luh Luh Lemonade"
+				},
+				{
+					"name": "Citadel of \"A Bug's Life!\"",
+					"badges": [
+						0,
+						2143262085
+					],
+					"difficulty": 6.94,
+					"length": "VeryShort",
+					"tower_type": 3,
+					"wiki_page": "Citadel of \"A Bug's Life!\""
+				}
+			],
+			"event_area_name": "April Fools 2023"
+		},
 		"Steelspire Horizon": {
 			"requirements": {
 				"difficulties": {},
@@ -4646,15 +4550,92 @@
 				}
 			]
 		},
-		"Terrain World": [
-			{
-				"name": "Discover Terrain World",
-				"ids": [
-					0,
-					2125771537
-				]
-			}
-		],
+		"Terrain World": {
+			"requirements": {
+				"difficulties": {},
+				"points": 0,
+				"areas": {}
+			},
+			"parent": null,
+			"towers": [
+				{
+					"name": "Goobie's",
+					"badges": [
+						0,
+						2125771615
+					],
+					"difficulty": 5.66,
+					"length": "CakeWalk",
+					"tower_type": 2,
+					"wiki_page": "Goobie's"
+				},
+				{
+					"name": "Tower of High Quality Fishing Boat",
+					"badges": [
+						0,
+						2125771541
+					],
+					"difficulty": 100.0,
+					"length": "CakeWalk",
+					"tower_type": 2,
+					"wiki_page": "Tower of High Quality Fishing Boat"
+				}
+			],
+			"other": [
+				{
+					"name": "Discover Terrain World",
+					"ids": [
+						0,
+						2125771537
+					]
+				}
+			],
+			"event_area_name": "April Fools 2022"
+		},
+		"The Doghouse": {
+			"requirements": {
+				"difficulties": {},
+				"points": 0,
+				"areas": {}
+			},
+			"parent": null,
+			"towers": [
+				{
+					"name": "Tower Of Generation Retro",
+					"badges": [
+						0,
+						4239462281273883
+					],
+					"difficulty": 4.81,
+					"length": "CakeWalk",
+					"tower_type": 2,
+					"wiki_page": "Tower Of Generation Retro"
+				},
+				{
+					"name": "Tower of Quick, Brown Fox!",
+					"badges": [
+						0,
+						3137780606603721
+					],
+					"difficulty": 6.02,
+					"length": "CakeWalk",
+					"tower_type": 2,
+					"wiki_page": "Tower of Quick, Brown Fox!"
+				},
+				{
+					"name": "Tower of Sparkling Rainbow Water",
+					"badges": [
+						0,
+						1903648881097858
+					],
+					"difficulty": 7.29,
+					"length": "CakeWalk",
+					"tower_type": 2,
+					"wiki_page": "Tower of Sparkling Rainbow Water"
+				}
+			],
+			"event_area_name": "April Fools 2024"
+		},
 		"The Eternal Potluck": {
 			"requirements": {
 				"difficulties": {},
