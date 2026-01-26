@@ -7,7 +7,7 @@
 
 use chrono::{DateTime, FixedOffset, Utc};
 use itertools::Itertools;
-use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor};
+use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
 use std::collections::HashMap;
 
 use crate::{
@@ -15,7 +15,7 @@ use crate::{
         AreaRequirements, Category, ExtendedArea, Item, Length, OtherData, Tower,
         TowerDifficulties, TowerType,
     },
-    json::Jsonify,
+    json::{Jsonify, SortedHashMap},
 };
 
 /// Helper function for serde, skips if it's default value.
@@ -30,12 +30,70 @@ fn is_default_or_none<T: Default + PartialEq>(value: &Option<T>) -> bool {
     true
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct ShrinkJson {
-    #[serde(rename = "m")]
     modify_date: DateTime<Utc>,
-    #[serde(rename = "c")]
     categories: HashMap<String, ShrinkCategory>,
+}
+
+impl Serialize for ShrinkJson {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut s = serializer.serialize_struct("Jsonify", 2)?;
+        s.serialize_field("m", &(self.modify_date.timestamp()))?;
+        s.serialize_field("c", &SortedHashMap(self.categories.to_owned()))?;
+        s.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for ShrinkJson {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_struct("Jsonify", &["m", "c"], ShrinkJsonVisitor)
+    }
+}
+
+struct ShrinkJsonVisitor;
+impl<'de> Visitor<'de> for ShrinkJsonVisitor {
+    type Value = ShrinkJson;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("struct Jsonify")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut modify_date: Option<DateTime<Utc>> = None;
+        let mut categories: Option<HashMap<String, ShrinkCategory>> = None;
+
+        while let Some(key) = map.next_key()? {
+            match key {
+                "m" => {
+                    let timestamp: i64 = map.next_value()?;
+                    modify_date = Some(
+                        DateTime::<Utc>::from_timestamp(timestamp, 0).unwrap_or_else(Utc::now),
+                    );
+                }
+                "c" => {
+                    categories = Some(map.next_value()?);
+                }
+                _ => {
+                    let _: serde::de::IgnoredAny = map.next_value()?;
+                }
+            }
+        }
+
+        Ok(ShrinkJson {
+            modify_date: modify_date.unwrap_or_else(Utc::now),
+            categories: categories.unwrap_or_default(),
+        })
+    }
 }
 
 impl From<Jsonify> for ShrinkJson {

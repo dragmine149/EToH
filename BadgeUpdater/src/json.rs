@@ -9,12 +9,16 @@ use crate::{
 };
 use chrono::{DateTime, Utc};
 use itertools::Itertools;
-use serde::{Deserialize, Serialize};
+use serde::{
+    Deserialize, Serialize,
+    de::Visitor,
+    ser::{SerializeMap, SerializeStruct},
+};
 use std::{collections::HashMap, fs};
 
 /// Store information about everything we've been collecting.
 /// Also allows for the data to be serialized/deserialized to and from json.
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct Jsonify {
     /// The data of last modification.
     pub modify_date: DateTime<Utc>,
@@ -328,6 +332,66 @@ impl Jsonify {
     }
 }
 
+impl Serialize for Jsonify {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut s = serializer.serialize_struct("Jsonify", 2)?;
+        s.serialize_field("modify_date", &(self.modify_date.timestamp()))?;
+        s.serialize_field("categories", &SortedHashMap(self.categories.to_owned()))?;
+        s.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for Jsonify {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_struct("Jsonify", &["modify_date", "categories"], JsonifyVisitor)
+    }
+}
+
+struct JsonifyVisitor;
+impl<'de> Visitor<'de> for JsonifyVisitor {
+    type Value = Jsonify;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("struct Jsonify")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut modify_date: Option<DateTime<Utc>> = None;
+        let mut categories: Option<HashMap<String, Category>> = None;
+
+        while let Some(key) = map.next_key()? {
+            match key {
+                "modify_date" => {
+                    let timestamp: i64 = map.next_value()?;
+                    modify_date = Some(
+                        DateTime::<Utc>::from_timestamp(timestamp, 0).unwrap_or_else(Utc::now),
+                    );
+                }
+                "categories" => {
+                    categories = Some(map.next_value()?);
+                }
+                _ => {
+                    let _: serde::de::IgnoredAny = map.next_value()?;
+                }
+            }
+        }
+
+        Ok(Jsonify {
+            modify_date: modify_date.unwrap_or_else(Utc::now),
+            categories: categories.unwrap_or_default(),
+        })
+    }
+}
+
 /// Helper function for reading a `jsonc` file as `serde_json` doesn't work by default.
 ///
 /// This is just an extension of [fs::read_to_string] but removes any lines starting with `//`
@@ -337,4 +401,45 @@ pub fn read_jsonc(path: &str) -> String {
         .lines()
         .filter(|line| !line.trim_start().contains("//"))
         .join("\n")
+}
+
+/// Source: https://www.codestudy.net/blog/how-to-sort-hashmap-keys-when-serializing-with-serde/
+#[derive(Debug, Clone)]
+pub struct SortedHashMap<K, V>(pub HashMap<K, V>);
+impl<K, V> Serialize for SortedHashMap<K, V>
+where
+    K: Serialize + Ord,
+    V: Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        // Collect HashMap entries into a Vec for sorting
+        let mut entries: Vec<_> = self.0.iter().collect();
+
+        // Sort entries by key (ascending order by default)
+        entries.sort_by_key(|&(key, _)| key);
+
+        // Serialize as a map: start the map, write sorted entries, end the map
+        let mut map = serializer.serialize_map(Some(entries.len()))?;
+        for (key, value) in entries {
+            map.serialize_entry(key, value)?; // Serialize key-value pair
+        }
+        map.end()
+    }
+}
+
+impl<'de, K, V> Deserialize<'de> for SortedHashMap<K, V>
+where
+    K: Deserialize<'de> + std::cmp::Eq + std::hash::Hash,
+    V: Deserialize<'de> + std::hash::Hash,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let map = HashMap::deserialize(deserializer)?;
+        Ok(SortedHashMap(map))
+    }
 }
