@@ -354,46 +354,131 @@ impl From<AreaRequirements> for ShrunkAreaRequirements {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct ShrunkTowerDifficulties {
-    #[serde(skip_serializing_if = "Option::is_none", rename = "e")]
-    pub easy: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "m")]
+    // pub easy: Option<u64>,
     pub medium: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "h")]
     pub hard: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "d")]
     pub difficult: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "c")]
     pub challenging: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "i")]
     pub intense: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "r")]
     pub remorseless: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "s")]
-    pub insane: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "x")]
-    pub extreme: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "t")]
-    pub terrifying: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "a")]
-    pub catastrophic: Option<u64>,
+    // pub insane: Option<u64>,
+    // pub extreme: Option<u64>,
+    // pub terrifying: Option<u64>,
+    // pub catastrophic: Option<u64>,
+}
+
+impl Serialize for ShrunkTowerDifficulties {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        fn assign_slice(slice: &mut [u8; 3], data: Option<u64>, index: u8) {
+            if let Some(d) = data {
+                if slice[1] == 0 {
+                    slice[0] = index;
+                    slice[1] = d as u8;
+                    return;
+                }
+                slice[2] = d as u8;
+            }
+        }
+
+        // format: [offset, first, second]
+        let mut data = [0_u8, 0_u8, 0u8];
+        assign_slice(&mut data, self.medium, 0);
+        assign_slice(&mut data, self.hard, 1);
+        assign_slice(&mut data, self.difficult, 2);
+        assign_slice(&mut data, self.challenging, 3);
+        assign_slice(&mut data, self.intense, 4);
+        assign_slice(&mut data, self.remorseless, 5);
+
+        let result = ((data[0] as u16) << 6) + ((data[1] as u16) << 3) + (data[2] as u16);
+        println!("{:?} -> {:?}", data, result);
+        serializer.serialize_u16(result)
+    }
+}
+impl<'de> Deserialize<'de> for ShrunkTowerDifficulties {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_u16(ShrunkTowerDifficultiesVisitor)
+    }
+}
+struct ShrunkTowerDifficultiesVisitor;
+impl<'de> Visitor<'de> for ShrunkTowerDifficultiesVisitor {
+    type Value = ShrunkTowerDifficulties;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("A u16 number. The bytes are what we care about though.")
+    }
+
+    fn visit_u16<E>(self, v: u16) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        let offset = v >> 6;
+        let first = Some((v - offset >> 3) as u64);
+        let second = v - offset - first.unwrap() as u16;
+        let second = if second > 0 {
+            Some(second as u64)
+        } else {
+            None
+        };
+
+        let mut res = ShrunkTowerDifficulties::default();
+        match offset {
+            0 => {
+                res.medium = first;
+                res.hard = second;
+            }
+            1 => {
+                res.hard = first;
+                res.difficult = second;
+            }
+            2 => {
+                res.difficult = first;
+                res.challenging = second;
+            }
+            3 => {
+                res.challenging = first;
+                res.intense = second;
+            }
+            4 => {
+                res.intense = first;
+                res.remorseless = second;
+            }
+            5 => {
+                res.remorseless = first;
+            }
+            _ => {
+                return Err(serde::de::Error::custom(format!(
+                    "Invalid value for offset: {}",
+                    offset,
+                )));
+            }
+        }
+
+        Ok(res)
+    }
 }
 
 impl From<TowerDifficulties> for ShrunkTowerDifficulties {
     fn from(value: TowerDifficulties) -> Self {
         Self {
-            easy: value.easy,
+            // easy: value.easy,
             medium: value.medium,
             hard: value.hard,
             difficult: value.difficult,
             challenging: value.challenging,
             intense: value.intense,
             remorseless: value.remorseless,
-            insane: value.insane,
-            extreme: value.extreme,
-            terrifying: value.terrifying,
-            catastrophic: value.catastrophic,
+            // insane: value.insane,
+            // extreme: value.extreme,
+            // terrifying: value.terrifying,
+            // catastrophic: value.catastrophic,
         }
     }
 }
