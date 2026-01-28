@@ -206,7 +206,9 @@ async fn get_page(client: &RustClient, page_name: &str) -> Result<ResponseBytes,
     page_name.set_query(Some("action=raw"));
 
     log::debug!("Request to {:?}", page_name.as_str().replace("%20", " "));
-    client.get(page_name).await
+    let r = client.get(page_name).await;
+    log::debug!("Result: {:?}", r);
+    r
 }
 
 /// Gets the page by following every single (wiki) redirect that we come across.

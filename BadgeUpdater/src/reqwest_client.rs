@@ -7,6 +7,7 @@ use serde::Deserialize;
 
 use crate::fmt_secs;
 use std::{
+    fmt::Debug,
     fs::{self, create_dir_all},
     hash::{DefaultHasher, Hash, Hasher},
     path::PathBuf,
@@ -202,5 +203,22 @@ impl ResponseBytes {
     /// Write an error to the file to tell future stuff not to worry about this.
     pub fn write_error(path: &PathBuf) -> Result<(), std::io::Error> {
         fs::write(path, b"error")
+    }
+}
+
+impl Debug for ResponseBytes {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if f.alternate() {
+            writeln!(f, "ResponseBytes({:?})", self.0)
+        } else {
+            writeln!(
+                f,
+                "ResponseBytes({})",
+                match self.0.is_empty() {
+                    true => "Empty",
+                    false => "Has Data",
+                }
+            )
+        }
     }
 }
