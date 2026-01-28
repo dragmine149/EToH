@@ -34,12 +34,12 @@ async fn parse_mini_row(
 ) -> Option<Result<WikiTower, String>> {
     // no links, no page to link to. Aka, probably no badge.
     let links = data.inner.content.get_links(Some(LinkType::Internal));
-    let target = links.first();
-    if target.is_none() {
-        // mini_towers.push(Err(format!("Failed to get link for {:?}", data)));
-        return None;
-    }
-    let target = target.unwrap();
+    let target = links.first()?;
+    // if target.is_none() {
+    //     // mini_towers.push(Err(format!("Failed to get link for {:?}", data)));
+    //     return None;
+    // }
+    // let target = target.unwrap();
     if ignore.contains(&target.target) {
         // no need to push anything as we're ignoring it.
         log::debug!("Ignoring cell due to already processed");

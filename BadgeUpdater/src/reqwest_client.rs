@@ -12,7 +12,7 @@ use std::{
     fs::{self, create_dir_all},
     hash::{DefaultHasher, Hash, Hasher},
     path::PathBuf,
-    time::{self, Duration, SystemTime},
+    time::{Duration, SystemTime},
 };
 
 /// Custom struct as a wrapper for custom functions
