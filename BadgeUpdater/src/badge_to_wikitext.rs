@@ -95,7 +95,7 @@ where
 /// # Returns
 ///   * Ok: All requests to roblox succeeded.
 ///   * Err: **ANY** request to roblox failed and this is the details why. Do note that any previous succeeded reqwests will be dropped.
-/// ```
+///
 pub async fn get_quick_badges(
     client: &RustClient,
     url: &Url,
@@ -145,31 +145,23 @@ pub async fn get_all_badges_wiki_edition(
     ignore: &[u64],
 ) -> Result<Vec<JoinHandle<Result<BadgeDetails, BadgeError>>>, ProcessError> {
     let old = get_quick_badges(client, url[0], ignore).await?;
+    // got to pass in old to each individual thread semi-annoyingly...
     get_badges(
         client,
         url[1],
         ignore,
         async |client, badge, old| {
+            // we searach by name as that is the most reliable.
+            // Not same name, probably not same badge.
+            let relationship = &old
+                .iter()
+                .find(|o| o.name == badge.name)
+                .cloned()
+                .unwrap_or_default();
             let details = pre_process(client, badge).await;
             details
-                .map(|ok| {
-                    let relationship = old
-                        .iter()
-                        .find(|o| o.name == ok.1.name)
-                        .cloned()
-                        .unwrap_or_default()
-                        .to_owned();
-                    BadgeDetails(ok.0, [relationship, ok.1])
-                })
-                .map_err(|err| {
-                    let relationship = old
-                        .iter()
-                        .find(|o| o.name == err.1.name)
-                        .cloned()
-                        .unwrap_or_default()
-                        .to_owned();
-                    BadgeError(err.0, [relationship, err.1])
-                })
+                .map(|ok| BadgeDetails(ok.0, [relationship.to_owned(), ok.1]))
+                .map_err(|err| BadgeError(err.0, [relationship.to_owned(), err.1]))
         },
         old,
     )
@@ -378,6 +370,7 @@ pub async fn get_annoying(
 
 /// Wrapper for [get_page_redirect] but returns a more favourable `Result<WikiText, String>` instead.
 pub async fn get_page_data(client: &RustClient, page: &str) -> Result<WikiText, String> {
+    log::debug!("Page: {}", page);
     let data = get_page_redirect(client, page).await;
     if let Ok(res) = data {
         let mut wikitext = WikiText::parse(res.text);

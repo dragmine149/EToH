@@ -9,9 +9,84 @@ use crate::{
     definitions::{Badge, BadgeOverwrite, WikiTower},
     process_items::process_tower,
     reqwest_client::RustClient,
-    wikitext::{WikiText, enums::LinkType},
+    wikitext::{Cell, WikiText, enums::LinkType},
 };
 use itertools::Itertools;
+
+/// Inner function for [parse_mini_towers]. That was getting big so we split it out of readability.
+///
+/// Parses a single row in the specified table we search.
+/// # Arguments
+/// * client: Passed from [parse_mini_towers]
+/// * badges: Passed from [parse_mini_towers]
+/// * Ignore: Passed from [parse_mini_towers]
+/// * data: The cell (row info) we actually look at.
+///
+/// # Returns
+/// * None: We skip this row as it doesn't have anything useful for us.
+/// * Some(Err): Something failed whilst trying to progress the row.
+/// * Some(Ok): The result of the row after everything succeeded.
+async fn parse_mini_row(
+    client: &RustClient,
+    data: Cell,
+    ignore: &[String],
+    badges: &[&[Badge; 2]],
+) -> Option<Result<WikiTower, String>> {
+    // no links, no page to link to. Aka, probably no badge.
+    let links = data.inner.content.get_links(Some(LinkType::Internal));
+    let target = links.first();
+    if target.is_none() {
+        // mini_towers.push(Err(format!("Failed to get link for {:?}", data)));
+        return None;
+    }
+    let target = target.unwrap();
+    if ignore.contains(&target.target) {
+        // no need to push anything as we're ignoring it.
+        log::debug!("Ignoring cell due to already processed");
+        return None;
+    }
+
+    // and then basically get the page data like normal.
+    let wikitext = get_page_data(client, &target.target.replace("?", "%3F")).await;
+    if wikitext.is_err() {
+        // println!("ERR: Failed to get wikidata");
+        // println!("{:?}: {:?}", target.target, data);
+        log::warn!("Failed to get wiki data for {:?}", target.target);
+        return Some(Err(format!(
+            "Failed to get wiki data for {:?}",
+            target.target
+        )));
+    }
+    let mut wikitext = wikitext.ok().unwrap();
+    wikitext.set_page_name(Some(target.target.to_owned()));
+    println!("{:?}", target.target);
+
+    // check to see if the page contains our specific badges.
+    let badge = badges.iter().find(|b| {
+        // println!("{:?}/{:?}", b[0].id, b[1].id);
+        // println!(
+        //     "{:?}/{:?}",
+        //     wikitext.text().contains(&b[0].id.to_string()),
+        //     wikitext.text().contains(&b[1].id.to_string())
+        // );
+
+        // as we use `0` as a placeholder for no badge id. we have to make that check. `0` exists kinda a lot...
+        (b[0].id > 0 && wikitext.text().contains(&b[0].id.to_string()))
+            || (b[1].id > 0 && wikitext.text().contains(&b[1].id.to_string()))
+    });
+
+    // no badge mini tower.
+    if badge.is_none() {
+        // println!("{:?}", wikitext.text());
+        return Some(Err(format!(
+            "Failed to find badge id for {:?}",
+            target.target
+        )));
+    }
+
+    // Return that everything went well, after we get the tower data.
+    Some(process_tower(&wikitext, badge.unwrap()))
+}
 
 /// Mini-towers (and most towers types) have their own unique page listing them all, hence we can fallback on that as badge name != mini tower name.
 ///
@@ -44,6 +119,8 @@ pub async fn parse_mini_towers(
 
     // println!("{:?}", table.get_headers());
 
+    println!("Mini badges: {:#?}", badges);
+
     // for all rows in our table.
     let mut mini_towers = vec![];
     for row_id in 0..table.get_rows().len() {
@@ -57,52 +134,11 @@ pub async fn parse_mini_towers(
             && let Some(loc) = location
             && loc.raw() != "Cancelled"
         {
-            // there is only one link per row.
-            let links = data.inner.content.get_links(Some(LinkType::Internal));
-            let target = links.first();
-            if target.is_none() {
-                // mini_towers.push(Err(format!("Failed to get link for {:?}", data)));
-                continue;
+            // pass it off to another function for row parsing.
+            let result = parse_mini_row(client, data, ignore, badges).await;
+            if let Some(res) = result {
+                mini_towers.push(res);
             }
-            let target = target.unwrap();
-            if ignore.contains(&target.target) {
-                // no need to push anything as we're ignoring it.
-                log::debug!("Ignoring cell due to already processed");
-                continue;
-            }
-
-            // and then basically get the page data like normal.
-            // TODO: Separate this out into a new function? I fell like we kinda reuse this code.
-            let wikitext = get_page_data(client, &target.target.replace("?", "%3F")).await;
-
-            if wikitext.is_err() {
-                // println!("ERR: Failed to get wikidata");
-                // println!("{:?}: {:?}", target.target, data);
-                log::warn!("Failed to get wiki data for {:?}", target.target);
-                mini_towers.push(Err(format!(
-                    "Failed to get wiki data for {:?}",
-                    target.target
-                )));
-                continue;
-            }
-            let mut wikitext = wikitext.ok().unwrap();
-            wikitext.set_page_name(Some(target.target.to_owned()));
-
-            let badge = badges.iter().find(|b| {
-                // println!("{:?}", b.id);
-                wikitext.text().contains(&b[0].id.to_string())
-            });
-
-            if badge.is_none() {
-                mini_towers.push(Err(format!(
-                    "Failed to find badge id for {:?}",
-                    target.target
-                )));
-                println!("{:?}", wikitext.text());
-                continue;
-            }
-
-            mini_towers.push(process_tower(&wikitext, badge.unwrap()));
         }
     }
 

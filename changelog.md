@@ -1,2 +1,5 @@
-Changed tower 'Tower of Weird Energy' length from VeryShort to Short in area 'Steelspire Horizon'
-Added item 'Present of Heart Warming' to event area 'Borealis Reach'
+Removed category: The Stronghold
+Removed category: Summit of Memories
+Removed category: Pit of Misery
+Removed tower 'Dazzling Extraordinary Albutower' from area 'The Doghouse'
+Removed tower 'Totally A Neat' from area 'BIOUMS'

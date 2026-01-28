@@ -20,6 +20,12 @@ This branch is not designed to be pushed into main. This will run alongside main
 - [`annoying_links.json`](./annoying_links.json):  This is a file for some badges to link them to some pages when fandom can't do it for us.
 - [`overwrite.json`](./overwrite.json):  This is a file for listing some overwrites as for some badges, no matter what we do, we can't auto link.
 
+### Reliance...
+Most of this program is relaint on data being in a specific format, in a specific way. Numbers only existing once on a page and everything as we expect. This does mean we're more likely to break, but the wiki has been following
+a pretty decent format system.
+
+Then again, most things reliant on APIs, etc are well reliant on them. We're just taking a roundabout approach...
+
 ## Update Log
 This is separate as it's not really a "release" and most people won't care how the data is structured.
 

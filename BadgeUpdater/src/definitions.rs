@@ -77,6 +77,7 @@ impl Default for RobloxBadgeData {
 // Wiki API Results
 //=================================================
 
+/// Make a URL for querying the wiki for the specified category.
 pub fn category_url(category_name: &str) -> String {
     let url = format!(
         "{}?action=query&format=json&list=categorymembers&titles={}&formatversion=2&cmtitle=Category%3A{}&cmlimit=500",
@@ -89,6 +90,7 @@ pub fn category_url(category_name: &str) -> String {
 /// The wrapper for anything returned by the wiki api.
 #[derive(Debug, Deserialize)]
 pub struct WikiAPI {
+    /// The main result of the query.
     pub query: WikiQuery,
 }
 

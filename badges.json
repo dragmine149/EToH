@@ -1,5 +1,5 @@
 {
-	"modify_date": 1769567318,
+	"modify_date": 1769569468,
 	"categories": {
 		"100M Replay": {
 			"requirements": {
@@ -563,17 +563,6 @@
 					"length": "CakeWalk",
 					"tower_type": 1,
 					"wiki_page": "Mush Stepl"
-				},
-				{
-					"name": "Totally A Neat",
-					"badges": [
-						0,
-						1458381480723664
-					],
-					"difficulty": 7.45,
-					"length": "CakeWalk",
-					"tower_type": 0,
-					"wiki_page": "Totally A Neat"
 				}
 			],
 			"other": [
@@ -1264,7 +1253,7 @@
 					"name": "This Is Probably A Tower",
 					"badges": [
 						0,
-						1458381480723664
+						1359907317047556
 					],
 					"difficulty": 3.61,
 					"length": "CakeWalk",
@@ -2154,34 +2143,13 @@
 				{
 					"name": "Possibly A Tower",
 					"badges": [
-						0,
-						1458381480723664
+						2124776627,
+						2125419004
 					],
 					"difficulty": 1.54,
 					"length": "CakeWalk",
 					"tower_type": 0,
 					"wiki_page": "Possibly A Tower"
-				}
-			]
-		},
-		"Pit of Misery": {
-			"requirements": {
-				"difficulties": {},
-				"points": 0,
-				"areas": {}
-			},
-			"parent": null,
-			"towers": [
-				{
-					"name": "Was A Tower",
-					"badges": [
-						0,
-						1458381480723664
-					],
-					"difficulty": 10.99,
-					"length": "CakeWalk",
-					"tower_type": 0,
-					"wiki_page": "Was A Tower"
 				}
 			]
 		},
@@ -2648,8 +2616,8 @@
 				{
 					"name": "Not Even A Tower",
 					"badges": [
-						0,
-						1458381480723664
+						2124457516,
+						2125364331
 					],
 					"difficulty": 1.11,
 					"length": "CakeWalk",
@@ -2814,8 +2782,8 @@
 				{
 					"name": "Maybe A Tower",
 					"badges": [
-						0,
-						1458381480723664
+						2124574951,
+						2125365096
 					],
 					"difficulty": 1.07,
 					"length": "CakeWalk",
@@ -2980,8 +2948,8 @@
 				{
 					"name": "Totally A Tower",
 					"badges": [
-						0,
-						1458381480723664
+						2124609985,
+						2125365536
 					],
 					"difficulty": 6.99,
 					"length": "CakeWalk",
@@ -3158,8 +3126,8 @@
 				{
 					"name": "Will Be A Tower",
 					"badges": [
-						0,
-						1458381480723664
+						2124700551,
+						2125383846
 					],
 					"difficulty": 5.01,
 					"length": "CakeWalk",
@@ -3326,7 +3294,7 @@
 					"name": "Likely A Tower",
 					"badges": [
 						0,
-						1458381480723664
+						2125383958
 					],
 					"difficulty": 4.04,
 					"length": "CakeWalk",
@@ -3482,7 +3450,7 @@
 					"name": "Fortunately Not A Tower",
 					"badges": [
 						0,
-						1458381480723664
+						2125384279
 					],
 					"difficulty": 6.76,
 					"length": "CakeWalk",
@@ -4028,17 +3996,6 @@
 					"wiki_page": "Wasn't Really A Tower, Honestly"
 				},
 				{
-					"name": "Steeple of Velvet Delirium",
-					"badges": [
-						0,
-						4019679002407690
-					],
-					"difficulty": 3.89,
-					"length": "CakeWalk",
-					"tower_type": 1,
-					"wiki_page": "Steeple of Velvet Delirium"
-				},
-				{
 					"name": "Tower of Webbed Palace",
 					"badges": [
 						0,
@@ -4059,6 +4016,17 @@
 					"length": "CakeWalk",
 					"tower_type": 1,
 					"wiki_page": "Steeple of Fear of Ghosts"
+				},
+				{
+					"name": "Steeple of Velvet Delirium",
+					"badges": [
+						0,
+						4019679002407690
+					],
+					"difficulty": 3.89,
+					"length": "CakeWalk",
+					"tower_type": 1,
+					"wiki_page": "Steeple of Velvet Delirium"
 				}
 			],
 			"event_area_name": "Halloween Event 2025"
@@ -4590,27 +4558,6 @@
 				}
 			]
 		},
-		"Summit of Memories": {
-			"requirements": {
-				"difficulties": {},
-				"points": 0,
-				"areas": {}
-			},
-			"parent": null,
-			"towers": [
-				{
-					"name": "Is This A Tower? (Classic)",
-					"badges": [
-						0,
-						1458381480723664
-					],
-					"difficulty": 5.75,
-					"length": "CakeWalk",
-					"tower_type": 0,
-					"wiki_page": "Is This A Tower? (Classic)"
-				}
-			]
-		},
 		"Terrain World": {
 			"requirements": {
 				"difficulties": {},
@@ -4693,17 +4640,6 @@
 					"length": "CakeWalk",
 					"tower_type": 2,
 					"wiki_page": "Tower of Sparkling Rainbow Water"
-				},
-				{
-					"name": "Dazzling Extraordinary Albutower",
-					"badges": [
-						0,
-						1458381480723664
-					],
-					"difficulty": 5.23,
-					"length": "CakeWalk",
-					"tower_type": 0,
-					"wiki_page": "Dazzling Extraordinary Albutower"
 				}
 			],
 			"event_area_name": "April Fools 2024"
@@ -4915,71 +4851,6 @@
 				}
 			]
 		},
-		"The Stronghold": {
-			"requirements": {
-				"difficulties": {},
-				"points": 0,
-				"areas": {}
-			},
-			"parent": null,
-			"towers": [
-				{
-					"name": "Ballze Tower",
-					"badges": [
-						0,
-						1458381480723664
-					],
-					"difficulty": 2.83,
-					"length": "CakeWalk",
-					"tower_type": 0,
-					"wiki_page": "Ballze Tower"
-				},
-				{
-					"name": "Mini Tower of Great Nostalgia",
-					"badges": [
-						0,
-						1458381480723664
-					],
-					"difficulty": 5.33,
-					"length": "CakeWalk",
-					"tower_type": 0,
-					"wiki_page": "Mini Tower of Great Nostalgia"
-				},
-				{
-					"name": "Double Tower 2",
-					"badges": [
-						0,
-						1458381480723664
-					],
-					"difficulty": 6.03,
-					"length": "CakeWalk",
-					"tower_type": 0,
-					"wiki_page": "Double Tower 2"
-				},
-				{
-					"name": "Evidently Not a Tower",
-					"badges": [
-						0,
-						1458381480723664
-					],
-					"difficulty": 100.0,
-					"length": "CakeWalk",
-					"tower_type": 0,
-					"wiki_page": "Evidently Not a Tower"
-				},
-				{
-					"name": "Nil's Ultimate Fate",
-					"badges": [
-						0,
-						1458381480723664
-					],
-					"difficulty": 100.0,
-					"length": "CakeWalk",
-					"tower_type": 0,
-					"wiki_page": "Nil's Ultimate Fate"
-				}
-			]
-		},
 		"Time-Lost Clockwork": {
 			"requirements": {
 				"difficulties": {},
@@ -5013,7 +4884,7 @@
 					"name": "Is This A Tower?",
 					"badges": [
 						0,
-						1458381480723664
+						2127908292
 					],
 					"difficulty": 5.81,
 					"length": "CakeWalk",
@@ -5288,7 +5159,7 @@
 					"name": "Somewhat A Tower",
 					"badges": [
 						0,
-						1458381480723664
+						2574993269501011
 					],
 					"difficulty": 5.53,
 					"length": "CakeWalk",

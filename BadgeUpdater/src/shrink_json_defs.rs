@@ -296,7 +296,7 @@ impl<'de> Visitor<'de> for ShrinkItemVisitor {
 
 /// All of these have an is_default check.
 ///
-/// As much as i would like to put it on the parent object, i can't without probably writing [serde_derive::Serialize]
+/// As much as i would like to put it on the parent object, i can't without probably writing [serde::Serialize]
 /// for more structs.
 #[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
 pub struct ShrinkExtendedArea {

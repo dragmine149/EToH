@@ -55,7 +55,7 @@ impl Jsonify {
                 Some(ei) => (ei.area_name.to_owned(), Some(ei.event_name.to_owned())),
                 None => (tower.area.to_owned(), None),
             };
-            log::debug!("old: {}, new: {}", tower.area, area_name);
+            // log::debug!("old: {}, new: {}", tower.area, area_name);
 
             match categories.get_mut(&area_name) {
                 Some(area) => match area {
@@ -487,7 +487,7 @@ pub fn read_jsonc(path: &str) -> String {
         .join("\n")
 }
 
-/// Source: https://www.codestudy.net/blog/how-to-sort-hashmap-keys-when-serializing-with-serde/
+/// Source: <https://www.codestudy.net/blog/how-to-sort-hashmap-keys-when-serializing-with-serde/>
 #[derive(Debug, Clone)]
 pub struct SortedHashMap<K, V>(pub HashMap<K, V>);
 impl<K, V> Serialize for SortedHashMap<K, V>
