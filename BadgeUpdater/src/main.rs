@@ -191,7 +191,7 @@ async fn main() {
         if PathBuf::from("./.temp.txt").exists() {
             None
         } else {
-            Some(Duration::from_millis(500))
+            Some(Duration::from_millis(1000))
         },
     );
     let url = [
