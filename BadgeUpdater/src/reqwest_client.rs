@@ -4,6 +4,7 @@
 
 use reqwest::{Client, Response};
 use serde::Deserialize;
+use tokio::time::sleep;
 
 use crate::fmt_secs;
 use std::{
@@ -11,7 +12,7 @@ use std::{
     fs::{self, create_dir_all},
     hash::{DefaultHasher, Hash, Hasher},
     path::PathBuf,
-    time::SystemTime,
+    time::{self, Duration, SystemTime},
 };
 
 /// Custom struct as a wrapper for custom functions
@@ -20,9 +21,18 @@ use std::{
 /// ```
 /// RustClient::new(Some("a path".into()), None)
 /// ```
-/// You could make it from the struct but it's just easier that way.
+/// You could make it from the struct but it's recommended to use [RustClient::new] that way. If you want to make it from a struct...
 #[derive(Debug, Clone)]
-pub struct RustClient(pub Client, PathBuf);
+pub struct RustClient(
+    /// The [reqwest::Client] we expand and rely upon.
+    pub Client,
+    /// The cache path location.
+    PathBuf,
+    /// How long to wait after each request.
+    ///
+    /// This is not the best solution, but a solution to avoid spamming servers which might return errors from too much spam...
+    Duration,
+);
 /// Custom error to include all potential reqwest related errors.
 #[derive(Debug)]
 #[allow(dead_code, reason = "I use this for debugging...")]
@@ -57,18 +67,23 @@ impl RustClient {
     /// Create a new client, cache is forced and only cleared after every day.
     ///
     /// # Arguments
-    /// - cache_path -> The path to store the cache. Defaults to `./.cache`
-    /// - user_agent -> Custom user agent to tell the server. Defaults to `Some program written in rust...`
+    /// * cache_path -> The path to store the cache. Defaults to `./.cache`
+    /// * user_agent -> Custom user agent to tell the server. Defaults to `Some program written in rust...`
+    /// * wait_time -> How long to wait after the request. This does mean everything will be slowed down but should reduce getting blocked due to mass requests.
     ///
     /// # Returns
     /// - a new client object to use.
-    pub fn new(cache_path: Option<&str>, user_agent: Option<&str>) -> Self {
+    pub fn new(
+        cache_path: Option<&str>,
+        user_agent: Option<&str>,
+        wait_time: Option<Duration>,
+    ) -> Self {
         let cache = PathBuf::from(cache_path.unwrap_or("./.cache"));
         let client = reqwest::ClientBuilder::new()
             .user_agent(user_agent.unwrap_or("Some program written in rust..."))
             .build()
             .unwrap();
-        let c = Self(client, cache);
+        let c = Self(client, cache, wait_time.unwrap_or_default());
         c.clear_cache();
         c
     }
@@ -159,6 +174,8 @@ impl RustClient {
         let response = response.unwrap();
         let bytes = ResponseBytes::from_response(response).await?;
         bytes.write_to_file(&cache_path)?;
+
+        sleep(self.2).await;
         Ok(bytes)
     }
 }
@@ -209,9 +226,9 @@ impl ResponseBytes {
 impl Debug for ResponseBytes {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if f.alternate() {
-            writeln!(f, "ResponseBytes({:?})", self.0)
+            write!(f, "ResponseBytes({:?})", self.0)
         } else {
-            writeln!(
+            write!(
                 f,
                 "ResponseBytes({})",
                 match self.0.is_empty() {

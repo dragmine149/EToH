@@ -18,7 +18,7 @@ use crate::{
 };
 use itertools::Itertools;
 use lazy_regex::regex_replace;
-use std::{collections::HashMap, fs, io::Write, path::PathBuf, str::FromStr};
+use std::{collections::HashMap, fs, io::Write, path::PathBuf, str::FromStr, time::Duration};
 use url::Url;
 
 // TODO: like we're doing for badges, make this a vector or something.
@@ -188,6 +188,11 @@ async fn main() {
     let client = RustClient::new(
         None,
         Some("Data2/BadgeUpdater (https://github.com/dragmine149/Etoh)"),
+        if PathBuf::from("./.temp.txt").exists() {
+            None
+        } else {
+            Some(Duration::from_millis(100))
+        },
     );
     let url = [
         &Url::from_str(&format!("{:}?limit=100", OLD_BADGE_URL)).unwrap(),
