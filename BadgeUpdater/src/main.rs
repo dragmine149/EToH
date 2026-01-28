@@ -8,10 +8,9 @@ pub mod shrink_json_defs;
 pub mod wikitext;
 
 use crate::{
-    badge_to_wikitext::{get_annoying, get_badges},
+    badge_to_wikitext::{get_all_badges_wiki_edition, get_annoying},
     definitions::{
-        AreaInformation, BadgeOverwrite, ErrorDetails, EventInfo, EventItem, OkDetails, WikiTower,
-        badges_from_map_value,
+        AreaInformation, BadgeOverwrite, EventInfo, EventItem, WikiTower, badges_from_map_value,
     },
     json::{Jsonify, read_jsonc},
     process_items::{get_event_areas, process_all_items, process_area, process_tower},
@@ -25,10 +24,9 @@ use url::Url;
 // TODO: like we're doing for badges, make this a vector or something.
 
 /// Link to the badge list of the new game.
-pub const BADGE_URL: &str = "https://badges.roblox.com/v1/universes/3264581003/badges?limit=100";
+pub const BADGE_URL: &str = "https://badges.roblox.com/v1/universes/3264581003/badges";
 /// Link to the badge list of the old game.
-pub const OLD_BADGE_URL: &str =
-    "https://badges.roblox.com/v1/universes/1055653882/badges?limit=100";
+pub const OLD_BADGE_URL: &str = "https://badges.roblox.com/v1/universes/1055653882/badges";
 /// Link to the wiki to append to pretty nmuch every single URL.
 pub const ETOH_WIKI: &str = "https://jtoh.fandom.com/";
 /// Link to the wiki API as it's slightly different and can't just use the same URL...
@@ -191,7 +189,10 @@ async fn main() {
         None,
         Some("Data2/BadgeUpdater (https://github.com/dragmine149/Etoh)"),
     );
-    let url = Url::from_str(&format!("{:}?limit=100", BADGE_URL)).unwrap();
+    let url = [
+        &Url::from_str(&format!("{:}?limit=100", OLD_BADGE_URL)).unwrap(),
+        &Url::from_str(&format!("{:}?limit=100", BADGE_URL)).unwrap(),
+    ];
 
     let overwrites =
         badges_from_map_value(&serde_json::from_str(&read_jsonc(OVERWRITE_PATH)).unwrap())
@@ -206,7 +207,7 @@ async fn main() {
 
     log::info!("Setup complete, starting searching");
 
-    let (mut result, unprocessed) = main_processing(
+    let (mut result, full_process) = main_processing(
         &client,
         &url,
         &path,
@@ -235,7 +236,7 @@ async fn main() {
 
     log::info!("Data stored, panicking if left overs then stopping.");
 
-    if !unprocessed.is_empty() {
+    if !full_process {
         panic!("There are still some items left in the list to process!");
     }
 }
@@ -246,12 +247,12 @@ async fn main() {
 // #[allow(unused_variables, reason = "Will be used later")]
 async fn main_processing(
     client: &RustClient,
-    url: &Url,
+    url: &[&Url; 2],
     debug_path: &PathBuf,
     overwrites: &[BadgeOverwrite],
     ignored: &HashMap<String, Vec<u64>>,
     annoying_links: &HashMap<String, String>,
-) -> (Jsonify, Vec<u64>) {
+) -> (Jsonify, bool) {
     let skip_ids = overwrites
         .iter()
         .flat_map(|bo| bo.badge_ids)
@@ -262,7 +263,7 @@ async fn main_processing(
 
     // get a list of all the badges.
     let mut badges_vec = vec![];
-    let raw = get_badges(client, url, &skip_ids)
+    let raw = get_all_badges_wiki_edition(client, url, &skip_ids)
         .await
         .expect("Failed to get badges from roblox api...");
     for badge_fut in raw {
@@ -271,12 +272,8 @@ async fn main_processing(
 
     log::info!("Skipped {:?} badges due to overwrites file", skip_ids.len());
     // process the badges to get the passed and failed ones..
-    let (passed, failed) = count_processed(
-        &badges_vec,
-        |f: &Result<OkDetails, ErrorDetails>| f.is_ok(),
-        "get_badges",
-        Some(debug_path),
-    );
+    let (passed, failed) =
+        count_processed(&badges_vec, |f| f.is_ok(), "get_badges", Some(debug_path));
 
     let annoying = get_annoying(
         client,
@@ -290,12 +287,8 @@ async fn main_processing(
         annoying_links,
     )
     .await;
-    let (annoying_pass, _annoying_fail) = count_processed(
-        &annoying,
-        |a: &Result<OkDetails, ErrorDetails>| a.is_ok(),
-        "get_annoying",
-        Some(debug_path),
-    );
+    let (annoying_pass, _annoying_fail) =
+        count_processed(&annoying, |a| a.is_ok(), "get_annoying", Some(debug_path));
 
     // start processing towers.
     let tower_data = passed
@@ -359,7 +352,7 @@ async fn main_processing(
     for ele in passed.iter().filter(|p| {
         !tower_processed
             .iter()
-            .any(|t| t.page_name.contains(&p.1.name))
+            .any(|t| t.page_name.contains(&p.1[1].name))
     }) {
         items.push(process_all_items(client, &ele.0, &ele.1, &event_processed).await);
     }
@@ -371,7 +364,7 @@ async fn main_processing(
         Some(debug_path),
     );
 
-    let failed_list = &failed.iter().map(|p| p.1.clone()).collect_vec();
+    let failed_list = &failed.iter().map(|p| &p.1).collect_vec();
 
     // okay, now we have to hard-code some stuff.
     let mini_towers = hard_coded::parse_mini_towers(
@@ -411,9 +404,9 @@ async fn main_processing(
     let hard_ids = hard_pass.iter().flat_map(|b| b.badge_ids).collect_vec();
     let success_ids = tower_processed
         .iter()
-        .map(|s| s.badge_id)
+        .flat_map(|s| s.badge_ids)
         .chain(all_items_processed.iter().flat_map(|ei| ei.0.badges))
-        .chain(mini_passed.iter().map(|mini| mini.badge_id))
+        .chain(mini_passed.iter().flat_map(|mini| mini.badge_ids))
         .collect_vec();
     let event_items_ids = all_items_processed
         .iter()
@@ -421,13 +414,11 @@ async fn main_processing(
         .collect_vec();
     let mut unprocessed = badges_vec
         .iter()
-        .map(|v| {
-            if v.is_ok() {
-                v.as_ref().ok().unwrap().1.id
-            } else {
-                v.as_ref().err().unwrap().1.id
-            }
+        .flat_map(|v| match v {
+            Ok(o) => o.1.clone().map(|b| b.id),
+            Err(e) => e.1.clone().map(|b| b.id),
         })
+        // .map(|b| *b)
         .filter(|id| !success_ids.contains(id))
         .filter(|id| !hard_ids.contains(id))
         .filter(|id| !event_items_ids.contains(id))
@@ -498,6 +489,6 @@ async fn main_processing(
             &mini_passed,
             &hard_pass,
         ),
-        unprocessed,
+        unprocessed.is_empty(),
     )
 }

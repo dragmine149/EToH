@@ -5,7 +5,8 @@
 use crate::{
     ETOH_WIKI, ETOH_WIKI_API, clean_badge_name,
     definitions::{
-        Badge, ErrorDetails, OkDetails, PageDetails, ProcessError, RobloxBadgeData, WikiAPI,
+        Badge, BadgeDetails, BadgeError, ErrorDetails, OkDetails, PageDetails, ProcessError,
+        RobloxBadgeData, WikiAPI,
     },
     reqwest_client::{ResponseBytes, RustClient, RustError},
     wikitext::WikiText,
@@ -21,20 +22,40 @@ use url::Url;
 ///   * client: The client to use for web requests
 ///   * url: The URL to request the badges from
 ///   * ignore: A list of badge ids to ignore ass they have already been processed.
+///   * callback: A function to call to process the badge upon receiving the data.
+///   * callback_args: Additional arguments to send to the function.
+///     TODO: Make it optional to send args
 ///
 /// # Usage
 /// ```
-/// let badges = get_badges(&client, &url, &[]).await.unwrap();
+/// // NOTE: Please do something with client and badge... You have them for a reason.
+/// let badges = get_badges(&client, &url, &[], async |client, badge| badge, 0).await.unwrap();
 /// for badge in badges {
 ///    // badge can be gotten after awaiting it.
 ///    println!("{:?}", badge.await);
 /// }
 /// ```
-pub async fn get_badges(
+/// # Returns
+/// A complex result object which can be split up into the following.
+///   * Outer result
+///     * Ok: All requests to roblox succeeded and this is the data after the callback function.
+///     * Err: **ANY** request to roblox failed and this is the details why. Do note that any previous succeeded reqwests will be dropped.
+///   * Inner result: This depends on what the callback function returns for us.
+///
+pub async fn get_badges<F, Fut, O, E, A>(
     client: &RustClient,
     url: &Url,
     ignore: &[u64],
-) -> Result<Vec<JoinHandle<Result<OkDetails, ErrorDetails>>>, ProcessError> {
+    callback: F,
+    callback_args: A,
+) -> Result<Vec<JoinHandle<Result<O, E>>>, ProcessError>
+where
+    F: Fn(RustClient, Badge, A) -> Fut,
+    A: Send + Clone + 'static,
+    Fut: Future<Output = Result<O, E>> + Send + 'static,
+    E: Send + 'static,
+    O: Send + 'static,
+{
     let mut data: RobloxBadgeData = RobloxBadgeData::default();
     let mut tasks = vec![];
     // keep going until we run out of cursor to check.
@@ -52,10 +73,107 @@ pub async fn get_badges(
 
             // we have to clone the client here so that each thread has their own client.
             let client = client.clone();
-            tasks.push(tokio::spawn(pre_process(client, badge)));
+            let args = callback_args.clone();
+            tasks.push(tokio::spawn(callback(client, badge, args)));
         }
     }
     Ok(tasks)
+}
+
+/// Smaller version of [get_badges] but just returns the badges and nothing special.
+///
+/// # Arguments
+///   * client: The client to use for web requests
+///   * url: The URL to request the badges from
+///   * ignore: A list of badge ids to ignore ass they have already been processed.
+///
+/// # Usage
+/// ```
+/// let badges = get_badges(&client, &url, &[]).await.unwrap();
+/// ```
+///
+/// # Returns
+///   * Ok: All requests to roblox succeeded.
+///   * Err: **ANY** request to roblox failed and this is the details why. Do note that any previous succeeded reqwests will be dropped.
+/// ```
+pub async fn get_quick_badges(
+    client: &RustClient,
+    url: &Url,
+    ignore: &[u64],
+) -> Result<Vec<Badge>, ProcessError> {
+    let mut data: RobloxBadgeData = RobloxBadgeData::default();
+    let mut badges = vec![];
+    // keep going until we run out of cursor to check.
+    while let Some(next_page_cursor) = data.next_page_cursor {
+        let mut url = url.clone();
+        url.query_pairs_mut()
+            .append_pair("cursor", &next_page_cursor);
+
+        data = client.get(url).await?.json::<RobloxBadgeData>()?;
+        badges.extend(
+            data.data
+                .iter()
+                .filter(|b| !ignore.contains(&b.id))
+                .cloned(),
+        )
+    }
+    Ok(badges)
+}
+
+/// Wrapper for [get_badges] which just does [pre_process] as the callback.
+pub async fn get_badges_wiki(
+    client: &RustClient,
+    url: &Url,
+    ignore: &[u64],
+) -> Result<Vec<JoinHandle<Result<OkDetails, ErrorDetails>>>, ProcessError> {
+    get_badges(
+        client,
+        url,
+        ignore,
+        async |client, badge, _| pre_process(client, badge).await,
+        0,
+    )
+    .await
+}
+
+/// Combines [get_badges], [get_quick_badges] and [pre_process] to get every single badge and the associated wiki data.
+///
+/// Note: Wikidata will be based off the newest badge, aka the one at the end of the array.
+pub async fn get_all_badges_wiki_edition(
+    client: &RustClient,
+    url: &[&Url; 2],
+    ignore: &[u64],
+) -> Result<Vec<JoinHandle<Result<BadgeDetails, BadgeError>>>, ProcessError> {
+    let old = get_quick_badges(client, url[0], ignore).await?;
+    get_badges(
+        client,
+        url[1],
+        ignore,
+        async |client, badge, old| {
+            let details = pre_process(client, badge).await;
+            details
+                .map(|ok| {
+                    let relationship = old
+                        .iter()
+                        .find(|o| o.name == ok.1.name)
+                        .cloned()
+                        .unwrap_or_default()
+                        .to_owned();
+                    BadgeDetails(ok.0, [relationship, ok.1])
+                })
+                .map_err(|err| {
+                    let relationship = old
+                        .iter()
+                        .find(|o| o.name == err.1.name)
+                        .cloned()
+                        .unwrap_or_default()
+                        .to_owned();
+                    BadgeError(err.0, [relationship, err.1])
+                })
+        },
+        old,
+    )
+    .await
 }
 
 /// Checks to see if the provided badge id is found on the page.
@@ -227,9 +345,9 @@ async fn process_data(
 /// So its slightly more annoying. as per the name...
 pub async fn get_annoying(
     client: &RustClient,
-    badges: &[&Badge],
+    badges: &[&[Badge; 2]],
     annoying_links: &HashMap<String, String>,
-) -> Vec<Result<OkDetails, ErrorDetails>> {
+) -> Vec<Result<BadgeDetails, BadgeError>> {
     // pre-make vector. Easier to make new than having to worry about lifetime and hashmap.
     let mut annoying = Vec::with_capacity(annoying_links.len());
 
@@ -238,7 +356,7 @@ pub async fn get_annoying(
         // we could just not worry about invalid ones but eh, easier.
         let badge = badges
             .iter()
-            .find(|b| b.id == id.parse::<u64>().expect("Failed to parse badge id"))
+            .find(|b| b[1].id == id.parse::<u64>().expect("Failed to parse badge id"))
             .unwrap_or_else(|| panic!("Failed to find badge! {}", id))
             .to_owned();
 
@@ -248,9 +366,9 @@ pub async fn get_annoying(
             .map(|ok| {
                 let mut wt = WikiText::parse(ok.text);
                 wt.set_page_name(Some(url));
-                OkDetails(wt, badge.to_owned())
+                BadgeDetails(wt, badge.to_owned())
             })
-            .map_err(|err| ErrorDetails(err.into(), badge.to_owned()));
+            .map_err(|err| BadgeError(err.into(), badge.to_owned()));
 
         annoying.push(data);
     }

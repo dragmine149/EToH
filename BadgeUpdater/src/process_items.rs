@@ -194,7 +194,7 @@ pub fn get_area(template: &Template, tower_name: &str) -> Result<String, String>
 /// Processes the tower provided into something else.
 ///
 /// Aka, a function which does many things in one.
-pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String> {
+pub fn process_tower(text: &WikiText, badge: &[Badge; 2]) -> Result<WikiTower, String> {
     //log::debug!("Tower: {:?}", text.page_name());
 
     // Got to get the tower first.
@@ -208,12 +208,12 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
     ))?;
 
     // these are solved in their own function, so we just have to deal with any errors.
-    let area = get_area(template, &badge.name)?;
+    let area = get_area(template, &badge[0].name)?;
 
     let difficulty = match get_difficulty(template) {
         Ok(diff) => diff,
         Err(e) => {
-            log::warn!("[Difficult/{}]: {:?}", badge.name, e);
+            log::warn!("[Difficult/{}]: {:?}", badge[0].name, e);
             100.0
         }
     };
@@ -221,7 +221,7 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
         Ok(len) => len,
         Err(e) => {
             if !e.contains("(warn ignore)") {
-                log::warn!("[Length/{}]: {:?}", badge.name, e);
+                log::warn!("[Length/{}]: {:?}", badge[0].name, e);
             }
             Length::default()
         }
@@ -229,14 +229,14 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
     let tower_type = match get_type(template) {
         Ok(tp) => tp,
         Err(e) => {
-            log::warn!("[Type/{}]: {:?}", badge.name, e);
+            log::warn!("[Type/{}]: {:?}", badge[0].name, e);
             TowerType::default()
         }
     };
     let page_name = text.page_name().unwrap_or_default();
 
     Ok(WikiTower {
-        badge_id: badge.id,
+        badge_ids: badge.iter().map(|b| b.id).collect_array().unwrap(),
         area,
         difficulty,
         length,
@@ -256,7 +256,7 @@ pub fn process_tower(text: &WikiText, badge: &Badge) -> Result<WikiTower, String
 pub async fn process_all_items(
     client: &RustClient,
     text: &WikiText,
-    badge: &Badge,
+    badge: &[Badge; 2],
     areas: &[&EventInfo],
 ) -> Result<(EventItem, Option<WikiTower>), String> {
     let parsed = text
@@ -278,7 +278,7 @@ pub async fn process_all_items(
         })
         .ok_or(format!(
             "Failed to get event area out of page categories ({:?}) ({:?})",
-            badge.name,
+            badge[1].name,
             links.iter().map(|link| &link.target).collect_vec()
         ))?;
 
@@ -316,9 +316,9 @@ pub async fn process_all_items(
 
     Ok((
         EventItem {
-            item_name: badge.name.to_owned(),
+            item_name: badge[1].name.to_owned(),
             event_name: event_link.label.replace("Category:", "").trim().to_owned(),
-            badges: [0, badge.id.to_owned()],
+            badges: [badge[0].id.to_owned(), badge[1].id.to_owned()],
             tower_name,
         },
         tower_link,

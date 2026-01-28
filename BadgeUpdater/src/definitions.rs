@@ -140,7 +140,7 @@ pub struct PageDetails {
 #[derive(Debug, Default)]
 pub struct WikiTower {
     /// The badge id related to this tower.
-    pub badge_id: u64,
+    pub badge_ids: [u64; 2],
     /// The name of the related page.
     pub page_name: String,
     /// The difficulty of the tower. (as `1?X.YZ`)
@@ -511,6 +511,48 @@ impl Debug for OkDetails {
         write!(f, ")")
     }
 }
+
+/// Extended version of [OkDetails] but with support for many badges.
+pub struct BadgeDetails(
+    /// The wikitext, aka data returned
+    pub WikiText,
+    /// The full details of the badge to keep them together.
+    pub [Badge; 2],
+);
+/// Extended version of [ErrorDetails] to be similar to [BadgeDetails]
+#[derive(Debug)]
+#[allow(dead_code, reason = "i use these for debugging")]
+pub struct BadgeError(
+    /// Information, aka reason of why the error happened.
+    pub ProcessError,
+    /// The badge we were processing at the time.
+    pub [Badge; 2],
+);
+
+impl Debug for BadgeDetails {
+    /// Custom debug formatter function to reduce output.
+    ///
+    /// Raw Wikitext is kinda big, some pages being > 100kb, hence we just ignore that so we aren't filling up the debug file with too much waste.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "BadgeDetails(")?;
+        writeln!(
+            f,
+            "\tWikiText {{ text: --ignored--, page_name: {:?} }},",
+            self.0.page_name()
+        )?;
+        for b in self.1.iter() {
+            write!(f, "{{")?;
+            for line in format!("{:#?}", b).lines() {
+                writeln!(f, "\t{}", line)?;
+            }
+            write!(f, "}}")?;
+        }
+
+        // writeln!(f, "\t{:#?}", self.1)?;
+        write!(f, ")")
+    }
+}
+
 //=================================================
 // Data in a more suitable format for jsonification.
 //=================================================
@@ -729,7 +771,7 @@ impl From<&&WikiTower> for Tower {
             // but eh that wasn't very useful to begin with.
             // Other badges are different though...
             name: tower.page_name.to_owned(),
-            badges: [0, tower.badge_id],
+            badges: tower.badge_ids,
             difficulty: tower.difficulty,
             length: tower.length,
             tower_type: tower.tower_type,

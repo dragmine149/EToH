@@ -24,7 +24,7 @@ use itertools::Itertools;
 ///   If we have a match, no point in trying to process it again, so we just ignore it.
 pub async fn parse_mini_towers(
     client: &RustClient,
-    badges: &[Badge],
+    badges: &[&[Badge; 2]],
     ignore: &[String],
 ) -> Vec<Result<WikiTower, String>> {
     // get a list of mini towers.
@@ -91,7 +91,7 @@ pub async fn parse_mini_towers(
 
             let badge = badges.iter().find(|b| {
                 // println!("{:?}", b.id);
-                wikitext.text().contains(&b.id.to_string())
+                wikitext.text().contains(&b[0].id.to_string())
             });
 
             if badge.is_none() {
@@ -124,11 +124,11 @@ pub async fn parse_mini_towers(
 /// A vector containing the following for each badge
 /// * Ok(BadgeOverwrite) The badge, category already filled out like it came from overwrite.jsonc
 /// * Err(String) Why it failed, or well this regex just didn't work.
-pub fn area_from_description(badges: &[Badge]) -> Vec<Result<BadgeOverwrite, String>> {
+pub fn area_from_description(badges: &[&[Badge; 2]]) -> Vec<Result<BadgeOverwrite, String>> {
     badges
         .iter()
         .map(|b| {
-            let description = b.description.clone().unwrap_or_default();
+            let description = b[1].description.clone().unwrap_or_default();
             // the main regex, technically you could have descend to zone 10 which is techniaclly incorrect as you ascend.
             // Yeah, we don't care about that. Too much effort
             let (_, area) = lazy_regex::regex_captures!(
@@ -138,22 +138,23 @@ pub fn area_from_description(badges: &[Badge]) -> Vec<Result<BadgeOverwrite, Str
             .ok_or("Failed to do regex")?;
 
             Ok(BadgeOverwrite {
-                badge_ids: [0, b.id],
+                badge_ids: [b[0].id, b[1].id],
                 category: "Adventure".to_owned(),
-                name: format!("{} ({})", b.name.replace("\"", ""), area.to_owned()),
+                name: format!("{} ({})", b[1].name.replace("\"", ""), area.to_owned()),
             })
         })
         .collect_vec()
 }
 
-pub fn progression(badges: &[Badge]) -> Vec<Result<BadgeOverwrite, String>> {
+pub fn progression(badges: &[&[Badge; 2]]) -> Vec<Result<BadgeOverwrite, String>> {
     badges
         .iter()
         .map(|b| {
-            let (_, total) = lazy_regex::regex_captures!(r#"(?m)Beat (\d\d\d?) Towers"#, &b.name)
-                .ok_or("Failed to regex name for progression")?;
+            let (_, total) =
+                lazy_regex::regex_captures!(r#"(?m)Beat (\d\d\d?) Towers"#, &b[1].name)
+                    .ok_or("Failed to regex name for progression")?;
             Ok(BadgeOverwrite {
-                badge_ids: [0, b.id],
+                badge_ids: [b[0].id, b[1].id],
                 category: "Progression".to_owned(),
                 name: format!("{} Towers Completed!", total),
             })
