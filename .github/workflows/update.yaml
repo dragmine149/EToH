@@ -18,7 +18,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          ref: Data
+          ref: Data2
 
       - name: Cache and setup rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
