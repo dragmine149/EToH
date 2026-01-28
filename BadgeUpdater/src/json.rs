@@ -65,9 +65,11 @@ impl Jsonify {
                     }
                 },
                 None => {
-                    let mut area = ExtendedArea::default();
-                    area.towers = vec![Tower::from(tower)];
-                    area.event_area_name = event_area;
+                    let area = ExtendedArea {
+                        towers: vec![Tower::from(tower)],
+                        event_area_name: event_area,
+                        ..Default::default()
+                    };
                     categories.insert(area_name, Category::Area(Box::new(area)));
                 }
             }
@@ -158,7 +160,7 @@ impl Jsonify {
                         Category::Area(Box::new(ExtendedArea {
                             event_area_name: Some(event.area_name.to_owned()),
                             items: Some(items),
-                            towers: towers,
+                            towers,
                             until: event.until,
                             ..Default::default()
                         })),

@@ -2,7 +2,6 @@
 //!
 //! As much as 99% of this is hard coded, i've tried to keep it semi-dynamic by not referencing any specific names where possible.
 //! But here, we need to be a bit more strict with what we do in order for it to work.
-use std::fmt::format;
 
 use crate::{
     ETOH_WIKI,

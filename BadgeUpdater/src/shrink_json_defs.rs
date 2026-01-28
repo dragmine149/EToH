@@ -429,8 +429,9 @@ impl<'de> Visitor<'de> for ShrunkTowerDifficultiesVisitor {
         E: serde::de::Error,
     {
         let offset = v >> 6;
-        let first = Some((v - offset >> 3) as u64);
-        let second = v - offset - first.unwrap() as u16;
+        let first = ((v - offset) >> 3) as u64;
+        let second = v - offset - first as u16;
+        let first = Some(first);
         let second = if second > 0 {
             Some(second as u64)
         } else {

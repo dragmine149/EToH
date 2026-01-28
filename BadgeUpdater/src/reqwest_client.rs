@@ -149,10 +149,10 @@ impl RustClient {
         // send a network response
         log::debug!("Cache miss, sending API reqwest.");
         let response = self.0.get(url).send().await?.error_for_status();
-        if response.is_err() {
+        if let Err(err) = response {
             // special network error entry
             ResponseBytes::write_error(&cache_path)?;
-            return Err(response.unwrap_err().into());
+            return Err(err.into());
         }
         // process it and return the result after saving.
         let response = response.unwrap();
@@ -201,6 +201,6 @@ impl ResponseBytes {
     }
     /// Write an error to the file to tell future stuff not to worry about this.
     pub fn write_error(path: &PathBuf) -> Result<(), std::io::Error> {
-        fs::write(&path, b"error")
+        fs::write(path, b"error")
     }
 }
