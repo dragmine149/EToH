@@ -6,6 +6,7 @@ on:
       - Data2
   schedule:
     - cron: "38 9 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: write
