@@ -27,12 +27,23 @@ a pretty decent format system.
 Then again, most things reliant on APIs, etc are well reliant on them. We're just taking a roundabout approach...
 
 ## Update Log
-This is separate as it's not really a "release" and most people won't care how the data is structured.
+This is separate as it's not really a "release" and most people won't care how the data is structured. Additionally, it's more of an overview as trying to write out every single change is eh.. long
+See the commit history for that...
 
-### Data V2 (brief overview)
+### Data V2 
 - better wiki parsing (like way way better)
+	- Is less prone to errors in changes of data.
+	- Doesn't rely on python, hence not having to spin up python and take longer. Also means less lifetime nonsense.
 - more data storage (so more information)
+	- Now stores: `length`, `wiki link`. As well as extra info on events such as `event_name`, `event_area_name`, `event_items`. And a couple more fields.
+		- *This does come at the downside of more data hence more network requests but its worth it.*
+	- Data is all stored in one file instead of 2.
+	- None-shrunken version of the data is less shrunk and way more readable.
 - ~90% automated (exact values... questionable), so i don't have to do stuff half the time.
+	- The left over ones are harder to automate or just not worth trying due to how inconesistant they are...
+- Comments everywhere for documentation purposes (hopefully)
+- Better logging for debugging purposes
 
 ## Todos?
 - [ ] Make into workspaces? Basically split out [`wikitext`](./BadgeUpdater/src/wikitext) somehow.
+- [ ] Tidy up the weird passing of `&[&Badge; 2]` all over the place to something easier to expand...

@@ -181,6 +181,9 @@ pub fn area_from_description(badges: &[&[Badge; 2]]) -> Vec<Result<BadgeOverwrit
         .collect_vec()
 }
 
+/// Get badges which are related to beating a certain amount of towers.
+///
+/// Yeah, they all follow the same format and with the 400 towers badge it's like, fine. Just add them yourself.
 pub fn progression(badges: &[&[Badge; 2]]) -> Vec<Result<BadgeOverwrite, String>> {
     badges
         .iter()
