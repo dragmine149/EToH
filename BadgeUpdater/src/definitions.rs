@@ -53,6 +53,21 @@ pub struct Badge {
     // pub awarding_universe: BadgeUniverse,
 }
 
+#[derive(Debug, Serialize, Deserialize, Default, Clone)]
+pub struct Badges {
+    pub ids: [u64; 2],
+    pub name: String,
+    pub description: Option<String>,
+    pub annoying: Option<String>,
+}
+
+impl Badges {
+    pub fn check_ids(&self, content: &str) -> bool {
+        self.ids
+            .iter()
+            .any(|id| *id > 0 && content.contains(&id.to_string()))
+    }
+}
 /// Store information about the overview of the data roblox gives us.
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -121,7 +136,7 @@ pub struct WikiPageEntry {
 }
 
 impl WikiPageEntry {
-    pub fn get_content<'a>(&'a self) -> Option<&'a RevisionContent> {
+    pub fn get_content(&self) -> Option<&RevisionContent> {
         if let Some(revision) = &self.revisions
             && let Some(first) = revision.first()
             && let Some(main) = first.slots.get("main")
@@ -130,6 +145,14 @@ impl WikiPageEntry {
         }
 
         None
+    }
+}
+
+impl From<&WikiPageEntry> for WikiText {
+    fn from(value: &WikiPageEntry) -> Self {
+        let mut wt = WikiText::parse(&value.get_content().unwrap().content);
+        wt.set_page_name(Some(value.title.to_owned()));
+        wt
     }
 }
 
@@ -513,14 +536,14 @@ pub struct ErrorDetails(
     /// Information, aka reason of why the error happened.
     pub ProcessError,
     /// The badge we were processing at the time.
-    pub Badge,
+    pub Badges,
 );
 /// Struct used for when things go correct.
 pub struct OkDetails(
     /// The wikitext, aka data returned
     pub WikiText,
     /// The full details of the badge to keep them together.
-    pub Badge,
+    pub Badges,
 );
 
 impl Debug for OkDetails {
@@ -536,47 +559,6 @@ impl Debug for OkDetails {
         )?;
         for line in format!("{:#?}", self.1).lines() {
             writeln!(f, "\t{}", line)?;
-        }
-
-        // writeln!(f, "\t{:#?}", self.1)?;
-        write!(f, ")")
-    }
-}
-
-/// Extended version of [OkDetails] but with support for many badges.
-pub struct BadgeDetails(
-    /// The wikitext, aka data returned
-    pub WikiText,
-    /// The full details of the badge to keep them together.
-    pub [Badge; 2],
-);
-/// Extended version of [ErrorDetails] to be similar to [BadgeDetails]
-#[derive(Debug)]
-#[allow(dead_code, reason = "i use these for debugging")]
-pub struct BadgeError(
-    /// Information, aka reason of why the error happened.
-    pub ProcessError,
-    /// The badge we were processing at the time.
-    pub [Badge; 2],
-);
-
-impl Debug for BadgeDetails {
-    /// Custom debug formatter function to reduce output.
-    ///
-    /// Raw Wikitext is kinda big, some pages being > 100kb, hence we just ignore that so we aren't filling up the debug file with too much waste.
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "BadgeDetails(")?;
-        writeln!(
-            f,
-            "\tWikiText {{ text: --ignored--, page_name: {:?} }},",
-            self.0.page_name()
-        )?;
-        for b in self.1.iter() {
-            write!(f, "{{")?;
-            for line in format!("{:#?}", b).lines() {
-                writeln!(f, "\t{}", line)?;
-            }
-            write!(f, "}}")?;
         }
 
         // writeln!(f, "\t{:#?}", self.1)?;

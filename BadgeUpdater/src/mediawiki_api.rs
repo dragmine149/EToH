@@ -7,7 +7,7 @@ use std::str::FromStr;
 use url::{ParseError, Url};
 
 /// Link to the wiki to append to pretty nmuch every single URL.
-pub const ETOH_WIKI: &str = "https://jtoh.fandom.com/";
+// pub const ETOH_WIKI: &str = "https://jtoh.fandom.com/";
 /// Link to the wiki API as it's slightly different and can't just use the same URL...
 const ETOH_WIKI_API: &str = "https://jtoh.fandom.com/api.php";
 
@@ -51,18 +51,44 @@ pub async fn get_search<S: AsRef<str>>(
     url.query_pairs_mut()
         .append_pair("list", "search")
         .append_pair("srsearch", search.as_ref())
-        .append_pair("srlimit", &limit.min(1).max(500).to_string())
+        .append_pair("srlimit", &limit.clamp(1, 500).to_string())
         .finish();
 
     Ok(client.get(url).await?.json::<WikiAPI>()?)
 }
 
-/// Make a URL for querying the wiki for the specified category.
-pub fn category_url(category_name: &str) -> String {
-    let url = format!(
-        "{}?action=query&format=json&list=categorymembers&titles={}&formatversion=2&cmtitle=Category%3A{}&cmlimit=500",
-        ETOH_WIKI_API, category_name, category_name
-    );
-    log::debug!("Build url: {}", url);
-    url
+pub async fn get_category<S: AsRef<str>>(
+    client: &RustClient,
+    category_name: &str,
+    limit: u16,
+) -> Result<WikiAPI, ProcessError> {
+    let mut url = build_wiki_url()?;
+    url.query_pairs_mut()
+        .append_pair("list", "categorymembers")
+        .append_pair("cmtitle", &format!("Category:{}", category_name))
+        .append_pair("cmlimit", &limit.clamp(1, 500).to_string())
+        .finish();
+
+    Ok(client.get(url).await?.json::<WikiAPI>()?)
+}
+
+pub async fn get_pages_from_category<S: AsRef<str>>(
+    client: &RustClient,
+    category_name: &str,
+    limit: u16,
+) -> Result<WikiAPI, ProcessError> {
+    let category = get_category::<&str>(client, category_name, limit).await?;
+    if let Some(members) = category.query.categorymembers {
+        let pages = get_pages(
+            client,
+            &members
+                .iter()
+                .map(|member| member.title.clone())
+                .collect_vec(),
+        )
+        .await?;
+        Ok(pages)
+    } else {
+        Err("No categorymembers found".into())
+    }
 }

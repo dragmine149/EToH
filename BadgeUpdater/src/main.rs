@@ -9,25 +9,29 @@ pub mod shrink_json_defs;
 pub mod wikitext;
 
 use crate::{
-    badge_to_wikitext::{get_all_badges_wiki_edition, get_annoying},
+    badge_to_wikitext::{get_badges, get_wiki_pages},
     definitions::{
-        AreaInformation, BadgeOverwrite, EventInfo, EventItem, WikiTower, badges_from_map_value,
+        AreaInformation, BadgeOverwrite, Badges, EventInfo, EventItem, WikiTower,
+        badges_from_map_value,
     },
     json::{Jsonify, read_jsonc},
+    mediawiki_api::get_pages,
     process_items::{get_event_areas, process_all_items, process_area, process_tower},
     reqwest_client::RustClient,
+    wikitext::WikiText,
 };
 use itertools::Itertools;
 use lazy_regex::regex_replace;
 use std::{collections::HashMap, fs, io::Write, path::PathBuf, str::FromStr, time::Duration};
 use url::Url;
 
-// TODO: like we're doing for badges, make this a vector or something.
-
-/// Link to the badge list of the new game.
-pub const BADGE_URL: &str = "https://badges.roblox.com/v1/universes/3264581003/badges";
-/// Link to the badge list of the old game.
-pub const OLD_BADGE_URL: &str = "https://badges.roblox.com/v1/universes/1055653882/badges";
+/// Links to the badges APIs
+pub const BADGE_URLS: [&str; 2] = [
+    // old game (pre-group)
+    "https://badges.roblox.com/v1/universes/1055653882/badges",
+    // new game (group)
+    "https://badges.roblox.com/v1/universes/3264581003/badges",
+];
 
 /// Some badges have unwanted data which either messes with fandom search or just breaks other things.
 ///
@@ -191,15 +195,11 @@ async fn main() {
             Some(Duration::from_millis(1000))
         },
     );
-    let url = [
-        &Url::from_str(&format!("{:}?limit=100", OLD_BADGE_URL)).unwrap(),
-        &Url::from_str(&format!("{:}?limit=100", BADGE_URL)).unwrap(),
-    ];
 
     let overwrites =
         badges_from_map_value(&serde_json::from_str(&read_jsonc(OVERWRITE_PATH)).unwrap())
             .unwrap_or_default();
-    let annoying_links = serde_json::from_str::<HashMap<String, String>>(
+    let annoying_links = serde_json::from_str::<HashMap<u64, String>>(
         &fs::read_to_string(ANNOYING_LINKS_PATH).unwrap_or("{}".into()),
     )
     .unwrap_or_default();
@@ -209,15 +209,8 @@ async fn main() {
 
     log::info!("Setup complete, starting searching");
 
-    let (mut result, full_process) = main_processing(
-        &client,
-        &url,
-        &path,
-        &overwrites,
-        &ignored_list,
-        &annoying_links,
-    )
-    .await;
+    let (mut result, full_process) =
+        main_processing(&client, &path, &overwrites, &ignored_list, &annoying_links).await;
     result.parse_skipped(&overwrites).clean_up();
     // println!("{:?}", result);
 
@@ -249,11 +242,10 @@ async fn main() {
 // #[allow(unused_variables, reason = "Will be used later")]
 async fn main_processing(
     client: &RustClient,
-    url: &[&Url; 2],
     debug_path: &PathBuf,
     overwrites: &[BadgeOverwrite],
     ignored: &HashMap<String, Vec<u64>>,
-    annoying_links: &HashMap<String, String>,
+    annoying_links: &HashMap<u64, String>,
 ) -> (Jsonify, bool) {
     let skip_ids = overwrites
         .iter()
@@ -263,39 +255,53 @@ async fn main_processing(
     println!("{:?}", overwrites);
     println!("{:#?}", skip_ids);
 
-    // get a list of all the badges.
-    let mut badges_vec = vec![];
-    let raw = get_all_badges_wiki_edition(client, url, &skip_ids)
-        .await
-        .expect("Failed to get badges from roblox api...");
-    for badge_fut in raw {
-        badges_vec.push(badge_fut.await.unwrap());
+    let badge_lists = BADGE_URLS
+        .iter()
+        .map(|url| -> Url {
+            // assume we have no failures with this. it's constant anyway...
+            let mut url = Url::from_str(url).unwrap();
+            url.query_pairs_mut().append_pair("limit", "100").finish();
+            url
+        })
+        .map(|url| get_badges(client, url, &skip_ids));
+
+    let mut base: Vec<Badges> = vec![];
+    for (index, list) in badge_lists.enumerate() {
+        for badge in list.await.unwrap() {
+            let link = base.iter_mut().find(|b| b.name == badge.name);
+            match link {
+                Some(b) => b.ids[index] = badge.id,
+                None => {
+                    let mut ids = [0; 2];
+                    ids[index] = badge.id;
+                    base.push(Badges {
+                        ids,
+                        name: badge.name,
+                        description: badge.description,
+                        annoying: None,
+                    })
+                }
+            }
+        }
     }
+    for (key, value) in annoying_links {
+        if let Some(badge) = base.iter_mut().find(|badge| badge.ids.contains(key)) {
+            badge.annoying = Some(value.to_owned());
+        }
+    }
+
+    let badges_vec = get_wiki_pages(client, &base)
+        .await
+        .expect("Failed to get wiki pages for base badges");
 
     log::info!("Skipped {:?} badges due to overwrites file", skip_ids.len());
     // process the badges to get the passed and failed ones..
     let (passed, failed) =
         count_processed(&badges_vec, |f| f.is_ok(), "get_badges", Some(debug_path));
 
-    let annoying = get_annoying(
-        client,
-        &badges_vec
-            .iter()
-            .map(|r| match r {
-                Ok(ok) => &ok.1,
-                Err(err) => &err.1,
-            })
-            .collect_vec(),
-        annoying_links,
-    )
-    .await;
-    let (annoying_pass, _annoying_fail) =
-        count_processed(&annoying, |a| a.is_ok(), "get_annoying", Some(debug_path));
-
     // start processing towers.
     let tower_data = passed
         .iter()
-        .chain(annoying_pass.iter())
         .map(|p| process_tower(&p.0, &p.1))
         // .inspect(|x| println!("{:?}", x))
         .collect::<Vec<Result<WikiTower, String>>>();
@@ -309,10 +315,31 @@ async fn main_processing(
 
     // process areas based off towers.
     // Unique is here to reduce double area checking
-    let mut areas = vec![];
-    for area in tower_processed.iter().map(|t| t.area.clone()).unique() {
-        areas.push(process_area(client, &area).await);
-    }
+    let area_names = tower_processed
+        .iter()
+        .map(|t| t.area.clone())
+        .unique()
+        .collect_vec();
+    let area_pages = get_pages(client, &area_names)
+        .await
+        .expect("Failed to get wiki pages for the areas...");
+    let areas = if let Some(area) = area_pages.query.pages {
+        area.iter()
+            .map(|page| {
+                let content = page
+                    .get_content()
+                    .expect("Why is there no content in this api response?")
+                    .content
+                    .to_owned();
+                let mut wt = WikiText::parse(&content);
+                wt.set_page_name(Some(page.title.to_owned()));
+
+                process_area(&wt, &page.title)
+            })
+            .collect_vec()
+    } else {
+        vec![]
+    };
 
     let (area_processed, _area_failed) = count_processed(
         &areas,
@@ -350,28 +377,74 @@ async fn main_processing(
 
     // Process the items that we have by avoid any of the towers we processed so far.
     // println!("{:?}", event_processed);
-    let mut items = vec![];
-    for ele in passed.iter().filter(|p| {
-        !tower_processed
-            .iter()
-            .any(|t| t.page_name.contains(&p.1[1].name))
-    }) {
-        items.push(process_all_items(client, &ele.0, &ele.1, &event_processed).await);
-    }
+    let items = passed
+        .iter()
+        .filter(|p| {
+            !tower_processed
+                .iter()
+                .any(|t| t.page_name.contains(&p.1.name))
+        })
+        .map(|ele| process_all_items(&ele.0, &ele.1, &event_processed))
+        .collect_vec();
 
     let (all_items_processed, _all_items_failed) = count_processed(
         &items,
-        |e: &Result<(EventItem, Option<WikiTower>), String>| e.is_ok(),
+        |e: &Result<(EventItem, Vec<String>), String>| e.is_ok(),
         "process_all_items",
         Some(debug_path),
     );
+
+    let item_towers = all_items_processed
+        .iter()
+        .flat_map(|i| i.1.clone())
+        .collect_vec();
+    let item_tower_pages = get_pages(client, &item_towers)
+        .await
+        .expect("Failed to get item pages")
+        .query
+        .pages
+        .unwrap();
+    let all_items_processed = all_items_processed
+        .iter()
+        .map(|(ei, i)| {
+            let links = i
+                .iter()
+                .map(|i| item_tower_pages.iter().find(|p| p.title == *i))
+                .next()
+                .unwrap();
+
+            let (ei, tower) = if let Some(tower_link) = links {
+                let mut ei = ei.clone();
+                ei.tower_name = Some(tower_link.title.clone());
+                (
+                    ei.clone(),
+                    process_tower(
+                        &WikiText::from(tower_link),
+                        &Badges {
+                            ids: ei.badges,
+                            name: tower_link.title.clone(),
+                            description: None,
+                            annoying: None,
+                        },
+                    )
+                    .ok(),
+                )
+            } else {
+                (ei.clone(), None)
+            };
+            (ei, tower)
+
+            // ei.tower_name = links.map(|e| e.title);
+            // let tower = process_tower(, badge)
+        })
+        .collect_vec();
 
     let failed_list = &failed.iter().map(|p| &p.1).collect_vec();
 
     // okay, now we have to hard-code some stuff.
     let mini_towers = hard_coded::parse_mini_towers(
         client,
-        failed_list,
+        &failed_list,
         &tower_processed
             .iter()
             .map(|t| t.page_name.clone())
@@ -385,7 +458,7 @@ async fn main_processing(
         Some(debug_path),
     );
 
-    let adventure_towers = hard_coded::area_from_description(failed_list);
+    let adventure_towers = hard_coded::area_from_description(&failed_list);
     let (adventure_pass, _adventure_fail) = count_processed(
         &adventure_towers,
         |a| a.is_ok(),
@@ -393,7 +466,7 @@ async fn main_processing(
         Some(debug_path),
     );
 
-    let progression = hard_coded::progression(failed_list);
+    let progression = hard_coded::progression(&failed_list);
     let (progress_passed, _progress_failed) = count_processed(
         &progression,
         |p| p.is_ok(),
@@ -417,8 +490,8 @@ async fn main_processing(
     let mut unprocessed = badges_vec
         .iter()
         .flat_map(|v| match v {
-            Ok(o) => o.1.clone().map(|b| b.id),
-            Err(e) => e.1.clone().map(|b| b.id),
+            Ok(o) => o.1.ids,
+            Err(e) => e.1.ids,
         })
         // .map(|b| *b)
         .filter(|id| !success_ids.contains(id))

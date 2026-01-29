@@ -6,11 +6,11 @@ use chrono::DateTime;
 use itertools::Itertools;
 
 use crate::{
-    badge_to_wikitext::get_page_data,
     definitions::{
-        AreaInformation, AreaRequirements, Badge, EventInfo, EventItem, Length, ProcessError,
-        TowerType, WikiAPI, WikiTower, category_url,
+        AreaInformation, AreaRequirements, Badges, EventInfo, EventItem, Length, ProcessError,
+        TowerType, WikiTower,
     },
+    mediawiki_api::get_pages_from_category,
     reqwest_client::RustClient,
     wikitext::{
         Argument, QueryType, Template, WikiText,
@@ -194,7 +194,7 @@ pub fn get_area(template: &Template, tower_name: &str) -> Result<String, String>
 /// Processes the tower provided into something else.
 ///
 /// Aka, a function which does many things in one.
-pub fn process_tower(text: &WikiText, badge: &[Badge; 2]) -> Result<WikiTower, String> {
+pub fn process_tower(text: &WikiText, badge: &Badges) -> Result<WikiTower, String> {
     //log::debug!("Tower: {:?}", text.page_name());
 
     // Got to get the tower first.
@@ -208,12 +208,12 @@ pub fn process_tower(text: &WikiText, badge: &[Badge; 2]) -> Result<WikiTower, S
     ))?;
 
     // these are solved in their own function, so we just have to deal with any errors.
-    let area = get_area(template, &badge[0].name)?;
+    let area = get_area(template, &badge.name)?;
 
     let difficulty = match get_difficulty(template) {
         Ok(diff) => diff,
         Err(e) => {
-            log::warn!("[Difficult/{}]: {:?}", badge[0].name, e);
+            log::warn!("[Difficult/{}]: {:?}", badge.name, e);
             100.0
         }
     };
@@ -221,7 +221,7 @@ pub fn process_tower(text: &WikiText, badge: &[Badge; 2]) -> Result<WikiTower, S
         Ok(len) => len,
         Err(e) => {
             if !e.contains("(warn ignore)") {
-                log::warn!("[Length/{}]: {:?}", badge[0].name, e);
+                log::warn!("[Length/{}]: {:?}", badge.name, e);
             }
             Length::default()
         }
@@ -229,14 +229,14 @@ pub fn process_tower(text: &WikiText, badge: &[Badge; 2]) -> Result<WikiTower, S
     let tower_type = match get_type(template) {
         Ok(tp) => tp,
         Err(e) => {
-            log::warn!("[Type/{}]: {:?}", badge[0].name, e);
+            log::warn!("[Type/{}]: {:?}", badge.name, e);
             TowerType::default()
         }
     };
     let page_name = text.page_name().unwrap_or_default();
 
     Ok(WikiTower {
-        badge_ids: badge.iter().map(|b| b.id).collect_array().unwrap(),
+        badge_ids: badge.ids,
         area,
         difficulty,
         length,
@@ -253,12 +253,11 @@ pub fn process_tower(text: &WikiText, badge: &[Badge; 2]) -> Result<WikiTower, S
     clippy::await_holding_refcell_ref,
     reason = "We do drop it though.. kinda. Point being, it's dropped its fine. hopefully..."
 )]
-pub async fn process_all_items(
-    client: &RustClient,
+pub fn process_all_items(
     text: &WikiText,
-    badge: &[Badge; 2],
+    badge: &Badges,
     areas: &[&EventInfo],
-) -> Result<(EventItem, Option<WikiTower>), String> {
+) -> Result<(EventItem, Vec<String>), String> {
     let parsed = text
         .get_parsed()
         .map_err(|e| format!("Failed to parse wikitext ({:?})", e))?;
@@ -278,48 +277,51 @@ pub async fn process_all_items(
         })
         .ok_or(format!(
             "Failed to get event area out of page categories ({:?}) ({:?})",
-            badge[1].name,
+            badge.name,
             links.iter().map(|link| &link.target).collect_vec()
         ))?;
 
     // Templates are nice, because we can link a tower.
-    let mut tower_link = None;
-    match parsed.get_template("iteminfobox") {
+    let tower_link = match parsed.get_template("iteminfobox") {
         Ok(template) => {
-            if let Ok(obtain) = template.get_named_arg("method_of_obtaining") {
-                drop(parsed);
-
-                // check all our links for the tower. As there are many links in one box.
-                for link in obtain.get_links(Some(LinkType::Internal)) {
-                    // If this fails, then the rest will probably fail.
-                    let mut wikitext = get_page_data(client, &link.target).await?;
-                    wikitext.set_page_name(Some(link.target.to_owned()));
-                    let tower = process_tower(&wikitext, badge);
-                    if tower.is_ok() {
-                        tower_link = tower.ok();
-                        break;
-                        // } else {
-                        //     log::error!(
-                        //         "Failed to get link tower: {:?} err: {:?}",
-                        //         link,
-                        //         tower.err()
-                        //     );
-                    }
-                }
+            match template.get_named_arg("method_of_obtaining") {
+                Ok(obtain) => obtain
+                    .get_links(Some(LinkType::Internal))
+                    .iter()
+                    .map(|link| link.target.to_owned())
+                    .collect_vec(),
+                Err(_) => vec![],
             }
-        }
-        Err(e) => return Err(format!("Failed to get item of tower ({})", e)),
-    }
+            // if let Ok(obtain) = template.get_named_arg("method_of_obtaining") {
 
-    // Get an owned reference to the tower name for our link.
-    let tower_name = tower_link.as_ref().map(|t| t.page_name.to_owned());
+            // check all our links for the tower. As there are many links in one box.
+            // for link in obtain.get_links(Some(LinkType::Internal)) {
+            //     // If this fails, then the rest will probably fail.
+            //     let mut wikitext = get_page_data(client, &link.target).await?;
+            //     wikitext.set_page_name(Some(link.target.to_owned()));
+            //     let tower = process_tower(&wikitext, badge);
+            //     if tower.is_ok() {
+            //         tower_link = tower.ok();
+            //         break;
+            //         // } else {
+            //         //     log::error!(
+            //         //         "Failed to get link tower: {:?} err: {:?}",
+            //         //         link,
+            //         //         tower.err()
+            //         //     );
+            //     }
+            // }
+            // }
+        }
+        Err(_) => vec![],
+    };
 
     Ok((
         EventItem {
-            item_name: badge[1].name.to_owned(),
+            item_name: badge.name.to_owned(),
             event_name: event_link.label.replace("Category:", "").trim().to_owned(),
-            badges: [badge[0].id.to_owned(), badge[1].id.to_owned()],
-            tower_name,
+            badges: badge.ids,
+            tower_name: None,
         },
         tower_link,
     ))
@@ -438,9 +440,8 @@ pub fn get_all_requirements(template: &Template, area: &str) -> Result<AreaRequi
 }
 
 /// Areas are special with their data, jusst like towers and items.
-pub async fn process_area(client: &RustClient, area: &str) -> Result<AreaInformation, String> {
+pub fn process_area(wikitext: &WikiText, area: &str) -> Result<AreaInformation, String> {
     // typical fetch from wiki and then get the specific template.
-    let wikitext = get_page_data(client, area).await?;
     let parsed = wikitext
         .get_parsed()
         .map_err(|e| format!("Failed to parse wikitext: {:?}", e))?;
@@ -486,17 +487,17 @@ pub async fn process_area(client: &RustClient, area: &str) -> Result<AreaInforma
 /// Parser can't deal with this (yes its two templates). Hence we just get one, return if successful else get the other.
 ///
 /// This isn't meant to be used outside of [process_event_area]
-fn get_event_template(data: &ParsedData, area: &str) -> Result<Template, String> {
+fn get_event_template(data: &ParsedData) -> Result<Template, String> {
     let normal = data
         .get_template("eventinfobox")
-        .map_err(|e| format!("Failed to get eventinfobox ({:?}) > {:?}", area, e));
+        .map_err(|e| format!("Failed to get eventinfobox. reason: {:?}", e));
     // if let Ok(norm) = normal {
     if normal.is_ok() {
         return normal;
         // return Ok(norm);
     }
     data.get_template("event infobox")
-        .map_err(|e| format!("Failed to get event infobox ({:?}) > {:?}", area, e))
+        .map_err(|e| format!("Failed to get event infobox reason: {:?}", e))
 }
 
 /// Ping the category API to get all of the events.
@@ -505,33 +506,31 @@ fn get_event_template(data: &ParsedData, area: &str) -> Result<Template, String>
 pub async fn get_event_areas(
     client: &RustClient,
 ) -> Result<Vec<Result<EventInfo, String>>, ProcessError> {
-    // and yes, this url params are hardcoded like that. it's kinda not fun to make this url.
-    let pages = client
-        .get(category_url("Events"))
-        .await?
-        .json::<WikiAPI>()?;
-    let areas = pages
-        .query
-        .categorymembers
-        .ok_or("A Category object was not returned by the API.")?;
+    let category_pages = get_pages_from_category::<&'static str>(client, "Events", 500).await?;
 
-    // we only have as many areas as we have items, but we need await to do stuff so...
-    let mut event_areas = Vec::with_capacity(areas.len());
-    for a in areas.iter().map(|cm| cm.title.to_owned()) {
-        event_areas.push(process_event_area(client, &a).await);
+    if let Some(category_data) = category_pages.query.pages {
+        return Ok(category_data
+            .iter()
+            .map(|page| {
+                let wt = WikiText::from(page);
+                process_event_area(&wt)
+            })
+            .collect_vec());
     }
-    Ok(event_areas)
+
+    unreachable!("Event category should have pages")
 }
 
 /// Events are like areas mostly, but with less data so we only store a way to group them.
 /// And besides, event areas can sometimes not follow convention making it harder to automate.
-pub async fn process_event_area(client: &RustClient, area: &str) -> Result<EventInfo, String> {
-    let wikitext = get_page_data(client, area).await?;
-    // println!("{:?}", wikitext);
-    let parsed = wikitext
+pub fn process_event_area(event_area: &WikiText) -> Result<EventInfo, String> {
+    let area = event_area.page_name().unwrap();
+
+    let parsed = event_area
         .get_parsed()
         .map_err(|e| format!("Failed to parse wikitext: {:?}", e))?;
-    let template = get_event_template(&parsed, area)?;
+    let template = get_event_template(&parsed)
+        .map_err(|e| format!("{} (area: {})", e, event_area.page_name().unwrap()))?;
     let name_text = template
         // realm is most likely
         .get_named_arg("realm")

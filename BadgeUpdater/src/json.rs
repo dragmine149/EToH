@@ -40,7 +40,7 @@ impl Jsonify {
         towers: &[&WikiTower],
         areas: &[&AreaInformation],
         events: &[&EventInfo],
-        all_items: &[&(EventItem, Option<WikiTower>)],
+        all_items: &[(EventItem, Option<WikiTower>)],
         mini: &[&WikiTower],
         hard: &[&&BadgeOverwrite],
     ) -> Self {
