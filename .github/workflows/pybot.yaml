@@ -1,0 +1,19 @@
+name: Pybot Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  pybot-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Install python
+        run: python -m pip install pywikibot
+
+      - name: Simple loop
+        run: python ".github/workflows/pybot.py"
