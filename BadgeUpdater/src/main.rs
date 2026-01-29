@@ -2,6 +2,7 @@ pub mod badge_to_wikitext;
 pub mod definitions;
 pub mod hard_coded;
 pub mod json;
+pub mod mediawiki_api;
 pub mod process_items;
 pub mod reqwest_client;
 pub mod shrink_json_defs;
@@ -27,10 +28,6 @@ use url::Url;
 pub const BADGE_URL: &str = "https://badges.roblox.com/v1/universes/3264581003/badges";
 /// Link to the badge list of the old game.
 pub const OLD_BADGE_URL: &str = "https://badges.roblox.com/v1/universes/1055653882/badges";
-/// Link to the wiki to append to pretty nmuch every single URL.
-pub const ETOH_WIKI: &str = "https://jtoh.fandom.com/";
-/// Link to the wiki API as it's slightly different and can't just use the same URL...
-pub const ETOH_WIKI_API: &str = "https://jtoh.fandom.com/api.php";
 
 /// Some badges have unwanted data which either messes with fandom search or just breaks other things.
 ///

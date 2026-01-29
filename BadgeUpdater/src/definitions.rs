@@ -8,7 +8,7 @@ use std::{
     fmt::{Debug, Display},
 };
 
-use crate::{ETOH_WIKI_API, reqwest_client::RustError, wikitext::WikiText};
+use crate::{reqwest_client::RustError, wikitext::WikiText};
 
 //=================================================
 // Roblox Badge API results
@@ -77,16 +77,6 @@ impl Default for RobloxBadgeData {
 // Wiki API Results
 //=================================================
 
-/// Make a URL for querying the wiki for the specified category.
-pub fn category_url(category_name: &str) -> String {
-    let url = format!(
-        "{}?action=query&format=json&list=categorymembers&titles={}&formatversion=2&cmtitle=Category%3A{}&cmlimit=500",
-        ETOH_WIKI_API, category_name, category_name
-    );
-    log::debug!("Build url: {}", url);
-    url
-}
-
 /// The wrapper for anything returned by the wiki api.
 #[derive(Debug, Deserialize)]
 pub struct WikiAPI {
@@ -101,6 +91,7 @@ pub struct WikiQuery {
     pub categorymembers: Option<Vec<WikiCategoryMember>>,
     /// Is this a search request? If so, these are the results
     pub search: Option<Vec<WikiSearchEntry>>,
+    pub pages: Option<Vec<WikiPageEntry>>,
 }
 
 /// Information about the particular member from the search.
@@ -119,6 +110,39 @@ pub struct WikiCategoryMember {
 pub struct WikiSearchEntry {
     /// The title of the page this entry points to.
     pub title: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct WikiPageEntry {
+    // pub page_id: u64,
+    pub title: String,
+    pub revisions: Option<Vec<Revision>>,
+    pub missing: Option<bool>,
+}
+
+impl WikiPageEntry {
+    pub fn get_content<'a>(&'a self) -> Option<&'a RevisionContent> {
+        if let Some(revision) = &self.revisions
+            && let Some(first) = revision.first()
+            && let Some(main) = first.slots.get("main")
+        {
+            return Some(main);
+        }
+
+        None
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Revision {
+    pub slots: HashMap<String, RevisionContent>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct RevisionContent {
+    pub contentmodel: String,
+    pub contentformat: String,
+    pub content: String,
 }
 
 /// Wrapper for raw wikitext of the page.
@@ -473,6 +497,11 @@ impl From<&str> for ProcessError {
 }
 impl From<serde_json::Error> for ProcessError {
     fn from(value: serde_json::Error) -> Self {
+        Self::Process(value.to_string())
+    }
+}
+impl From<url::ParseError> for ProcessError {
+    fn from(value: url::ParseError) -> Self {
         Self::Process(value.to_string())
     }
 }

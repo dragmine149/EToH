@@ -4,9 +4,9 @@
 //! But here, we need to be a bit more strict with what we do in order for it to work.
 
 use crate::{
-    ETOH_WIKI,
     badge_to_wikitext::get_page_data,
     definitions::{Badge, BadgeOverwrite, WikiTower},
+    mediawiki_api::ETOH_WIKI,
     process_items::process_tower,
     reqwest_client::RustClient,
     wikitext::{Cell, WikiText, enums::LinkType},
