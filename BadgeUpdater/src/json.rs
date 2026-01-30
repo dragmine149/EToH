@@ -42,7 +42,7 @@ impl Jsonify {
         events: &[&EventInfo],
         all_items: &[(EventItem, Option<WikiTower>)],
         mini: &[&WikiTower],
-        hard: &[&&BadgeOverwrite],
+        hard: &[BadgeOverwrite],
     ) -> Self {
         let mut categories = HashMap::<String, Category>::new();
 
@@ -97,13 +97,13 @@ impl Jsonify {
         hard.iter().for_each(|a| {
             match categories.get_mut(&a.category) {
                 Some(cat) => match cat {
-                    Category::Other(other) => other.push(OtherData::from(*a)),
+                    Category::Other(other) => other.push(OtherData::from(&a)),
                     _ => unreachable!("Adventure should never be anything but other."),
                 },
                 None => {
                     categories.insert(
                         a.category.to_owned(),
-                        Category::Other(vec![OtherData::from(*a)]),
+                        Category::Other(vec![OtherData::from(&a)]),
                     );
                 }
             };

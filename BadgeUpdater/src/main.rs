@@ -14,6 +14,7 @@ use crate::{
         AreaInformation, BadgeOverwrite, Badges, EventInfo, EventItem, WikiTower,
         badges_from_map_value,
     },
+    hard_coded::process_hard_coded,
     json::{Jsonify, read_jsonc},
     mediawiki_api::get_pages_limited,
     process_items::{get_event_areas, process_all_items, process_area, process_tower},
@@ -472,6 +473,7 @@ async fn main_processing(
             .collect_vec(),
     )
     .await;
+
     let (mini_passed, _mini_failed) = count_processed(
         &mini_towers,
         |m| m.is_ok(),
@@ -479,25 +481,6 @@ async fn main_processing(
         Some(debug_path),
     );
 
-    let adventure_towers = hard_coded::area_from_description(failed_list);
-    let (adventure_pass, _adventure_fail) = count_processed(
-        &adventure_towers,
-        |a| a.is_ok(),
-        "hard_coded::area_from_description",
-        Some(debug_path),
-    );
-
-    let progression = hard_coded::progression(failed_list);
-    let (progress_passed, _progress_failed) = count_processed(
-        &progression,
-        |p| p.is_ok(),
-        "hard_coded::progression",
-        Some(debug_path),
-    );
-
-    let hard_pass = Vec::from_iter(adventure_pass.iter().chain(progress_passed.iter()));
-
-    let hard_ids = hard_pass.iter().flat_map(|b| b.badge_ids).collect_vec();
     let success_ids = tower_processed
         .iter()
         .flat_map(|s| s.badge_ids)
@@ -510,16 +493,25 @@ async fn main_processing(
         .collect_vec();
     let mut unprocessed = badges_vec
         .iter()
-        .flat_map(|v| match v {
-            Ok(o) => o.1.ids,
-            Err(e) => e.1.ids,
+        .map(|v| match v {
+            Ok(o) => &o.1,
+            Err(e) => &e.1,
         })
         // .map(|b| *b)
-        .filter(|id| !success_ids.contains(id))
-        .filter(|id| !hard_ids.contains(id))
-        .filter(|id| !event_items_ids.contains(id))
+        .filter(|b| !b.check_all_ids(&success_ids))
+        .filter(|b| !b.check_all_ids(&event_items_ids))
+        // .filter(|id| !hard_ids.contains(id))
         .collect_vec();
     unprocessed.sort();
+
+    let hard = process_hard_coded(&unprocessed, Some(debug_path));
+
+    let hard_ids = hard.iter().flat_map(|b| b.badge_ids).collect_vec();
+    unprocessed = unprocessed
+        .iter()
+        .filter(|b| !b.check_all_ids(&hard_ids))
+        .map(|b| *b)
+        .collect_vec();
     // log::warn!("{}", success_ids.len());
     // log::warn!("{}", adventure_ids.len());
     // log::warn!("{}", event_items_ids.len());
@@ -567,7 +559,7 @@ async fn main_processing(
             if let Err(e) = writeln!(fh, "Unprocessed badges:") {
                 log::error!("Failed to append passed items to {:?}: {}", debug_path, e);
             }
-            if let Err(e) = writeln!(fh, "{:#?}", unprocessed) {
+            if let Err(e) = writeln!(fh, "{:#?}", unprocessed.iter().map(|u| u.ids).collect_vec()) {
                 log::error!("Failed to append failed items to {:?}: {}", debug_path, e);
             }
         }
@@ -583,7 +575,7 @@ async fn main_processing(
             &event_processed,
             &all_items_processed,
             &mini_passed,
-            &hard_pass,
+            &hard,
         ),
         unprocessed.is_empty(),
     )

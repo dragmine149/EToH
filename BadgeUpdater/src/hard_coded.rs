@@ -3,7 +3,10 @@
 //! As much as 99% of this is hard coded, i've tried to keep it semi-dynamic by not referencing any specific names where possible.
 //! But here, we need to be a bit more strict with what we do in order for it to work.
 
+use std::path::PathBuf;
+
 use crate::{
+    count_processed,
     definitions::{BadgeOverwrite, Badges, WikiTower},
     mediawiki_api::{get_pages, get_pages_limited},
     process_items::process_tower,
@@ -11,6 +14,43 @@ use crate::{
     wikitext::{WikiText, enums::LinkType},
 };
 use itertools::Itertools;
+
+pub fn process_hard_coded<'a>(
+    badges: &'a [&'a Badges],
+    debug_path: Option<&PathBuf>,
+) -> Vec<BadgeOverwrite> {
+    let mut results = vec![];
+
+    log::info!("Processing description");
+    let area_towers = area_from_description(badges);
+    let (adventure_pass, adventure_fail) = count_processed(
+        &area_towers,
+        |a| a.is_ok(),
+        "hard_coded::area_from_description",
+        debug_path,
+    );
+
+    log::info!("Processing Progression");
+    let adve_failed = adventure_fail.iter().map(|f| *f.1).collect_vec();
+    let prog = progression(&adve_failed);
+    let (prog_pass, prog_fail) =
+        count_processed(&prog, |p| p.is_ok(), "hard_coded::progression", debug_path);
+
+    log::info!("Processing Difficulties");
+    let prog_failed = prog_fail.iter().map(|f| *f.1).collect_vec();
+    let difficulties = tower_difficultied(&prog_failed);
+    let (diff_pass, _diff_fail) = count_processed(
+        &difficulties,
+        |d| d.is_ok(),
+        "hard_coded::tower_difficultied",
+        debug_path,
+    );
+
+    results.extend(adventure_pass.iter().map(|a| (*a).clone()));
+    results.extend(prog_pass.iter().map(|p| (*p).clone()));
+    results.extend(diff_pass.iter().map(|d| (*d).clone()));
+    results
+}
 
 /// Mini-towers (and most towers types) have their own unique page listing them all, hence we can fallback on that as badge name != mini tower name.
 ///
@@ -114,6 +154,9 @@ pub async fn parse_mini_towers(
         .collect_vec()
 }
 
+#[derive(Debug)]
+pub struct HardError<'a>(pub String, pub &'a &'a Badges);
+
 /// Get the area link from the badge description.
 ///
 /// In most cases, this doesn't work. However, for most know cases of Rings/Zones badges, this works perfectly.
@@ -128,7 +171,9 @@ pub async fn parse_mini_towers(
 /// A vector containing the following for each badge
 /// * Ok(BadgeOverwrite) The badge, category already filled out like it came from overwrite.jsonc
 /// * Err(String) Why it failed, or well this regex just didn't work.
-pub fn area_from_description(badges: &[&Badges]) -> Vec<Result<BadgeOverwrite, String>> {
+pub fn area_from_description<'a>(
+    badges: &'a [&'a Badges],
+) -> Vec<Result<BadgeOverwrite, HardError<'a>>> {
     // println!("afd badges: {:?}", badges);
     badges
         .iter()
@@ -140,7 +185,7 @@ pub fn area_from_description(badges: &[&Badges]) -> Vec<Result<BadgeOverwrite, S
                 r#"(?m)(?:de|a)scend to ((?:Ring \d)|(?:Zone \d))."#,
                 &description
             )
-            .ok_or(format!("Failed to do regex {}", b.name))?;
+            .ok_or(HardError(format!("Failed to do regex {}", b.name), b))?;
 
             Ok(BadgeOverwrite {
                 badge_ids: b.ids,
@@ -154,16 +199,40 @@ pub fn area_from_description(badges: &[&Badges]) -> Vec<Result<BadgeOverwrite, S
 /// Get badges which are related to beating a certain amount of towers.
 ///
 /// Yeah, they all follow the same format and with the 400 towers badge it's like, fine. Just add them yourself.
-pub fn progression(badges: &[&Badges]) -> Vec<Result<BadgeOverwrite, String>> {
+pub fn progression<'a>(badges: &'a [&'a Badges]) -> Vec<Result<BadgeOverwrite, HardError<'a>>> {
     badges
         .iter()
         .map(|b| {
-            let (_, total) = lazy_regex::regex_captures!(r#"(?m)Beat (\d\d\d?) Towers"#, &b.name)
-                .ok_or("Failed to regex name for progression")?;
+            let (_, total) =
+                lazy_regex::regex_captures!(r#"(?m)Beat (\d\d\d?) Towers"#, &b.name).ok_or(
+                    HardError("Failed to regex name for progression".to_owned(), b),
+                )?;
             Ok(BadgeOverwrite {
                 badge_ids: b.ids,
                 category: "Progression".to_owned(),
                 name: format!("{} Towers Completed!", total),
+            })
+        })
+        .collect_vec()
+}
+
+pub fn tower_difficultied<'a>(
+    badges: &'a [&'a Badges],
+) -> Vec<Result<BadgeOverwrite, HardError<'a>>> {
+    badges
+        .iter()
+        .map(|b| {
+            let (_, difficulty) =
+                lazy_regex::regex_captures!(r#"(?m)Beat Your First (.*) Tower"#, &b.name).ok_or(
+                    HardError(
+                        format!("Failed to regex name for difficulty ({})", b.name),
+                        b,
+                    ),
+                )?;
+            Ok(BadgeOverwrite {
+                badge_ids: b.ids,
+                category: "Difficulty".to_owned(),
+                name: format!("First {}", difficulty),
             })
         })
         .collect_vec()

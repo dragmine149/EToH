@@ -53,7 +53,7 @@ pub struct Badge {
     // pub awarding_universe: BadgeUniverse,
 }
 
-#[derive(Debug, Serialize, Deserialize, Default, Clone)]
+#[derive(Debug, Serialize, Deserialize, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Badges {
     pub ids: [u64; 2],
     pub name: String,
@@ -67,6 +67,10 @@ impl Badges {
             .iter()
             .any(|id| *id > 0 && content.contains(&id.to_string()))
     }
+    pub fn check_all_ids(&self, ids: &[u64]) -> bool {
+        self.ids.iter().any(|id| id > &0 && ids.contains(id))
+    }
+
     pub fn clean_name(&self) -> String {
         clean_badge_name(&self.name)
     }
