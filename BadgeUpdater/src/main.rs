@@ -15,7 +15,7 @@ use crate::{
         badges_from_map_value,
     },
     json::{Jsonify, read_jsonc},
-    mediawiki_api::get_pages,
+    mediawiki_api::get_pages_limited,
     process_items::{get_event_areas, process_all_items, process_area, process_tower},
     reqwest_client::RustClient,
     wikitext::WikiText,
@@ -253,8 +253,9 @@ async fn main_processing(
         .chain(ignored.values().flatten().copied())
         .collect_vec();
     println!("{:?}", overwrites);
-    println!("{:#?}", skip_ids);
+    println!("{:?}", skip_ids);
 
+    log::info!("Getting badges from api.");
     let badge_lists = BADGE_URLS
         .iter()
         .map(|url| -> Url {
@@ -289,6 +290,8 @@ async fn main_processing(
             badge.annoying = Some(value.to_owned());
         }
     }
+    log::info!("Badges list recieved, also w/ annoying.");
+    log::info!("Attempting to get wiki pages...");
 
     let badges_vec = get_wiki_pages(client, &base)
         .await
@@ -320,12 +323,12 @@ async fn main_processing(
         .map(|t| t.area.clone())
         .unique()
         .collect_vec();
-    let area_pages = get_pages(client, &area_names)
-        .await
-        .expect("Failed to get wiki pages for the areas...");
-    let areas = if let Some(area) = area_pages.query.pages {
-        area.iter()
-            .map(|page| {
+    let area_pages = get_pages_limited(client, &area_names).await;
+    let areas = area_pages
+        .iter()
+        .map(|page| match page {
+            Err(e) => Err(format!("{:?}", e)),
+            Ok(page) => {
                 let content = page
                     .get_content()
                     .expect("Why is there no content in this api response?")
@@ -335,11 +338,9 @@ async fn main_processing(
                 wt.set_page_name(Some(page.title.to_owned()));
 
                 process_area(&wt, &page.title)
-            })
-            .collect_vec()
-    } else {
-        vec![]
-    };
+            }
+        })
+        .collect_vec();
 
     let (area_processed, _area_failed) = count_processed(
         &areas,
@@ -398,18 +399,18 @@ async fn main_processing(
         .iter()
         .flat_map(|i| i.1.clone())
         .collect_vec();
-    let item_tower_pages = get_pages(client, &item_towers)
-        .await
-        .expect("Failed to get item pages")
-        .query
-        .pages
-        .unwrap();
+    let item_tower_pages = get_pages_limited(client, &item_towers).await;
     let all_items_processed = all_items_processed
         .iter()
         .map(|(ei, i)| {
             let links = i
                 .iter()
-                .map(|i| item_tower_pages.iter().find(|p| p.title == *i))
+                .map(|i| {
+                    item_tower_pages
+                        .iter()
+                        .filter_map(|i| i.as_ref().ok())
+                        .find(|p| p.title == *i)
+                })
                 .next()
                 .unwrap();
 
@@ -444,7 +445,7 @@ async fn main_processing(
     // okay, now we have to hard-code some stuff.
     let mini_towers = hard_coded::parse_mini_towers(
         client,
-        &failed_list,
+        failed_list,
         &tower_processed
             .iter()
             .map(|t| t.page_name.clone())
@@ -458,7 +459,7 @@ async fn main_processing(
         Some(debug_path),
     );
 
-    let adventure_towers = hard_coded::area_from_description(&failed_list);
+    let adventure_towers = hard_coded::area_from_description(failed_list);
     let (adventure_pass, _adventure_fail) = count_processed(
         &adventure_towers,
         |a| a.is_ok(),
@@ -466,7 +467,7 @@ async fn main_processing(
         Some(debug_path),
     );
 
-    let progression = hard_coded::progression(&failed_list);
+    let progression = hard_coded::progression(failed_list);
     let (progress_passed, _progress_failed) = count_processed(
         &progression,
         |p| p.is_ok(),

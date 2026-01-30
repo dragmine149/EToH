@@ -5,7 +5,7 @@
 
 use crate::{
     definitions::{BadgeOverwrite, Badges, WikiTower},
-    mediawiki_api::get_pages,
+    mediawiki_api::{get_pages, get_pages_limited},
     process_items::process_tower,
     reqwest_client::RustClient,
     wikitext::{WikiText, enums::LinkType},
@@ -79,31 +79,32 @@ pub async fn parse_mini_towers(
             None
         })
         .collect_vec();
-    let mini_towers = get_pages(client, &rows).await.unwrap();
-    if let Some(towers) = mini_towers.query.pages {
-        towers
-            .iter()
-            .map(|tower| {
-                let content = tower.get_content().unwrap().content.clone();
-                let mut wikitext = WikiText::parse(&content);
-                wikitext.set_page_name(Some(tower.title.to_owned()));
-                // println!("{:?}", tower.title);
+    let mini_towers = get_pages_limited(client, &rows).await;
+    mini_towers
+        .iter()
+        .map(|tower| {
+            match tower {
+                Err(e) => Err(format!("{:?}", e)),
+                Ok(tower) => {
+                    let content = tower.get_content().unwrap().content.clone();
+                    let mut wikitext = WikiText::parse(&content);
+                    wikitext.set_page_name(Some(tower.title.to_owned()));
+                    // println!("{:?}", tower.title);
 
-                let badge = badges.iter().find(|b| b.check_ids(&content));
+                    let badge = badges.iter().find(|b| b.check_ids(&content));
 
-                // no badge mini tower.
-                if badge.is_none() {
-                    // println!("{:?}", wikitext.text());
-                    return Err(format!("Failed to find badge id for {:?}", tower.title));
+                    // no badge mini tower.
+                    if badge.is_none() {
+                        // println!("{:?}", wikitext.text());
+                        return Err(format!("Failed to find badge id for {:?}", tower.title));
+                    }
+
+                    // Return that everything went well, after we get the tower data.
+                    process_tower(&wikitext, badge.unwrap())
                 }
-
-                // Return that everything went well, after we get the tower data.
-                process_tower(&wikitext, badge.unwrap())
-            })
-            .collect_vec()
-    } else {
-        vec![]
-    }
+            }
+        })
+        .collect_vec()
 }
 
 /// Get the area link from the badge description.

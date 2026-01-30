@@ -5,7 +5,7 @@
 use crate::{
     clean_badge_name,
     definitions::{Badge, Badges, ErrorDetails, OkDetails, ProcessError, RobloxBadgeData},
-    mediawiki_api::{get_pages, get_search},
+    mediawiki_api::{get_pages_limited, get_search},
     reqwest_client::RustClient,
     wikitext::WikiText,
 };
@@ -40,40 +40,54 @@ pub async fn get_wiki_pages(
     client: &RustClient,
     badges: &[Badges],
 ) -> Result<Vec<Result<OkDetails, ErrorDetails>>, ProcessError> {
-    let page_data = get_pages(
+    let page_data = get_pages_limited(
         client,
         &badges
             .iter()
-            .map(|b| b.annoying.as_ref().unwrap_or(&b.name))
+            .map(|b| clean_badge_name(b.annoying.as_ref().unwrap_or(&b.name)))
             .collect_vec(),
     )
-    .await?;
+    .await;
     let mut results = vec![];
     let mut searches = vec![];
-    if let Some(ref pages) = page_data.query.pages {
-        for page in pages {
-            let entry_badge = badges.iter().find(|b| b.name == page.title).unwrap();
+    log::info!("Attempting page link search");
+    println!("{:#?}", badges);
+    for page in page_data {
+        // it's kinda hard to return a `ErrorDetails` hence we have to return the main error.
+        // we would have done this normally if using [mediawiki_api::get_pages] anyway.
+        let page = page?;
+        log::debug!("{:?}", page.title);
+        println!("{:#?}", page);
+        let entry_badge = badges
+            .iter()
+            .find(|b| b.is_badge(&page))
+            .unwrap_or_else(|| panic!("Failed to find a badge with name '{}'", page.title));
 
-            if let Some(miss) = page.missing
-                && miss
-            {
-                // don't have to worry about redirects because a missing page wouldn't have been redirected.
-                // well, in theory at least.
-                //
-                // in theory, find should never fail either.
-                searches.push(entry_badge);
-                continue;
-            }
-            let content = page.get_content().unwrap().content.clone();
-            let mut wt = WikiText::parse(&content);
-            wt.set_page_name(Some(page.title.to_owned()));
-            results.push(Ok(OkDetails(wt, entry_badge.clone())));
+        if let Some(miss) = page.missing
+            && miss
+        {
+            // don't have to worry about redirects because a missing page wouldn't have been redirected.
+            // well, in theory at least.
+            //
+            // in theory, find should never fail either.
+            searches.push(entry_badge);
+            continue;
         }
+        let content = page.get_content().unwrap().content.clone();
+        let mut wt = WikiText::parse(&content);
+        wt.set_page_name(Some(page.title.to_owned()));
+        results.push(Ok(OkDetails(wt, entry_badge.clone())));
     }
+    log::info!(
+        "Pages found. Searching wiki for {} items. Found items: {}",
+        searches.len(),
+        results.len()
+    );
+    println!("{:#?}", results);
     for search in searches {
         let search_data = get_search(client, &clean_badge_name(&search.name), 4).await?;
         if let Some(searches) = search_data.query.search {
-            let pages = get_pages(
+            let pages = get_pages_limited(
                 client,
                 &searches
                     .iter()
@@ -81,8 +95,9 @@ pub async fn get_wiki_pages(
                     .map(|s| &s.title)
                     .collect_vec(),
             )
-            .await?;
-            for page in pages.query.pages.unwrap() {
+            .await;
+            for page in pages {
+                let page = page?;
                 // page should not be missing as it wouldn't be here...
 
                 let content = &page.get_content().unwrap().content;
@@ -95,6 +110,7 @@ pub async fn get_wiki_pages(
             }
         }
     }
+    log::info!("Search completed, returning results");
     if results.is_empty() {
         Err("No pages were returned in API requests".into())
     } else {

@@ -8,7 +8,7 @@ use std::{
     fmt::{Debug, Display},
 };
 
-use crate::{reqwest_client::RustError, wikitext::WikiText};
+use crate::{clean_badge_name, reqwest_client::RustError, wikitext::WikiText};
 
 //=================================================
 // Roblox Badge API results
@@ -67,6 +67,24 @@ impl Badges {
             .iter()
             .any(|id| *id > 0 && content.contains(&id.to_string()))
     }
+    pub fn clean_name(&self) -> String {
+        clean_badge_name(&self.name)
+    }
+
+    pub fn is_badge(&self, page: &WikiPageEntry) -> bool {
+        // nice and easy check.
+        self.name == page.title
+        	// checks to see if we redirected to this page.
+            || (page.redirected.is_some() && page.redirected.as_ref().unwrap() == &self.name)
+            // checks to see if this was under the annoying category.
+            || (self.annoying.is_some() && self.annoying.as_ref().unwrap() == &page.title)
+            // checks to see if we used the clean name instead
+            || (self.clean_name() == page.title)
+            // checks to see if we used the clean name instead, and the page title requires cleaning.
+            || (self.clean_name() == clean_badge_name(&page.title))
+            // checks to see if we used the clean name instead, and we got redirected
+            || (page.redirected.is_some() && page.redirected.as_ref().unwrap() == &self.clean_name())
+    }
 }
 /// Store information about the overview of the data roblox gives us.
 #[derive(Debug, Deserialize, Serialize)]
@@ -107,6 +125,8 @@ pub struct WikiQuery {
     /// Is this a search request? If so, these are the results
     pub search: Option<Vec<WikiSearchEntry>>,
     pub pages: Option<Vec<WikiPageEntry>>,
+    pub redirects: Option<Vec<Redirection>>,
+    pub normalized: Option<Vec<Redirection>>,
 }
 
 /// Information about the particular member from the search.
@@ -128,11 +148,20 @@ pub struct WikiSearchEntry {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Redirection {
+    // pub fro
+    pub from: String,
+    pub to: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct WikiPageEntry {
     // pub page_id: u64,
     pub title: String,
     pub revisions: Option<Vec<Revision>>,
     pub missing: Option<bool>,
+
+    pub redirected: Option<String>,
 }
 
 impl WikiPageEntry {
