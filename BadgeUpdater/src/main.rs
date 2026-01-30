@@ -273,6 +273,11 @@ async fn main_processing(
         println!("Badge count for: '{}' -> {}", BADGE_URLS[index], list.len());
 
         for badge in list {
+            // we can't do anything with these
+            if badge.name == "Placeholder" {
+                continue;
+            }
+
             let link = base
                 .iter_mut()
                 .find(|b| b.name == badge.name || b.clean_name() == clean_badge_name(&badge.name));
@@ -559,7 +564,7 @@ async fn main_processing(
             if let Err(e) = writeln!(fh, "Unprocessed badges:") {
                 log::error!("Failed to append passed items to {:?}: {}", debug_path, e);
             }
-            if let Err(e) = writeln!(fh, "{:#?}", unprocessed.iter().map(|u| u.ids).collect_vec()) {
+            if let Err(e) = writeln!(fh, "{:#?}", unprocessed) {
                 log::error!("Failed to append failed items to {:?}: {}", debug_path, e);
             }
         }
