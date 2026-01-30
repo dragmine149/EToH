@@ -1,99 +1,98 @@
 {
 	"2125364252": [
 		"Progression",
-		"Played the game"
+		"Played the game",
+		2124457503
 	],
 	"2125419210": [
 		"Progression",
-		"First Tower Completed!"
+		"First Tower Completed!",
+		2124641800
 	],
-	// "2125419249": [
-	// 	"Difficulty",
-	// 	"First Easy"
-	// ],
-	// "2125419253": [
-	// 	"Difficulty",
-	// 	"First Medium"
-	// ],
-	// "2125419256": [
-	// 	"Difficulty",
-	// 	"First Hard"
-	// ],
-	// "2125419261": [
-	// 	"Difficulty",
-	// 	"First Difficult"
-	// ],
-	// "2125419265": [
-	// 	"Difficulty",
-	// 	"First Challenging"
-	// ],
-	// "2125419275": [
-	// 	"Difficulty",
-	// 	"First Intense"
-	// ],
-	// "2125419276": [
-	// 	"Difficulty",
-	// 	"First Remorseless"
-	// ],
-	// "2125419280": [
-	// 	"Difficulty",
-	// 	"First Soul-Crushing"
-	// ],
 	"3000238536354213": [
 		"Adventure",
 		"The beginning (Ring/Zone 1 Unlocked)"
 	],
 	"2125364232": [
 		"Random",
-		"Meet the owner(s)"
+		"Meet the owner(s)",
+		2124457500
 	],
 	"2125365079": [
 		"Random",
-		"Git Gud (R2 joke boss)"
+		"Git Gud (R2 joke boss)",
+		2124691435
+	],
+	"2124457650": [
+		"Random - Pre-group Game",
+		"Get Yeeted"
+	],
+	"2124457651": [
+		"Random - Pre-group Game",
+		"Massive Dissapointment"
+	],
+	"2124457652": [
+		"Random - Pre-group Game",
+		"Get Beaned by ToIE"
+	],
+	"2124545828": [
+		"Random - Pre-group Game",
+		"Unlock the Elevator Button"
 	],
 	"2125364293": [
 		"Playing",
-		"2+ Hour Completion"
+		"2+ Hour Completion",
+		2124457507
 	],
 	"2125364381": [
 		"Playing",
-		"Play on Mobile"
+		"Play on Mobile",
+		2124457649
 	],
 	"2125364337": [
 		"Tower Secrets",
-		"Secret Badge (ToR)"
+		"Secret Badge (ToR)",
+		2124457637
 	],
 	"2125364398": [
 		"Tower Secrets",
-		"Find the Room of Bad Inside Jokes (ToH)"
+		"Find the Room of Bad Inside Jokes (ToH)",
+		2124582541
 	],
 	"2125419076": [
 		"Tower Secrets",
-		"Find the Not-so-secret Badge (ToMH)"
+		"Find the Not-so-secret Badge (ToMH)",
+		2124814935
 	],
 	"2125365085": [
 		"Tower Secrets",
-		"Cowtastrophe (ToDD)"
+		"Cowtastrophe (ToDD)",
+		2124577538
 	],
 	"2125365064": [
 		"Area Secrets",
-		"lolwut"
+		"lolwut",
+		2124457638
 	],
 	"2125365444": [
 		"Area Secrets",
-		"Find the Room of Absolute Garbage (ToC)"
+		"Find the Room of Absolute Garbage (ToC)",
+		2124457655
 	],
 	"2125365457": [
 		"Area Secrets",
-		"The Unreachable Badge (Ring 3 Shopping Cart obby)"
+		"The Unreachable Badge (Ring 3 Shopping Cart obby)",
+		2124540857
 	],
 	"2125383901": [
 		"Area Secrets",
-		"Strange Rock (R5)"
+		"Strange Rock (R5)",
+		2124559565
 	],
 	"2125418359": [
 		"Area Secrets",
-		"Hamburgers (R2)"
+		"Hamburgers (R2)",
+		2124562183
 	],
 	"2071778922297966": [
 		"Area Secrets",
@@ -105,7 +104,8 @@
 	],
 	"2125364403": [
 		"Secret Endings",
-		"Beyond the Citadel (CoLS)"
+		"Beyond the Citadel (CoLS)",
+		2124577907
 	],
 	"836480911820257": [
 		"Secret Endings",
@@ -113,15 +113,18 @@
 	],
 	"2125419055": [
 		"Secret Endings",
-		"Complete the Secret Ending (ToUT)"
+		"Complete the Secret Ending (ToUT)",
+		2124755858
 	],
 	"2125419057": [
 		"Secret Endings",
-		"Another Secret Ending (ToTS)"
+		"Another Secret Ending (ToTS)",
+		2124757472
 	],
 	"2125419059": [
 		"Secret Endings",
-		"A Bizzarre Secret Ending (ToBaBT)"
+		"A Bizzarre Secret Ending (ToBaBT)",
+		2124988455
 	],
 	"2126168310": [
 		"Secret Endings",
@@ -133,19 +136,23 @@
 	],
 	"2125364412": [
 		"Ring Select Secrets",
-		"Rare Expectations"
+		"Rare Expectations",
+		2124580045
 	],
 	"2125364416": [
 		"Ring Select Secrets",
-		"X Clicker"
+		"X Clicker",
+		2124541186
 	],
 	"2125435357": [
 		"Challenges",
-		"Complete 8 Challenges in a month"
+		"Complete 8 Challenges in a month",
+		2124733939
 	],
 	"2125435360": [
 		"Challenges",
-		"Complete All Challenges in a month"
+		"Complete All Challenges in a month",
+		2124733940
 	],
 	// This is a special badge for area discovery, kinda like the other area discovery ones.
 	"2125771537": [
@@ -159,15 +166,18 @@
 	// I have a feeling we're going to be seeing more multi-tower event based badges hence we kinda do need a more permanent system for this.
 	"2125419117": [
 		"Abyssal Badlands",
-		"Conquer the 3 Steeples"
+		"Conquer the 3 Steeples",
+		2124491712
 	],
 	"2125419152": [
 		"Forsaken Manor",
-		"Revenge Denied!"
+		"Revenge Denied!",
+		2124626095
 	],
 	"2125419144": [
 		"Forsaken Manor",
-		"A Grave Mistake"
+		"A Grave Mistake",
+		2124626093
 	],
 	"2127933647": [
 		"Eclipsed Headquarters",
@@ -181,18 +191,19 @@
 		"Harvest Carnival",
 		"Carnival Fun"
 	],
+	"2153706397": [
+		"Harvest Carnival",
+		"Pass to The Funhouse"
+	],
 	"2153706455": [
 		"Harvest Carnival",
 		"Stage Fright"
 	],
 	"2125419089": [
 		"Heccfire Depths",
-		"Beat The Janitor from Hell"
+		"Beat The Janitor from Hell",
+		2124470117
 	],
-	// "2125419112": [
-	// 	"Abyssal Badlands",
-	// 	"Beat The Totem from Hell"
-	// ],
 	"2143262050": [
 		"Something Otherworldly...",
 		"Discovered Something Otherworldly"
@@ -204,5 +215,10 @@
 	"985606617596736": [
 		"BIOUMS",
 		"Soul Crushing Adventurer"
+	],
+	"2125427168": [
+		"Old Frosted Kingdom",
+		"Champion of Frost",
+		2124675940
 	]
 }

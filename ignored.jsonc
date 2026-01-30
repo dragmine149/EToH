@@ -1,34 +1,52 @@
 // Event items won't be included if there is no tower link to any of said items. As it's just kinda more of a pain to deal with.
+// Bar some event items, but it'll basically be random in a way...
+//
+// NOTE: Early events (old-game) are most likely just a mess and not really worth tracking. If requested, i'll track them but it's really not worth it...
 {
 	// These presents were given out in 2018. Normally i would track these, but due to them not linking with a tower, low claim count, and sometimes being PTW.... not worth it.
-	"Christmas Event 2018": [
-		2125419103,
-		2125419091,
-		2125419096,
-		2125419097,
-		2125419100,
-		2125419108
-	],
-	// Same reason as above.
-	"Christmas Event 2019": [
-		2125419124,
-		2125419127,
-		2125419130,
-		2125419133,
-		2125419135
-	],
-	"Christmas Event 2020": [
-		2125419154,
-		2125419156,
-		2125419160,
-		2125419167,
-		2125419171,
-		2125419173,
-		2125427168
+	// "Christmas Event 2018": [
+	// 	2125419103,
+	// 	2125419091,
+	// 	2125419096,
+	// 	2125419097,
+	// 	2125419100,
+	// 	2125419108,
+	// 	2124470122
+	// ],
+	// // Same reason as above.
+	// "Christmas Event 2019": [
+	// 	2125419124,
+	// 	2125419127,
+	// 	2125419130,
+	// 	2125419133,
+	// 	2125419135
+	// ],
+	// "Christmas Event 2020": [
+	// 	2125419154,
+	// 	2125419156,
+	// 	2125419160,
+	// 	2125419167,
+	// 	2125419171,
+	// 	2125419173,
+	// 	2125427168,
+	// 	2124675940
+	// ],
+	// Early april fools events don't really hold much of a candel to the newer ones...
+	"April Fools 2019": [
+		2124462340
 	],
 	// i mean... Why??
 	"April Fools 2020": [
-		2125427396
+		2125427396,
+		2124520931
+	],
+	"April Fools 2021": [
+		2124713970
+	],
+	// This is the only badge for this one-time event.
+	// As such, not much point in tracking it.
+	"Spring Event 2019": [
+		2124467552
 	],
 	// These badges you got for just playing the game during a certain time period, and don't really link to any other badges.
 	// Since these seem to have been done as one-offs, i'm not including them unless requested.
@@ -36,5 +54,76 @@
 		2125419082,
 		2125419084,
 		2125427112
+	],
+	// Well done on finding the tower i guess... Not like it's worth anything because the wiki exists.
+	"found": [
+		// ToEI
+		2124827049,
+		// ToPZ
+		2124827056,
+		// ToAR
+		2124827057,
+		// ToTL
+		2124827060,
+		// ToDT
+		2124827061,
+		// ToHH
+		2124827062,
+		// ToIF
+		2124827064,
+		// ToAAA
+		2124827067,
+		// ToFN
+		2124826964,
+		// ToSM
+		2124826965,
+		// ToIM
+		2124826967,
+		// ToTB
+		2124826969,
+		// ToER
+		2124826970,
+		// ToGF
+		2124826971,
+		// TT
+		2124826960,
+		// ToDC
+		2124826961
+	],
+	// These towers used to be in the OLD game before they got removed for some reason. They don't exist in the NEW game under a badge.
+	// I could probably add these back in a later if requested but i doubt many people will care that much.
+	"old_game": [
+		// ToDM
+		2124457932,
+		// ToIaOS
+		2124459810,
+		// ToOEZ
+		2124462399,
+		// ToAB
+		2124471080,
+		// ToITI
+		2124535624
+	],
+	// These badges were created for future use, but just never used in the end.
+	"never_used": [
+		// no tower assigned
+		2125029939,
+		// it has 0 people awarded... I can only assume it was meant for something like W1 boss...
+		2124826974,
+		// missing but hu??
+		2124826963,
+		// and just wat...
+		2124826962
+	],
+	"old_game_other": [
+		// Secret badge, very few people have it.
+		2124587591,
+		// i don't actually know what this is referencing... My only guess is some kind of event
+		2124785921,
+		// same for this one
+		2124777246,
+		// We're tracking this via our own methods. Hence not worth including it.
+		// And besides, that area (arcane area) is going to be semi-redone so...
+		2124525549
 	]
 }

@@ -199,14 +199,19 @@ async fn main() {
 
     let overwrites =
         badges_from_map_value(&serde_json::from_str(&read_jsonc(OVERWRITE_PATH)).unwrap())
+            .inspect_err(|e| log::error!("Received {} whilst trying to read json!", e))
             .unwrap_or_default();
     let annoying_links = serde_json::from_str::<HashMap<u64, String>>(
         &fs::read_to_string(ANNOYING_LINKS_PATH).unwrap_or("{}".into()),
     )
+    .inspect_err(|e| log::error!("Received {} whilst trying to read json!", e))
     .unwrap_or_default();
     let ignored_list =
         serde_json::from_str::<HashMap<String, Vec<u64>>>(&read_jsonc(IGNORED_LIST_PATH))
+            .inspect_err(|e| log::error!("Received {} whilst trying to read json!", e))
             .unwrap_or_default();
+
+    println!("Ignored: {:#?}", ignored_list);
 
     log::info!("Setup complete, starting searching");
 
@@ -253,8 +258,8 @@ async fn main_processing(
         .flat_map(|bo| bo.badge_ids)
         .chain(ignored.values().flatten().copied())
         .collect_vec();
-    println!("{:?}", overwrites);
-    println!("{:?}", skip_ids);
+    println!("Overwrite: {:?}", overwrites);
+    println!("Total Skipped: {:?}", skip_ids);
 
     log::info!("Getting badges from api.");
     let badge_lists = BADGE_URLS
