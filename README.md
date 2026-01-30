@@ -30,7 +30,12 @@ Then again, most things reliant on APIs, etc are well reliant on them. We're jus
 This is separate as it's not really a "release" and most people won't care how the data is structured. Additionally, it's more of an overview as trying to write out every single change is eh.. long
 See the commit history for that...
 
-### Data V2 
+### 0.2.1
+- Reduced the amount of network requests from > 1000 (uncached) to like < 50 or so.
+	- This does mean the cache doesn't get hit as often, but the cost of the requests is worth it.
+	- This also uses the fandom API instead of pure `?action=raw`.
+
+### 0.2.0 (aka DataV2)
 - better wiki parsing (like way way better)
 	- Is less prone to errors in changes of data.
 	- Doesn't rely on python, hence not having to spin up python and take longer. Also means less lifetime nonsense.
