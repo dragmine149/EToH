@@ -268,10 +268,22 @@ async fn main_processing(
 
     let mut base: Vec<Badges> = vec![];
     for (index, list) in badge_lists.enumerate() {
-        for badge in list.await.unwrap() {
-            let link = base.iter_mut().find(|b| b.name == badge.name);
+        let list = list.await.unwrap();
+        println!("Badge count for: '{}' -> {}", BADGE_URLS[index], list.len());
+
+        for badge in list {
+            let link = base
+                .iter_mut()
+                .find(|b| b.name == badge.name || b.clean_name() == clean_badge_name(&badge.name));
             match link {
-                Some(b) => b.ids[index] = badge.id,
+                Some(b) => {
+                    let was_empty = b.ids[index] == 0;
+                    b.ids[index] = badge.id;
+                    if was_empty {
+                        b.name = badge.name;
+                        b.description = badge.description;
+                    }
+                }
                 None => {
                     let mut ids = [0; 2];
                     ids[index] = badge.id;
@@ -315,6 +327,7 @@ async fn main_processing(
         "process_tower",
         Some(debug_path),
     );
+    println!("{:#?}", tower_processed);
 
     // process areas based off towers.
     // Unique is here to reduce double area checking
@@ -381,9 +394,8 @@ async fn main_processing(
     let items = passed
         .iter()
         .filter(|p| {
-            !tower_processed
-                .iter()
-                .any(|t| t.page_name.contains(&p.1.name))
+            !tower_processed.iter().any(|t| p.1.any_badge(t.badge_ids))
+            // .any(|t| t.page_name.contains(&p.1.clean_name()))
         })
         .map(|ele| process_all_items(&ele.0, &ele.1, &event_processed))
         .collect_vec();
@@ -403,33 +415,41 @@ async fn main_processing(
     let all_items_processed = all_items_processed
         .iter()
         .map(|(ei, i)| {
+            if i.is_empty() {
+                return (ei.clone(), None);
+            }
+
             let links = i
                 .iter()
                 .map(|i| {
                     item_tower_pages
                         .iter()
                         .filter_map(|i| i.as_ref().ok())
-                        .find(|p| p.title == *i)
+                        .find(|p| {
+                            p.title == *i
+                                || (p.redirected.is_some() && p.redirected.as_ref().unwrap() == i)
+                        })
                 })
                 .next()
                 .unwrap();
 
             let (ei, tower) = if let Some(tower_link) = links {
-                let mut ei = ei.clone();
-                ei.tower_name = Some(tower_link.title.clone());
-                (
-                    ei.clone(),
-                    process_tower(
-                        &WikiText::from(tower_link),
-                        &Badges {
-                            ids: ei.badges,
-                            name: tower_link.title.clone(),
-                            description: None,
-                            annoying: None,
-                        },
-                    )
-                    .ok(),
-                )
+                let tower = process_tower(
+                    &WikiText::from(tower_link),
+                    &Badges {
+                        ids: ei.badges,
+                        name: tower_link.title.clone(),
+                        description: None,
+                        annoying: None,
+                    },
+                );
+                if tower.is_ok() {
+                    let mut ei = ei.clone();
+                    ei.tower_name = Some(tower_link.title.clone());
+                    (ei.clone(), tower.ok())
+                } else {
+                    (ei.clone(), None)
+                }
             } else {
                 (ei.clone(), None)
             };

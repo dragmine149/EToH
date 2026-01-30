@@ -329,7 +329,7 @@ impl From<&Box<ExtendedArea>> for ShrinkExtendedArea {
                 .items
                 .as_ref()
                 .map(|v| v.iter().map(ShrinkItem::from).collect_vec()),
-            event_area_name: value.event_area_name.to_owned(),
+            event_area_name: value.event_name.to_owned(),
             until: value.until.to_owned(),
             other: value
                 .other

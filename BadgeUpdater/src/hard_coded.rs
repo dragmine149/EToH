@@ -50,6 +50,7 @@ pub async fn parse_mini_towers(
     // println!("{:?}", table.get_headers());
 
     println!("Mini badges: {:#?}", badges);
+    println!("Ignoring: {:#?}", ignore);
 
     let rows = (0..table.get_rows().len())
         .filter_map(|row_id| {
@@ -60,8 +61,14 @@ pub async fn parse_mini_towers(
                 && let Some(loc) = location
                 && loc.raw() != "Cancelled"
             {
+                println!("{:?}", data);
                 // no links, no page to link to. Aka, probably no badge.
                 let links = data.inner.content.get_links(Some(LinkType::Internal));
+                println!("{:?}", links);
+                if links.is_empty() {
+                    return None;
+                }
+
                 let target = links.first().unwrap();
                 // if target.is_none() {
                 //     // mini_towers.push(Err(format!("Failed to get link for {:?}", data)));
@@ -122,6 +129,7 @@ pub async fn parse_mini_towers(
 /// * Ok(BadgeOverwrite) The badge, category already filled out like it came from overwrite.jsonc
 /// * Err(String) Why it failed, or well this regex just didn't work.
 pub fn area_from_description(badges: &[&Badges]) -> Vec<Result<BadgeOverwrite, String>> {
+    // println!("afd badges: {:?}", badges);
     badges
         .iter()
         .map(|b| {
@@ -129,10 +137,10 @@ pub fn area_from_description(badges: &[&Badges]) -> Vec<Result<BadgeOverwrite, S
             // the main regex, technically you could have descend to zone 10 which is techniaclly incorrect as you ascend.
             // Yeah, we don't care about that. Too much effort
             let (_, area) = lazy_regex::regex_captures!(
-                r#"(?m)Beat enough towers to (?:de|a)scend to ((?:Ring \d)|(?:Zone \d))."#,
+                r#"(?m)(?:de|a)scend to ((?:Ring \d)|(?:Zone \d))."#,
                 &description
             )
-            .ok_or("Failed to do regex")?;
+            .ok_or(format!("Failed to do regex {}", b.name))?;
 
             Ok(BadgeOverwrite {
                 badge_ids: b.ids,

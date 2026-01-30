@@ -249,10 +249,6 @@ pub fn process_tower(text: &WikiText, badge: &Badges) -> Result<WikiTower, Strin
 /// Henceforth, we can assume everything will be linked to an event.
 ///
 /// If this changes in the future, well... whatever deal with it then (thats half this codebase).
-#[allow(
-    clippy::await_holding_refcell_ref,
-    reason = "We do drop it though.. kinda. Point being, it's dropped its fine. hopefully..."
-)]
 pub fn process_all_items(
     text: &WikiText,
     badge: &Badges,
@@ -318,7 +314,7 @@ pub fn process_all_items(
 
     Ok((
         EventItem {
-            item_name: badge.name.to_owned(),
+            item_name: badge.clean_name(),
             event_name: event_link.label.replace("Category:", "").trim().to_owned(),
             badges: badge.ids,
             tower_name: None,

@@ -85,6 +85,10 @@ impl Badges {
             // checks to see if we used the clean name instead, and we got redirected
             || (page.redirected.is_some() && page.redirected.as_ref().unwrap() == &self.clean_name())
     }
+
+    pub fn any_badge(&self, other: [u64; 2]) -> bool {
+        other.iter().any(|o| *o > 0 && self.ids.contains(o))
+    }
 }
 /// Store information about the overview of the data roblox gives us.
 #[derive(Debug, Deserialize, Serialize)]
@@ -779,7 +783,7 @@ pub struct ExtendedArea {
     pub other: Option<Vec<OtherData>>,
     /// The name of the event if not the sub area name.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub event_area_name: Option<String>,
+    pub event_name: Option<String>,
     /// If the event is ongoing, when will it finish.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub until: Option<DateTime<FixedOffset>>,

@@ -67,7 +67,7 @@ impl Jsonify {
                 None => {
                     let area = ExtendedArea {
                         towers: vec![Tower::from(tower)],
-                        event_area_name: event_area,
+                        event_name: event_area,
                         ..Default::default()
                     };
                     categories.insert(area_name, Category::Area(Box::new(area)));
@@ -113,7 +113,7 @@ impl Jsonify {
             .for_each(|event| match categories.get_mut(&event.event_name) {
                 Some(event_info) => match event_info {
                     Category::Area(extended_area) => {
-                        extended_area.event_area_name = Some(event.area_name.clone());
+                        extended_area.event_name = Some(event.event_name.clone());
                         extended_area.items = Some(
                             all_items
                                 .iter()
@@ -158,7 +158,7 @@ impl Jsonify {
                     categories.insert(
                         event.area_name.clone(),
                         Category::Area(Box::new(ExtendedArea {
-                            event_area_name: Some(event.area_name.to_owned()),
+                            event_name: Some(event.event_name.to_owned()),
                             items: Some(items),
                             towers,
                             until: event.until,
@@ -326,47 +326,66 @@ impl Jsonify {
                     match (&self_area.items, &prev_area.items) {
                         (Some(self_items), Some(prev_items)) => {
                             let self_items_map: std::collections::HashMap<_, _> =
-                                self_items.iter().map(|i| (i.name.as_str(), i)).collect();
+                                self_items.iter().map(|i| (i.badges.clone(), i)).collect();
                             let prev_items_map: std::collections::HashMap<_, _> =
-                                prev_items.iter().map(|i| (i.name.as_str(), i)).collect();
+                                prev_items.iter().map(|i| (i.badges.clone(), i)).collect();
 
-                            let self_item_names: std::collections::HashSet<_> =
-                                self_items_map.keys().copied().collect();
-                            let prev_item_names: std::collections::HashSet<_> =
-                                prev_items_map.keys().copied().collect();
+                            let self_item_badges: std::collections::HashSet<_> =
+                                self_items_map.keys().cloned().collect();
+                            let prev_item_badges: std::collections::HashSet<_> =
+                                prev_items_map.keys().cloned().collect();
 
-                            for removed in prev_item_names.difference(&self_item_names) {
+                            for removed in prev_item_badges.difference(&self_item_badges) {
+                                let prev_item = prev_items_map[removed];
                                 changes.push(format!(
-                                    "Removed item '{}' from event area '{}'",
-                                    removed, common_key
+                                    "Removed item `{} ({:?})` from event area `{}`",
+                                    prev_item.name, removed, common_key
                                 ));
                             }
 
-                            for added in self_item_names.difference(&prev_item_names) {
+                            for added in self_item_badges.difference(&prev_item_badges) {
+                                let self_item = self_items_map[added];
                                 changes.push(format!(
-                                    "Added item '{}' to event area '{}'",
-                                    added, common_key
+                                    "Added item `{} ({:?})` to event area `{}`",
+                                    self_item.name, added, common_key
                                 ));
                             }
 
                             // Check for modified items
-                            for common_item_name in self_item_names.intersection(&prev_item_names) {
-                                let self_item = self_items_map[common_item_name];
-                                let prev_item = prev_items_map[common_item_name];
+                            for common_item_badges in
+                                self_item_badges.intersection(&prev_item_badges)
+                            {
+                                let self_item = self_items_map[common_item_badges];
+                                let prev_item = prev_items_map[common_item_badges];
+
+                                if self_item.name != prev_item.name {
+                                    changes.push(format!(
+                                        "Renamed item from `{} ({:?})` to `{} ({:?})` in event area `{}`",
+                                        prev_item.name, common_item_badges, self_item.name, common_item_badges, common_key
+                                    ));
+                                }
 
                                 if self_item.tower_name != prev_item.tower_name {
                                     changes.push(format!(
-                                        "Changed item '{}' tower association from {:?} to {:?} in event area '{}'",
-                                        common_item_name, prev_item.tower_name, self_item.tower_name, common_key
+                                        "Changed item `{} ({:?})` tower association from {:?} to {:?} in event area `{}`",
+                                        self_item.name, common_item_badges, prev_item.tower_name, self_item.tower_name, common_key
                                     ));
                                 }
                             }
                         }
-                        (Some(_), None) => {
-                            changes.push(format!("Added items to event area '{}'", common_key));
+                        (Some(items), None) => {
+                            changes.push(format!(
+                                "Added items to event area `{}`. Names: {:?}",
+                                common_key,
+                                items.iter().map(|i| &i.name).collect_vec()
+                            ));
                         }
-                        (None, Some(_)) => {
-                            changes.push(format!("Removed items from event area '{}'", common_key));
+                        (None, Some(items)) => {
+                            changes.push(format!(
+                                "Removed items from event area `{}`. Names: {:?}",
+                                common_key,
+                                items.iter().map(|i| &i.name).collect_vec()
+                            ));
                         }
                         (None, None) => {}
                     }
@@ -407,6 +426,9 @@ impl Jsonify {
                 }
             }
         }
+
+        changes.sort();
+        changes.iter_mut().for_each(|i| *i = format!("- {}", i));
 
         changes
     }

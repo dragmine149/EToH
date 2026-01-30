@@ -96,6 +96,7 @@ pub async fn get_wiki_pages(
                     .collect_vec(),
             )
             .await;
+            let mut searched = false;
             for page in pages {
                 let page = page?;
                 // page should not be missing as it wouldn't be here...
@@ -105,8 +106,16 @@ pub async fn get_wiki_pages(
                     let mut wt = WikiText::parse(content);
                     wt.set_page_name(Some(page.title));
                     results.push(Ok(OkDetails(wt, search.to_owned())));
+                    searched = true;
                     break;
                 }
+            }
+
+            if !searched {
+                results.push(Err(ErrorDetails(
+                    "Failed to get badge by searching".into(),
+                    search.to_owned(),
+                )));
             }
         }
     }
