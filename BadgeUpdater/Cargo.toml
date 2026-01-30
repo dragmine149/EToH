@@ -1,6 +1,6 @@
 [package]
 name = "badge_updater"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 
 [dependencies]
@@ -15,5 +15,4 @@ env_logger = "0.11.8"
 lazy-regex = "3.5"
 futures = "0.3.31"
 tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
-async-recursion = "1.1.1"
 itertools = "0.14.0"
