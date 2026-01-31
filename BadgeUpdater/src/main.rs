@@ -217,17 +217,19 @@ async fn main() {
     let previous =
         serde_json::from_str::<Jsonify>(&fs::read_to_string(OUTPUT_PATH).unwrap_or("{}".into()))
             .unwrap_or_default();
-
-    fs::write(OUTPUT_PATH, serde_json::to_string(&result).unwrap()).unwrap();
     let change_log = result.compare(&previous);
-    fs::write(CHANGELOG_PATH, change_log.join("\n")).unwrap();
-    fs::write(
-        SHRINK_PATH,
-        serde_json::to_string(&result.shrinkfy()).unwrap(),
-    )
-    .unwrap();
-
-    log::info!("Data stored, panicking if left overs then stopping.");
+    if !change_log.is_empty() {
+        fs::write(OUTPUT_PATH, serde_json::to_string(&result).unwrap()).unwrap();
+        fs::write(CHANGELOG_PATH, change_log.join("\n")).unwrap();
+        fs::write(
+            SHRINK_PATH,
+            serde_json::to_string(&result.shrinkfy()).unwrap(),
+        )
+        .unwrap();
+        log::info!("Data stored, panicking if left overs then stopping.");
+    } else {
+        log::info!("Data not stored because nothing changed!");
+    }
 
     if !full_process {
         panic!("There are still some items left in the list to process!");
@@ -519,7 +521,8 @@ async fn main_processing(
     let hard_ids = hard.iter().flat_map(|b| b.badge_ids).collect_vec();
     unprocessed = unprocessed
         .iter()
-        .filter(|b| !b.check_all_ids(&hard_ids)).copied()
+        .filter(|b| !b.check_all_ids(&hard_ids))
+        .copied()
         .collect_vec();
     // log::warn!("{}", success_ids.len());
     // log::warn!("{}", adventure_ids.len());
