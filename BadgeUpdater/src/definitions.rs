@@ -53,6 +53,12 @@ pub struct Badge {
     // pub awarding_universe: BadgeUniverse,
 }
 
+/// Extended Wrapper for [Badge]
+///
+/// Includes:
+/// * multiple ids
+/// * annoying references
+/// Which allow for more use and way easier expandability.
 #[derive(Debug, Serialize, Deserialize, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Badges {
     pub ids: [u64; 2],
@@ -62,19 +68,25 @@ pub struct Badges {
 }
 
 impl Badges {
+    /// Returns if the badge contains any of the ids in the badge.
     pub fn check_ids(&self, content: &str) -> bool {
         self.ids
             .iter()
             .any(|id| *id > 0 && content.contains(&id.to_string()))
     }
+    /// Returns if any of the ids in the provided list are in this badge.
     pub fn check_all_ids(&self, ids: &[u64]) -> bool {
         self.ids.iter().any(|id| id > &0 && ids.contains(id))
     }
 
+    /// Wrapper for [clean_badge_name] taking [Self::name] as an argument instead.
     pub fn clean_name(&self) -> String {
         clean_badge_name(&self.name)
     }
 
+    /// Big `or` check to link a page title with this badge name.
+    ///
+    /// Has to check simple things, to more complex things like cleaning, redirects and annoyances.
     pub fn is_badge(&self, page: &WikiPageEntry) -> bool {
         // nice and easy check.
         self.name == page.title
@@ -88,10 +100,6 @@ impl Badges {
             || (self.clean_name() == clean_badge_name(&page.title))
             // checks to see if we used the clean name instead, and we got redirected
             || (page.redirected.is_some() && page.redirected.as_ref().unwrap() == &self.clean_name())
-    }
-
-    pub fn any_badge(&self, other: [u64; 2]) -> bool {
-        other.iter().any(|o| *o > 0 && self.ids.contains(o))
     }
 }
 /// Store information about the overview of the data roblox gives us.
@@ -155,24 +163,35 @@ pub struct WikiSearchEntry {
     pub title: String,
 }
 
+/// Stores information about any redirects that might have happened.
+///
+/// Note: This works for redirects and normalizations.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Redirection {
-    // pub fro
+    /// The page we used in the query
     pub from: String,
+    /// Where it got redirected to.
     pub to: String,
 }
 
+/// Stores the main information related to a page.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct WikiPageEntry {
     // pub page_id: u64,
+    /// The title of the page.
     pub title: String,
+    /// The list of revisions on that page
     pub revisions: Option<Vec<Revision>>,
+    /// Is the page missing or not (aka doesn't exist)
     pub missing: Option<bool>,
 
+    /// Custom additional field to show the redirection path provided by [Redirection], if any.
+    /// The API does not return this.
     pub redirected: Option<String>,
 }
 
 impl WikiPageEntry {
+    /// Shortcut for getting the content of the page as we have to go through revisions...
     pub fn get_content(&self) -> Option<&RevisionContent> {
         if let Some(revision) = &self.revisions
             && let Some(first) = revision.first()
@@ -308,7 +327,7 @@ impl TowerDifficulties {
             "terrifying" => self.terrifying = Some(count),
             "catastrophic" => self.catastrophic = Some(count),
             not_a_valid_difficulty => {
-                println!("Not a valid difficulty! {:?}", not_a_valid_difficulty);
+                eprintln!("Not a valid difficulty! {:?}", not_a_valid_difficulty);
             }
         }
     }

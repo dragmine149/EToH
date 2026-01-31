@@ -23,15 +23,12 @@ use crate::{
 };
 use itertools::Itertools;
 use lazy_regex::regex_replace;
-use std::{collections::HashMap, fs, io::Write, path::PathBuf, str::FromStr, time::Duration};
-use url::Url;
+use std::{collections::HashMap, fs, io::Write, path::PathBuf, time::Duration};
 
 /// Links to the badges APIs
-pub const BADGE_URLS: [&str; 2] = [
-    // old game (pre-group)
-    "https://badges.roblox.com/v1/universes/1055653882/badges",
-    // new game (group)
-    "https://badges.roblox.com/v1/universes/3264581003/badges",
+pub const UNIVERSE_IDS: [u64; 2] = [
+    1055653882, // old game (pre-group)
+    3264581003, // new game (group)
 ];
 
 /// Some badges have unwanted data which either messes with fandom search or just breaks other things.
@@ -262,24 +259,25 @@ async fn main_processing(
     println!("Total Skipped: {:?}", skip_ids);
 
     log::info!("Getting badges from api.");
-    let badge_lists = BADGE_URLS
+    // translate all universe ids into a list of badges.
+    let badge_lists = UNIVERSE_IDS
         .iter()
-        .map(|url| -> Url {
-            // assume we have no failures with this. it's constant anyway...
-            let mut url = Url::from_str(url).unwrap();
-            url.query_pairs_mut().append_pair("limit", "100").finish();
-            url
-        })
         .map(|url| get_badges(client, url, &skip_ids));
 
+    // and then combine them the best we can.
     let mut base: Vec<Badges> = vec![];
     for (index, list) in badge_lists.enumerate() {
         let list = list.await.unwrap();
-        println!("Badge count for: '{}' -> {}", BADGE_URLS[index], list.len());
+        println!(
+            "Badge count for: '{}' -> {}",
+            UNIVERSE_IDS[index],
+            list.len()
+        );
 
         for badge in list {
             // we can't do anything with these
-            if badge.name == "Placeholder" {
+            // Unlike the rest in a dedicated json file, these could pop up at any time causing false failures.
+            if badge.name.to_lowercase() == "placeholder" {
                 continue;
             }
 
@@ -308,12 +306,13 @@ async fn main_processing(
             }
         }
     }
+    // just attach the annoying links onto the end once everything else is figured out.
     for (key, value) in annoying_links {
         if let Some(badge) = base.iter_mut().find(|badge| badge.ids.contains(key)) {
             badge.annoying = Some(value.to_owned());
         }
     }
-    log::info!("Badges list recieved, also w/ annoying.");
+    log::info!("Badges list received, also w/ annoying.");
     log::info!("Attempting to get wiki pages...");
 
     let badges_vec = get_wiki_pages(client, &base)
@@ -338,7 +337,7 @@ async fn main_processing(
         "process_tower",
         Some(debug_path),
     );
-    println!("{:#?}", tower_processed);
+    // println!("{:#?}", tower_processed);
 
     // process areas based off towers.
     // Unique is here to reduce double area checking
@@ -405,7 +404,9 @@ async fn main_processing(
     let items = passed
         .iter()
         .filter(|p| {
-            !tower_processed.iter().any(|t| p.1.any_badge(t.badge_ids))
+            !tower_processed
+                .iter()
+                .any(|t| p.1.check_all_ids(&t.badge_ids))
             // .any(|t| t.page_name.contains(&p.1.clean_name()))
         })
         .map(|ele| process_all_items(&ele.0, &ele.1, &event_processed))
@@ -418,6 +419,7 @@ async fn main_processing(
         Some(debug_path),
     );
 
+    // to save network requests, we gather all the item relatedtowers together and then process them.
     let item_towers = all_items_processed
         .iter()
         .flat_map(|i| i.1.clone())
@@ -430,6 +432,7 @@ async fn main_processing(
                 return (ei.clone(), None);
             }
 
+            // yes this does mean we have to annoyingly relink them (tower to item).
             let links = i
                 .iter()
                 .map(|i| {
@@ -444,6 +447,7 @@ async fn main_processing(
                 .next()
                 .unwrap();
 
+            // but it's not that complex, and allows us to control things better.
             let (ei, tower) = if let Some(tower_link) = links {
                 let tower = process_tower(
                     &WikiText::from(tower_link),
@@ -471,9 +475,8 @@ async fn main_processing(
         })
         .collect_vec();
 
-    let failed_list = &failed.iter().map(|p| &p.1).collect_vec();
-
     // okay, now we have to hard-code some stuff.
+    let failed_list = &failed.iter().map(|p| &p.1).collect_vec();
     let mini_towers = hard_coded::parse_mini_towers(
         client,
         failed_list,
@@ -491,6 +494,7 @@ async fn main_processing(
         Some(debug_path),
     );
 
+    // generate the list of unprocessed badges here.
     let success_ids = tower_processed
         .iter()
         .flat_map(|s| s.badge_ids)
@@ -514,6 +518,7 @@ async fn main_processing(
         .collect_vec();
     unprocessed.sort();
 
+    // to make it easier to parse into processing.
     let hard = process_hard_coded(&unprocessed, Some(debug_path));
 
     let hard_ids = hard.iter().flat_map(|b| b.badge_ids).collect_vec();

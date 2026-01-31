@@ -503,18 +503,16 @@ pub async fn get_event_areas(
     client: &RustClient,
 ) -> Result<Vec<Result<EventInfo, String>>, ProcessError> {
     let category_pages = get_pages_from_category::<&'static str>(client, "Events", 500).await?;
-
-    if let Some(category_data) = category_pages.query.pages {
-        return Ok(category_data
-            .iter()
-            .map(|page| {
+    Ok(category_pages
+        .iter()
+        .map(|page| match page {
+            Ok(page) => {
                 let wt = WikiText::from(page);
                 process_event_area(&wt)
-            })
-            .collect_vec());
-    }
-
-    unreachable!("Event category should have pages")
+            }
+            Err(e) => Err(format!("{:?}", e)),
+        })
+        .collect_vec())
 }
 
 /// Events are like areas mostly, but with less data so we only store a way to group them.

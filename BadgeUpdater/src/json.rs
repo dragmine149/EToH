@@ -98,7 +98,7 @@ impl Jsonify {
             match categories.get_mut(&a.category) {
                 Some(cat) => match cat {
                     Category::Other(other) => other.push(OtherData::from(&a)),
-                    _ => unreachable!("Adventure should never be anything but other."),
+                    _ => unreachable!("Hardcoded based badges should never be anything but other."),
                 },
                 None => {
                     categories.insert(

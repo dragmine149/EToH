@@ -10,21 +10,28 @@ use crate::{
     wikitext::WikiText,
 };
 use itertools::Itertools;
-use url::Url;
 
+/// Get a list of badges from roblox.
+///
+/// # Arguments
+/// * client: The client to use to ping the API.
+/// * game_id: The id of the game to get the badges for.
+/// * ignore: Any badges linked with these ids won't be returned in the final result.
 pub async fn get_badges(
     client: &RustClient,
-    url: Url,
+    game_id: &u64,
     ignore: &[u64],
 ) -> Result<Vec<Badge>, ProcessError> {
     let mut data = RobloxBadgeData::default();
     let mut results = vec![];
     while let Some(next_page_cursor) = data.next_page_cursor {
-        let mut url = url.clone();
-        url.query_pairs_mut()
-            .append_pair("cursor", &next_page_cursor);
-
-        data = client.get(url).await?.json::<RobloxBadgeData>()?;
+        data = client
+            .get(format!(
+                "https://badges.roblox.com/v1/universes/{}/badges?limit=100&cursor={}",
+                game_id, next_page_cursor
+            ))
+            .await?
+            .json::<RobloxBadgeData>()?;
         for b in data.data {
             results.push(b);
         }
@@ -36,6 +43,11 @@ pub async fn get_badges(
         .collect_vec())
 }
 
+/// Translate the badges into as many wiki pages as possible
+///
+/// # Arguments
+/// * client: The client to use to ping the API.
+/// * badges: The list of badges to parse.
 pub async fn get_wiki_pages(
     client: &RustClient,
     badges: &[Badges],
@@ -48,16 +60,19 @@ pub async fn get_wiki_pages(
             .collect_vec(),
     )
     .await;
+
+    // results is our global result.
     let mut results = vec![];
+    // searches is a temporary list of badges that need to be sent via the search api to try for better results.
     let mut searches = vec![];
     log::info!("Attempting page link search");
-    println!("{:#?}", badges);
+    // println!("{:#?}", badges);
     for page in page_data {
         // it's kinda hard to return a `ErrorDetails` hence we have to return the main error.
         // we would have done this normally if using [mediawiki_api::get_pages] anyway.
         let page = page?;
         log::debug!("{:?}", page.title);
-        println!("{:#?}", page);
+        // println!("{:#?}", page);
         let entry_badge = badges
             .iter()
             .find(|b| b.is_badge(&page))
@@ -73,8 +88,9 @@ pub async fn get_wiki_pages(
             searches.push(entry_badge);
             continue;
         }
-        let content = page.get_content().unwrap().content.clone();
-        let mut wt = WikiText::parse(&content);
+        // if we have a link, parse and return it.
+        let content = &page.get_content().unwrap().content;
+        let mut wt = WikiText::parse(content);
         wt.set_page_name(Some(page.title.to_owned()));
         results.push(Ok(OkDetails(wt, entry_badge.clone())));
     }
@@ -83,7 +99,8 @@ pub async fn get_wiki_pages(
         searches.len(),
         results.len()
     );
-    println!("{:#?}", results);
+    // println!("{:#?}", results);
+    // same as above, but just for searching instead.
     for search in searches {
         let search_data = get_search(client, &clean_badge_name(&search.name), 4).await?;
         if let Some(searches) = search_data.query.search {
@@ -96,11 +113,13 @@ pub async fn get_wiki_pages(
                     .collect_vec(),
             )
             .await;
+
             let mut searched = false;
             for page in pages {
                 let page = page?;
                 // page should not be missing as it wouldn't be here...
 
+                // if we find a link, we break out early to avoid the rest being searched.
                 let content = &page.get_content().unwrap().content;
                 if search.check_ids(content) {
                     let mut wt = WikiText::parse(content);
@@ -111,6 +130,7 @@ pub async fn get_wiki_pages(
                 }
             }
 
+            // and for when we fail to break, we error.
             if !searched {
                 results.push(Err(ErrorDetails(
                     "Failed to get badge by searching".into(),

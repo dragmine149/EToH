@@ -15,6 +15,21 @@ use crate::{
 };
 use itertools::Itertools;
 
+/// The main function for all hard coded inputs.
+///
+/// This is split out from [crate::main_processing] to allow for more limited control and readability.
+///
+/// # Arguments
+/// * badges: A borrowed list of borrowed badges which we search through.
+/// We also make sure to reduces the badges passed into the next function.
+/// * debug_path: Path to provided to [crate::count_processed] for debugging.
+///
+/// # Returns
+/// * A list of badges that we have managed to pass successfully.
+/// * We also debug everything to `log::info!` and the provided file.
+///
+/// # Notes
+/// This can be run first or last or whenever, last is recommended as most of the results will end in failure due to their nature.
 pub fn process_hard_coded<'a>(
     badges: &'a [&'a Badges],
     debug_path: Option<&PathBuf>,
@@ -101,10 +116,10 @@ pub async fn parse_mini_towers(
                 && let Some(loc) = location
                 && loc.raw() != "Cancelled"
             {
-                println!("{:?}", data);
+                // println!("{:?}", data);
                 // no links, no page to link to. Aka, probably no badge.
                 let links = data.inner.content.get_links(Some(LinkType::Internal));
-                println!("{:?}", links);
+                // println!("{:?}", links);
                 if links.is_empty() {
                     return None;
                 }
@@ -155,14 +170,10 @@ pub async fn parse_mini_towers(
 }
 
 #[derive(Debug)]
+/// An error describing what happened and the badge related.
 pub struct HardError<'a>(pub String, pub &'a &'a Badges);
 
 /// Get the area link from the badge description.
-///
-/// In most cases, this doesn't work. However, for most know cases of Rings/Zones badges, this works perfectly.
-/// Ofc, this will need to be updated for new world but thats a future problem (as the worlds don't exist).
-///
-/// NOTE: This is intended to be run on a small subset of the original list. As very few badges will actual work here.
 ///
 /// # Arguments
 /// * badges: The list of badges to map.
@@ -198,7 +209,7 @@ pub fn area_from_description<'a>(
 
 /// Get badges which are related to beating a certain amount of towers.
 ///
-/// Yeah, they all follow the same format and with the 400 towers badge it's like, fine. Just add them yourself.
+/// Yeah, they all follow the same format and with the 400 towers badge it's like, fine. Lets just add this.
 pub fn progression<'a>(badges: &'a [&'a Badges]) -> Vec<Result<BadgeOverwrite, HardError<'a>>> {
     badges
         .iter()
@@ -216,6 +227,9 @@ pub fn progression<'a>(badges: &'a [&'a Badges]) -> Vec<Result<BadgeOverwrite, H
         .collect_vec()
 }
 
+/// Similar to [progression], read the title for the difficulty of beaten.
+///
+/// I doubt we'll get any more towers like this but eh.
 pub fn tower_difficultied<'a>(
     badges: &'a [&'a Badges],
 ) -> Vec<Result<BadgeOverwrite, HardError<'a>>> {
