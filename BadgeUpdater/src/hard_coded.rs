@@ -21,7 +21,7 @@ use itertools::Itertools;
 ///
 /// # Arguments
 /// * badges: A borrowed list of borrowed badges which we search through.
-/// We also make sure to reduces the badges passed into the next function.
+///   We also make sure to reduces the badges passed into the next function.
 /// * debug_path: Path to provided to [crate::count_processed] for debugging.
 ///
 /// # Returns

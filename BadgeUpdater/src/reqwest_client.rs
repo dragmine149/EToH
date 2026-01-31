@@ -4,7 +4,6 @@
 
 use reqwest::{Client, Response};
 use serde::Deserialize;
-use tokio::time::sleep;
 
 use crate::fmt_secs;
 use std::{
@@ -12,7 +11,7 @@ use std::{
     fs::{self, create_dir_all},
     hash::{DefaultHasher, Hash, Hasher},
     path::PathBuf,
-    time::{Duration, SystemTime},
+    time::SystemTime,
 };
 
 /// Custom struct as a wrapper for custom functions
@@ -28,10 +27,6 @@ pub struct RustClient(
     pub Client,
     /// The cache path location.
     PathBuf,
-    /// How long to wait after each request.
-    ///
-    /// This is not the best solution, but a solution to avoid spamming servers which might return errors from too much spam...
-    Duration,
 );
 /// Custom error to include all potential reqwest related errors.
 #[derive(Debug)]
@@ -73,17 +68,13 @@ impl RustClient {
     ///
     /// # Returns
     /// - a new client object to use.
-    pub fn new(
-        cache_path: Option<&str>,
-        user_agent: Option<&str>,
-        wait_time: Option<Duration>,
-    ) -> Self {
+    pub fn new(cache_path: Option<&str>, user_agent: Option<&str>) -> Self {
         let cache = PathBuf::from(cache_path.unwrap_or("./.cache"));
         let client = reqwest::ClientBuilder::new()
             .user_agent(user_agent.unwrap_or("Some program written in rust..."))
             .build()
             .unwrap();
-        let c = Self(client, cache, wait_time.unwrap_or_default());
+        let c = Self(client, cache);
         c.clear_cache();
         c
     }
@@ -175,7 +166,6 @@ impl RustClient {
         let bytes = ResponseBytes::from_response(response).await?;
         bytes.write_to_file(&cache_path)?;
 
-        sleep(self.2).await;
         Ok(bytes)
     }
 }

@@ -23,7 +23,7 @@ use crate::{
 };
 use itertools::Itertools;
 use lazy_regex::regex_replace;
-use std::{collections::HashMap, fs, io::Write, path::PathBuf, time::Duration};
+use std::{collections::HashMap, fs, io::Write, path::PathBuf};
 
 /// Links to the badges APIs
 pub const UNIVERSE_IDS: [u64; 2] = [
@@ -187,11 +187,6 @@ async fn main() {
     let client = RustClient::new(
         None,
         Some("Data2/BadgeUpdater (https://github.com/dragmine149/Etoh)"),
-        if PathBuf::from("./.temp.txt").exists() {
-            None
-        } else {
-            Some(Duration::from_millis(1000))
-        },
     );
 
     let overwrites =
@@ -524,8 +519,7 @@ async fn main_processing(
     let hard_ids = hard.iter().flat_map(|b| b.badge_ids).collect_vec();
     unprocessed = unprocessed
         .iter()
-        .filter(|b| !b.check_all_ids(&hard_ids))
-        .map(|b| *b)
+        .filter(|b| !b.check_all_ids(&hard_ids)).copied()
         .collect_vec();
     // log::warn!("{}", success_ids.len());
     // log::warn!("{}", adventure_ids.len());

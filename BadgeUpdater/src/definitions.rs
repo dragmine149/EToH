@@ -58,6 +58,7 @@ pub struct Badge {
 /// Includes:
 /// * multiple ids
 /// * annoying references
+///
 /// Which allow for more use and way easier expandability.
 #[derive(Debug, Serialize, Deserialize, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Badges {

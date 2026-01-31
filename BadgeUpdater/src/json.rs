@@ -326,9 +326,9 @@ impl Jsonify {
                     match (&self_area.items, &prev_area.items) {
                         (Some(self_items), Some(prev_items)) => {
                             let self_items_map: std::collections::HashMap<_, _> =
-                                self_items.iter().map(|i| (i.badges.clone(), i)).collect();
+                                self_items.iter().map(|i| (i.badges, i)).collect();
                             let prev_items_map: std::collections::HashMap<_, _> =
-                                prev_items.iter().map(|i| (i.badges.clone(), i)).collect();
+                                prev_items.iter().map(|i| (i.badges, i)).collect();
 
                             let self_item_badges: std::collections::HashSet<_> =
                                 self_items_map.keys().cloned().collect();
