@@ -1,0 +1,5 @@
+- Changed tower 'Tower of Client Object Frenzy' difficulty from 2.77 to 2.87 in area 'Zone 3'
+- Changed tower 'Tower of Hollow Reformations' difficulty from 8.58 to 8.7 in area 'Zone 9'
+- Changed tower 'Tower of Polychromatic Zero' difficulty from 8.72 to 8.77 in area 'Zone 5'
+- Changed tower 'Tower of Rain on My World' difficulty from 8.81 to 8.88 in area 'Zone 10'
+- Changed tower 'Tower of Vivid Sections' difficulty from 8.69 to 8.72 in area 'Ring 4'
