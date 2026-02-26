@@ -11,6 +11,44 @@ Multiple benefits:
 - Cleaner
   Although we could put everything in a folder, it's still a folder which rarley gets touched. So just tidies it up a bit
 
+## Format
+For those who want to use [shrunk.json](./shrunk.json), the format of each individual tower is as follows.
+
+Take this entry for example
+```
+A Simple Time,0,2125364300,1.25,0,2
+```
+This is split up into 6 sections as follows:
+- name (Name of the tower w/o `Tower of` or `Citadel of`, etc..., where possible, NEATs do not include this seperation for example)
+- old_badge_id (Badge id from before move. 0 = no id.
+- new_badge_id (Badge id after move, every badge should have this.)
+- difficulty (Difficulty of the tower in question)
+- length (Length of the tower, as per [definitions.rs#L468-L484](https://github.com/dragmine149/EToH/blob/ac5d1d477dbcc1b97042eb55664c64bf862f99da/BadgeUpdater/src/definitions.rs#L468-L484). basically higher number = longer)
+- type (Type of the tower, as per [definitions.rs#L376-L383](https://github.com/dragmine149/EToH/blob/ac5d1d477dbcc1b97042eb55664c64bf862f99da/BadgeUpdater/src/definitions.rs#L376-L383). Basically higher number = bigger tower (floor count))
+
+For badges in [overwrite.jsonc](./overwrite.jsonc) and similar, they use this format.
+```
+First Easy,2124641807,2125419249
+```
+- name
+- old_badge_id
+- new_badge_id
+
+No other information can be gathered from these badges, nor can the name be shrunk down even more.
+Depending on the badge, the name might include `(TOWER ACRO)` to help hint to which one the badge is related to.
+
+For badges linking to an item, they use this format
+```
+Present of Merrymaking Shrimp,0,2699038825006943,Shrimply Another Normal Tower, Amazingly
+```
+- name
+- old_badge_id
+- new_badge_id
+- tower_name (optional, Even if there is no tower link, a trailing comma will still be included)
+
+For more information about these badges, look up the coresponding tower name in the tower category.
+Do note, these only support a direct tower link, items which require 2 or 4 towers for example, will not have any links.
+
 ## Notes
 This branch is not designed to be pushed into main. This will run alongside main, hence why we branched off at root (`000000`) instead of latest commit (`be0772cd` at time of split)
 
