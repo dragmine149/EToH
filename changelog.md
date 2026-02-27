@@ -1,4 +1,1 @@
-- Changed tower 'Steeple of Astounding Sorcery' difficulty from 2.44 to 2.53 in area 'Arcane Area'
-- Changed tower 'Steeple of Crystal Ascension' difficulty from 5.23 to 5.24 in area 'Arcane Area'
-- Changed tower 'Steeple of Realm Odyssey' difficulty from 3.17 to 3.89 in area 'Arcane Area'
-- Changed tower 'Steeple of Witch Calamity' difficulty from 5.81 to 5.82 in area 'Arcane Area'
+- Changed tower 'Tower of Trivial Resentment' difficulty from 3.99 to 4.11 in area 'Ring 5'
