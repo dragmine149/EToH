@@ -1,1 +1,2 @@
-- Changed tower 'Tower of Trivial Resentment' difficulty from 3.99 to 4.11 in area 'Ring 5'
+- Changed tower 'Mush Stepl' difficulty from 5.44 to 4.44 in area 'BIOUMS'
+- Changed tower 'Tower of Vesi Leikki' difficulty from 3.5 to 5.74 in area 'BIOUMS'
