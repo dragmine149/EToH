@@ -1,1 +1,6 @@
-- Changed tower 'Steeple of Realm Odyssey' difficulty from 3.89 to 3.99 in area 'Arcane Area'
+- Changed tower 'Citadel of Victory' difficulty from 3.95 to 4.25 in area 'Ring 0'
+- Changed tower 'Tower of Dancing All Night' difficulty from 3.62 to 3.35 in area 'Ring 0'
+- Changed tower 'Tower of No Strings Attached' difficulty from 2.7 to 2.79 in area 'Ring 0'
+- Changed tower 'Tower of Ultimately Terrifying' difficulty from 6.58 to 6.23 in area 'Zone 1'
+- Changed tower 'Tower of Various Pressures' difficulty from 2.24 to 2.44 in area 'Ring 0'
+- Changed tower 'Tower of Viaduct Traversing' difficulty from 3.88 to 3.89 in area 'Ashen Towerworks'
