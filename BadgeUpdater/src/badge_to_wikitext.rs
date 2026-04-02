@@ -57,7 +57,7 @@ pub async fn get_wiki_pages(
         &badges
             .iter()
             .map(|b| clean_badge_name(b.annoying.as_ref().unwrap_or(&b.name)))
-            .filter(|b| !b.name.is_empty())
+            .filter(|b| !b.is_empty())
             .collect_vec(),
     )
     .await;
