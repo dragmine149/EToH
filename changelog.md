@@ -1,1 +1,1 @@
-- Changed tower 'Tower of Speeding Right Through' difficulty from 8.5 to 8.39 in area 'Steelspire Horizon'
+- Added category: Elysian Fields
