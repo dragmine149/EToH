@@ -193,7 +193,7 @@ pub fn area_from_description<'a>(
             // the main regex, technically you could have descend to zone 10 which is techniaclly incorrect as you ascend.
             // Yeah, we don't care about that. Too much effort
             let (_, area) = lazy_regex::regex_captures!(
-                r#"(?m)(?:de|a)scend to ((?:Ring \d)|(?:Zone \d))."#,
+                r#"(?m)(?:de|a)scend to ((?:Ring \d+)|(?:Zone \d+))."#,
                 &description
             )
             .ok_or(HardError(format!("Failed to do regex {}", b.name), b))?;
@@ -215,7 +215,7 @@ pub fn progression<'a>(badges: &'a [&'a Badges]) -> Vec<Result<BadgeOverwrite, H
         .iter()
         .map(|b| {
             let (_, total) =
-                lazy_regex::regex_captures!(r#"(?m)Beat (\d\d\d?) Towers"#, &b.name).ok_or(
+                lazy_regex::regex_captures!(r#"(?m)Beat (\d+) Towers"#, &b.name).ok_or(
                     HardError("Failed to regex name for progression".to_owned(), b),
                 )?;
             Ok(BadgeOverwrite {
