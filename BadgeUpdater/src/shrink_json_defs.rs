@@ -137,7 +137,7 @@ impl Serialize for ShrinkTower {
 
         serializer.serialize_str(&format!(
             "{},{},{},{},{},{}",
-            name.trim(),
+            name.trim().replace(',', "#"),
             self.badges[0],
             self.badges[1],
             self.difficulty,
@@ -168,7 +168,7 @@ impl<'de> Visitor<'de> for TowerVisitor {
         E: serde::de::Error,
     {
         let mut items = v.split(",");
-        let name = items.next().unwrap().to_string();
+        let name = items.next().unwrap().to_string().replace('#', ",");
         let badges = [
             items.next().unwrap().parse::<u64>().unwrap(),
             items.next().unwrap().parse::<u64>().unwrap(),
@@ -185,27 +185,6 @@ impl<'de> Visitor<'de> for TowerVisitor {
             tower_type,
         })
     }
-
-    // fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
-    // where
-    //     A: serde::de::SeqAccess<'de>,
-    // {
-    //     let name = seq.next_element()?.unwrap();
-    //     let badges = [seq.next_element()?.unwrap(), seq.next_element()?.unwrap()];
-    //     let difficulty = seq.next_element()?.unwrap();
-    //     let length = seq.next_element()?.unwrap();
-    //     let tower_type = seq.next_element()?.unwrap();
-    //     let wiki_page = seq.next_element()?.unwrap();
-
-    //     Ok(Tower {
-    //         name,
-    //         badges,
-    //         difficulty,
-    //         length,
-    //         tower_type,
-    //         wiki_page,
-    //     })
-    // }
 }
 
 impl From<&Tower> for ShrinkTower {
@@ -244,7 +223,7 @@ impl Serialize for ShrinkItem {
     {
         serializer.serialize_str(&format!(
             "{},{},{},{}",
-            self.name,
+            self.name.replace(',', "#"),
             self.badges[0],
             self.badges[1],
             self.tower_name.as_ref().unwrap_or(&String::default())
@@ -274,7 +253,7 @@ impl<'de> Visitor<'de> for ShrinkItemVisitor {
         E: serde::de::Error,
     {
         let mut items = v.split(",");
-        let name = items.next().unwrap().to_owned();
+        let name = items.next().unwrap().to_owned().replace('#', ",");
         let badges = [
             items.next().unwrap().parse::<u64>().unwrap(),
             items.next().unwrap().parse::<u64>().unwrap(),

@@ -12,8 +12,9 @@ Multiple benefits:
   Although we could put everything in a folder, it's still a folder which rarley gets touched. So just tidies it up a bit
 
 ## Format
-For those who want to use [shrunk.json](./shrunk.json), the format of each individual tower is as follows.
+For those who want to use [shrunk.json](./shrunk.json), the format is a bit different than the typical [badges.json](./badges.json).
 
+### Towers
 Take this entry for example
 ```
 A Simple Time,0,2125364300,1.25,0,2
@@ -48,6 +49,43 @@ Present of Merrymaking Shrimp,0,2699038825006943,Shrimply Another Normal Tower, 
 
 For more information about these badges, look up the coresponding tower name in the tower category.
 Do note, these only support a direct tower link, items which require 2 or 4 towers for example, will not have any links.
+
+### Random `#`?
+*Due to not wanting to do complex stuff...* Any string with a `#` is our way of using a `,`. By compressing the data into a csv format, any tower names (*like **W**asn't **R**eally **A** **T**ower, **H**onestly*) will break the csv
+as doing something like `.split(",")` will return one extra than it should. Whilst you can work around that, it's just easier if we say to replace with `#` instead.
+
+### Modified Date **ALSO HAPPENS IN TOWERS.JSON**
+The modified date is in seconds instead of milliseconds. Saves us 3 numbers of data as well it's not updated often enough to warrant the need for milliseconds.
+
+### Difficultites 
+Difficulties are a big cause of duplication. To reduce that we make use of bit shifting to store numbers. In total, a difficulty takes up 9 bits of any number. The bits are grouped into 3 sections:
+- First 3 bits: The offset
+- Second 3 bits: The first number
+- Third 3 bits: The second number
+```rs
+fn process_difficulty(num: u16) -> (u8, u8, u8) {
+	let offset = num >> 6;
+	// Technically you don't 
+	let first = (num - offset) >> 3;
+	let second = num - offset - first;
+	
+	(offset as u8, first as u8, second as u8)
+}
+```
+
+This system works because of HEAVY reliance on etoh being consistent. The following 3 rules have been found so far to work:
+- For every area with difficulty requirements, the area will require X of one difficulty and X + Y of the previous difficulty. 
+- No difficulty will require more than 7 towers
+- No area requires towers in the `Easy` difficulty, always in difficulties higher than easy.
+
+So for an example, the difficulty of `314` turns into `0000 0001 0011 1010` (`100 111 010`). which translates to:
+- Offset of 4 as `100`, so the easiest difficulty (first) is intense.
+- First tower is `111`, aka 7. Hence we have 7 towers for intense.
+- Second tower is `010`, aka 2. Hence we have 2 towers for remorseless.
+
+In other words, zone 10 area requirements.
+
+Also see: https://github.com/dragmine149/EToH/blob/399328766d24a3ad82e3e1da7bf3b4bff1320612/BadgeUpdater/src/shrink_json_defs.rs#L420-L476 for the example of the whole deserializing process.
 
 ## Notes
 This branch is not designed to be pushed into main. This will run alongside main, hence why we branched off at root (`000000`) instead of latest commit (`be0772cd` at time of split)
