@@ -1,1 +1,2 @@
-- Added category: Elysian Fields
+- Added other data 'Deep Space (Zone 10)' to category 'Adventure'
+- Removed other data 'Deep Space (Zone 1)' from category 'Adventure'
