@@ -1,2 +1,4 @@
-- Added other data 'Deep Space (Zone 10)' to category 'Adventure'
-- Removed other data 'Deep Space (Zone 1)' from category 'Adventure'
+- Category 'Harvest Carnival' type changed from Area to Other
+- Removed category: Elysian Fields
+- Removed tower 'Likely A Tower' from area 'Ring 5'
+- Removed tower 'Tower of Peaceful Happiness and Tranquility' from area 'Zone 1'
