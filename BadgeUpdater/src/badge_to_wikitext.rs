@@ -71,8 +71,8 @@ pub async fn get_wiki_pages(
     for page in page_data {
         // it's kinda hard to return a `ErrorDetails` hence we have to return the main error.
         // we would have done this normally if using [mediawiki_api::get_pages] anyway.
-        let page = page?;
         log::debug!("{:?}", page.title);
+        let page = page?;
         // println!("{:#?}", page);
         let entry_badge = badges
             .iter()
