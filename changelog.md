@@ -1,4 +1,1 @@
-- Category 'Harvest Carnival' type changed from Area to Other
-- Removed category: Elysian Fields
-- Removed tower 'Likely A Tower' from area 'Ring 5'
-- Removed tower 'Tower of Peaceful Happiness and Tranquility' from area 'Zone 1'
+- Added category: Elysian Fields
