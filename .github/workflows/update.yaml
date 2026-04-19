@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: Data2
 
@@ -34,11 +34,12 @@ jobs:
           git config user.name "badge-updater[bot]"
           git config user.email "badge-updater[bot]@users.noreply.github.com"
           git add .
-          git commit -m "Automated daily data updating" || echo "No changes to commit"
+          git commit -m "chore: Automated daily data updating" || echo "No changes to commit"
           git push
 
       - name: Upload Logs
         uses: actions/upload-artifact@v6
+        if: ${{ always() }}
         with:
           name: Logs.txt
           path: BadgeUpdater/badges.temp.txt
