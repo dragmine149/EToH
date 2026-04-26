@@ -1,1 +1,2 @@
-- Added category: Elysian Fields
+- Added tower 'Likely A Tower' to area 'Ring 5'
+- Category 'Harvest Carnival' type changed from Other to Area
