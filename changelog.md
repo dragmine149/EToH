@@ -1,2 +1,1 @@
-- Added tower 'Likely A Tower' to area 'Ring 5'
-- Category 'Harvest Carnival' type changed from Other to Area
+- Added tower 'Tower of Peaceful Happiness and Tranquility' to area 'Zone 1'
