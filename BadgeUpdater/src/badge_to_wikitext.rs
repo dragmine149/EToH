@@ -73,11 +73,11 @@ pub async fn get_wiki_pages(
         // we would have done this normally if using [mediawiki_api::get_pages] anyway.
         let page = match page {
             Ok(v) => {
-                log::debug!("{:?}", v.title);
+                log::debug!("ok: {:?}", v.title);
                 v
             }
             Err(v) => {
-                log::debug!("{:?}", v);
+                log::debug!("err: {:?}", v);
                 return Err(v);
             }
         };
@@ -95,6 +95,7 @@ pub async fn get_wiki_pages(
             // well, in theory at least.
             //
             // in theory, find should never fail either.
+            log::debug!("Searching required for {:?}", entry_badge);
             searches.push(entry_badge);
             continue;
         }
