@@ -140,7 +140,8 @@ pub async fn get_wiki_pages(
                 {
                     std::cmp::Ordering::Less
                 } else {
-                    a.title.cmp(&b.title)
+                    // a.title.cmp(&b.title)
+                    std::cmp::Ordering::Equal
                 }
             });
 
