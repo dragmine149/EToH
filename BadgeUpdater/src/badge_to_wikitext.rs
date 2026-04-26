@@ -138,11 +138,19 @@ pub async fn get_wiki_pages(
                     || a.title.contains("Steeple")
                     || a.title.contains("Obelisk")
                 {
-                    std::cmp::Ordering::Less
-                } else {
-                    // a.title.cmp(&b.title)
-                    std::cmp::Ordering::Equal
+                    return std::cmp::Ordering::Less;
                 }
+
+                if b.title.contains("Citadel")
+                    || b.title.contains("Tower")
+                    || b.title.contains("Steeple")
+                    || b.title.contains("Obelisk")
+                {
+                    return std::cmp::Ordering::Greater;
+                }
+
+                // a.title.cmp(&b.title)
+                std::cmp::Ordering::Equal
             });
 
             let mut searched = false;
