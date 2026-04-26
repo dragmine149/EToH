@@ -134,6 +134,11 @@ pub async fn get_wiki_pages(
                 let content = &page.get_content().unwrap().content;
                 if search.check_ids(content) {
                     let mut wt = WikiText::parse(content);
+                    log::debug!(
+                        "Search Result: Updating '{}' to '{}'",
+                        search.name,
+                        page.title
+                    );
                     wt.set_page_name(Some(page.title));
                     results.push(Ok(OkDetails(wt, search.to_owned())));
                     searched = true;
