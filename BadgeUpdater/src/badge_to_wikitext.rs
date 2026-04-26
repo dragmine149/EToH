@@ -4,7 +4,9 @@
 
 use crate::{
     clean_badge_name,
-    definitions::{Badge, Badges, ErrorDetails, OkDetails, ProcessError, RobloxBadgeData},
+    definitions::{
+        Badge, Badges, ErrorDetails, OkDetails, ProcessError, RobloxBadgeData, WikiPageEntry,
+    },
     mediawiki_api::{get_pages_limited, get_search},
     reqwest_client::RustClient,
     wikitext::WikiText,
@@ -125,11 +127,25 @@ pub async fn get_wiki_pages(
             )
             .await;
 
+            // page should not be missing as it wouldn't be here...
+            // if it is, something else has probably gone wrong and it's easier to break rather than try to fix it.
+            let mut pages = pages
+                .into_iter()
+                .collect::<Result<Vec<WikiPageEntry>, ProcessError>>()?;
+            pages.sort_by(|a, b| {
+                if a.title.contains("Citadel")
+                    || a.title.contains("Tower")
+                    || a.title.contains("Steeple")
+                    || a.title.contains("Obelisk")
+                {
+                    std::cmp::Ordering::Less
+                } else {
+                    a.title.cmp(&b.title)
+                }
+            });
+
             let mut searched = false;
             for page in pages {
-                let page = page?;
-                // page should not be missing as it wouldn't be here...
-
                 // if we find a link, we break out early to avoid the rest being searched.
                 let content = &page.get_content().unwrap().content;
                 if search.check_ids(content) {
