@@ -1,1 +1,2 @@
-- Added tower 'Tower of Peaceful Happiness and Tranquility' to area 'Zone 1'
+- Added category: Time-Lost N???
+- Removed tower 'Tower of Astronomically Aimless Annoyances' from area 'Zone 4'
