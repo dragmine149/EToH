@@ -1,2 +1,1 @@
-- Added category: Time-Lost N???
-- Removed tower 'Tower of Astronomically Aimless Annoyances' from area 'Zone 4'
+- Removed tower 'Citadel of Overcoming The World's Imperfections' from area 'Zone 10'
