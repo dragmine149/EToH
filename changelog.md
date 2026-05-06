@@ -1,1 +1,2 @@
-- Removed tower 'Citadel of Overcoming The World's Imperfections' from area 'Zone 10'
+- Changed tower 'It Really Looks Like A Tower' difficulty from 7 to 6.68 in area 'Time-Lost N???'
+- Removed category: The Eternal Potluck
