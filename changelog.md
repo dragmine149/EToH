@@ -1,2 +1,2 @@
-- Changed tower 'It Really Looks Like A Tower' difficulty from 7 to 6.68 in area 'Time-Lost N???'
-- Removed category: The Eternal Potluck
+- Added tower 'It Really Looks Like a Tower...' to area 'Time-Lost N???'
+- Removed tower 'It Really Looks Like A Tower' from area 'Time-Lost N???'
