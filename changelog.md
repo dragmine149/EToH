@@ -1,2 +1,3 @@
-- Added tower 'It Really Looks Like a Tower...' to area 'Time-Lost N???'
-- Removed tower 'It Really Looks Like A Tower' from area 'Time-Lost N???'
+- Added category: Time-Lost Nexus
+- Removed category: Time-Lost N???
+- Removed tower 'Citadel of "A Bug's Life!"' from area 'Something Otherworldly...'
