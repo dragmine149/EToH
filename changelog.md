@@ -1,3 +1,2 @@
-- Added category: Time-Lost Nexus
-- Removed category: Time-Lost N???
-- Removed tower 'Citadel of "A Bug's Life!"' from area 'Something Otherworldly...'
+- Added tower 'Citadel of "A Bug's Life!"' to area 'Something Otherworldly...'
+- Added tower 'Citadel of Overcoming The World's Imperfections' to area 'Zone 10'
