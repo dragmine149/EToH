@@ -1,2 +1,2 @@
-- Added tower 'Citadel of "A Bug's Life!"' to area 'Something Otherworldly...'
-- Added tower 'Citadel of Overcoming The World's Imperfections' to area 'Zone 10'
+- Added category: The Eternal Potluck
+- Added tower 'Tower of Astronomically Aimless Annoyances' to area 'Zone 4'
