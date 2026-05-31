@@ -1,2 +1,1 @@
-- Added category: The Eternal Potluck
-- Added tower 'Tower of Astronomically Aimless Annoyances' to area 'Zone 4'
+- Changed tower 'Tower of High Quality Fishing Boat' difficulty from 100 to 3.2 in area 'Terrain World'
