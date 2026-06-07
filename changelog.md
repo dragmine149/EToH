@@ -1,1 +1,1 @@
-- Changed tower 'Tower of High Quality Fishing Boat' difficulty from 100 to 3.2 in area 'Terrain World'
+- Removed tower 'Citadel of Biotech Genesis' from area 'Garden of Eeshöl'
