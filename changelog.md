@@ -1,1 +1,4 @@
-- Removed tower 'Citadel of Biotech Genesis' from area 'Garden of Eeshöl'
+- Added tower 'Tower of Distorted Nightmares' to area 'Dark Side of the Moon'
+- Added tower 'Tower of Poisoned Waters' to area 'Dark Side of the Moon'
+- Removed tower 'Tower of Robot Encoding Software' from area 'Dark Side of the Moon'
+- Removed tower 'Tower of Spin To Win' from area 'Dark Side of the Moon'
