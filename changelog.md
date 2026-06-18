@@ -1,1 +1,2 @@
-- Removed tower 'Tower of Astral Fusion' from area 'Zone 6'
+- Added tower 'Tower of Petrichor Resentment' to area 'Zone 6'
+- Added tower 'Tower of Sakura Bloom' to area 'Zone 6'
