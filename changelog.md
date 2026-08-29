@@ -1,2 +1,2 @@
-- Added tower 'Tower of Petrichor Resentment' to area 'Zone 6'
-- Added tower 'Tower of Sakura Bloom' to area 'Zone 6'
+- Changed tower 'Tower of Misleading Passages' difficulty from 7.9 to 7.78 in area 'Dark Side of the Moon'
+- Changed tower 'Tower of Questions' difficulty from 7.05 to 7.21 in area 'Dark Side of the Moon'
