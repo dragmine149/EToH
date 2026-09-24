@@ -1,2 +1,2 @@
-- Changed tower 'Tower of Misleading Passages' difficulty from 7.9 to 7.78 in area 'Dark Side of the Moon'
-- Changed tower 'Tower of Questions' difficulty from 7.05 to 7.21 in area 'Dark Side of the Moon'
+- Changed tower 'Tower of Weird Energy' difficulty from 5.12 to 5.7 in area 'Steelspire Horizon'
+- Changed tower 'Tower of Weird Energy' length from Short to Medium in area 'Steelspire Horizon'
