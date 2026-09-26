@@ -1,2 +1,1 @@
-- Changed tower 'Tower of Weird Energy' difficulty from 5.12 to 5.7 in area 'Steelspire Horizon'
-- Changed tower 'Tower of Weird Energy' length from Short to Medium in area 'Steelspire Horizon'
+- Changed tower 'Tower of Weird Energy' length from Medium to Short in area 'Steelspire Horizon'
