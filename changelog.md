@@ -1,1 +1,1 @@
-- Changed tower 'Tower of Weird Energy' length from Medium to Short in area 'Steelspire Horizon'
+- Added category: ???
