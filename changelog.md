@@ -1,2 +1,1 @@
-- Added category: Apollo Null
-- Removed category: ???
+- Added item `Spatial Anomaly ([0, 3533116913905769])` to event area `Apollo Null`
