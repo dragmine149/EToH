@@ -1,1 +1,1 @@
-- Added item `Spatial Anomaly ([0, 3533116913905769])` to event area `Apollo Null`
+- Removed item `Spatial Anomaly ([0, 3533116913905769])` from event area `Apollo Null`
